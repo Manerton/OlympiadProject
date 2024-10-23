@@ -6,8 +6,8 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	event "main/internal/models/event_model"
-	subject "main/internal/models/subject_model"
+	"main/internal/models/event"
+	"main/internal/models/subject"
 )
 
 func NewPosgreSQL(connectStr string) (*gorm.DB, error) {

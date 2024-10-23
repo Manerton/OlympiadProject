@@ -1,3 +1,5 @@
+env: "local"
+
 DB_INFO:
   host: "localhost"
   name: "EventServiceDB"
@@ -7,6 +9,6 @@ DB_INFO:
 
 
 HTTP_SERVER_INFO:
-  host: ""
-  port: ""
+  host: "localhost"
+  port: "8080"
   

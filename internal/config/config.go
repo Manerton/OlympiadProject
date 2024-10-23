@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	Env              string `yaml:"env"`
 	DatabaseConfig   `yaml:"DB_INFO"`
 	HTTPServerConfig `yaml:"HTTP_SERVER_INFO"`
 }
@@ -36,6 +37,10 @@ func (cfg *Config) GetDataSourceName() string {
 		cfg.DatabaseConfig.Password,
 		cfg.DatabaseConfig.SslModel,
 	)
+}
+
+func (cfg *Config) GetAddress() string {
+	return fmt.Sprintf("%s:%s", cfg.HTTPServerConfig.Host, cfg.HTTPServerConfig.Port)
 }
 
 func GetConfig(config_path string) *Config {
