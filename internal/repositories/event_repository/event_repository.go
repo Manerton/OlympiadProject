@@ -1,8 +1,7 @@
-package eventrepository
+package event_repository
 
 import (
 	"fmt"
-	"main/internal/dto/event_dto"
 	"main/internal/models/event"
 
 	"gorm.io/gorm"
@@ -21,10 +20,10 @@ func (r *EventRepository) GetEventByID(db *gorm.DB, id uint) (event.Event, error
 }
 
 // Get slice events by EventType
-func (r *EventRepository) GetEventsByType(db *gorm.DB, eventType event.EventType) ([]event.Event, error) {
+func (r *EventRepository) GetEventsByType(db *gorm.DB, event_type event.EventType) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetEventsByType"
 	events_res := []event.Event{}
-	if err := db.Find(&events_res, event.Event{EventType: eventType}).Error; err != nil {
+	if err := db.Find(&events_res, event.Event{EventType: event_type}).Error; err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return events_res, nil
@@ -41,40 +40,21 @@ func (r *EventRepository) GetAllEvents(db *gorm.DB) ([]event.Event, error) {
 }
 
 // Add new event in DB
-func (r *EventRepository) CreateEvent(db *gorm.DB, event_dto event_dto.EventDTO) (uint, error) {
+func (r *EventRepository) CreateEvent(db *gorm.DB, event event.Event) (uint, error) {
 	const op = "repositories.event_repository.CreateEvent"
-	new_event := event.Event{
-		Name:            event_dto.Name,
-		StartDate:       event_dto.StartDate,
-		EndDate:         event_dto.EndDate,
-		PreviousEventID: &event_dto.PreviousEventID,
-		SubjectID:       &event_dto.SubjectID,
-		AdditionalInfo:  event_dto.AdditionalInfo,
-		EventType:       event_dto.EventType,
-	}
-	if err := db.Create(&new_event).Error; err != nil {
+	if err := db.Create(&event).Error; err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
-	return new_event.ID, nil
+	return event.ID, nil
 }
 
 // Update event
-func (r *EventRepository) UpdateEvent(db *gorm.DB, event_dto event_dto.EventDTO) (uint, error) {
+func (r *EventRepository) UpdateEvent(db *gorm.DB, event event.Event) (uint, error) {
 	const op = "repositories.event_repository.UpdateEvent"
-	update_event := event.Event{
-		Model:           gorm.Model{ID: uint(event_dto.ID)},
-		Name:            event_dto.Name,
-		StartDate:       event_dto.StartDate,
-		EndDate:         event_dto.EndDate,
-		PreviousEventID: &event_dto.PreviousEventID,
-		SubjectID:       &event_dto.SubjectID,
-		AdditionalInfo:  event_dto.AdditionalInfo,
-		EventType:       event_dto.EventType,
-	}
-	if err := db.Updates(&update_event).Error; err != nil {
+	if err := db.Updates(&event).Error; err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
-	return update_event.ID, nil
+	return event.ID, nil
 }
 
 // Delete event

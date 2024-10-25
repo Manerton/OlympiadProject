@@ -1,8 +1,7 @@
-package subjectrepository
+package subject_repository
 
 import (
 	"fmt"
-	"main/internal/dto/subject_dto"
 	"main/internal/models/subject"
 
 	"gorm.io/gorm"
@@ -11,9 +10,17 @@ import (
 type SubjectRepository struct{}
 
 // Get subject by id
-func (r *SubjectRepository) GetSubjectById(db *gorm.DB, id uint) (subject.Subject, error) {
+func (r *SubjectRepository) GetSubjectByID(db *gorm.DB, id uint) (subject.Subject, error) {
 	const op = "repositories.subject_repository.GetSubjectById"
+
+	if id == 0 {
+		return subject.Subject{}, fmt.Errorf("%s: invalid ID %d", op, id)
+	}
+
 	subject_res := subject.Subject{ID: id}
+	// test_subject := subject.Subject{}
+	// test_err := db.Where("id = ?", id).First(&test_subject).Error
+	// _ = test_err
 	if err := db.First(&subject_res).Error; err != nil {
 		return subject.Subject{}, fmt.Errorf("%s: %w", op, err)
 	}
@@ -31,26 +38,21 @@ func (r *SubjectRepository) GetAllSubjects(db *gorm.DB) ([]subject.Subject, erro
 }
 
 // Add new subject in DB
-func (r *SubjectRepository) CreateSubject(db *gorm.DB, subject_dto subject_dto.SubjectDTO) (uint, error) {
+func (r *SubjectRepository) CreateSubject(db *gorm.DB, subject subject.Subject) (uint, error) {
 	const op = "repositories.subject_repository.CreateSubject"
-	new_subject := subject.Subject{Name: subject_dto.Name}
-	if err := db.Create(&new_subject).Error; err != nil {
+	if err := db.Create(&subject).Error; err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
-	return new_subject.ID, nil
+	return subject.ID, nil
 }
 
 // Update subject
-func (r *SubjectRepository) UpdateSubject(db *gorm.DB, subject_dto subject_dto.SubjectDTO) (uint, error) {
+func (r *SubjectRepository) UpdateSubject(db *gorm.DB, subject subject.Subject) (uint, error) {
 	const op = "repositories.subject_repository.UpdateSubject"
-	update_subject := subject.Subject{
-		ID:   subject_dto.ID,
-		Name: subject_dto.Name,
-	}
-	if err := db.Updates(&update_subject).Error; err != nil {
+	if err := db.Updates(&subject).Error; err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
-	return update_subject.ID, nil
+	return subject.ID, nil
 }
 
 // Delete subject
