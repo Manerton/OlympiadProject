@@ -1,1 +1,107 @@
 package subject_handler
+
+import (
+	"errors"
+	"io"
+	"log/slog"
+	"main/internal/dto/subject_dto"
+	"main/internal/lib/liblogger"
+	"main/internal/lib/response"
+	"main/internal/services/subject_service"
+	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/render"
+)
+
+type SubjectHandler struct {
+	service *subject_service.SubjectService
+	log     *slog.Logger
+}
+
+func NewSubjectHandler(service *subject_service.SubjectService, log *slog.Logger) *SubjectHandler {
+	return &SubjectHandler{service: service, log: log}
+}
+
+func (h *SubjectHandler) CreateSubject(w http.ResponseWriter, r *http.Request) {
+	const op = "handlers.subject_handler.CreateSubject"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	var subject_dto subject_dto.SubjectDTO
+	err := render.DecodeJSON(r.Body, &subject_dto)
+	if errors.Is(err, io.EOF) {
+		log.Error("render body is empty")
+		render.JSON(w, r, response.Error("empty request"))
+		return
+	}
+	if err != nil {
+		log.Error("failed to decode request body", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failde to decode request"))
+		return
+	}
+	log.Info("subject on request body decoded", slog.Any("subject", subject_dto))
+	id, err := h.service.CreateSubject(subject_dto)
+	if err != nil {
+		log.Error("failed to add subject", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to add subject"))
+		return
+	}
+	log.Info("subject added", slog.Any("id", id))
+
+	// TODO: NORNAL RESPONSE
+	render.JSON(w, r, "OK")
+}
+
+func (h *SubjectHandler) UpdateSubject(w http.ResponseWriter, r *http.Request) {
+	const op = "handlers.subject_handler.UpdateSubject"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	var subject_dto subject_dto.SubjectDTO
+	err := render.DecodeJSON(r.Body, &subject_dto)
+	if errors.Is(err, io.EOF) {
+		log.Error("render body is empty")
+		render.JSON(w, r, response.Error("empty request"))
+		return
+	}
+	if err != nil {
+		log.Error("failed to decode request body", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failde to decode request"))
+		return
+	}
+	log.Info("subject on request body decoded", slog.Any("subject", subject_dto))
+	id, err := h.service.UpdateSubject(subject_dto)
+	if err != nil {
+		log.Error("failed to update subject", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to update subject"))
+		return
+	}
+	log.Info("subject updated", slog.Any("id", id))
+
+	// TODO: NORNAL RESPONSE
+	render.JSON(w, r, "OK")
+}
+
+func (h *SubjectHandler) DeleteSubject(w http.ResponseWriter, r *http.Request) {
+	const op = "handlers.subject_handler.CreateSubject"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	deleted_id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 32)
+	log.Info("subject_id on request body decoded", slog.Any("subject_id", deleted_id))
+	err = h.service.DeleteSubject(uint(deleted_id))
+	if err != nil {
+		log.Error("failed to delete subject", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to delete subject"))
+		return
+	}
+	log.Info("subject deleted", slog.Any("id", deleted_id))
+
+	// TODO: NORNAL RESPONSE
+	render.JSON(w, r, "OK")
+}
