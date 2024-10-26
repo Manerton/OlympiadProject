@@ -21,56 +21,56 @@ func NewEventService(db *gorm.DB, er *event_repository.EventRepository) *EventSe
 	}
 }
 
-func (e *EventService) GetEventByID(id uint) (event_dto.EventDTO, error) {
+func (s *EventService) GetEventByID(id uint) (event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventByID"
-	event, err := e.repository.GetEventByID(e.db, id)
+	event, err := s.repository.GetEventByID(s.db, id)
 	if err != nil {
 		return event_dto.EventDTO{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return ConvertEventToDTO(event), nil
 }
 
-func (e *EventService) GetEventsByType(event_type event.EventType) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetEventsByType(event_type event.EventType) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventsByType"
-	events, err := e.repository.GetEventsByType(e.db, event_type)
+	events, err := s.repository.GetEventsByType(s.db, event_type)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return ConverManyEventsToDTO(events), nil
 }
 
-func (e *EventService) GetAllEvents() ([]event_dto.EventDTO, error) {
+func (s *EventService) GetAllEvents() ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetAllEvents"
-	events, err := e.repository.GetAllEvents(e.db)
+	events, err := s.repository.GetAllEvents(s.db)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return ConverManyEventsToDTO(events), nil
 }
 
-func (e *EventService) CreateEvent(event_dto event_dto.EventDTO) (uint, error) {
+func (s *EventService) CreateEvent(event_dto event_dto.EventDTO) (uint, error) {
 	const op = "services.event_service.CreateEvent"
 	event := ConvertDTOtoEvent(event_dto)
-	id, err := e.repository.CreateEvent(e.db, event)
+	id, err := s.repository.CreateEvent(s.db, event)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 	return id, nil
 }
 
-func (e *EventService) UpdateEvent(event_dto event_dto.EventDTO) (uint, error) {
+func (s *EventService) UpdateEvent(event_dto event_dto.EventDTO) (uint, error) {
 	const op = "services.event_service.UpdateEvent"
 	event := ConvertDTOtoEvent(event_dto)
-	id, err := e.repository.UpdateEvent(e.db, event)
+	id, err := s.repository.UpdateEvent(s.db, event)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 	return id, nil
 }
 
-func (e *EventService) DeleteEvent(id uint) error {
+func (s *EventService) DeleteEvent(id uint) error {
 	const op = "services.event_service.DeleteEvent"
-	err := e.repository.DeleteEvent(e.db, id)
+	err := s.repository.DeleteEvent(s.db, id)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

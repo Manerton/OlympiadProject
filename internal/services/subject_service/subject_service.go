@@ -26,10 +26,8 @@ func NewSubjectService(log *slog.Logger, db *gorm.DB, sr *subject_repository.Sub
 
 func (s *SubjectService) GetSubjectByID(id uint) (subject_dto.SubjectDTO, error) {
 	const op = "service.subject_service.GetEventByID"
-	// s.log.With(slog.String("op", op))
 	subject, err := s.repository.GetSubjectByID(s.db, id)
 	if err != nil {
-		// s.log.Error("failed to get subject", liblogger.Err(err))
 		return subject_dto.SubjectDTO{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return ConvertSubjectToDTO(subject), nil
