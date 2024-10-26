@@ -39,13 +39,26 @@ func TestCreateSubject(t *testing.T) {
 		expectedID     uint
 	}{
 		{
-			name:           "Auto created ID",
-			name_subject:   "History",
-			id:             0,
+			name:         "Auto created ID",
+			name_subject: "History",
+			id:           0,
+			expectError:  false,
+			expectedID:   1,
+		},
+		{
+			name:           "Created with my ID",
+			name_subject:   "Mathematics",
+			id:             2,
 			expectError:    false,
-			expectedName:   "",
 			expectedErrMsg: "",
-			expectedID:     1,
+			expectedID:     2,
+		},
+		{
+			name:           "Created existing id",
+			name_subject:   "test",
+			id:             2,
+			expectError:    true,
+			expectedErrMsg: "UNIQUE constraint failed: subjects.id",
 		},
 	}
 
@@ -54,7 +67,10 @@ func TestCreateSubject(t *testing.T) {
 			testSubject := subject.Subject{ID: tc.id, Name: tc.name_subject}
 			id, err := repo.CreateSubject(db, testSubject)
 			if tc.expectError {
-
+				assert.Error(t, err, "expected an error for case: %s", tc.name)
+				if err != nil {
+					assert.Contains(t, err.Error(), tc.expectedErrMsg, "expected error message to contain: %s", tc.expectedErrMsg)
+				}
 			} else {
 				assert.NoError(t, err, "expected no error for case: %s", tc.name)
 				assert.Equal(t, tc.expectedID, id, "expected subject id to match for case: %s", tc.name)
@@ -99,7 +115,7 @@ func TestGetSubjectByID(t *testing.T) {
 			name:           "Invalid ID (0)",
 			id:             0,
 			expectError:    true,
-			expectedErrMsg: "repositories.subject_repository.GetSubjectById: invalid ID 0",
+			expectedErrMsg: "invalid ID 0",
 		},
 	}
 
@@ -117,6 +133,103 @@ func TestGetSubjectByID(t *testing.T) {
 			} else {
 				assert.NoError(t, err, "expected no error for case: %s", tc.name)
 				assert.Equal(t, tc.expectedName, result.Name, "expected subject name to match for case: %s", tc.name)
+			}
+		})
+	}
+}
+
+func TestUpdatedSubjectID(t *testing.T) {
+	db := setupTestDB(t)
+	repo := subject_repository.SubjectRepository{}
+
+	testSubject := subject.Subject{
+		ID:   1,
+		Name: "Mathematics",
+	}
+	if err := db.Create(&testSubject).Error; err != nil {
+		t.Fatalf("failed to create test subject: %v", err)
+	}
+
+	testCases := []struct {
+		name           string
+		new_name       string
+		expectError    bool
+		expectedErrMsg string
+	}{
+		{
+			name:        "Update name",
+			new_name:    "Updated NEW NAME",
+			expectError: false,
+		},
+		{ //TODO: create error
+			name:           "",
+			new_name:       "",
+			expectError:    true,
+			expectedErrMsg: "",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			id, err := repo.UpdateSubject(db, subject.Subject{ID: testSubject.ID, Name: tc.new_name})
+			subject, err := repo.GetSubjectByID(db, id)
+
+			// Проверяем наличие или отсутствие ошибки
+			if tc.expectError {
+				assert.Error(t, err, "expected an error for case: %s", tc.name)
+				if err != nil {
+					assert.Contains(t, err.Error(), tc.expectedErrMsg, "expected error message to contain: %s", tc.expectedErrMsg)
+				}
+			} else {
+				assert.NoError(t, err, "expected no error for case: %s", tc.name)
+				assert.Equal(t, tc.new_name, subject.Name, "expected subject name to match for case: %s", tc.name)
+			}
+		})
+	}
+}
+
+func TestDeleteSubject(t *testing.T) {
+	db := setupTestDB(t)
+	repo := subject_repository.SubjectRepository{}
+
+	testSubject := subject.Subject{
+		ID:   1,
+		Name: "Mathematics",
+	}
+	if err := db.Create(&testSubject).Error; err != nil {
+		t.Fatalf("failed to create test subject: %v", err)
+	}
+
+	testCases := []struct {
+		name           string
+		deleted_id     uint
+		expectError    bool
+		expectedErrMsg string
+	}{
+		{
+			name:        "deleted subject",
+			deleted_id:  1,
+			expectError: false,
+		},
+		{
+			name:        "deleted non-existing subject",
+			deleted_id:  1,
+			expectError: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := repo.DeleteSubject(db, tc.deleted_id)
+
+			// Проверяем наличие или отсутствие ошибки
+			if tc.expectError {
+				assert.Error(t, err, "expected an error for case: %s", tc.name)
+				if err != nil {
+					assert.Contains(t, err.Error(), tc.expectedErrMsg, "expected error message to contain: %s", tc.expectedErrMsg)
+				}
+			} else {
+				assert.NoError(t, err, "expected no error for case: %s", tc.name)
 			}
 		})
 	}
