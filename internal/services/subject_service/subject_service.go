@@ -2,7 +2,6 @@ package subject_service
 
 import (
 	"fmt"
-	"log/slog"
 	"main/internal/dto/subject_dto"
 	"main/internal/models/subject"
 	"main/internal/repositories/subject_repository"
@@ -11,14 +10,12 @@ import (
 )
 
 type SubjectService struct {
-	log        *slog.Logger
 	db         *gorm.DB
 	repository *subject_repository.SubjectRepository
 }
 
-func NewSubjectService(log *slog.Logger, db *gorm.DB, sr *subject_repository.SubjectRepository) *SubjectService {
+func NewSubjectService(db *gorm.DB, sr *subject_repository.SubjectRepository) *SubjectService {
 	return &SubjectService{
-		log:        log,
 		db:         db,
 		repository: sr,
 	}
