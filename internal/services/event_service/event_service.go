@@ -5,6 +5,7 @@ import (
 	"main/internal/dto/event_dto"
 	"main/internal/models/event"
 	"main/internal/repositories/event_repository"
+	"sync"
 
 	"gorm.io/gorm"
 )
@@ -21,24 +22,7 @@ func NewEventService(db *gorm.DB, er *event_repository.EventRepository) *EventSe
 	}
 }
 
-func (s *EventService) GetEventByID(id uint) (event_dto.EventDTO, error) {
-	const op = "services.event_service.GetEventByID"
-	event, err := s.repository.GetEventByID(s.db, id)
-	if err != nil {
-		return event_dto.EventDTO{}, fmt.Errorf("%s: %w", op, err)
-	}
-	return ConvertEventToDTO(event), nil
-}
-
-func (s *EventService) GetEventsByType(event_type event.EventType) ([]event_dto.EventDTO, error) {
-	const op = "services.event_service.GetEventsByType"
-	events, err := s.repository.GetEventsByType(s.db, event_type)
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-	return ConverManyEventsToDTO(events), nil
-}
-
+// Get all events
 func (s *EventService) GetAllEvents() ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetAllEvents"
 	events, err := s.repository.GetAllEvents(s.db)
@@ -48,6 +32,64 @@ func (s *EventService) GetAllEvents() ([]event_dto.EventDTO, error) {
 	return ConverManyEventsToDTO(events), nil
 }
 
+// Get event by id
+func (s *EventService) GetEventByID(id uint) (event_dto.EventDTO, error) {
+	const op = "services.event_service.GetEventByID"
+	event, err := s.repository.GetEventByID(s.db, id)
+	if err != nil {
+		return event_dto.EventDTO{}, fmt.Errorf("%s: %w", op, err)
+	}
+	return ConvertEventToDTO(event), nil
+}
+
+// Get list events by type
+func (s *EventService) GetEventsByType(event_type event.EventType) ([]event_dto.EventDTO, error) {
+	const op = "services.event_service.GetEventsByType"
+	events, err := s.repository.GetEventsByType(s.db, event_type)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return ConverManyEventsToDTO(events), nil
+}
+
+// Get list events by PreviousID
+func (s *EventService) GetEventsByPreviousID(id uint) ([]event_dto.EventDTO, error) {
+	const op = "services.event_service.GetEventsByPreviousID"
+	events, err := s.repository.GetEventsByPreviousID(s.db, id)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return ConverManyEventsToDTO(events), nil
+}
+
+func (s *EventService) GetEventsByListID(ids []uint) ([]event_dto.EventDTO, error) {
+	const op = "services.event_service.GetEventsByListID"
+	var wg sync.WaitGroup
+	events := make([]event.Event, len(ids))
+	errors := make(chan error, len(ids))
+
+	for i, id := range ids {
+		wg.Add(1)
+		go func(i int, id uint) {
+			defer wg.Done()
+			event, err := s.repository.GetEventByID(s.db, id)
+			if err != nil {
+				errors <- err
+				return
+			}
+			events[i] = event
+		}(i, id)
+	}
+	wg.Wait()
+	close(errors)
+
+	if len(errors) > 0 {
+		return nil, fmt.Errorf("%s: %w", op, <-errors)
+	}
+	return ConverManyEventsToDTO(events), nil
+}
+
+// Create event
 func (s *EventService) CreateEvent(event_dto event_dto.EventDTO) (uint, error) {
 	const op = "services.event_service.CreateEvent"
 	event := ConvertDTOtoEvent(event_dto)
@@ -58,6 +100,7 @@ func (s *EventService) CreateEvent(event_dto event_dto.EventDTO) (uint, error) {
 	return id, nil
 }
 
+// Update event
 func (s *EventService) UpdateEvent(event_dto event_dto.EventDTO) (uint, error) {
 	const op = "services.event_service.UpdateEvent"
 	event := ConvertDTOtoEvent(event_dto)
@@ -68,6 +111,7 @@ func (s *EventService) UpdateEvent(event_dto event_dto.EventDTO) (uint, error) {
 	return id, nil
 }
 
+// Delete event
 func (s *EventService) DeleteEvent(id uint) error {
 	const op = "services.event_service.DeleteEvent"
 	err := s.repository.DeleteEvent(s.db, id)
