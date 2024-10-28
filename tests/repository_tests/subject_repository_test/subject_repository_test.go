@@ -142,11 +142,21 @@ func TestUpdatedSubjectID(t *testing.T) {
 	db := setupTestDB(t)
 	repo := subject_repository.SubjectRepository{}
 
-	testSubject := subject.Subject{
-		ID:   1,
-		Name: "Mathematics",
+	testSubjects := []subject.Subject{
+		{
+			ID:   1,
+			Name: "Mathematics",
+		},
+		{
+			ID:   2,
+			Name: "History",
+		},
+		{
+			ID:   3,
+			Name: "TEST",
+		},
 	}
-	if err := db.Create(&testSubject).Error; err != nil {
+	if err := db.Create(&testSubjects).Error; err != nil {
 		t.Fatalf("failed to create test subject: %v", err)
 	}
 
@@ -158,20 +168,20 @@ func TestUpdatedSubjectID(t *testing.T) {
 	}{
 		{
 			name:        "Update name",
-			new_name:    "Updated NEW NAME",
+			new_name:    "NEW NAME",
 			expectError: false,
 		},
-		{ //TODO: create error
-			name:           "",
-			new_name:       "",
+		{
+			name:           "Update on existing name",
+			new_name:       "TEST",
 			expectError:    true,
-			expectedErrMsg: "",
+			expectedErrMsg: "UNIQUE constraint failed",
 		},
 	}
 
-	for _, tc := range testCases {
+	for i, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			id, err := repo.UpdateSubject(db, subject.Subject{ID: testSubject.ID, Name: tc.new_name})
+			id, err := repo.UpdateSubject(db, subject.Subject{ID: testSubjects[i].ID, Name: tc.new_name})
 			subject, err := repo.GetSubjectByID(db, id)
 
 			// Проверяем наличие или отсутствие ошибки
