@@ -2,6 +2,7 @@ package subject_handler
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"main/internal/dto/subject_dto"
@@ -22,6 +23,53 @@ type SubjectHandler struct {
 
 func NewSubjectHandler(service *subject_service.SubjectService, log *slog.Logger) *SubjectHandler {
 	return &SubjectHandler{service: service, log: log}
+}
+
+func (h *SubjectHandler) GetAllSubjects(w http.ResponseWriter, r *http.Request) {
+	const op = "handlers.subject_handler.GetAllSubjects"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	subjects_dto, err := h.service.GetAllSubjects()
+	if err != nil {
+		log.Error("failed to get subject", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to get subject"))
+		return
+	}
+	log.Info("subject getted")
+
+	render.JSON(w, r, response.ApiResponse{
+		Status: response.StatusOK,
+		Data:   subjects_dto,
+	})
+}
+
+func (h *SubjectHandler) GetSubjectByID(w http.ResponseWriter, r *http.Request) {
+	const op = "handlers.subject_handler.GetSubjectByID"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	received_id := chi.URLParam(r, "id")
+	searched_id, err := strconv.ParseUint(received_id, 10, 32)
+	if err != nil {
+		log.Error("failed to parse id to uint", slog.String("received id", received_id), liblogger.Err(err))
+	}
+	log.Info("subject_id on request body decoded", slog.Any("subject_id", searched_id))
+
+	subject_dto, err := h.service.GetSubjectByID(uint(searched_id))
+	if err != nil {
+		log.Error("failed to get subject", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to get subject"))
+		return
+	}
+	log.Info("subject getted", slog.Any("subject", subject_dto))
+
+	render.JSON(w, r, response.ApiResponse{
+		Status: response.StatusOK,
+		Data:   subject_dto,
+	})
 }
 
 func (h *SubjectHandler) CreateSubject(w http.ResponseWriter, r *http.Request) {
@@ -51,8 +99,7 @@ func (h *SubjectHandler) CreateSubject(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Info("subject added", slog.Any("id", id))
 
-	// TODO: NORNAL RESPONSE
-	render.JSON(w, r, "OK")
+	render.JSON(w, r, response.Success(fmt.Sprintf("id = %d", id)))
 }
 
 func (h *SubjectHandler) UpdateSubject(w http.ResponseWriter, r *http.Request) {
@@ -82,8 +129,7 @@ func (h *SubjectHandler) UpdateSubject(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Info("subject updated", slog.Any("id", id))
 
-	// TODO: NORNAL RESPONSE
-	render.JSON(w, r, "OK")
+	render.JSON(w, r, response.Success(fmt.Sprintf("id = %d", id)))
 }
 
 func (h *SubjectHandler) DeleteSubject(w http.ResponseWriter, r *http.Request) {
@@ -92,8 +138,14 @@ func (h *SubjectHandler) DeleteSubject(w http.ResponseWriter, r *http.Request) {
 		slog.String("op", op),
 	)
 
-	deleted_id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 32)
+	received_id := chi.URLParam(r, "id")
+	deleted_id, err := strconv.ParseUint(received_id, 10, 32)
+	if err != nil {
+		log.Error("failed to parse id to uint", slog.String("received id", received_id), liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to parse id"))
+	}
 	log.Info("subject_id on request body decoded", slog.Any("subject_id", deleted_id))
+
 	err = h.service.DeleteSubject(uint(deleted_id))
 	if err != nil {
 		log.Error("failed to delete subject", liblogger.Err(err))
@@ -102,6 +154,5 @@ func (h *SubjectHandler) DeleteSubject(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Info("subject deleted", slog.Any("id", deleted_id))
 
-	// TODO: NORNAL RESPONSE
-	render.JSON(w, r, "OK")
+	render.JSON(w, r, response.Success("Object deleted"))
 }
