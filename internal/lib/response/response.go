@@ -5,14 +5,23 @@ const (
 	StatusError = "Error"
 )
 
-type Response struct {
-	Status string `json:"status"`
-	Error  string `json:"error,omitempty"`
+type ApiResponse struct {
+	Status  string      `json:"status"`
+	Message string      `json:"message,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
+	Error   string      `json:"error,omitempty"`
 }
 
-func Error(msg string) Response {
-	return Response{
+func Error(err string) ApiResponse {
+	return ApiResponse{
 		Status: StatusError,
-		Error:  msg,
+		Error:  err,
+	}
+}
+
+func Success(msg string) ApiResponse {
+	return ApiResponse{
+		Status:  StatusOK,
+		Message: msg,
 	}
 }
