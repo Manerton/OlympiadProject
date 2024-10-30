@@ -160,25 +160,25 @@ func (h *EventHandler) GetEventsByListID(w http.ResponseWriter, r *http.Request)
 	})
 }
 
-func (h *EventHandler) CreateEventTypeRegionalStage(w http.ResponseWriter, r *http.Request) {
-	h.createEventWithType(w, r, event.RegionalStage)
-}
+// func (h *EventHandler) CreateEventTypeRegionalStage(w http.ResponseWriter, r *http.Request) {
+// 	h.createEventWithType(w, r, event.RegionalStage)
+// }
 
-func (h *EventHandler) CreateEventTypeOlympiad(w http.ResponseWriter, r *http.Request) {
-	h.createEventWithType(w, r, event.Olympiad)
-}
+// func (h *EventHandler) CreateEventTypeOlympiad(w http.ResponseWriter, r *http.Request) {
+// 	h.createEventWithType(w, r, event.Olympiad)
+// }
 
-func (h *EventHandler) CreateEventTypeStage(w http.ResponseWriter, r *http.Request) {
-	h.createEventWithType(w, r, event.Stage)
-}
+// func (h *EventHandler) CreateEventTypeStage(w http.ResponseWriter, r *http.Request) {
+// 	h.createEventWithType(w, r, event.Stage)
+// }
 
-// TODO: Может ли быть более одной апеляции, нужна проверка
-func (h *EventHandler) CreateEventTypeAppeal(w http.ResponseWriter, r *http.Request) {
-	h.createEventWithType(w, r, event.Appeal)
-}
+// // TODO: Может ли быть более одной апеляции, нужна проверка
+// func (h *EventHandler) CreateEventTypeAppeal(w http.ResponseWriter, r *http.Request) {
+// 	h.createEventWithType(w, r, event.Appeal)
+// }
 
-func (h *EventHandler) createEventWithType(w http.ResponseWriter, r *http.Request, event_type event.EventType) {
-	const op = "handlers.event_handlers.CreateEventWithType"
+func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
+	const op = "handlers.event_handlers.CreateEvent"
 	log := h.log.With(
 		slog.String("op", op),
 	)
@@ -195,12 +195,11 @@ func (h *EventHandler) createEventWithType(w http.ResponseWriter, r *http.Reques
 		render.JSON(w, r, response.Error("failde to decode request"))
 		return
 	}
-	event_dto.EventType = event_type
 	log.Info("event on request body decoded", slog.Any("event", event_dto))
 
 	id, err := h.service.CreateEvent(event_dto)
 	if err != nil {
-		log.Error("failed to create event", slog.Any("type", event_type), liblogger.Err(err))
+		log.Error("failed to create event", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to create event"))
 		return
 	}
