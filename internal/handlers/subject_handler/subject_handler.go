@@ -133,7 +133,7 @@ func (h *SubjectHandler) UpdateSubject(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *SubjectHandler) DeleteSubject(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.subject_handler.CreateSubject"
+	const op = "handlers.subject_handler.DeleteSubject"
 	log := h.log.With(
 		slog.String("op", op),
 	)
