@@ -13,10 +13,6 @@ type EventRepository struct{}
 func (r *EventRepository) GetEventByID(db *gorm.DB, id uint) (event.Event, error) {
 	const op = "repositories.event_repository.GetEventById"
 
-	if id == 0 {
-		return event.Event{}, fmt.Errorf("%s: invalid ID %d", op, id)
-	}
-
 	event_res := event.Event{Model: gorm.Model{ID: id}}
 	if err := db.First(&event_res).Error; err != nil {
 		return event.Event{}, fmt.Errorf("%s: %w", op, err)
@@ -44,7 +40,7 @@ func (r *EventRepository) GetEventsByPreviousID(db *gorm.DB, previous_id uint) (
 	return events, nil
 }
 
-// Get all eventsф
+// Get all events
 func (r *EventRepository) GetAllEvents(db *gorm.DB) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetAllEvents"
 	events_res := []event.Event{}
@@ -75,7 +71,7 @@ func (r *EventRepository) UpdateEvent(db *gorm.DB, event event.Event) (uint, err
 // Delete event
 func (r *EventRepository) DeleteEvent(db *gorm.DB, id uint) error {
 	const op = "repositories.event_repository.DeleteEvent"
-	if err := db.Delete(event.Event{}, id).Error; err != nil {
+	if err := db.Delete(&event.Event{Model: gorm.Model{ID: id}}).Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil

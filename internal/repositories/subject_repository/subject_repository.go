@@ -13,10 +13,6 @@ type SubjectRepository struct{}
 func (r *SubjectRepository) GetSubjectByID(db *gorm.DB, id uint) (subject.Subject, error) {
 	const op = "repositories.subject_repository.GetSubjectById"
 
-	if id == 0 {
-		return subject.Subject{}, fmt.Errorf("%s: invalid ID %d", op, id)
-	}
-
 	subject_res := subject.Subject{ID: id}
 	// test_subject := subject.Subject{}
 	// test_err := db.Where("id = ?", id).First(&test_subject).Error
