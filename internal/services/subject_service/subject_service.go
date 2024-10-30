@@ -23,6 +23,10 @@ func NewSubjectService(db *gorm.DB, sr *subject_repository.SubjectRepository) *S
 
 func (s *SubjectService) GetSubjectByID(id uint) (subject_dto.SubjectDTO, error) {
 	const op = "service.subject_service.GetEventByID"
+	if id == 0 {
+		return subject_dto.SubjectDTO{}, fmt.Errorf("%s: invalid ID %d", op, id)
+	}
+
 	subject, err := s.repository.GetSubjectByID(s.db, id)
 	if err != nil {
 		return subject_dto.SubjectDTO{}, fmt.Errorf("%s: %w", op, err)

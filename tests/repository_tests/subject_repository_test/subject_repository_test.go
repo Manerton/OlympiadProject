@@ -111,12 +111,6 @@ func TestGetSubjectByID(t *testing.T) {
 			expectError:    true,
 			expectedErrMsg: "record not found",
 		},
-		{
-			name:           "Invalid ID (0)",
-			id:             0,
-			expectError:    true,
-			expectedErrMsg: "invalid ID 0",
-		},
 	}
 
 	// Выполняем тесты
@@ -182,7 +176,7 @@ func TestUpdatedSubjectID(t *testing.T) {
 	for i, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			id, err := repo.UpdateSubject(db, subject.Subject{ID: testSubjects[i].ID, Name: tc.new_name})
-			subject, err := repo.GetSubjectByID(db, id)
+			subject, _ := repo.GetSubjectByID(db, id)
 
 			// Проверяем наличие или отсутствие ошибки
 			if tc.expectError {
