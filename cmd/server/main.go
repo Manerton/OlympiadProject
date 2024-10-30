@@ -19,6 +19,7 @@ import (
 )
 
 const LocalFilePath = "config-yaml/local.yaml"
+const DebugFilePath = "C:/Users/assba/source/repos/Event-service/config-yaml/local.yaml"
 
 func main() {
 	// Init config
@@ -60,10 +61,10 @@ func main() {
 	router.Get("/events/{id}", event_handler.GetEventByID)
 	router.Get("/events/regional-stage", event_handler.GetAllEventsTypeRegionalStage)
 	router.Get("/events/child/{id}", event_handler.GetEventsByPreviousID)
-	router.Post("/events/regioanl-stage", event_handler.CreateEventTypeRegionalStage)
-	router.Post("/events/olympiad", event_handler.CreateEventTypeOlympiad)
-	router.Post("/events/stage", event_handler.CreateEventTypeStage)
-	router.Post("/events/appeal", event_handler.CreateEventTypeAppeal)
+	router.Post("/events", event_handler.CreateEvent)
+	// router.Post("/events/olympiad", event_handler.CreateEventTypeOlympiad)
+	// router.Post("/events/stage", event_handler.CreateEventTypeStage)
+	// router.Post("/events/appeal", event_handler.CreateEventTypeAppeal)
 	router.Put("/events/{id}", event_handler.UpdateEvent)
 	router.Delete("/events/{id}", event_handler.DeleteEvent)
 

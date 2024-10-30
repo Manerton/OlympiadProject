@@ -1,6 +1,7 @@
 package event_service
 
 import (
+	"errors"
 	"fmt"
 	"main/internal/dto/event_dto"
 	"main/internal/models/event"
@@ -29,12 +30,16 @@ func (s *EventService) GetAllEvents() ([]event_dto.EventDTO, error) {
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return ConverManyEventsToDTO(events), nil
+	return ConvertManyEventsToDTO(events), nil
 }
 
 // Get event by id
 func (s *EventService) GetEventByID(id uint) (event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventByID"
+	if id == 0 {
+		return event_dto.EventDTO{}, fmt.Errorf("%s: invalid ID %d", op, id)
+	}
+
 	event, err := s.repository.GetEventByID(s.db, id)
 	if err != nil {
 		return event_dto.EventDTO{}, fmt.Errorf("%s: %w", op, err)
@@ -49,7 +54,7 @@ func (s *EventService) GetEventsByType(event_type event.EventType) ([]event_dto.
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return ConverManyEventsToDTO(events), nil
+	return ConvertManyEventsToDTO(events), nil
 }
 
 // Get list events by PreviousID
@@ -59,7 +64,7 @@ func (s *EventService) GetEventsByPreviousID(id uint) ([]event_dto.EventDTO, err
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return ConverManyEventsToDTO(events), nil
+	return ConvertManyEventsToDTO(events), nil
 }
 
 func (s *EventService) GetEventsByListID(ids []uint) ([]event_dto.EventDTO, error) {
@@ -86,12 +91,106 @@ func (s *EventService) GetEventsByListID(ids []uint) ([]event_dto.EventDTO, erro
 	if len(errors) > 0 {
 		return nil, fmt.Errorf("%s: %w", op, <-errors)
 	}
-	return ConverManyEventsToDTO(events), nil
+	return ConvertManyEventsToDTO(events), nil
+}
+
+func (s *EventService) checkCorrectEventDTO(event_dto *event_dto.EventDTO) error {
+	// Check date
+	if event_dto.StartDate.IsZero() || event_dto.EndDate.IsZero() {
+		return errors.New("date does not exist")
+	}
+	if !event_dto.StartDate.Before(event_dto.EndDate) {
+		return errors.New("start date should be before end date")
+	}
+	// check have previousEvent
+	previousEventID := event_dto.PreviousEventID
+	if previousEventID != nil {
+		previousEvent, err := s.repository.GetEventByID(s.db, *previousEventID)
+		if err != nil {
+			return err
+		}
+
+		// check correct date border
+		if previousEvent.StartDate.After(event_dto.StartDate) || previousEvent.EndDate.Before(event_dto.EndDate) {
+			return errors.New("incorrect date limits")
+		}
+
+		// set correct type
+		switch previousEvent.EventType {
+		case event.RegionalStage:
+			if event_dto.SubjectID == nil {
+				return errors.New("subject id does not exist")
+			}
+			event_dto.EventType = event.Olympiad
+		case event.Olympiad:
+			event_dto.EventType = event.Stage
+		case event.Stage:
+			// check stage cannot have more than one appeal
+			appeals, err := s.repository.GetEventsByPreviousID(s.db, *previousEventID)
+			if err != nil {
+				return err
+			}
+			if len(appeals) > 0 {
+				return errors.New("stage cannot have more than one appeal")
+			}
+			event_dto.EventType = event.Appeal
+		}
+	} else {
+		event_dto.EventType = event.RegionalStage
+	}
+	return nil
 }
 
 // Create event
 func (s *EventService) CreateEvent(event_dto event_dto.EventDTO) (uint, error) {
 	const op = "services.event_service.CreateEvent"
+
+	// // Check date
+	// if event_dto.StartDate.IsZero() || event_dto.EndDate.IsZero() {
+	// 	return 0, fmt.Errorf("%s: date does not exist", op)
+	// }
+	// if !event_dto.StartDate.Before(event_dto.EndDate) {
+	// 	return 0, fmt.Errorf("%s: start date should be before end date", op)
+	// }
+	// // check have previousEvent
+	// previousEventID := event_dto.PreviousEventID
+	// if previousEventID != 0 {
+	// 	previousEvent, err := s.repository.GetEventByID(s.db, previousEventID)
+	// 	if err != nil {
+	// 		return 0, fmt.Errorf("%s: %w", op, err)
+	// 	}
+
+	// 	// check correct date border
+	// 	if previousEvent.StartDate.After(event_dto.StartDate) || previousEvent.EndDate.Before(event_dto.EndDate) {
+	// 		return 0, fmt.Errorf("%s: incorrect date limits", op)
+	// 	}
+
+	// 	// set correct type
+	// 	switch previousEvent.EventType {
+	// 	case event.RegionalStage:
+	// 		event_dto.EventType = event.Olympiad
+	// 	case event.Olympiad:
+	// 		event_dto.EventType = event.Stage
+	// 	case event.Stage:
+	// 		// check stage cannot have more than one appeal
+	// 		appeals, err := s.repository.GetEventsByPreviousID(s.db, previousEventID)
+	// 		if err != nil {
+	// 			return 0, fmt.Errorf("%s: %w", op, err)
+	// 		}
+	// 		if len(appeals) > 0 {
+	// 			return 0, fmt.Errorf("%s: stage cannot have more than one appeal", op)
+	// 		}
+	// 		event_dto.EventType = event.Appeal
+	// 	}
+	// } else {
+	// 	event_dto.EventType = event.RegionalStage
+	// }
+
+	err := s.checkCorrectEventDTO(&event_dto)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
 	event := ConvertDTOtoEvent(event_dto)
 	id, err := s.repository.CreateEvent(s.db, event)
 	if err != nil {
@@ -103,6 +202,12 @@ func (s *EventService) CreateEvent(event_dto event_dto.EventDTO) (uint, error) {
 // Update event
 func (s *EventService) UpdateEvent(event_dto event_dto.EventDTO) (uint, error) {
 	const op = "services.event_service.UpdateEvent"
+	// Check correct data
+	err := s.checkCorrectEventDTO(&event_dto)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
 	event := ConvertDTOtoEvent(event_dto)
 	id, err := s.repository.UpdateEvent(s.db, event)
 	if err != nil {
@@ -127,8 +232,8 @@ func ConvertDTOtoEvent(event_dto event_dto.EventDTO) event.Event {
 		Name:            event_dto.Name,
 		StartDate:       event_dto.StartDate,
 		EndDate:         event_dto.EndDate,
-		PreviousEventID: &event_dto.PreviousEventID,
-		SubjectID:       &event_dto.SubjectID,
+		PreviousEventID: event_dto.PreviousEventID,
+		SubjectID:       event_dto.SubjectID,
 		AdditionalInfo:  event_dto.AdditionalInfo,
 		EventType:       event_dto.EventType,
 	}
@@ -140,14 +245,14 @@ func ConvertEventToDTO(event event.Event) event_dto.EventDTO {
 		Name:            event.Name,
 		StartDate:       event.StartDate,
 		EndDate:         event.EndDate,
-		PreviousEventID: *event.PreviousEventID,
-		SubjectID:       *event.SubjectID,
+		PreviousEventID: event.PreviousEventID,
+		SubjectID:       event.SubjectID,
 		AdditionalInfo:  event.AdditionalInfo,
 		EventType:       event.EventType,
 	}
 }
 
-func ConverManyEventsToDTO(events []event.Event) []event_dto.EventDTO {
+func ConvertManyEventsToDTO(events []event.Event) []event_dto.EventDTO {
 	var events_dto []event_dto.EventDTO
 	for _, event := range events {
 		events_dto = append(events_dto, ConvertEventToDTO(event))
