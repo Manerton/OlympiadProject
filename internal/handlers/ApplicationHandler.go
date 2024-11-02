@@ -1,4 +1,4 @@
-package application_handler
+package ApplicationHandler
 
 import (
 	"main/internal/dto"

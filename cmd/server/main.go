@@ -3,11 +3,11 @@ package main
 import (
 	"log/slog"
 	"main/internal/config"
-	application_handler "main/internal/handlers"
+	ApplicationHandler "main/internal/handlers"
 	"main/internal/lib/liblogger"
 	"main/internal/middleware/midlogger"
-	application_repository "main/internal/repositories"
-	application_service "main/internal/services"
+	ApplicationRepository "main/internal/repositories"
+	ApplicationService "main/internal/services"
 	"main/internal/storage/postgresql"
 	"net/http"
 
@@ -41,8 +41,8 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	// init application service and handler
-	applicationService := application_service.NewApplicationService(storage, &application_repository.ApplicationRepository{})
-	applicationHandler := application_handler.NewApplicationHandler(applicationService, log)
+	applicationService := ApplicationService.NewApplicationService(storage, &ApplicationRepository.ApplicationRepository{})
+	applicationHandler := ApplicationHandler.NewApplicationHandler(applicationService, log)
 
 	// init applications route
 	router.Get("/applications", applicationHandler.GetAllApplications)

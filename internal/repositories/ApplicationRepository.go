@@ -1,4 +1,4 @@
-package application_repository
+package ApplicationRepository
 
 import (
 	"fmt"
