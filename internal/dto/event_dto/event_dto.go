@@ -12,6 +12,6 @@ type EventDTO struct {
 	EndDate         time.Time
 	EventType       event.EventType
 	PreviousEventID *uint
-	SubjectID       *uint
+	Subject         string
 	AdditionalInfo  string
 }

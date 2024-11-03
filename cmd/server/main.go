@@ -7,10 +7,9 @@ import (
 	"main/internal/handlers/subject_handler"
 	"main/internal/lib/liblogger"
 	"main/internal/middleware/midlogger"
+	"main/internal/models/subject"
 	"main/internal/repositories/event_repository"
-	"main/internal/repositories/subject_repository"
 	"main/internal/services/event_service"
-	"main/internal/services/subject_service"
 	"main/internal/storage/postgresql"
 	"net/http"
 
@@ -23,7 +22,7 @@ const DebugFilePath = "C:/Users/assba/source/repos/Event-service/config-yaml/loc
 
 func main() {
 	// Init config
-	cfg := config.GetConfig(LocalFilePath)
+	cfg := config.GetConfig(DebugFilePath)
 
 	// Init logger
 	log := liblogger.SetupLogger(cfg.Env)
@@ -44,29 +43,28 @@ func main() {
 	router.Use(midlogger.New(log))
 	router.Use(middleware.URLFormat)
 	// init subject service and handler
-	subject_service := subject_service.NewSubjectService(storage, &subject_repository.SubjectRepository{})
-	subject_handler := subject_handler.NewSubjectHandler(subject_service, log)
+	// subjectService := subject_service.NewSubjectService(storage, &subject_repository.SubjectRepository{})
+	subjectStorage := subject.NewSubjectsStorage()
+	subjectHandler := subject_handler.NewSubjectHandler(subjectStorage, log)
 	// init events service and handler
-	event_service := event_service.NewEventService(storage, &event_repository.EventRepository{})
-	event_handler := event_handler.NewEventHandler(event_service, log)
+	eventService := event_service.NewEventService(storage, &event_repository.EventRepository{})
+	eventHandler := event_handler.NewEventHandler(eventService, log)
 
 	// init subjects route
-	router.Get("/subjects", subject_handler.GetAllSubjects)
-	router.Get("/subjects/{id}", subject_handler.GetSubjectByID)
-	router.Post("/subjects", subject_handler.CreateSubject)
-	router.Put("/subjects", subject_handler.UpdateSubject)
-	router.Delete("/subjects/{id}", subject_handler.DeleteSubject)
+	router.Get("/subjects", subjectHandler.GetAllSubjects)
+	// router.Get("/subjects/{id}", subjectHandler.GetSubjectByID)
+	// router.Post("/subjects", subjectHandler.CreateSubject)
+	// router.Put("/subjects", subjectHandler.UpdateSubject)
+	// router.Delete("/subjects/{id}", subjectHandler.DeleteSubject)
+
 	// init events route
-	router.Get("/events", event_handler.GetAllEvents)
-	router.Get("/events/{id}", event_handler.GetEventByID)
-	router.Get("/events/regional-stage", event_handler.GetAllEventsTypeRegionalStage)
-	router.Get("/events/child/{id}", event_handler.GetEventsByPreviousID)
-	router.Post("/events", event_handler.CreateEvent)
-	// router.Post("/events/olympiad", event_handler.CreateEventTypeOlympiad)
-	// router.Post("/events/stage", event_handler.CreateEventTypeStage)
-	// router.Post("/events/appeal", event_handler.CreateEventTypeAppeal)
-	router.Put("/events/{id}", event_handler.UpdateEvent)
-	router.Delete("/events/{id}", event_handler.DeleteEvent)
+	router.Get("/events", eventHandler.GetAllEvents)
+	router.Get("/events/{id}", eventHandler.GetEventByID)
+	router.Get("/events/regional-stage", eventHandler.GetAllEventsTypeRegionalStage)
+	router.Get("/events/child/{id}", eventHandler.GetEventsByPreviousID)
+	router.Post("/events", eventHandler.CreateEvent)
+	router.Put("/events/{id}", eventHandler.UpdateEvent)
+	router.Delete("/events/{id}", eventHandler.DeleteEvent)
 
 	// init server
 	server := &http.Server{

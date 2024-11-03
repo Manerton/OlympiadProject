@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 
 	"main/internal/models/event"
-	"main/internal/models/subject"
 )
 
 func NewPosgreSQL(connectStr string) (*gorm.DB, error) {
@@ -25,17 +24,18 @@ func NewPosgreSQL(connectStr string) (*gorm.DB, error) {
 		`DO $$ BEGIN IF NOT EXISTS
 		(SELECT 1 FROM pg_type WHERE typname = 'event_type') 
 		THEN CREATE TYPE event_type AS ENUM 
-		('%s', '%s', '%s', '%s');
+		('%s', '%s', '%s', '%s', '%s');
 		END IF; END $$;`,
 		event.RegionalStage,
 		event.Olympiad,
 		event.Stage,
+		event.ViewWorks,
 		event.Appeal,
 	)
 	db.Exec(create_enum_type_str)
 
 	// migration models
-	err = db.AutoMigrate(&event.Event{}, &subject.Subject{})
+	err = db.AutoMigrate(&event.Event{})
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

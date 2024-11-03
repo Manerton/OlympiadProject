@@ -3,7 +3,6 @@ package event_repository_test
 import (
 	"fmt"
 	"main/internal/models/event"
-	"main/internal/models/subject"
 	"main/internal/repositories/event_repository"
 	"testing"
 	"time"
@@ -25,38 +24,39 @@ func setupTestDB(t *testing.T) *gorm.DB {
 		`DO $$ BEGIN IF NOT EXISTS
 		(SELECT 1 FROM pg_type WHERE typname = 'event_type') 
 		THEN CREATE TYPE event_type AS ENUM 
-		('%s', '%s', '%s', '%s');
+		('%s', '%s', '%s', '%s', '%s');
 		END IF; END $$;`,
 		event.RegionalStage,
 		event.Olympiad,
 		event.Stage,
+		event.ViewWorks,
 		event.Appeal,
 	)
 	db.Exec(create_enum_type_str)
 
 	// Миграция таблиц для тестирования
-	if err := db.AutoMigrate(&subject.Subject{}, &event.Event{}); err != nil {
+	if err := db.AutoMigrate(&event.Event{}); err != nil {
 		t.Fatalf("failed to migrate tables: %v", err)
 	}
 
 	// Создаём тестовые данные для вспомогатльной таблицы subject
-	testSubjects := []subject.Subject{
-		{
-			ID:   1,
-			Name: "Test 1",
-		},
-		{
-			ID:   2,
-			Name: "Test 2",
-		},
-		{
-			ID:   3,
-			Name: "Test 3",
-		},
-	}
-	if err = db.Create(&testSubjects).Error; err != nil {
-		t.Fatalf("failed to create support subjects: %v", err)
-	}
+	// testSubjects := []subject.Subject{
+	// 	{
+	// 		ID:   1,
+	// 		Name: "Test 1",
+	// 	},
+	// 	{
+	// 		ID:   2,
+	// 		Name: "Test 2",
+	// 	},
+	// 	{
+	// 		ID:   3,
+	// 		Name: "Test 3",
+	// 	},
+	// }
+	// if err = db.Create(&testSubjects).Error; err != nil {
+	// 	t.Fatalf("failed to create support subjects: %v", err)
+	// }
 
 	return db
 }
@@ -65,12 +65,11 @@ func TestCreateEvent(t *testing.T) {
 	db := setupTestDB(t)
 	repo := event_repository.EventRepository{}
 
-	var SubjectID uint = 1
+	var Subject string = ""
 	var UnCorrectPreviousEventID uint = 99
-	var UnCorrectSubjectID uint = 99
 
 	main_event := event.Event{
-		Model:     gorm.Model{ID: 1},
+		ID:        1,
 		Name:      "MainEvent",
 		StartDate: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
 		EndDate:   time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
@@ -90,7 +89,7 @@ func TestCreateEvent(t *testing.T) {
 		{
 			name: "Created correct event RegionalStage",
 			event: event.Event{
-				Model:     gorm.Model{ID: 2},
+				ID:        2,
 				Name:      "RegionalStage",
 				StartDate: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
 				EndDate:   time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
@@ -102,12 +101,12 @@ func TestCreateEvent(t *testing.T) {
 		{
 			name: "Create event with unnecessary fields",
 			event: event.Event{
-				Model:           gorm.Model{ID: 3},
+				ID:              3,
 				Name:            "RegionalStage2",
 				StartDate:       time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
 				EndDate:         time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
 				EventType:       event.RegionalStage,
-				SubjectID:       &SubjectID,
+				Subject:         Subject,
 				PreviousEventID: &main_event.ID,
 			},
 			expectedId:  3,
@@ -116,26 +115,26 @@ func TestCreateEvent(t *testing.T) {
 		{
 			name: "Create event type Olympiad with correct foreignKey",
 			event: event.Event{
-				Model:           gorm.Model{ID: 4},
+				ID:              4,
 				Name:            "Olympiad",
 				StartDate:       time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
 				EndDate:         time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
 				EventType:       event.Olympiad,
-				SubjectID:       &SubjectID,
+				Subject:         Subject,
 				PreviousEventID: &main_event.ID,
 			},
 			expectedId:  4,
 			expectError: false,
 		},
 		{
-			name: "Create event type Olympiad with uncorrect Date",
+			name: "Create event type Olympiad with incorrect Date",
 			event: event.Event{
-				Model:           gorm.Model{ID: 5},
+				ID:              5,
 				Name:            "Olympiad",
 				StartDate:       time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
 				EndDate:         time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
 				EventType:       event.Olympiad,
-				SubjectID:       &SubjectID,
+				Subject:         Subject,
 				PreviousEventID: &main_event.ID,
 			},
 			expectedId:  5,
@@ -144,7 +143,7 @@ func TestCreateEvent(t *testing.T) {
 		{
 			name: "Create event type stage without fields SubjectID/PreviousID",
 			event: event.Event{
-				Model:     gorm.Model{ID: 6},
+				ID:        6,
 				Name:      "Stage",
 				StartDate: time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
 				EndDate:   time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
@@ -156,7 +155,7 @@ func TestCreateEvent(t *testing.T) {
 		{
 			name: "Create event type appeal",
 			event: event.Event{
-				Model:     gorm.Model{ID: 7},
+				ID:        7,
 				Name:      "Appeal",
 				StartDate: time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
 				EndDate:   time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
@@ -168,35 +167,21 @@ func TestCreateEvent(t *testing.T) {
 		{
 			name: "Create event without fields",
 			event: event.Event{
-				Model: gorm.Model{ID: 8},
+				ID: 8,
 			},
 			expectedId:  8,
 			expectError: false,
 		},
 		{
-			name: "Create event with uncorrect PreviousID",
+			name: "Create event with incorrect PreviousID",
 			event: event.Event{
-				Model:           gorm.Model{ID: 9},
+				ID:              9,
 				Name:            "Appeal",
 				StartDate:       time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
 				EndDate:         time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
 				EventType:       event.Appeal,
 				PreviousEventID: &UnCorrectPreviousEventID,
-				SubjectID:       &SubjectID,
-			},
-			expectError:    true,
-			expectedErrMsg: "FOREIGN KEY constraint failed",
-		},
-		{
-			name: "Create event with uncorrect SubjectID",
-			event: event.Event{
-				Model:           gorm.Model{ID: 10},
-				Name:            "Appeal",
-				StartDate:       time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
-				EndDate:         time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
-				EventType:       event.Appeal,
-				PreviousEventID: &main_event.ID,
-				SubjectID:       &UnCorrectSubjectID,
+				Subject:         Subject,
 			},
 			expectError:    true,
 			expectedErrMsg: "FOREIGN KEY constraint failed",
@@ -289,9 +274,9 @@ func TestGetEventsByPreviousID(t *testing.T) {
 	db := setupTestDB(t)
 	repo := event_repository.EventRepository{}
 
-	var SubjectID uint = 1
+	var Subject string = "Математика"
 	mainEvent := event.Event{
-		Model:     gorm.Model{ID: 1},
+		ID:        1,
 		Name:      "main_event",
 		EventType: event.RegionalStage,
 		StartDate: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
@@ -303,17 +288,11 @@ func TestGetEventsByPreviousID(t *testing.T) {
 
 	tempEventsOlympiad := []event.Event{
 		{
-			Model: gorm.Model{
-				ID:        2,
-				CreatedAt: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
-				UpdatedAt: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
-			},
+			ID:              2,
 			Name:            "Olympiad 1",
 			EventType:       event.Olympiad,
-			StartDate:       time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
-			EndDate:         time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
 			PreviousEventID: &mainEvent.ID,
-			SubjectID:       &SubjectID,
+			Subject:         Subject,
 		},
 	}
 	if err := db.Create(&tempEventsOlympiad).Error; err != nil {
@@ -343,7 +322,7 @@ func TestGetEventsByPreviousID(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			events, err := repo.GetEventsByPreviousID(db, tc.searched_id)
+			events, err := repo.GetEventsByPreviousID(db, tc.searched_id, nil, nil)
 			if tc.expectError {
 				assert.Error(t, err, "expected an error for case: %s", tc.name)
 				if err != nil {
@@ -361,11 +340,11 @@ func TestGetEventsByType(t *testing.T) {
 	db := setupTestDB(t)
 	repo := event_repository.EventRepository{}
 
-	var SubjectID uint = 1
+	var Subject string = "Математика"
 	var MainRegionalEventID uint = 1
 	tempEventReg := []event.Event{
 		{
-			Model:     gorm.Model{ID: MainRegionalEventID},
+			ID:        MainRegionalEventID,
 			Name:      "RegionalStageMain",
 			StartDate: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
 			EndDate:   time.Date(2024, time.December, 1, 1, 1, 1, 1, time.UTC),
@@ -374,30 +353,22 @@ func TestGetEventsByType(t *testing.T) {
 	tempEventsOly := []event.Event{
 
 		{
-			Model: gorm.Model{
-				ID:        14,
-				CreatedAt: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
-				UpdatedAt: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
-			},
+			ID:              14,
 			Name:            "Olympiad1",
 			StartDate:       time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
 			EndDate:         time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
 			EventType:       event.Olympiad,
 			PreviousEventID: &MainRegionalEventID,
-			SubjectID:       &SubjectID,
+			Subject:         Subject,
 		},
 		{
-			Model: gorm.Model{
-				ID:        15,
-				CreatedAt: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
-				UpdatedAt: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
-			},
+			ID:              15,
 			Name:            "Olympiad2",
 			StartDate:       time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
 			EndDate:         time.Date(2024, time.July, 1, 1, 1, 1, 1, time.UTC),
 			EventType:       event.Olympiad,
 			PreviousEventID: &MainRegionalEventID,
-			SubjectID:       &SubjectID,
+			Subject:         Subject,
 		},
 	}
 	if err := db.Create(&tempEventReg).Error; err != nil {
@@ -429,7 +400,7 @@ func TestGetEventsByType(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			events, err := repo.GetEventsByType(db, tc.search_type)
+			events, err := repo.GetEventsByType(db, tc.search_type, nil, nil)
 			if tc.expectError {
 				assert.Error(t, err, "expected an error for case: %s", tc.name)
 				if err != nil {
@@ -442,4 +413,207 @@ func TestGetEventsByType(t *testing.T) {
 		})
 	}
 
+}
+
+func TestGetAllEvents(t *testing.T) {
+	db := setupTestDB(t)
+	repo := event_repository.EventRepository{}
+
+	var Subject string = "Математика"
+	var MainRegionalEventID uint = 1
+	tempEvents := []event.Event{
+		{
+			ID:        MainRegionalEventID,
+			Name:      "RegionalStageMain",
+			StartDate: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
+			EndDate:   time.Date(2024, time.December, 1, 1, 1, 1, 1, time.UTC),
+			EventType: event.RegionalStage,
+		},
+		{
+			ID:              14,
+			Name:            "Olympiad1",
+			StartDate:       time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
+			EndDate:         time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
+			EventType:       event.Olympiad,
+			PreviousEventID: &MainRegionalEventID,
+			Subject:         Subject,
+		},
+		{
+			ID:              15,
+			Name:            "Olympiad2",
+			StartDate:       time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
+			EndDate:         time.Date(2024, time.July, 1, 1, 1, 1, 1, time.UTC),
+			EventType:       event.Olympiad,
+			PreviousEventID: &MainRegionalEventID,
+			Subject:         Subject,
+		},
+	}
+
+	if err := db.Create(&tempEvents).Error; err != nil {
+		return
+	}
+	events, err := repo.GetAllEvents(db, nil, nil)
+
+	assert.NoError(t, err)
+	assert.Equal(t, tempEvents, events)
+}
+
+func TestUpdateEvent(t *testing.T) {
+	db := setupTestDB(t)
+	repo := event_repository.EventRepository{}
+
+	var Subject string = "Математика"
+	var NewSubject string = "Руссикй язык"
+	var MainRegionalEventID uint = 1
+	tempEvents := []event.Event{
+		{
+			ID:        MainRegionalEventID,
+			Name:      "RegionalStageMain",
+			StartDate: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
+			EndDate:   time.Date(2024, time.December, 1, 1, 1, 1, 1, time.UTC),
+			EventType: event.RegionalStage,
+		},
+		{
+			ID:              14,
+			Name:            "Olympiad1",
+			StartDate:       time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
+			EndDate:         time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
+			EventType:       event.Olympiad,
+			PreviousEventID: &MainRegionalEventID,
+			Subject:         Subject,
+		},
+		{
+			ID:              15,
+			Name:            "Olympiad2",
+			StartDate:       time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
+			EndDate:         time.Date(2024, time.July, 1, 1, 1, 1, 1, time.UTC),
+			EventType:       event.Olympiad,
+			PreviousEventID: &MainRegionalEventID,
+			Subject:         Subject,
+		},
+	}
+	if err := db.Create(&tempEvents).Error; err != nil {
+		return
+	}
+	testCases := []struct {
+		name           string
+		update_id      uint
+		update_data    event.Event
+		expectError    bool
+		expectedErrMsg string
+	}{
+		{
+			name:      "Update name",
+			update_id: 14,
+			update_data: event.Event{
+				Name:    "New Olympiad",
+				Subject: NewSubject,
+			},
+			expectError: false,
+		},
+		{
+			name:      "Update subject",
+			update_id: 15,
+			update_data: event.Event{
+				Name:    "Subject Test",
+				Subject: NewSubject,
+			},
+			expectError: false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			id, err := repo.UpdateEvent(db, event.Event{
+				ID:      tc.update_id,
+				Name:    tc.update_data.Name,
+				Subject: tc.update_data.Subject,
+			})
+			if tc.expectError {
+				assert.Error(t, err, "expected an error for case: %s", tc.name)
+				if err != nil {
+					assert.Contains(t, err.Error(), tc.expectedErrMsg, "expected error message to contain: %s", tc.expectedErrMsg)
+				}
+			} else {
+				assert.NoError(t, err, "expected no error for case: %s", tc.name)
+				assert.Equal(t, tc.update_id, id, "expected start date event to match for case: %s", tc.name)
+			}
+		})
+	}
+}
+
+func TestDeleteEvent(t *testing.T) {
+	db := setupTestDB(t)
+	repo := event_repository.EventRepository{}
+
+	var Subject string = "Математика"
+	var MainRegionalEventID uint = 1
+	tempEvents := []event.Event{
+		{
+			ID:        MainRegionalEventID,
+			Name:      "RegionalStageMain",
+			StartDate: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
+			EndDate:   time.Date(2024, time.December, 1, 1, 1, 1, 1, time.UTC),
+			EventType: event.RegionalStage,
+		},
+		{
+			ID:              14,
+			Name:            "Olympiad1",
+			StartDate:       time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
+			EndDate:         time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
+			EventType:       event.Olympiad,
+			PreviousEventID: &MainRegionalEventID,
+			Subject:         Subject,
+		},
+		{
+			ID:              15,
+			Name:            "Olympiad2",
+			StartDate:       time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
+			EndDate:         time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
+			EventType:       event.Olympiad,
+			PreviousEventID: &MainRegionalEventID,
+			Subject:         Subject,
+		},
+	}
+	if err := db.Create(&tempEvents).Error; err != nil {
+		return
+	}
+	testCases := []struct {
+		name           string
+		delete_id      uint
+		expectError    bool
+		expectedErrMsg string
+	}{
+		{
+			name:        "Delete existing event",
+			delete_id:   14,
+			expectError: false,
+		},
+		{
+			name:           "Delete event with child",
+			delete_id:      MainRegionalEventID,
+			expectError:    true,
+			expectedErrMsg: "",
+		},
+		{
+			name:           "Delete non-existing event",
+			delete_id:      99,
+			expectError:    true,
+			expectedErrMsg: "",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := repo.DeleteEvent(db, tc.delete_id)
+			events, err2 := repo.GetAllEvents(db, nil, nil)
+			_, _ = events, err2
+			if tc.expectError {
+				assert.Error(t, err, "expected an error for case: %s", tc.name)
+				if err != nil {
+					assert.Contains(t, err.Error(), tc.expectedErrMsg, "expected error message to contain: %s", tc.expectedErrMsg)
+				}
+			} else {
+				assert.NoError(t, err, "expected no error for case: %s", tc.name)
+			}
+		})
+	}
 }

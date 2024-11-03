@@ -14,9 +14,6 @@ func (r *SubjectRepository) GetSubjectByID(db *gorm.DB, id uint) (subject.Subjec
 	const op = "repositories.subject_repository.GetSubjectById"
 
 	subject_res := subject.Subject{ID: id}
-	// test_subject := subject.Subject{}
-	// test_err := db.Where("id = ?", id).First(&test_subject).Error
-	// _ = test_err
 	if err := db.First(&subject_res).Error; err != nil {
 		return subject.Subject{}, fmt.Errorf("%s: %w", op, err)
 	}

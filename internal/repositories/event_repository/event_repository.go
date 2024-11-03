@@ -13,41 +13,70 @@ type EventRepository struct{}
 func (r *EventRepository) GetEventByID(db *gorm.DB, id uint) (event.Event, error) {
 	const op = "repositories.event_repository.GetEventById"
 
-	event_res := event.Event{Model: gorm.Model{ID: id}}
-	if err := db.First(&event_res).Error; err != nil {
+	eventRes := event.Event{ID: id}
+	if err := db.First(&eventRes).Error; err != nil {
 		return event.Event{}, fmt.Errorf("%s: %w", op, err)
 	}
-	return event_res, nil
+	return eventRes, nil
 }
 
 // Get slice events by EventType
-func (r *EventRepository) GetEventsByType(db *gorm.DB, event_type event.EventType) ([]event.Event, error) {
+func (r *EventRepository) GetEventsByType(db *gorm.DB, eventType event.EventType, offset, limit *int) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetEventsByType"
-	events_res := []event.Event{}
-	if err := db.Find(&events_res, event.Event{EventType: event_type}).Error; err != nil {
+	eventsRes := []event.Event{}
+
+	query := db.Model(event.Event{})
+	if offset != nil {
+		query = query.Offset(*offset)
+	}
+	if limit != nil {
+		query = query.Limit(*limit)
+	}
+
+	if err := query.Find(&eventsRes, event.Event{EventType: eventType}).Error; err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return events_res, nil
+	return eventsRes, nil
 }
 
 // Get all events by PreviousID
-func (r *EventRepository) GetEventsByPreviousID(db *gorm.DB, previous_id uint) ([]event.Event, error) {
+func (r *EventRepository) GetEventsByPreviousID(db *gorm.DB, previousID uint, offset, limit *int) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetEventsByPreviousID"
 	events := []event.Event{}
-	if err := db.Find(&events, event.Event{PreviousEventID: &previous_id}).Error; err != nil {
+
+	query := db.Model(event.Event{})
+	if offset != nil {
+		query = query.Offset(*offset)
+	}
+	if limit != nil {
+		query = query.Limit(*limit)
+	}
+
+	if err := query.Find(&events, event.Event{PreviousEventID: &previousID}).Error; err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return events, nil
 }
 
-// Get all events
-func (r *EventRepository) GetAllEvents(db *gorm.DB) ([]event.Event, error) {
+// Get all events with offset and limit
+//
+// Offset, limit can be nil
+func (r *EventRepository) GetAllEvents(db *gorm.DB, offset, limit *int) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetAllEvents"
-	events_res := []event.Event{}
-	if err := db.Find(&events_res).Error; err != nil {
+	eventsRes := []event.Event{}
+
+	query := db.Model(event.Event{})
+	if offset != nil {
+		query = query.Offset(*offset)
+	}
+	if limit != nil {
+		query = query.Limit(*limit)
+	}
+
+	if err := query.Find(&eventsRes).Error; err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return events_res, nil
+	return eventsRes, nil
 }
 
 // Add new event in DB
@@ -71,7 +100,7 @@ func (r *EventRepository) UpdateEvent(db *gorm.DB, event event.Event) (uint, err
 // Delete event
 func (r *EventRepository) DeleteEvent(db *gorm.DB, id uint) error {
 	const op = "repositories.event_repository.DeleteEvent"
-	if err := db.Delete(&event.Event{Model: gorm.Model{ID: id}}).Error; err != nil {
+	if err := db.Delete(&event.Event{ID: id}).Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
