@@ -107,7 +107,7 @@ func (s *EventService) getOlympiad(id uint) (event.Event, error) {
 	}
 }
 
-func (s *EventService) checkCorrectEventDTO(eventDTO *event_dto.EventDTO) error {
+func (s *EventService) checkCorrectEventDTO(eventDTO *event_dto.EventDTO, isUpdate bool) error {
 	// Check date
 	if eventDTO.StartDate.IsZero() || eventDTO.EndDate.IsZero() {
 		return errors.New("date does not exist")
@@ -122,37 +122,39 @@ func (s *EventService) checkCorrectEventDTO(eventDTO *event_dto.EventDTO) error 
 		if err != nil {
 			return err
 		}
-
-		// set correct type
-		switch previousEvent.EventType {
-		case event.RegionalStage:
-			if eventDTO.Subject == "" {
-				return errors.New("subject does not exist")
+		if !isUpdate {
+			// set correct type
+			switch previousEvent.EventType {
+			case event.RegionalStage:
+				if eventDTO.Subject == "" {
+					return errors.New("subject does not exist")
+				}
+				eventDTO.EventType = event.Olympiad
+			case event.Olympiad:
+				eventDTO.EventType = event.Stage
+			case event.Stage:
+				// check stage cannot have more than one ViewWorks
+				viewWorks, err := s.repository.GetEventsByPreviousID(s.db, *previousEventID, nil, nil)
+				if err != nil {
+					return err
+				}
+				if len(viewWorks) > 0 {
+					return errors.New("stage cannot have more than one view works")
+				}
+				eventDTO.EventType = event.ViewWorks
+			case event.ViewWorks:
+				// check ViewWorks cannot have more than one appeal
+				appeal, err := s.repository.GetEventsByPreviousID(s.db, *previousEventID, nil, nil)
+				if err != nil {
+					return err
+				}
+				if len(appeal) > 0 {
+					return errors.New("view works cannot have more than one appeal")
+				}
+				eventDTO.EventType = event.Appeal
 			}
-			eventDTO.EventType = event.Olympiad
-		case event.Olympiad:
-			eventDTO.EventType = event.Stage
-		case event.Stage:
-			// check stage cannot have more than one ViewWorks
-			viewWorks, err := s.repository.GetEventsByPreviousID(s.db, *previousEventID, nil, nil)
-			if err != nil {
-				return err
-			}
-			if len(viewWorks) > 0 {
-				return errors.New("stage cannot have more than one view works")
-			}
-			eventDTO.EventType = event.ViewWorks
-		case event.ViewWorks:
-			// check ViewWorks cannot have more than one appeal
-			appeal, err := s.repository.GetEventsByPreviousID(s.db, *previousEventID, nil, nil)
-			if err != nil {
-				return err
-			}
-			if len(appeal) > 0 {
-				return errors.New("view works cannot have more than one appeal")
-			}
-			eventDTO.EventType = event.Appeal
 		}
+
 		// check correct date border
 		if eventDTO.EventType == event.Stage || eventDTO.EventType == event.Olympiad {
 			if previousEvent.StartDate.After(eventDTO.StartDate) || previousEvent.EndDate.Before(eventDTO.EndDate) {
@@ -178,7 +180,7 @@ func (s *EventService) checkCorrectEventDTO(eventDTO *event_dto.EventDTO) error 
 // Create event
 func (s *EventService) CreateEvent(event_dto event_dto.EventDTO) (uint, error) {
 	const op = "services.event_service.CreateEvent"
-	err := s.checkCorrectEventDTO(&event_dto)
+	err := s.checkCorrectEventDTO(&event_dto, false)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -191,11 +193,43 @@ func (s *EventService) CreateEvent(event_dto event_dto.EventDTO) (uint, error) {
 	return id, nil
 }
 
+func (s *EventService) updateEventDTO(updatedEventDTO event_dto.EventDTO) (event_dto.EventDTO, error) {
+	serchedID := updatedEventDTO.ID
+
+	event, err := s.repository.GetEventByID(s.db, serchedID)
+	newEventDTO := ConvertEventToDTO(event)
+	if err != nil {
+		return event_dto.EventDTO{}, nil
+	}
+	if updatedEventDTO.Name != "" {
+		newEventDTO.Name = updatedEventDTO.Name
+	}
+	if !updatedEventDTO.StartDate.IsZero() {
+		newEventDTO.StartDate = updatedEventDTO.StartDate
+	}
+	if !updatedEventDTO.EndDate.IsZero() {
+		newEventDTO.EndDate = updatedEventDTO.EndDate
+	}
+	if updatedEventDTO.Subject != "" {
+		newEventDTO.Subject = updatedEventDTO.Subject
+	}
+	if updatedEventDTO.AdditionalInfo != "" {
+		newEventDTO.AdditionalInfo = updatedEventDTO.AdditionalInfo
+	}
+
+	return newEventDTO, nil
+}
+
 // Update event
 func (s *EventService) UpdateEvent(event_dto event_dto.EventDTO) (uint, error) {
 	const op = "services.event_service.UpdateEvent"
-	// Check correct data
-	err := s.checkCorrectEventDTO(&event_dto)
+
+	event_dto, err := s.updateEventDTO(event_dto)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	err = s.checkCorrectEventDTO(&event_dto, true)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
