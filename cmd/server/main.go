@@ -22,7 +22,7 @@ const DebugFilePath = "C:/Users/assba/source/repos/Event-service/config-yaml/loc
 
 func main() {
 	// Init config
-	cfg := config.GetConfig(DebugFilePath)
+	cfg := config.GetConfig(LocalFilePath)
 
 	// Init logger
 	log := liblogger.SetupLogger(cfg.Env)
