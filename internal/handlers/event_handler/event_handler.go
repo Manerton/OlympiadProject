@@ -228,7 +228,16 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	)
 
 	var eventDTO event_dto.EventDTO
-	err := render.DecodeJSON(r.Body, &eventDTO)
+	receivedID := chi.URLParam(r, "id")
+	updatedID, err := strconv.ParseUint(receivedID, 10, 32)
+	if err != nil {
+		log.Error("failed to parse id to uint", slog.String("received id", receivedID), liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to parse id"))
+	}
+	log.Info("event id on request body decoded", slog.Any("event id", updatedID))
+	eventDTO.ID = uint(updatedID)
+
+	err = render.DecodeJSON(r.Body, &eventDTO)
 	if errors.Is(err, io.EOF) {
 		log.Error("render body is empty")
 		render.JSON(w, r, response.Error("empty request"))
