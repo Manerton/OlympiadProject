@@ -1,4 +1,4 @@
-package dto
+package ApplicationDto
 
 import "time"
 

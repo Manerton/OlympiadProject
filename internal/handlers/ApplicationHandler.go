@@ -1,8 +1,8 @@
 package ApplicationHandler
 
 import (
-	"main/internal/dto"
-	application_service "main/internal/services"
+	ApplicationDto "OlimpiadPortal/ApplicationService/internal/dto"
+	application_service "OlimpiadPortal/ApplicationService/internal/services"
 	"net/http"
 	"strconv"
 
@@ -55,7 +55,7 @@ func (h *ApplicationHandler) GetApplicationByID(w http.ResponseWriter, r *http.R
 
 // Создание новой заявки
 func (h *ApplicationHandler) CreateApplication(w http.ResponseWriter, r *http.Request) {
-	var input dto.CreateApplicationDTO
+	var input ApplicationDto.CreateApplicationDTO
 	if err := render.DecodeJSON(r.Body, &input); err != nil {
 		h.logger.Error("Ошибка декодирования данных", slog.Any("error", err))
 		http.Error(w, "Некорректные данные", http.StatusBadRequest)
@@ -81,7 +81,7 @@ func (h *ApplicationHandler) UpdateApplicationStatus(w http.ResponseWriter, r *h
 		return
 	}
 
-	var input dto.UpdateApplicationStatusDTO
+	var input ApplicationDto.UpdateApplicationStatusDTO
 	if err := render.DecodeJSON(r.Body, &input); err != nil {
 		h.logger.Error("Ошибка декодирования данных", slog.Any("error", err))
 		http.Error(w, "Некорректные данные", http.StatusBadRequest)

@@ -1,8 +1,8 @@
 package ApplicationRepository
 
 import (
+	models "OlimpiadPortal/ApplicationService/internal/models"
 	"fmt"
-	"main/internal/models"
 
 	"gorm.io/gorm"
 )

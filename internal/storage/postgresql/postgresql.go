@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"main/internal/models"
+	"OlimpiadPortal/ApplicationService/internal/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

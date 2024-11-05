@@ -1,14 +1,14 @@
 package main
 
 import (
+	"OlimpiadPortal/ApplicationService/internal/config"
+	ApplicationHandler "OlimpiadPortal/ApplicationService/internal/handlers"
+	"OlimpiadPortal/ApplicationService/internal/lib/liblogger"
+	"OlimpiadPortal/ApplicationService/internal/middleware/midlogger"
+	ApplicationRepository "OlimpiadPortal/ApplicationService/internal/repositories"
+	ApplicationService "OlimpiadPortal/ApplicationService/internal/services"
+	"OlimpiadPortal/ApplicationService/internal/storage/postgresql"
 	"log/slog"
-	"main/internal/config"
-	ApplicationHandler "main/internal/handlers"
-	"main/internal/lib/liblogger"
-	"main/internal/middleware/midlogger"
-	ApplicationRepository "main/internal/repositories"
-	ApplicationService "main/internal/services"
-	"main/internal/storage/postgresql"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"

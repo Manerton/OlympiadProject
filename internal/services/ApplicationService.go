@@ -1,10 +1,10 @@
 package ApplicationService
 
 import (
+	ApplicationDto "OlimpiadPortal/ApplicationService/internal/dto"
+	"OlimpiadPortal/ApplicationService/internal/models"
+	application_repository "OlimpiadPortal/ApplicationService/internal/repositories"
 	"fmt"
-	"main/internal/dto"
-	"main/internal/models"
-	application_repository "main/internal/repositories"
 
 	"gorm.io/gorm"
 )
@@ -22,7 +22,7 @@ func NewApplicationService(db *gorm.DB, repo *application_repository.Application
 }
 
 // Получение всех заявок
-func (s *ApplicationService) GetAllApplications() ([]dto.ApplicationResponseDTO, error) {
+func (s *ApplicationService) GetAllApplications() ([]ApplicationDto.ApplicationResponseDTO, error) {
 	const op = "services.application_service.GetAllApplications"
 	applications, err := s.repository.GetAllApplications(s.db)
 	if err != nil {
@@ -32,17 +32,17 @@ func (s *ApplicationService) GetAllApplications() ([]dto.ApplicationResponseDTO,
 }
 
 // Получение заявки по ID
-func (s *ApplicationService) GetApplicationByID(id uint) (dto.ApplicationResponseDTO, error) {
+func (s *ApplicationService) GetApplicationByID(id uint) (ApplicationDto.ApplicationResponseDTO, error) {
 	const op = "services.application_service.GetApplicationByID"
 	application, err := s.repository.GetApplicationByID(s.db, id)
 	if err != nil {
-		return dto.ApplicationResponseDTO{}, fmt.Errorf("%s: %w", op, err)
+		return ApplicationDto.ApplicationResponseDTO{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return ConvertApplicationToDTO(application), nil
 }
 
 // Создание новой заявки
-func (s *ApplicationService) CreateApplication(applicationDTO dto.CreateApplicationDTO) (uint, error) {
+func (s *ApplicationService) CreateApplication(applicationDTO ApplicationDto.CreateApplicationDTO) (uint, error) {
 	const op = "services.application_service.CreateApplication"
 	application := ConvertDTOtoApplication(applicationDTO)
 	if err := s.repository.CreateApplication(s.db, &application); err != nil {
@@ -52,7 +52,7 @@ func (s *ApplicationService) CreateApplication(applicationDTO dto.CreateApplicat
 }
 
 // Обновление статуса заявки
-func (s *ApplicationService) UpdateApplicationStatus(id uint, statusDTO dto.UpdateApplicationStatusDTO) error {
+func (s *ApplicationService) UpdateApplicationStatus(id uint, statusDTO ApplicationDto.UpdateApplicationStatusDTO) error {
 	const op = "services.application_service.UpdateApplicationStatus"
 	if err := s.repository.UpdateApplicationStatus(s.db, id, statusDTO.Status); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
@@ -71,15 +71,15 @@ func (s *ApplicationService) DeleteApplication(id uint) error {
 
 // Функции для преобразования между DTO и моделью
 
-func ConvertDTOtoApplication(dto dto.CreateApplicationDTO) models.Application {
+func ConvertDTOtoApplication(dto ApplicationDto.CreateApplicationDTO) models.Application {
 	return models.Application{
 		UserID:  dto.UserID,
 		EventID: dto.EventID,
 	}
 }
 
-func ConvertApplicationToDTO(application models.Application) dto.ApplicationResponseDTO {
-	return dto.ApplicationResponseDTO{
+func ConvertApplicationToDTO(application models.Application) ApplicationDto.ApplicationResponseDTO {
+	return ApplicationDto.ApplicationResponseDTO{
 		ApplicationID: application.ApplicationID,
 		UserID:        application.UserID,
 		EventID:       application.EventID,
@@ -89,8 +89,8 @@ func ConvertApplicationToDTO(application models.Application) dto.ApplicationResp
 	}
 }
 
-func ConvertManyApplicationsToDTO(applications []models.Application) []dto.ApplicationResponseDTO {
-	var applicationsDTO []dto.ApplicationResponseDTO
+func ConvertManyApplicationsToDTO(applications []models.Application) []ApplicationDto.ApplicationResponseDTO {
+	var applicationsDTO []ApplicationDto.ApplicationResponseDTO
 	for _, application := range applications {
 		applicationsDTO = append(applicationsDTO, ConvertApplicationToDTO(application))
 	}
