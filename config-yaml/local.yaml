@@ -1,0 +1,14 @@
+env: "local"
+
+DB_INFO:
+  host: "localhost"
+  name: "JureAssignmentsServiceDB"
+  user: "postgres"
+  pass: "root"
+  ssl_model: "disable"
+
+
+HTTP_SERVER_INFO:
+  host: "localhost"
+  port: "8080"
+  
