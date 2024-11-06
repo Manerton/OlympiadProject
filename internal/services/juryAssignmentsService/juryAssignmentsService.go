@@ -1,0 +1,134 @@
+package juryAssignmentsService
+
+import (
+	"fmt"
+	"main/internal/dto/juryAssignmentsDto"
+	"main/internal/lib/converter/dtoConverter"
+	"main/internal/lib/supportRequest"
+	"main/internal/models/juryAssignments"
+
+	"gorm.io/gorm"
+)
+
+type juryAssignmentsRepositoryInterface interface {
+	GetAllJuryAssignments(*gorm.DB) ([]juryAssignments.JuryAssignments, error)
+	GetJuryAssignmentsByID(db *gorm.DB, id uint) (juryAssignments.JuryAssignments, error)
+	GetAllEventsByFilter(db *gorm.DB, filter juryAssignments.JuryAssignments) ([]juryAssignments.JuryAssignments, error)
+	CreateJuryAssignments(
+		db *gorm.DB, juryAssignments juryAssignments.JuryAssignments) (uint, error)
+	UpdateJuryAssignments(
+		db *gorm.DB, juryAssignments juryAssignments.JuryAssignments) (uint, error)
+	DeleteJuryAssignments(db *gorm.DB, id uint) error
+}
+
+type JuryAssignmentsService struct {
+	db         *gorm.DB
+	repository juryAssignmentsRepositoryInterface
+}
+
+func NewJuryAssignmentsService(db *gorm.DB, jr juryAssignmentsRepositoryInterface) *JuryAssignmentsService {
+	return &JuryAssignmentsService{db: db, repository: jr}
+}
+
+func (s *JuryAssignmentsService) GetAllJuryAssignments() ([]juryAssignmentsDto.JuryAssignmentsDTO, error) {
+	const op = "services.juryAssignmentsService.GetAllJuryAssignments"
+	results, err := s.repository.GetAllJuryAssignments(s.db)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return dtoConverter.ConvertManyJuryAssignmentsToDTO(results), nil
+}
+
+func (s *JuryAssignmentsService) GetJuryAssignmentsByID(id uint) (juryAssignmentsDto.JuryAssignmentsDTO, error) {
+	const op = "services.juryAssignmentsService.GetJuryAssignmentsByID"
+	result, err := s.repository.GetJuryAssignmentsByID(s.db, id)
+	if err != nil {
+		return juryAssignmentsDto.JuryAssignmentsDTO{}, fmt.Errorf("%s: %w", op, err)
+	}
+	return dtoConverter.ConvertJuryAssignmentsToDTO(result), nil
+}
+
+func (s *JuryAssignmentsService) GetAllEventsByFilter(
+	dto juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error) {
+	const op = "services.juryAssignmentsService.GetAllEventsByFilter"
+	model := dtoConverter.ConvertDTOtoJuryAssignments(dto)
+	results, err := s.repository.GetAllEventsByFilter(s.db, model)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return dtoConverter.ConvertManyJuryAssignmentsToDTO(results), nil
+}
+
+func isExistingUserID(id uint) bool {
+	if id == 0 {
+		return false
+	}
+	path := ""
+	response, err := supportRequest.SupportRequest("GET", path)
+	if err != nil {
+		return false
+	}
+	if response.Data != nil {
+		return true
+	}
+	return false
+}
+
+func isExistingEventID(id uint) bool {
+	if id == 0 {
+		return false
+	}
+	path := ""
+	response, err := supportRequest.SupportRequest("GET", path)
+	if err != nil {
+		return false
+	}
+	if response.Data != nil {
+		return true
+	}
+	return false
+}
+
+func (s *JuryAssignmentsService) CreateJuryAssignments(dto juryAssignmentsDto.JuryAssignmentsDTO) (uint, error) {
+	const op = "services.juryAssignmentsService.CreateJuryAssignments"
+	if !isExistingUserID(dto.JuryID) {
+		return 0, fmt.Errorf("%s: Jury is not exist", op)
+	}
+	if !isExistingEventID(dto.EventID) {
+		return 0, fmt.Errorf("%s: Event is not exist", op)
+	}
+
+	model := dtoConverter.ConvertDTOtoJuryAssignments(dto)
+	id, err := s.repository.CreateJuryAssignments(s.db, model)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	return id, nil
+}
+
+func (s *JuryAssignmentsService) UpdateJuryAssignments(dto juryAssignmentsDto.JuryAssignmentsDTO) (uint, error) {
+	const op = "services.juryAssignmentsService.CreateJuryAssignments"
+
+	if !isExistingUserID(dto.JuryID) {
+		return 0, fmt.Errorf("%s: Jury is not exist", op)
+	}
+	if !isExistingEventID(dto.EventID) {
+		return 0, fmt.Errorf("%s: Event is not exist", op)
+	}
+
+	model := dtoConverter.ConvertDTOtoJuryAssignments(dto)
+	id, err := s.repository.UpdateJuryAssignments(s.db, model)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	return id, nil
+}
+
+func (s *JuryAssignmentsService) DeleteJuryAssignments(id uint) error {
+	const op = "services.juryAssignmentsService.CreateJuryAssignments"
+	err := s.repository.DeleteJuryAssignments(s.db, id)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
