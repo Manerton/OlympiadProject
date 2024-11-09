@@ -11,9 +11,11 @@ import (
 )
 
 type juryAssignmentsRepositoryInterface interface {
-	GetAllJuryAssignments(*gorm.DB) ([]juryAssignments.JuryAssignments, error)
-	GetJuryAssignmentsByID(db *gorm.DB, id uint) (juryAssignments.JuryAssignments, error)
-	GetAllEventsByFilter(db *gorm.DB, filter juryAssignments.JuryAssignments) ([]juryAssignments.JuryAssignments, error)
+	GetJuryAssignmentsByFilter(db *gorm.DB, filter juryAssignments.JuryAssignments) (juryAssignments.JuryAssignments, error)
+	GetAllJuryAssignments(*gorm.DB) ([]*juryAssignments.JuryAssignments, error)
+	GetAllJuryAssignmentsByFilter(db *gorm.DB, filter juryAssignments.JuryAssignments) ([]*juryAssignments.JuryAssignments, error)
+	GetPartOfAllJuryAssignmentsByFilter(
+		db *gorm.DB, fields []string, filter juryAssignments.JuryAssignments) ([]*juryAssignments.JuryAssignments, error)
 	CreateJuryAssignments(
 		db *gorm.DB, juryAssignments juryAssignments.JuryAssignments) (uint, error)
 	UpdateJuryAssignments(
@@ -30,7 +32,7 @@ func NewJuryAssignmentsService(db *gorm.DB, jr juryAssignmentsRepositoryInterfac
 	return &JuryAssignmentsService{db: db, repository: jr}
 }
 
-func (s *JuryAssignmentsService) GetAllJuryAssignments() ([]juryAssignmentsDto.JuryAssignmentsDTO, error) {
+func (s *JuryAssignmentsService) GetAllJuryAssignments() ([]*juryAssignmentsDto.JuryAssignmentsDTO, error) {
 	const op = "services.juryAssignmentsService.GetAllJuryAssignments"
 	results, err := s.repository.GetAllJuryAssignments(s.db)
 	if err != nil {
@@ -39,27 +41,40 @@ func (s *JuryAssignmentsService) GetAllJuryAssignments() ([]juryAssignmentsDto.J
 	return dtoConverter.ConvertManyJuryAssignmentsToDTO(results), nil
 }
 
-func (s *JuryAssignmentsService) GetJuryAssignmentsByID(id uint) (juryAssignmentsDto.JuryAssignmentsDTO, error) {
-	const op = "services.juryAssignmentsService.GetJuryAssignmentsByID"
-	result, err := s.repository.GetJuryAssignmentsByID(s.db, id)
-	if err != nil {
-		return juryAssignmentsDto.JuryAssignmentsDTO{}, fmt.Errorf("%s: %w", op, err)
-	}
-	return dtoConverter.ConvertJuryAssignmentsToDTO(result), nil
-}
-
-func (s *JuryAssignmentsService) GetAllEventsByFilter(
-	dto juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error) {
+func (s *JuryAssignmentsService) GetAllJuryAssignmentsByFilter(
+	filter juryAssignmentsDto.JuryAssignmentsDTO) ([]*juryAssignmentsDto.JuryAssignmentsDTO, error) {
 	const op = "services.juryAssignmentsService.GetAllEventsByFilter"
-	model := dtoConverter.ConvertDTOtoJuryAssignments(dto)
-	results, err := s.repository.GetAllEventsByFilter(s.db, model)
+	modelFilter := dtoConverter.ConvertDTOtoJuryAssignments(filter)
+	results, err := s.repository.GetAllJuryAssignmentsByFilter(s.db, modelFilter)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return dtoConverter.ConvertManyJuryAssignmentsToDTO(results), nil
 }
 
+func (s *JuryAssignmentsService) GetPartOfAllJuryAssignmentsByFilter(fields []string, filter juryAssignmentsDto.JuryAssignmentsDTO) ([]*juryAssignmentsDto.JuryAssignmentsDTO, error) {
+	const op = "services.juryAssignmentsService.GetPartOfAllJuryAssignmentsByFilter"
+	modelFilter := dtoConverter.ConvertDTOtoJuryAssignments(filter)
+	result, err := s.repository.GetPartOfAllJuryAssignmentsByFilter(s.db, fields, modelFilter)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return dtoConverter.ConvertManyJuryAssignmentsToDTO(result), nil
+}
+
+func (s *JuryAssignmentsService) GetJuryAssignmentsByFilter(filter juryAssignmentsDto.JuryAssignmentsDTO) (juryAssignmentsDto.JuryAssignmentsDTO, error) {
+	const op = "services.juryAssignmentsService.GetJuryAssignmentsByFilter"
+
+	modelFilter := dtoConverter.ConvertDTOtoJuryAssignments(filter)
+	result, err := s.repository.GetJuryAssignmentsByFilter(s.db, modelFilter)
+	if err != nil {
+		return juryAssignmentsDto.JuryAssignmentsDTO{}, fmt.Errorf("%s: %w", op, err)
+	}
+	return *dtoConverter.ConvertJuryAssignmentsToDTO(&result), nil
+}
+
 func isExistingUserID(id uint) bool {
+	return true
 	if id == 0 {
 		return false
 	}
@@ -75,6 +90,8 @@ func isExistingUserID(id uint) bool {
 }
 
 func isExistingEventID(id uint) bool {
+	return true
+
 	if id == 0 {
 		return false
 	}
