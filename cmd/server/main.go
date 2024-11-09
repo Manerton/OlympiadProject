@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"main/internal/config"
-	jureAssignmentHandler "main/internal/handlers/jureAssignmentsHandler"
+	"main/internal/handlers/jureAssignmentsHandler"
 	"main/internal/lib/liblogger"
 	"main/internal/lib/midlogger"
 	"main/internal/repositories/juryAssignmentsRepository"
@@ -47,7 +47,7 @@ func main() {
 	// init sevice
 	service := juryAssignmentsService.NewJuryAssignmentsService(storage, repository)
 	// init handler
-	handler := jureAssignmentHandler.NewJureAssignmentHandler(service, log)
+	handler := jureAssignmentsHandler.NewJureAssignmentHandler(service, log)
 
 	// init route
 	router.Get("/jure-assignments", handler.GetAllJuryAssignments)
