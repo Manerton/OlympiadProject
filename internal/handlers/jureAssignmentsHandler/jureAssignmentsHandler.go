@@ -128,3 +128,42 @@ func (h *JureAssignmentHandler) CreateJuryAssignments(w http.ResponseWriter, r *
 	}
 	render.JSON(w, r, response.Success(fmt.Sprintf("id = %d", id)))
 }
+
+func (h *JureAssignmentHandler) UpdateJuryAssignments(w http.ResponseWriter, r *http.Request) {
+	const op = "handlers.jureAssignmentHandler.UpdateJuryAssignments"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+	dto := juryAssignmentsDto.JuryAssignmentsDTO{}
+	err := render.DecodeJSON(r.Body, &dto)
+	if err != nil {
+		log.Error("failed to decode request body", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to decode request"))
+		return
+	}
+	log.Info("request body decoded", slog.Any("request", dto))
+	id, err := h.service.UpdateJuryAssignments(dto)
+	if err != nil {
+		log.Error("failed to update JuryAssignments body", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to update JuryAssignments"))
+		return
+	}
+	render.JSON(w, r, response.Success(fmt.Sprintf("id = %d", id)))
+}
+
+func (h *JureAssignmentHandler) DeleteJuryAssignments(w http.ResponseWriter, r *http.Request) {
+	const op = "handlers.jureAssignmentHandler.DeleteJuryAssignments"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+	receivedID := chi.URLParam(r, "id")
+	searchedID, err := strconv.ParseUint(receivedID, 10, 32)
+	if err != nil {
+		log.Error("failed to parse id to uint", slog.String("received id", receivedID), liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to parse id"))
+		return
+	}
+	log.Info("id on request body decoded", slog.Any("id", searchedID))
+	err = h.service.DeleteJuryAssignments(uint(searchedID))
+
+}

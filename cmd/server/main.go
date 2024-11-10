@@ -54,6 +54,8 @@ func main() {
 	router.Get("/jure-assignments/{id}", handler.GetJuryAssignmentsByID)
 	router.Get("/jure-assignments/jury/{event_id}", handler.GetAllJuryIDByEventID)
 	router.Post("/jure-assignments", handler.CreateJuryAssignments)
+	router.Put("/jure-assignments/{id}", handler.UpdateJuryAssignments)
+	router.Delete("/jure-assignments/{id}", handler.UpdateJuryAssignments)
 
 	server := &http.Server{
 		Addr:    cfg.GetAddress(),
