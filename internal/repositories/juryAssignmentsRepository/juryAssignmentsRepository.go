@@ -23,18 +23,18 @@ func (r *JuryAssignmentsRepository) GetJuryAssignmentsByFilter(
 }
 
 func (r *JuryAssignmentsRepository) GetPartOfAllJuryAssignmentsByFilter(
-	db *gorm.DB, fields []string, filter juryAssignments.JuryAssignments) ([]*juryAssignments.JuryAssignments, error) {
+	db *gorm.DB, fields []string, filter juryAssignments.JuryAssignments) ([]juryAssignments.JuryAssignments, error) {
 	const op = "repositories.juryAssignmentsRepository.GetPartOfGetJuryAssignmentsByFilter"
-	partOfJuryAssignmentsRes := []*juryAssignments.JuryAssignments{}
+	partOfJuryAssignmentsRes := []juryAssignments.JuryAssignments{}
 	if err := db.Select(fields).First(&partOfJuryAssignmentsRes, filter).Error; err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return partOfJuryAssignmentsRes, nil
 }
 
-func (r *JuryAssignmentsRepository) GetAllJuryAssignments(db *gorm.DB) ([]*juryAssignments.JuryAssignments, error) {
+func (r *JuryAssignmentsRepository) GetAllJuryAssignments(db *gorm.DB) ([]juryAssignments.JuryAssignments, error) {
 	const op = "repositories.juryAssignmentsRepository.GetAllJuryAssignments"
-	juryAssignmentsRes := []*juryAssignments.JuryAssignments{}
+	juryAssignmentsRes := []juryAssignments.JuryAssignments{}
 	if err := db.Find(&juryAssignmentsRes).Error; err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -42,9 +42,9 @@ func (r *JuryAssignmentsRepository) GetAllJuryAssignments(db *gorm.DB) ([]*juryA
 }
 
 func (r *JuryAssignmentsRepository) GetAllJuryAssignmentsByFilter(
-	db *gorm.DB, filter juryAssignments.JuryAssignments) ([]*juryAssignments.JuryAssignments, error) {
+	db *gorm.DB, filter juryAssignments.JuryAssignments) ([]juryAssignments.JuryAssignments, error) {
 	const op = "repositories.juryAssignmentsRepository.GetAllJuryAssignmentsByFilter"
-	juryAssignmentsRes := []*juryAssignments.JuryAssignments{}
+	juryAssignmentsRes := []juryAssignments.JuryAssignments{}
 	err := db.Find(&juryAssignmentsRes, filter).Error
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
