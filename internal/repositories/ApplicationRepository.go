@@ -50,7 +50,7 @@ func (r *ApplicationRepository) UpdateApplicationStatus(db *gorm.DB, id uint, st
 	}
 
 	// Обновление статуса заявки
-	if err := db.Model(&models.Application{}).Where("id = ?", id).Update("status", status).Error; err != nil {
+	if err := db.Model(&models.Application{}).Where("application_id = ?", id).Update("status", status).Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
