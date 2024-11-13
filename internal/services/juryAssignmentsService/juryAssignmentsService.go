@@ -52,7 +52,8 @@ func (s *JuryAssignmentsService) GetAllJuryAssignmentsByFilter(
 	return dtoConverter.ConvertManyJuryAssignmentsToDTO(results), nil
 }
 
-func (s *JuryAssignmentsService) GetPartOfAllJuryAssignmentsByFilter(fields []string, filter juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error) {
+func (s *JuryAssignmentsService) GetPartOfAllJuryAssignmentsByFilter(
+	fields []string, filter juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error) {
 	const op = "services.juryAssignmentsService.GetPartOfAllJuryAssignmentsByFilter"
 	modelFilter := dtoConverter.ConvertDTOtoJuryAssignments(filter)
 	result, err := s.repository.GetPartOfAllJuryAssignmentsByFilter(s.db, fields, modelFilter)
