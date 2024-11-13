@@ -6,7 +6,6 @@ import (
 	"main/internal/dto/juryAssignmentsDto"
 	"main/internal/lib/liblogger"
 	"main/internal/lib/response"
-	"main/internal/services/juryAssignmentsService"
 	"net/http"
 	"strconv"
 
@@ -15,12 +14,22 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+type JuryAssignmentsServiceInterface interface {
+	GetAllJuryAssignments() ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
+	GetAllJuryAssignmentsByFilter(juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
+	GetPartOfAllJuryAssignmentsByFilter([]string, juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
+	GetJuryAssignmentsByFilter(juryAssignmentsDto.JuryAssignmentsDTO) (juryAssignmentsDto.JuryAssignmentsDTO, error)
+	CreateJuryAssignments(juryAssignmentsDto.JuryAssignmentsDTO) (uint, error)
+	UpdateJuryAssignments(juryAssignmentsDto.JuryAssignmentsDTO) (uint, error)
+	DeleteJuryAssignments(uint) error
+}
+
 type JureAssignmentHandler struct {
-	service *juryAssignmentsService.JuryAssignmentsService
+	service JuryAssignmentsServiceInterface
 	log     *slog.Logger
 }
 
-func NewJureAssignmentHandler(js *juryAssignmentsService.JuryAssignmentsService, log *slog.Logger) *JureAssignmentHandler {
+func NewJureAssignmentHandler(js JuryAssignmentsServiceInterface, log *slog.Logger) *JureAssignmentHandler {
 	return &JureAssignmentHandler{service: js, log: log}
 }
 
@@ -165,5 +174,10 @@ func (h *JureAssignmentHandler) DeleteJuryAssignments(w http.ResponseWriter, r *
 	}
 	log.Info("id on request body decoded", slog.Any("id", searchedID))
 	err = h.service.DeleteJuryAssignments(uint(searchedID))
-
+	if err != nil {
+		log.Error("failed to delete object by id", slog.String("object id", receivedID), liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to delete object by id"))
+		return
+	}
+	render.JSON(w, r, response.Success("object deleted"))
 }
