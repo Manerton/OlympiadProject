@@ -6,7 +6,7 @@ import (
 	"main/internal/dto/event_dto"
 	"main/internal/models/event"
 	"main/internal/repositories/event_repository"
-	"sync"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -47,6 +47,26 @@ func (s *EventService) GetEventByID(id uint) (event_dto.EventDTO, error) {
 	return ConvertEventToDTO(event), nil
 }
 
+func (s *EventService) GetEventByFilterAndFields(filter event_dto.EventDTO, fields *[]string) (event_dto.DetailsEvent, error) {
+	const op = "services.event_service.GetEventByFilterAndFields"
+	modelFilter := ConvertDTOtoEvent(filter)
+	event, err := s.repository.GetEventByFilterAndFields(s.db, modelFilter, fields)
+	if err != nil {
+		return event_dto.DetailsEvent{}, fmt.Errorf("%s: %v", op, err)
+	}
+	return ConvertEventToDetails(event), nil
+}
+
+func (s *EventService) GetEventsByFilterAndFields(filter event_dto.EventDTO, fields *[]string, offset, limit *int) ([]event_dto.DetailsEvent, error) {
+	const op = "services.event_service.GetEventsByFilterAndFields"
+	modelFilter := ConvertDTOtoEvent(filter)
+	events, err := s.repository.GetEventsByFilterAndFields(s.db, modelFilter, fields, offset, limit)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %v", op, err)
+	}
+	return ConvertManyEventsToDetails(events), nil
+}
+
 // Get list events by type
 func (s *EventService) GetEventsByType(event_type event.EventType, offset, limit *int) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventsByType"
@@ -67,29 +87,12 @@ func (s *EventService) GetEventsByPreviousID(id uint, offset, limit *int) ([]eve
 	return ConvertManyEventsToDTO(events), nil
 }
 
+// Get list events by list id
 func (s *EventService) GetEventsByListID(ids []uint) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventsByListID"
-	var wg sync.WaitGroup
-	events := make([]event.Event, len(ids))
-	errors := make(chan error, len(ids))
-
-	for i, id := range ids {
-		wg.Add(1)
-		go func(i int, id uint) {
-			defer wg.Done()
-			event, err := s.repository.GetEventByID(s.db, id)
-			if err != nil {
-				errors <- err
-				return
-			}
-			events[i] = event
-		}(i, id)
-	}
-	wg.Wait()
-	close(errors)
-
-	if len(errors) > 0 {
-		return nil, fmt.Errorf("%s: %w", op, <-errors)
+	events, err := s.repository.GetEventsByListID(s.db, ids)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return ConvertManyEventsToDTO(events), nil
 }
@@ -278,10 +281,40 @@ func ConvertEventToDTO(event event.Event) event_dto.EventDTO {
 	}
 }
 
+func ConvertEventToDetails(event event.Event) event_dto.DetailsEvent {
+	var startDate, endDate *time.Time
+
+	if !event.StartDate.IsZero() {
+		startDate = &event.StartDate
+	}
+	if !event.EndDate.IsZero() {
+		endDate = &event.EndDate
+	}
+
+	return event_dto.DetailsEvent{
+		ID:              event.ID,
+		Name:            event.Name,
+		StartDate:       startDate,
+		EndDate:         endDate,
+		PreviousEventID: event.PreviousEventID,
+		Subject:         event.Subject,
+		AdditionalInfo:  event.AdditionalInfo,
+		EventType:       event.EventType,
+	}
+}
+
 func ConvertManyEventsToDTO(events []event.Event) []event_dto.EventDTO {
 	var eventsDTO []event_dto.EventDTO
 	for _, event := range events {
 		eventsDTO = append(eventsDTO, ConvertEventToDTO(event))
+	}
+	return eventsDTO
+}
+
+func ConvertManyEventsToDetails(events []event.Event) []event_dto.DetailsEvent {
+	var eventsDTO []event_dto.DetailsEvent
+	for _, event := range events {
+		eventsDTO = append(eventsDTO, ConvertEventToDetails(event))
 	}
 	return eventsDTO
 }

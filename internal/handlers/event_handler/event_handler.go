@@ -8,6 +8,7 @@ import (
 	"main/internal/dto/event_dto"
 	"main/internal/lib/liblogger"
 	"main/internal/lib/parsing"
+	"main/internal/lib/request"
 	"main/internal/lib/response"
 	"main/internal/models/event"
 	"main/internal/services/event_service"
@@ -16,6 +17,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/go-playground/validator/v10"
 )
 
 type EventHandler struct {
@@ -25,6 +27,63 @@ type EventHandler struct {
 
 func NewEventHandler(service *event_service.EventService, log *slog.Logger) *EventHandler {
 	return &EventHandler{service: service, log: log}
+}
+
+func (h *EventHandler) GetEventByFilterAndFields(w http.ResponseWriter, r *http.Request) {
+	const op = "handlers.event_handler.GetEventByFilterAndFields"
+
+	log := h.log.With(
+		slog.String("op", op),
+	)
+	detailRequest := request.DetailRequest{}
+
+	err := render.DecodeJSON(r.Body, &detailRequest)
+	if err != nil {
+		log.Error("failed to decode details", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to decode details"))
+		return
+	}
+
+	eventDetails, err := h.service.GetEventByFilterAndFields(detailRequest.EventDTO, detailRequest.Fields)
+	if err != nil {
+		log.Error("failed to get event", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to get event"))
+		return
+	}
+	log.Info("event getted", slog.Any("event", eventDetails))
+
+	render.JSON(w, r, response.ApiResponse{
+		Status: response.StatusOK,
+		Data:   eventDetails,
+	})
+}
+
+func (h *EventHandler) GetEventsByFilterAndFields(w http.ResponseWriter, r *http.Request) {
+	const op = "handlers.event_handler.GetEventsByFilterAndFields"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+	detailRequest := request.DetailRequest{}
+
+	err := render.DecodeJSON(r.Body, &detailRequest)
+	if err != nil {
+		log.Error("failed to decode details", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to decode details"))
+		return
+	}
+
+	eventDetails, err := h.service.GetEventsByFilterAndFields(detailRequest.EventDTO, detailRequest.Fields, detailRequest.Offset, detailRequest.Limit)
+	if err != nil {
+		log.Error("failed to get events", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to get events"))
+		return
+	}
+	log.Info("event getted", slog.Any("events", eventDetails))
+
+	render.JSON(w, r, response.ApiResponse{
+		Status: response.StatusOK,
+		Data:   eventDetails,
+	})
 }
 
 func (h *EventHandler) GetAllEvents(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +108,7 @@ func (h *EventHandler) GetAllEvents(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, r, response.Error("failed to get events"))
 		return
 	}
-	log.Info("subject getted", slog.Any("events", eventsDTO))
+	log.Info("event getted", slog.Any("events", eventsDTO))
 
 	render.JSON(w, r, response.ApiResponse{
 		Status: response.StatusOK,
@@ -86,8 +145,8 @@ func (h *EventHandler) GetEventByID(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *EventHandler) GetAllEventsTypeRegionalStage(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.event_handler.GetAllEventsTypeRegionalStage"
+func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http.Request) {
+	const op = "handlers.event_handler.GetEventsTypeRegionalStage"
 	log := h.log.With(
 		slog.String("op", op),
 	)
@@ -210,6 +269,14 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Info("event on request body decoded", slog.Any("event", eventDTO))
+
+	err = validator.New().Struct(eventDTO)
+	if err != nil {
+		validateErr := err.(validator.ValidationErrors)
+		log.Error("invalid request", liblogger.Err(err))
+		render.JSON(w, r, response.Error(fmt.Sprintf("err %v", validateErr)))
+		return
+	}
 
 	id, err := h.service.CreateEvent(eventDTO)
 	if err != nil {

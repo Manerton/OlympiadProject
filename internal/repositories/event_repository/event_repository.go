@@ -9,6 +9,40 @@ import (
 
 type EventRepository struct{}
 
+func (r *EventRepository) GetEventByFilterAndFields(db *gorm.DB, filter event.Event, fields *[]string) (event.Event, error) {
+	const op = "repositories.event_repository.GetEventByFilter"
+	// query := db.Model(event.Event{})
+	query := db.Debug().Model(event.Event{})
+	if fields != nil {
+		query.Select(*fields)
+	}
+
+	if err := query.First(&filter).Error; err != nil {
+		return event.Event{}, fmt.Errorf("%s: %w", op, err)
+	}
+	return filter, nil
+}
+
+func (r *EventRepository) GetEventsByFilterAndFields(db *gorm.DB, filter event.Event, fields *[]string, offset, limit *int) ([]event.Event, error) {
+	const op = "repositories.event_repository.GetEventsByFilterAndFields"
+	query := db.Model(event.Event{})
+	if fields != nil {
+		query.Select(*fields)
+	}
+	if offset != nil {
+		query = query.Offset(*offset)
+	}
+	if limit != nil {
+		query = query.Limit(*limit)
+	}
+
+	eventRes := []event.Event{}
+	if err := query.Find(&eventRes, filter).Error; err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return eventRes, nil
+}
+
 // Get event by ID
 func (r *EventRepository) GetEventByID(db *gorm.DB, id uint) (event.Event, error) {
 	const op = "repositories.event_repository.GetEventById"
@@ -20,7 +54,19 @@ func (r *EventRepository) GetEventByID(db *gorm.DB, id uint) (event.Event, error
 	return eventRes, nil
 }
 
-// Get slice events by EventType
+// Get list events by list id
+func (r *EventRepository) GetEventsByListID(db *gorm.DB, ids []uint) ([]event.Event, error) {
+	const op = "repositories.event_repository.GetEventById"
+
+	eventRes := []event.Event{}
+	if err := db.Find(&eventRes, ids).Error; err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return eventRes, nil
+}
+
+// Get list events by EventType
+// Offset, limit can be nil
 func (r *EventRepository) GetEventsByType(db *gorm.DB, eventType event.EventType, offset, limit *int) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetEventsByType"
 	eventsRes := []event.Event{}
@@ -40,6 +86,7 @@ func (r *EventRepository) GetEventsByType(db *gorm.DB, eventType event.EventType
 }
 
 // Get all events by PreviousID
+// Offset, limit can be nil
 func (r *EventRepository) GetEventsByPreviousID(db *gorm.DB, previousID uint, offset, limit *int) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetEventsByPreviousID"
 	events := []event.Event{}
@@ -59,7 +106,6 @@ func (r *EventRepository) GetEventsByPreviousID(db *gorm.DB, previousID uint, of
 }
 
 // Get all events with offset and limit
-//
 // Offset, limit can be nil
 func (r *EventRepository) GetAllEvents(db *gorm.DB, offset, limit *int) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetAllEvents"
