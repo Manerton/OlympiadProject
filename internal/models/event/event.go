@@ -23,7 +23,7 @@ type Event struct {
 	PreviousEventID *uint     `gorm:"index"`
 	PreviousEvent   *Event    `gorm:"foreignKey:PreviousEventID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 	Subject         string    `gorm:"type:varchar(128)"`
+	AdditionalInfo  string    `gorm:"type:text"`
 	// SubjectID       *uint            `gorm:"index,constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 	// Subject         *subject.Subject `gorm:"foreignKey:SubjectID"`
-	AdditionalInfo string `gorm:"type:text"`
 }
