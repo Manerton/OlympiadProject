@@ -9,9 +9,10 @@ import (
 )
 
 type Config struct {
-	Env              string `yaml:"env"`
-	DatabaseConfig   `yaml:"DB_INFO"`
-	HTTPServerConfig `yaml:"HTTP_SERVER_INFO"`
+	Env                       string `yaml:"env"`
+	DatabaseConfig            `yaml:"DB_INFO"`
+	HTTPServerConfig          `yaml:"HTTP_SERVER_INFO"`
+	AdditionalAddressesConfig `yaml:"ADDITIONAL_ADDRESSES"`
 }
 
 type DatabaseConfig struct {
@@ -25,6 +26,10 @@ type DatabaseConfig struct {
 type HTTPServerConfig struct {
 	Port string `yaml:"port"`
 	Host string `yaml:"host"`
+}
+
+type AdditionalAddressesConfig struct {
+	ReactVision string `yaml:"react"`
 }
 
 func (cfg *Config) GetDataSourceName() string {
