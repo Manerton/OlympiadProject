@@ -16,7 +16,7 @@ type EventDTO struct {
 	AdditionalInfo  string
 }
 
-type DitailsEvent struct {
+type DetailsEvent struct {
 	ID              uint            `json:"id,omitempty"`
 	Name            string          `json:"name,omitempty"`
 	StartDate       *time.Time      `json:"start_date,omitempty"` // указатель для учета нулевых значений
