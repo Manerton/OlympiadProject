@@ -24,7 +24,8 @@ import (
 )
 
 const LocalFilePath = "config-yaml/local.yaml"
-const DebugFilePath = "C:/Users/assba/source/repos/Event-service/config-yaml/local.yaml"
+
+var DockerFilePath string = os.Getenv("CONFIG_PATH")
 
 func main() {
 	// Init config
@@ -79,6 +80,7 @@ func main() {
 	router.Get("/events", eventHandler.GetAllEvents)
 	router.Get("/events/{id}", eventHandler.GetEventByID)
 	router.Get("/events/regional-stage", eventHandler.GetEventsTypeRegionalStage)
+	router.Get("/events/stages/{id}", eventHandler.GetEventsTypeStageAndHisChilds)
 	router.Get("/events/child/{id}", eventHandler.GetEventsByPreviousID)
 	router.Get("/events/list/", eventHandler.GetEventsByListID)
 	router.Post("/events", eventHandler.CreateEvent)
