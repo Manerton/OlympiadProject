@@ -48,10 +48,12 @@ func (cfg *Config) GetAddress() string {
 	return fmt.Sprintf("%s:%s", cfg.HTTPServerConfig.Host, cfg.HTTPServerConfig.Port)
 }
 
-func GetConfig(config_path string) *Config {
-	configPath := config_path
+func GetConfig(configPath string) *Config {
 	if configPath == "" {
-		log.Fatal("CONFIG PATH is not set")
+		configPath = os.Getenv("CONFIG_PATH")
+		if configPath == "" {
+			log.Fatalf("CONFIG PATH is not set")
+		}
 	}
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
