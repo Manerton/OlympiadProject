@@ -175,6 +175,34 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 	})
 }
 
+func (h *EventHandler) GetEventsTypeStageAndHisChilds(w http.ResponseWriter, r *http.Request) {
+	const op = "handler.evend_handler.GetEventsTypeStageAndHisChilds"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	receivedID := chi.URLParam(r, "id")
+	searchedID, err := strconv.ParseUint(receivedID, 10, 32)
+	if err != nil {
+		log.Error("failed to parse id to uint", slog.String("received id", receivedID), liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to parse id"))
+		return
+	}
+
+	eventsDto, err := h.service.GetEventsTypeStageAndHisChilds(uint(searchedID))
+	if err != nil {
+		log.Error("failed to get events", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to get events"))
+		return
+	}
+	log.Info("events getted")
+
+	render.JSON(w, r, response.ApiResponse{
+		Status: response.StatusOK,
+		Data:   eventsDto,
+	})
+}
+
 func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Request) {
 	const op = "handlers.event_handler.GetEventsByPreviousID"
 	log := h.log.With(

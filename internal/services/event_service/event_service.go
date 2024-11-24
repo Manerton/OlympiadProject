@@ -6,6 +6,7 @@ import (
 	"main/internal/dto/event_dto"
 	"main/internal/models/event"
 	"main/internal/repositories/event_repository"
+	"sync"
 	"time"
 
 	"gorm.io/gorm"
@@ -77,6 +78,47 @@ func (s *EventService) GetEventsByType(event_type event.EventType, offset, limit
 	return ConvertManyEventsToDTO(events), nil
 }
 
+func (s *EventService) GetEventsTypeStageAndHisChilds(id uint) ([]event_dto.EventDTO, error) {
+	const op = "services.event_service.GetEventsTypeStageAndHisChilds"
+	// Get all event stage by previousID
+	tx := s.db.Begin()
+	events, err := s.repository.GetEventsByPreviousID(tx, id, nil, nil)
+	if err != nil {
+		tx.Rollback()
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	eventsDto := ConvertManyEventsToDTO(events)
+
+	wg := sync.WaitGroup{}
+	mx := sync.Mutex{}
+	errors := make(chan error, len(eventsDto))
+	defer close(errors)
+	// Get all childs by id Stage's
+	for i := 0; i < len(eventsDto); i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			mx.Lock()
+			id := eventsDto[i].ID
+			mx.Unlock()
+			childs, err := s.repository.GetEventsByPreviousID(tx, id, nil, nil)
+			if err != nil {
+				errors <- err
+			}
+			mx.Lock()
+			eventsDto[i].Events = ConvertManyEventsToDTO(childs)
+			mx.Unlock()
+		}()
+	}
+	wg.Wait()
+	if len(errors) > 0 {
+		tx.Rollback()
+		return nil, fmt.Errorf("%s: %w", op, <-errors)
+	}
+	tx.Commit()
+	return eventsDto, nil
+}
+
 // Get list events by PreviousID
 func (s *EventService) GetEventsByPreviousID(id uint, offset, limit *int) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventsByPreviousID"
@@ -141,21 +183,35 @@ func (s *EventService) checkCorrectEventDTO(eventDTO *event_dto.EventDTO, isUpda
 				if err != nil {
 					return err
 				}
-				if len(viewWorks) > 0 {
+				if len(viewWorks) == 0 {
+					eventDTO.EventType = event.ViewWorks
+				} else if len(viewWorks) == 1 {
+					eventDTO.EventType = event.Appeal
+				} else if len(viewWorks) > 2 {
 					return errors.New("stage cannot have more than one view works")
 				}
-				eventDTO.EventType = event.ViewWorks
-			case event.ViewWorks:
-				// check ViewWorks cannot have more than one appeal
-				appeal, err := s.repository.GetEventsByPreviousID(s.db, *previousEventID, nil, nil)
-				if err != nil {
-					return err
-				}
-				if len(appeal) > 0 {
-					return errors.New("view works cannot have more than one appeal")
-				}
-				eventDTO.EventType = event.Appeal
 			}
+			// case event.Stage:
+			// 	// check stage cannot have more than one ViewWorks
+			// 	viewWorks, err := s.repository.GetEventsByPreviousID(s.db, *previousEventID, nil, nil)
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// 	if len(viewWorks) > 0 {
+			// 		return errors.New("stage cannot have more than one view works")
+			// 	}
+			// 	eventDTO.EventType = event.ViewWorks
+			// case event.ViewWorks:
+			// 	// check ViewWorks cannot have more than one appeal
+			// 	appeal, err := s.repository.GetEventsByPreviousID(s.db, *previousEventID, nil, nil)
+			// 	if err != nil {
+			// 		return err
+			// 	}
+			// 	if len(appeal) > 0 {
+			// 		return errors.New("view works cannot have more than one appeal")
+			// 	}
+			// 	eventDTO.EventType = event.Appeal
+			// }
 		}
 
 		// check correct date border
