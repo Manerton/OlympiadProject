@@ -13,3 +13,5 @@ HTTP_SERVER_INFO:
   host: "localhost"
   port: "8080"
   
+ADDITIONAL_ADDRESSES:
+  react: "http://localhost:5173"

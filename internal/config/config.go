@@ -9,9 +9,10 @@ import (
 )
 
 type Config struct {
-	Env              string `yaml:"env"`
-	DatabaseConfig   `yaml:"DB_INFO"`
-	HTTPServerConfig `yaml:"HTTP_SERVER_INFO"`
+	Env                       string `yaml:"env"`
+	DatabaseConfig            `yaml:"DB_INFO"`
+	HTTPServerConfig          `yaml:"HTTP_SERVER_INFO"`
+	AdditionalAddressesConfig `yaml:"ADDITIONAL_ADDRESSES"`
 }
 
 type DatabaseConfig struct {
@@ -21,6 +22,10 @@ type DatabaseConfig struct {
 	User     string `yaml:"user"`
 	Password string `yaml:"pass"`
 	SslModel string `yaml:"ssl_model"`
+}
+
+type AdditionalAddressesConfig struct {
+	ReactVision string `yaml:"react"`
 }
 
 type HTTPServerConfig struct {

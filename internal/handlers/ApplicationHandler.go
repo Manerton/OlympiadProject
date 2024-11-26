@@ -2,7 +2,9 @@ package ApplicationHandler
 
 import (
 	ApplicationDto "OlimpiadPortal/ApplicationService/internal/dto"
+	"OlimpiadPortal/ApplicationService/internal/lib/response"
 	application_service "OlimpiadPortal/ApplicationService/internal/services"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -10,6 +12,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	//"github.com/go-playground/validator/v10"
 )
 
 type ApplicationHandler struct {
@@ -26,12 +29,17 @@ func NewApplicationHandler(service *application_service.ApplicationService, logg
 func (h *ApplicationHandler) GetAllApplications(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info("Получение всех заявок")
 	applications, err := h.service.GetAllApplications()
+
 	if err != nil {
 		h.logger.Error("Ошибка получения всех заявок", slog.Any("error", err))
 		http.Error(w, "Не удалось получить заявки", http.StatusInternalServerError)
 		return
 	}
-	render.JSON(w, r, applications)
+	render.JSON(w, r, response.ApiResponse{
+		Status: response.StatusOK,
+		Data:   applications,
+	})
+
 }
 
 // Получение заявки по ID
@@ -50,7 +58,57 @@ func (h *ApplicationHandler) GetApplicationByID(w http.ResponseWriter, r *http.R
 		http.Error(w, "Заявка не найдена", http.StatusNotFound)
 		return
 	}
-	render.JSON(w, r, application)
+	//render.JSON(w, r, application)
+	render.JSON(w, r, response.ApiResponse{
+		Status: response.StatusOK,
+		Data:   application,
+	})
+}
+
+// Получение заявок пользователя по ID
+func (h *ApplicationHandler) GetApplicationsByUserID(w http.ResponseWriter, r *http.Request) {
+	userID, err := strconv.ParseUint(chi.URLParam(r, "userID"), 10, 32)
+	if err != nil {
+		h.logger.Error("Некорректный userID", slog.Any("error", err))
+		http.Error(w, "Некорректный userID", http.StatusBadRequest)
+		return
+	}
+
+	h.logger.Info("Получение заявок пользователя", slog.Uint64("userID", userID))
+	applications, err := h.service.GetApplicationsByUserID(uint(userID))
+	if err != nil {
+		h.logger.Error("Ошибка получения заявок пользователя", slog.Any("error", err))
+		http.Error(w, "Не удалось получить заявки", http.StatusInternalServerError)
+		return
+	}
+	//render.JSON(w, r, applications)
+	render.JSON(w, r, response.ApiResponse{
+		Status: response.StatusOK,
+		Data:   applications,
+	})
+}
+
+// Получение заявок по ID события
+func (h *ApplicationHandler) GetApplicationsByEventID(w http.ResponseWriter, r *http.Request) {
+	eventID, err := strconv.ParseUint(chi.URLParam(r, "eventID"), 10, 32)
+	if err != nil {
+		h.logger.Error("Некорректный eventID", slog.Any("error", err))
+		http.Error(w, "Некорректный eventID", http.StatusBadRequest)
+		return
+	}
+
+	h.logger.Info("Получение заявок по ID события", slog.Uint64("eventID", eventID))
+	applications, err := h.service.GetApplicationsByEventID(uint(eventID))
+	if err != nil {
+		h.logger.Error("Ошибка получения заявок события", slog.Any("error", err))
+		http.Error(w, "Не удалось получить заявки", http.StatusInternalServerError)
+		return
+	}
+	//render.JSON(w, r, applications)
+	render.JSON(w, r, response.ApiResponse{
+		Status: response.StatusOK,
+		Data:   applications,
+	})
 }
 
 // Создание новой заявки
@@ -94,7 +152,8 @@ func (h *ApplicationHandler) UpdateApplicationStatus(w http.ResponseWriter, r *h
 		http.Error(w, "Не удалось обновить статус", http.StatusInternalServerError)
 		return
 	}
-	render.JSON(w, r, map[string]interface{}{"message": "Статус заявки обновлен"})
+	//render.JSON(w, r, map[string]interface{}{"message": "Статус заявки обновлен"})
+	render.JSON(w, r, response.Success(fmt.Sprintf("id = %d", id)))
 }
 
 // Удаление заявки
@@ -112,5 +171,41 @@ func (h *ApplicationHandler) DeleteApplication(w http.ResponseWriter, r *http.Re
 		http.Error(w, "Не удалось удалить заявку", http.StatusInternalServerError)
 		return
 	}
-	render.JSON(w, r, map[string]interface{}{"message": "Заявка удалена"})
+
+	//render.JSON(w, r, map[string]interface{}{"message": "Заявка удалена"})
+	render.JSON(w, r, response.Success("Заявка удалена"))
 }
+
+/* // Пример: Получение информации о событии
+type EventDetails struct {
+	Name     string `json:"name"`
+	Location string `json:"location"`
+}
+
+// Запрос в сервис событий (Event Service)
+func getEventDetails(eventID uint) (EventDetails, error) {
+	// Сделайте HTTP-запрос к Event Service
+	resp, err := http.Get(fmt.Sprintf("http://event-service/events/%d", eventID))
+	if err != nil {
+		return EventDetails{}, err
+	}
+	defer resp.Body.Close()
+
+	var details EventDetails
+	if err := json.NewDecoder(resp.Body).Decode(&details); err != nil {
+		return EventDetails{}, err
+	}
+
+	return details, nil
+} */
+
+/* func syncEventDetails(application *Application) error {
+	details, err := getEventDetails(application.EventID)
+	if err != nil {
+		return err
+	}
+
+	application.EventName = details.Name
+	application.EventLocation = details.Location
+	return nil
+} */

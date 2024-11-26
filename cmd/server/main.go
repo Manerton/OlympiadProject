@@ -13,6 +13,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 )
 
 const LocalFilePath = "D:/go_dev/Olimpiad_portal/Application_Service/config-yaml/local.yaml"
@@ -39,6 +40,16 @@ func main() {
 	// init middlewares
 	router.Use(midlogger.New(log))
 	router.Use(middleware.URLFormat)
+	// init cors
+	corsOptions := cors.Options{
+		AllowedOrigins:   []string{cfg.ReactVision}, // React URL
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300, // В секундах
+	}
+	router.Use(cors.Handler(corsOptions))
 
 	// init application service and handler
 	applicationService := ApplicationService.NewApplicationService(storage, &ApplicationRepository.ApplicationRepository{})
@@ -47,6 +58,8 @@ func main() {
 	// init applications route
 	router.Get("/applications", applicationHandler.GetAllApplications)
 	router.Get("/applications/{id}", applicationHandler.GetApplicationByID)
+	router.Get("/applications/user/{userID}", applicationHandler.GetApplicationsByUserID)
+	router.Get("/applications/event/{eventID}", applicationHandler.GetApplicationsByEventID)
 	router.Post("/applications", applicationHandler.CreateApplication)
 	router.Put("/applications/{id}", applicationHandler.UpdateApplicationStatus)
 	router.Delete("/applications/{id}", applicationHandler.DeleteApplication)

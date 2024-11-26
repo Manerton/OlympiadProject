@@ -68,3 +68,31 @@ func (r *ApplicationRepository) DeleteApplicationByID(db *gorm.DB, id uint) erro
 	}
 	return nil
 }
+
+// 6. Получение всех заявок по ID пользователя
+func (r *ApplicationRepository) GetApplicationsByUserID(db *gorm.DB, userID uint) ([]models.Application, error) {
+	const op = "repositories.application_repository.GetApplicationsByUserID"
+	if userID == 0 {
+		return nil, fmt.Errorf("%s: invalid UserID %d", op, userID)
+	}
+
+	var applications []models.Application
+	if err := db.Where("user_id = ?", userID).Find(&applications).Error; err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return applications, nil
+}
+
+// 7. Получение всех заявок по ID события
+func (r *ApplicationRepository) GetApplicationsByEventID(db *gorm.DB, eventID uint) ([]models.Application, error) {
+	const op = "repositories.application_repository.GetApplicationsByEventID"
+	if eventID == 0 {
+		return nil, fmt.Errorf("%s: invalid EventID %d", op, eventID)
+	}
+
+	var applications []models.Application
+	if err := db.Where("event_id = ?", eventID).Find(&applications).Error; err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return applications, nil
+}

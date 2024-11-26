@@ -41,6 +41,40 @@ func (s *ApplicationService) GetApplicationByID(id uint) (ApplicationDto.Applica
 	return ConvertApplicationToDTO(application), nil
 }
 
+// Получение всех заявок пользователя
+func (s *ApplicationService) GetApplicationsByUserID(userID uint) ([]ApplicationDto.ApplicationResponseDTO, error) {
+	const op = "services.application_service.GetApplicationsByUserID"
+	if userID == 0 {
+		return nil, fmt.Errorf("%s: invalid UserID %d", op, userID)
+	}
+
+	// Получаем заявки из репозитория
+	applications, err := s.repository.GetApplicationsByUserID(s.db, userID)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	// Конвертируем в DTO перед передачей
+	return ConvertManyApplicationsToDTO(applications), nil
+}
+
+// Получение всех заявок события
+func (s *ApplicationService) GetApplicationsByEventID(eventID uint) ([]ApplicationDto.ApplicationResponseDTO, error) {
+	const op = "services.application_service.GetApplicationsByEventID"
+	if eventID == 0 {
+		return nil, fmt.Errorf("%s: invalid EventID %d", op, eventID)
+	}
+
+	// Получаем заявки из репозитория
+	applications, err := s.repository.GetApplicationsByEventID(s.db, eventID)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	// Конвертируем в DTO перед передачей
+	return ConvertManyApplicationsToDTO(applications), nil
+}
+
 // Создание новой заявки
 func (s *ApplicationService) CreateApplication(applicationDTO ApplicationDto.CreateApplicationDTO) (uint, error) {
 	const op = "services.application_service.CreateApplication"
@@ -83,6 +117,9 @@ func ConvertApplicationToDTO(application models.Application) ApplicationDto.Appl
 		ApplicationID: application.ApplicationID,
 		UserID:        application.UserID,
 		EventID:       application.EventID,
+		EventName:     application.EventName,
+		EventLocation: application.EventLocation,
+		EventDate:     application.EventDate,
 		Status:        application.Status,
 		SubmittedAt:   application.SubmittedAt,
 		UpdatedAt:     application.UpdatedAt,
