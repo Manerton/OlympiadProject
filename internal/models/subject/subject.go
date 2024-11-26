@@ -14,7 +14,7 @@ func NewSubjectsStorage() *SubjectStorage {
 		"Матиматика",
 		"Русский язык",
 		"Английский язык",
-		"ИСтория",
+		"История",
 	}
 	return &SubjectStorage{subjects: subjects}
 }
