@@ -28,6 +28,9 @@ const LocalFilePath = "config-yaml/local.yaml"
 var DockerFilePath string = os.Getenv("CONFIG_PATH")
 
 func main() {
+
+	test := "TESTEs"
+	println(test)
 	// Init config
 	cfg := config.GetConfig(LocalFilePath)
 
