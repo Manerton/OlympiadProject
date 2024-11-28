@@ -7,6 +7,7 @@ import (
 	"main/internal/handlers/event_handler"
 	"main/internal/handlers/subject_handler"
 	"main/internal/lib/liblogger"
+	"main/internal/middleware/auth"
 	"main/internal/middleware/midlogger"
 	"main/internal/models/subject"
 	"main/internal/repositories/event_repository"
@@ -28,9 +29,6 @@ const LocalFilePath = "config-yaml/local.yaml"
 var DockerFilePath string = os.Getenv("CONFIG_PATH")
 
 func main() {
-
-	test := "TESTEs"
-	println(test)
 	// Init config
 	cfg := config.GetConfig(LocalFilePath)
 
@@ -52,6 +50,10 @@ func main() {
 	// init middlewares
 	router.Use(midlogger.New(log))
 	router.Use(middleware.URLFormat)
+	// add Authentication with JWT token
+	router.Use(func(next http.Handler) http.Handler {
+		return auth.AuthenticateMiddleware(next, cfg.Key)
+	})
 
 	// init cors
 	corsOptions := cors.Options{
@@ -64,7 +66,6 @@ func main() {
 	}
 	router.Use(cors.Handler(corsOptions))
 	// init subject service and handler
-	// subjectService := subject_service.NewSubjectService(storage, &subject_repository.SubjectRepository{})
 	subjectStorage := subject.NewSubjectsStorage()
 	subjectHandler := subject_handler.NewSubjectHandler(subjectStorage, log)
 	// init events service and handler
@@ -73,12 +74,16 @@ func main() {
 
 	// init subjects route
 	router.Get("/subjects", subjectHandler.GetAllSubjects)
-	// router.Get("/subjects/{id}", subjectHandler.GetSubjectByID)
-	// router.Post("/subjects", subjectHandler.CreateSubject)
-	// router.Put("/subjects", subjectHandler.UpdateSubject)
-	// router.Delete("/subjects/{id}", subjectHandler.DeleteSubject)
 
 	// init events route
+	// 3 - organizer
+	// TODO!!! EDIT ROLE
+	router.With(auth.RoleBasedAccess("3")).Group(func(r chi.Router) {
+		r.Post("/events", eventHandler.CreateEvent)
+		r.Put("/events/{id}", eventHandler.UpdateEvent)
+		r.Delete("/events/{id}", eventHandler.DeleteEvent)
+	})
+
 	router.Get("/events/details/one", eventHandler.GetEventByFilterAndFields)
 	router.Get("/events/details", eventHandler.GetEventsByFilterAndFields)
 	router.Get("/events", eventHandler.GetAllEvents)
@@ -87,9 +92,9 @@ func main() {
 	router.Get("/events/stages/{id}", eventHandler.GetEventsTypeStageAndHisChilds)
 	router.Get("/events/child/{id}", eventHandler.GetEventsByPreviousID)
 	router.Get("/events/list/", eventHandler.GetEventsByListID)
-	router.Post("/events", eventHandler.CreateEvent)
-	router.Put("/events/{id}", eventHandler.UpdateEvent)
-	router.Delete("/events/{id}", eventHandler.DeleteEvent)
+	// router.Post("/events", eventHandler.CreateEvent)
+	// router.Put("/events/{id}", eventHandler.UpdateEvent)
+	// router.Delete("/events/{id}", eventHandler.DeleteEvent)
 	// init server
 	server := &http.Server{
 		Addr:    cfg.GetAddress(),
