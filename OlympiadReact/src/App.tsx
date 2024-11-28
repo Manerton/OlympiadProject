@@ -1,14 +1,16 @@
+import React from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
-import Header from './components/header'
-import ApplicationsPage from './components/ApplicationsList'
-import AttendancePage from './components/AttendaceList'
+import Header from './components/header.tsx'
+import ApplicationsPage from './components/ApplicationsList.tsx'
+import AttendancePage from './components/AttendaceList.tsx'
 import './App.css'
-import ProfilePage from './components/Profile'
-import Login from './components/Login'
-import SubStagePage from './components/eventsServiceComponents/pages/subStagePage'
-import OlympiadStagesPage from './components/eventsServiceComponents/pages/olympiadStagesPage'
-import RegionalStagesPage from './components/eventsServiceComponents/pages/regionalStagesPage'
-import OlympiadsPage from './components/eventsServiceComponents/pages/olympiadsPage'
+import ProfilePage from './components/Profile.tsx'
+import Login from './components/Login.tsx'
+import SubStagePage from './components/eventsServiceComponents/pages/subStagePage.tsx'
+import OlympiadStagesPage from './components/eventsServiceComponents/pages/olympiadStagesPage.tsx'
+import RegionalStagesPage from './components/eventsServiceComponents/pages/regionalStagesPage.tsx'
+import OlympiadsPage from './components/eventsServiceComponents/pages/olympiadsPage.tsx'
+
 
 function App() {
 

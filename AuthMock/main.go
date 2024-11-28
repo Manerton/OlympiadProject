@@ -272,9 +272,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: false,
 		Secure:   true,
 		Domain:   "localhost",
-		//SameSite: http.SameSiteStrictMode,
-		Path:    "/",
-		Expires: time.Now().Add(24 * time.Hour), // Match the token expiration
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/",
+		Expires:  time.Now().Add(24 * time.Hour), // Match the token expiration
 	})
 
 	http.SetCookie(w, &http.Cookie{
@@ -283,8 +283,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: false,
 		Secure:   false, // только по HTTPS
 		Domain:   "localhost",
-		//SameSite: http.SameSiteStrictMode,
-		Path: "/",
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/",
 	})
 	// Respond with success
 	w.WriteHeader(http.StatusOK)

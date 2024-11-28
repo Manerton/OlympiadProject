@@ -1,13 +1,26 @@
 import React from "react";
+
 import { Form, Button, Container, Row, Col, Alert } from "react-bootstrap";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { redirect } from "react-router-dom";
 
+import {jwtDecode} from "jwt-decode";
+
 interface LoginFormValues {
   email: string;
   password: string;
 }
+
+//////////ПЕРЕНЕСТИ В ОБЩИЕ ТИПЫ ПО НЕМУ ДЕКОДИРУЕМ ТОКЕН
+interface DecodedToken {
+  id: number;
+  name: string;
+  role: string;
+  exp: number; // Время истечения токена
+  iat: number; // Время создания токена
+}
+//////////ПЕРЕНЕСТИ В ОБЩИЕ ТИПЫ ПО НЕМУ ДЕКОДИРУЕМ ТОКЕН
 
 const Login: React.FC = () => {
   const initialValues: LoginFormValues = {
@@ -19,6 +32,22 @@ const Login: React.FC = () => {
     email: Yup.string().email("Неверный формат email").required("Email обязателен"),
     password: Yup.string().required("Пароль обязателен").min(4, "Пароль должен быть не менее 4 символов"),
   });
+
+  const getTokenFromCookie = (cookieName: string): string | null => {
+    const cookie = document.cookie
+      .split("; ")
+      .find((row: string) => row.startsWith(`${cookieName}=`));
+    return cookie ? cookie.split("=")[1] : null;
+  };
+  
+  const decodeJwt = (token: string): DecodedToken | null => {
+    try {
+      return jwtDecode<DecodedToken>(token); // Указываем тип для декодируемых данных
+    } catch (error) {
+      console.error("Failed to decode token:", error);
+      return null;
+    }
+  };
 
   const handleSubmit = async (values: LoginFormValues) => {
     // Включите обработку логики авторизации
@@ -46,14 +75,26 @@ const Login: React.FC = () => {
       
       // Ответ успешный, можем обработать данные
       console.log('Авторизация успешна:');
-  
+      const cookies = response.headers.get("cookie");
+      if (cookies) {
+          console.log("Cookies:", cookies);
+      }
       
     } catch (error) {
       // Обрабатываем ошибки
       console.error('Ошибка авторизации:', error);
       alert('Ошибка при авторизации. Попробуйте снова.');
     }
+    
     redirect("/profile")
+    const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
+
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      console.log("Decoded Token:", decodedToken);
+    } else {
+      console.log("Token not found");
+    }
   };
 
   return (

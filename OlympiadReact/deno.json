@@ -1,5 +1,9 @@
 {
   "imports": {
     "i": "npm:i@^0.3.7"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window","dom", "esnext"], 
+    "strict": true
   }
 }

@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import "react-datepicker/dist/react-datepicker.css";
 import { Button, Form } from "react-bootstrap";
-import { MyEvent } from "../../types/event";
+import { MyEvent } from "../../types/event.ts";
 
 export interface EventModalFormProps {
   showSubjectField?: boolean;

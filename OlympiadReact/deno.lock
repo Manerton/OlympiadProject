@@ -13,6 +13,7 @@
     "npm:formik@^2.4.6": "2.4.6_react@18.3.1",
     "npm:globals@^15.11.0": "15.12.0",
     "npm:i@~0.3.7": "0.3.7",
+    "npm:jwt-decode@4": "4.0.0",
     "npm:react-bootstrap-icons@^1.11.4": "1.11.4_react@18.3.1",
     "npm:react-bootstrap@^2.10.5": "2.10.5_@types+react@18.3.12_react@18.3.1_react-dom@18.3.1__react@18.3.1",
     "npm:react-dom@^18.3.1": "18.3.1_react@18.3.1",
@@ -1027,6 +1028,9 @@
     "json5@2.2.3": {
       "integrity": "sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg=="
     },
+    "jwt-decode@4.0.0": {
+      "integrity": "sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA=="
+    },
     "keyv@4.5.4": {
       "integrity": "sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==",
       "dependencies": [
@@ -1477,6 +1481,7 @@
         "npm:formik@^2.4.6",
         "npm:globals@^15.11.0",
         "npm:i@~0.3.7",
+        "npm:jwt-decode@4",
         "npm:react-bootstrap-icons@^1.11.4",
         "npm:react-bootstrap@^2.10.5",
         "npm:react-dom@^18.3.1",
