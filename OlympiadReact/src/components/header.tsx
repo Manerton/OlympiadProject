@@ -26,7 +26,7 @@ function Header() {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav" className="navbar-expand-lg">
           <Nav className="me-auto">
-            <LinkContainer to="/">
+            <LinkContainer to="/events">
               <Nav.Link>События</Nav.Link>
             </LinkContainer>
             {/* тут role == 1,2 */}
