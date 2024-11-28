@@ -52,6 +52,7 @@ func main() {
 	// init middlewares
 	router.Use(midlogger.New(log))
 	router.Use(middleware.URLFormat)
+
 	// init cors
 	corsOptions := cors.Options{
 		AllowedOrigins:   []string{cfg.ReactVision}, // React URL

@@ -33,6 +33,10 @@ type HTTPServerConfig struct {
 	Host string `yaml:"host"`
 }
 
+type JwtTemp struct {
+	key string `yaml:"key"`
+}
+
 func (cfg *Config) GetDataSourceName() string {
 	// dsn := "host=localhost user=user dbname=db password=password sslmode=disable"
 	return fmt.Sprintf(

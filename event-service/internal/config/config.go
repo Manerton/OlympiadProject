@@ -28,6 +28,10 @@ type HTTPServerConfig struct {
 	Host string `yaml:"host"`
 }
 
+type JwtTemp struct {
+	key string `yaml:"key"`
+}
+
 type AdditionalAddressesConfig struct {
 	ReactVision string `yaml:"react"`
 }

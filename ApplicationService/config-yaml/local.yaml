@@ -12,6 +12,10 @@ DB_INFO:
 HTTP_SERVER_INFO:
   host: "localhost"
   port: "8080"
-  
+
+ JWT_TEMP_INFO:
+  key: "lololololololololololololololololololololololololololololol"
+
+
 ADDITIONAL_ADDRESSES:
   react: "http://localhost:5173"

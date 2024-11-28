@@ -29,9 +29,11 @@ function Header() {
             <LinkContainer to="/">
               <Nav.Link>События</Nav.Link>
             </LinkContainer>
+            {/* тут role == 1,2 */}
             <LinkContainer to="/applications">
               <Nav.Link>Статус заявки</Nav.Link>
             </LinkContainer>
+            {/* тут role == 3 */}
             <LinkContainer to="/attendance">
               <Nav.Link>Отметить присутствие</Nav.Link>
             </LinkContainer>

@@ -2,27 +2,58 @@ import React from "react";
 import { Form, Button, Container, Row, Col, Alert } from "react-bootstrap";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import { redirect } from "react-router-dom";
 
 interface LoginFormValues {
-  username: string;
+  email: string;
   password: string;
 }
 
 const Login: React.FC = () => {
   const initialValues: LoginFormValues = {
-    username: "",
+    email: "",
     password: "",
   };
 
   const validationSchema = Yup.object({
-    username: Yup.string().email("Неверный формат email").required("Email обязателен"),
-    password: Yup.string().required("Пароль обязателен").min(6, "Пароль должен быть не менее 6 символов"),
+    email: Yup.string().email("Неверный формат email").required("Email обязателен"),
+    password: Yup.string().required("Пароль обязателен").min(4, "Пароль должен быть не менее 4 символов"),
   });
 
-  const handleSubmit = (values: LoginFormValues) => {
-    // Здесь вы можете обрабатывать авторизацию
-    console.log(values);
-    // Пример: можно сделать запрос на сервер
+  const handleSubmit = async (values: LoginFormValues) => {
+    // Включите обработку логики авторизации
+    console.log(values); // values содержит данные формы (например, email, password)
+  
+    const { email, password } = values;
+  
+    try {
+      // Делаем POST запрос с данными формы
+      const response = await fetch('http://localhost:8081/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json', // Указываем, что отправляем JSON
+        },
+        body: JSON.stringify({ email, password }), // Отправляем данные формы в теле запроса
+        credentials: 'include', // Включает cookies
+      });
+  
+      // Проверяем статус ответа
+      if (!response.ok) {
+        // Если ответ не успешный (например, статус 400 или 500)
+        throw new Error('Авторизация не удалась');
+      }
+      
+      
+      // Ответ успешный, можем обработать данные
+      console.log('Авторизация успешна:');
+  
+      
+    } catch (error) {
+      // Обрабатываем ошибки
+      console.error('Ошибка авторизации:', error);
+      alert('Ошибка при авторизации. Попробуйте снова.');
+    }
+    redirect("/profile")
   };
 
   return (
@@ -46,18 +77,18 @@ const Login: React.FC = () => {
               touched,
             }) => (
               <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3" controlId="username">
+                <Form.Group className="mb-3" controlId="email">
                   <Form.Label>Электронная почта</Form.Label>
                   <Form.Control
                     type="email"
                     placeholder="Введите email"
-                    name="username"
-                    value={values.username}
+                    name="email"
+                    value={values.email}
                     onChange={handleChange}
-                    isInvalid={touched.username && !!errors.username}
+                    isInvalid={touched.email && !!errors.email}
                   />
                   <Form.Control.Feedback type="invalid">
-                    {errors.username}
+                    {errors.email}
                   </Form.Control.Feedback>
                 </Form.Group>
 
