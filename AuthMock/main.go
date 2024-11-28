@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"reflect"
 	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
+	"github.com/go-chi/render"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -78,7 +80,7 @@ func init() {
 	for id, data := range plainUsers {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
 		if err != nil {
-			panic(fmt.Sprintf("Не удалось захешировать пароль для пользователя %s: %v", id, err))
+			panic(fmt.Sprintf("Не удалось захешировать пароль для пользователя %d: %v", id, err))
 		}
 		users[id] = User{
 			Email:    data.Email,
@@ -92,7 +94,7 @@ func init() {
 type UserJwt struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name"`
-	Role uint   `json:"role"`
+	Role string `json:"role"`
 }
 
 //1 - student
@@ -105,22 +107,22 @@ var usersjwt = map[uint]UserJwt{
 	1: {
 		ID:   1,
 		Name: "Макаров Макар Макарович",
-		Role: 1,
+		Role: "1",
 	},
 	2: {
 		ID:   2,
 		Name: "Иван Иванович Иванов",
-		Role: 2,
+		Role: "2",
 	},
 	3: {
 		ID:   3,
 		Name: "Организатор организаторович",
-		Role: 3,
+		Role: "3",
 	},
 	4: {
 		ID:   4,
 		Name: "Администратор администраторович",
-		Role: 4,
+		Role: "4",
 	},
 }
 
@@ -269,7 +271,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "token",
 		Value:    token,
-		HttpOnly: false,
+		HttpOnly: true,
 		Secure:   true,
 		Domain:   "localhost",
 		SameSite: http.SameSiteStrictMode,
@@ -331,6 +333,53 @@ func refreshHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Access token refreshed"))
 }
 
+func GetMyRoleAndID(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("token")
+	if err != nil {
+		fmt.Println("Token missing in cookie")
+		return
+	}
+
+	// Verify the token
+	token, err := verifyToken(cookie.Value)
+	if err != nil {
+		fmt.Printf("Token verification failed: %v\n", err)
+		return
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		fmt.Println("Invalid token claims")
+		http.Error(w, "Invalid token claims", http.StatusUnauthorized)
+		return
+	}
+	fmt.Println(claims["role"], reflect.TypeOf(claims["role"]))
+
+	// Get role
+	role, ok := claims["role"].(string)
+	if !ok {
+		fmt.Println("Role missing in JWT")
+		http.Error(w, "Role missing in JWT", http.StatusForbidden)
+		return
+	}
+	fmt.Println(claims["id"], reflect.TypeOf(claims["id"]))
+	// Get id
+	id, ok := claims["id"].(float64)
+	if !ok {
+		fmt.Println("Id missing in JWT")
+		http.Error(w, "Id missing in JWT", http.StatusForbidden)
+		return
+	}
+
+	render.JSON(w, r, struct {
+		id   float64
+		role string
+	}{
+		id:   id,
+		role: role,
+	})
+}
+
 func main() {
 
 	// Инициализация маршрутизатора Chi
@@ -339,6 +388,7 @@ func main() {
 	// Middleware для логирования запросов
 	r.Use(middleware.Logger)
 	r.Use(middleware.URLFormat)
+
 	// init cors
 	corsOptions := cors.Options{
 		AllowedOrigins:   []string{"http://localhost:5173"}, // React URL
@@ -352,6 +402,7 @@ func main() {
 	// Определяем эндпоинт для получения текущего пользователя
 	r.Post("/login", loginHandler)
 	r.Post("/refresh", refreshHandler)
+	r.Get("/my-info", GetMyRoleAndID)
 	// Запускаем сервер
 	fmt.Println("Server running on http://localhost:8081")
 	http.ListenAndServe(":8081", r)
