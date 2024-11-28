@@ -1,6 +1,6 @@
 import React from "react";
 import { Accordion,Badge,Button } from "react-bootstrap";
-import { Application } from "../types/application"
+import { Application } from "../types/application.ts"
 
 interface ApplicationCardProps {
   application: Application;
