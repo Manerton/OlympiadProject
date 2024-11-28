@@ -85,16 +85,18 @@ const Login: React.FC = () => {
       console.error('Ошибка авторизации:', error);
       alert('Ошибка при авторизации. Попробуйте снова.');
     }
-    
-    redirect("/profile")
-    const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
 
-    if (token) {
-      const decodedToken = jwtDecode(token);
-      console.log("Decoded Token:", decodedToken);
-    } else {
-      console.log("Token not found");
-    }
+    // !!CHECK!! RoleContext.tsx -> components\RoleContext.tsx
+
+    // redirect("/profile")
+    // const token = document.cookie.split("; ").find((row) => row.startsWith("token="))?.split("=")[1];
+
+    // if (token) {
+    //   const decodedToken = jwtDecode(token);
+    //   console.log("Decoded Token:", decodedToken);
+    // } else {
+    //   console.log("Token not found");
+    // }
   };
 
   return (
