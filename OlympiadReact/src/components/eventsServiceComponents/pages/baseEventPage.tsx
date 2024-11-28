@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Button, Modal } from "react-bootstrap";
 import EventModalForm from "../eventModalWindow";
 import { MyEvent, OLYMPIAD, REGIONAL_STAGE, STAGE } from "../../../types/event";
+import { RoleProvider, useRole } from "../../RoleContext";
 // import Pagination from "./components/Pagination";
 // import { useUser } from "../contexts/UserContext";
 
@@ -24,6 +25,8 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
   const [events, setEvents] = useState([])
   const [event, setEvent] = useState()
 
+  const { role, id } = useRole();
+
   const fetchEvents = async () => {
     let endPointEvents = ""
     if (type === REGIONAL_STAGE) {
@@ -38,7 +41,9 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
     const endPointEvent = `http://localhost:8080/events/${selectedEventId}`;
     try {
 
-      const response = await fetch(endPointEvents);
+      const response = await fetch(endPointEvents, {
+        credentials: "include", // Отправка cookie
+    });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -77,36 +82,37 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
   }
 
   return (
-    <div>
-      <div className="d-flex justify-content-between">
-        <h1>{pageName}</h1>
-        {/* Кнопка создания доступна только организаторам */}
-        {/* {user?.role === "organizer" && ( */}
-        <Button
-          variant="primary"
-          className="mb-3"
-          onClick={() => setShowModal(true)}
-        >
-          Создать
-        </Button>
-        {/* )} */}
+        
+      <div>
+        <div className="d-flex justify-content-between">
+          <h1>{pageName}</h1>
+          {/* Кнопка создания доступна только организаторам */}
+          {role === "3" && (
+          <Button
+            variant="primary"
+            className="mb-3"
+            onClick={() => setShowModal(true)}
+          >
+            Создать
+          </Button>
+          )} 
+        </div>
+        {/* Список этапов */}
+        <EventList events={events} parentEvent={event} />
+        {/* Пагинация */}
+        {/* <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} /> */}
+        {/* Модальное окно */}
+        <Modal show={showModal} onHide={() => setShowModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Создать</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {/* Форма создания */}
+            <EventModalForm onSuccess={OnUpdateListEvent} event={event} showSubjectField={showSubjectField} ></EventModalForm>
+          </Modal.Body>
+        </Modal>
       </div>
-      {/* Список этапов */}
-      <EventList events={events} parentEvent={event} />
-      {/* Пагинация */}
-      {/* <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} /> */}
-      {/* Модальное окно */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Создать</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {/* Форма создания */}
-          <EventModalForm onSuccess={OnUpdateListEvent} event={event} showSubjectField={showSubjectField} ></EventModalForm>
-        </Modal.Body>
-      </Modal>
-    </div>
-  );
+    );
 }
 
 export default BaseEventPage;
