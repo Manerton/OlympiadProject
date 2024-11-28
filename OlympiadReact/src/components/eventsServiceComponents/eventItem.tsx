@@ -1,6 +1,7 @@
 import { MyEvent, REGIONAL_STAGE, STAGE, OLYMPIAD } from "../../types/event";
 import { Button, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
+import { useRole } from "../RoleContext";
 
 interface EventItemProps {
   event: MyEvent;
@@ -11,6 +12,7 @@ function EventItem({ event }: EventItemProps) {
 
   console.log("event", event)
 
+  const {role, id} = useRole()
 
   const handleClick = () => {
     if (event.EventType === REGIONAL_STAGE) {
@@ -68,9 +70,11 @@ function EventItem({ event }: EventItemProps) {
           )}
         </div>
         <div>
+        {role === "3" && (
           <Button variant="danger" onClick={deleteEvent} >
             Удалить
           </Button>
+        )}
         </div>
      
       {event.Events && event.Events.length > 0 && (
