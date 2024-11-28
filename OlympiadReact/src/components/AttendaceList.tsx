@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,FC } from "react";
 import { Table, Button, Badge } from "react-bootstrap";
 
 // Интерфейс данных
