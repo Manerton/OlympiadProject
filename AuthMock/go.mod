@@ -9,3 +9,8 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	golang.org/x/crypto v0.29.0
 )
+
+require (
+	github.com/ajg/form v1.5.1 // indirect
+	github.com/go-chi/render v1.0.3 // indirect
+)
