@@ -41,6 +41,7 @@ func verifyToken(tokenString string, secretKey []byte) (*jwt.Token, error) {
 
 func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		// Retrieve the token from the cookie
 		cookie, err := r.Cookie("token")
 		if err != nil {
@@ -49,7 +50,6 @@ func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 		}
 
 		// Verify the token
-		log.Println(cookie.Value)
 		token, err := verifyToken(cookie.Value, []byte(key))
 		if err != nil {
 			log.Printf("Token verification failed: %v\n", err)
@@ -98,6 +98,7 @@ func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 func RoleBasedAccess(requiredRole string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			log.Println("Start rolebaseAccess")
 			user := r.Context().Value(UserInfoKey{}).(UserInfo)
 
 			if user.role != requiredRole {
