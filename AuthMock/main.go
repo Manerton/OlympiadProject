@@ -371,12 +371,9 @@ func GetMyRoleAndID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.JSON(w, r, struct {
-		id   float64
-		role string
-	}{
-		id:   id,
-		role: role,
+	render.JSON(w, r, map[string]interface{}{
+		"id":   uint(id),
+		"role": role,
 	})
 }
 
