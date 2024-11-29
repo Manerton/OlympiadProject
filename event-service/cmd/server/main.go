@@ -47,15 +47,7 @@ func main() {
 
 	// init chi router
 	router := chi.NewRouter()
-	// init middlewares
-	router.Use(midlogger.New(log))
-	router.Use(middleware.URLFormat)
-	// add Authentication with JWT token
-	router.Use(func(next http.Handler) http.Handler {
-		return auth.AuthenticateMiddleware(next, cfg.Key)
-	})
-
-	// init cors
+	// init  middlewares cors
 	corsOptions := cors.Options{
 		AllowedOrigins:   []string{cfg.ReactVision}, // React URL
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -65,6 +57,14 @@ func main() {
 		MaxAge:           300, // В секундах
 	}
 	router.Use(cors.Handler(corsOptions))
+	// init middlewares
+	router.Use(midlogger.New(log))
+	router.Use(middleware.URLFormat)
+	// add Authentication with JWT token
+	router.Use(func(next http.Handler) http.Handler {
+		return auth.AuthenticateMiddleware(next, cfg.Key)
+	})
+
 	// init subject service and handler
 	subjectStorage := subject.NewSubjectsStorage()
 	subjectHandler := subject_handler.NewSubjectHandler(subjectStorage, log)
