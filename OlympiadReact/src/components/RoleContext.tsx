@@ -19,10 +19,12 @@ export function RoleProvider({ children }: RoleProviderProps) {
                 credentials: "include", // Для отправки cookie
             });
 
+            
             if (response.ok) {
-                const data = await response.json();
-                setRole(data.role || null);
-                setID(data.id || null);
+                const result = await response.json();
+      
+                setRole(result.role || null);
+                setID(result.id || null);
             }
         };
 
