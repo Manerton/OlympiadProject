@@ -42,6 +42,7 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
     try {
 
       const response = await fetch(endPointEvents, {
+        method: "GET",
         credentials: "include", // Отправка cookie
     });
       if (!response.ok) {
@@ -57,7 +58,10 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
 
     if (selectedEventId) {
       try {
-        const response = await fetch(endPointEvent);
+        const response = await fetch(endPointEvent, {
+          method: "GET",
+          credentials: "include", // Отправка cookie
+        });
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -87,6 +91,7 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
         <div className="d-flex justify-content-between">
           <h1>{pageName}</h1>
           {/* Кнопка создания доступна только организаторам */}
+          <p>{role}</p>
           {role === "3" && (
           <Button
             variant="primary"
