@@ -34,6 +34,8 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
         try {
           const response = await fetch("http://localhost:8080/subjects", {
             method: "GET",
+            credentials: "include", // Для отправки cookie
+
             headers: {
               "Content-Type": "application/json",
             },
@@ -82,6 +84,7 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
     try {
       const response = await fetch("http://localhost:8080/events", {
         method: "POST",
+        credentials: "include", // Для отправки cookie
         headers: {
           "Content-Type": "application/json",
         },
