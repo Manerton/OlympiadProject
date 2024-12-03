@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"main/internal/config"
 	"main/internal/handlers/jureAssignmentsHandler"
 	"main/internal/lib/liblogger"
@@ -50,10 +51,11 @@ func main() {
 	handler := jureAssignmentsHandler.NewJureAssignmentHandler(service, log)
 
 	// init route
-	router.Get("/jure-assignments", handler.GetAllJuryAssignments)
-	router.Get("/jure-assignments/{id}", handler.GetJuryAssignmentsByID)
-	router.Get("/jure-assignments/jury/{event_id}", handler.GetAllJuryIDByEventID)
-	router.Post("/jure-assignments", handler.CreateJuryAssignments)
+	router.Get("/jury-assignments", handler.GetAllJuryAssignments)
+	router.Get("/jury-assignments/{id}", handler.GetJuryAssignmentsByID)
+	router.Get("/jury-assignments/jury/{event_id}", handler.GetAllJuryIDByEventID)
+	router.Post("/jury-assignments", handler.CreateJuryAssignments)
+	router.Post("/jury-assignments-many", handler.CreateManyAssignmentsByOneJury)
 	router.Put("/jure-assignments/{id}", handler.UpdateJuryAssignments)
 	router.Delete("/jure-assignments/{id}", handler.UpdateJuryAssignments)
 
@@ -72,7 +74,7 @@ func main() {
 		}
 	}()
 	log.Info("server started")
-	<-done
+	fmt.Println(<-done)
 
 	// TODO: move timeout to config
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

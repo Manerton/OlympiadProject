@@ -19,6 +19,7 @@ type JuryAssignmentsServiceInterface interface {
 	GetAllJuryAssignmentsByFilter(juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
 	GetPartOfAllJuryAssignmentsByFilter([]string, juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
 	GetJuryAssignmentsByFilter(juryAssignmentsDto.JuryAssignmentsDTO) (juryAssignmentsDto.JuryAssignmentsDTO, error)
+	CreateManyAssignmentsByOneJury(juryAssignmentsDto.OneJuryManyAssignments) ([]uint, []error)
 	CreateJuryAssignments(juryAssignmentsDto.JuryAssignmentsDTO) (uint, error)
 	UpdateJuryAssignments(juryAssignmentsDto.JuryAssignmentsDTO) (uint, error)
 	DeleteJuryAssignments(uint) error
@@ -136,6 +137,34 @@ func (h *JureAssignmentHandler) CreateJuryAssignments(w http.ResponseWriter, r *
 		return
 	}
 	render.JSON(w, r, response.Success(fmt.Sprintf("id = %d", id)))
+}
+
+func (h *JureAssignmentHandler) CreateManyAssignmentsByOneJury(w http.ResponseWriter, r *http.Request) {
+	const op = "handlers.jureAssignmentHandler.CreateManyAssignmentsByOneJury"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	dto := juryAssignmentsDto.OneJuryManyAssignments{}
+	err := render.DecodeJSON(r.Body, &dto)
+	if err != nil {
+		log.Error("failed to decode request body")
+		render.JSON(w, r, response.Error("failed to decode request"))
+		return
+	}
+
+	ids, errors := h.service.CreateManyAssignmentsByOneJury(dto)
+	if len(errors) != 0 {
+		log.Error("failde to create many Assignments,", errors)
+		render.JSON(w, r, response.Error("failed to create many Assignments"))
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status: response.StatusOK,
+		Data:   ids,
+	})
+
 }
 
 func (h *JureAssignmentHandler) UpdateJuryAssignments(w http.ResponseWriter, r *http.Request) {

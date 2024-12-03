@@ -6,6 +6,7 @@ import (
 	"main/internal/lib/converter/dtoConverter"
 	"main/internal/lib/supportRequest"
 	"main/internal/models/juryAssignments"
+	"sync"
 
 	"gorm.io/gorm"
 )
@@ -105,6 +106,51 @@ func isExistingEventID(id uint) bool {
 		return true
 	}
 	return false
+}
+
+func (s *JuryAssignmentsService) CreateManyAssignmentsByOneJury(dto juryAssignmentsDto.OneJuryManyAssignments) ([]uint, []error) {
+	wg := sync.WaitGroup{}
+	errors := make(chan error, len(dto.EventsID))
+	ids := make(chan uint, len(dto.EventsID))
+
+	for _, eventID := range dto.EventsID {
+		wg.Add(1)
+		tempDto := juryAssignmentsDto.JuryAssignmentsDTO{JuryID: dto.JuryID, EventID: eventID}
+		go func(goDto juryAssignmentsDto.JuryAssignmentsDTO) {
+			defer wg.Done()
+			id, err := s.CreateJuryAssignments(goDto)
+			if err != nil {
+				errors <- err
+				return
+			}
+			ids <- id
+		}(tempDto)
+		fmt.Println()
+	}
+	wg.Wait()
+	close(errors)
+	close(ids)
+
+	sliceErrors := []error{}
+	wg.Add(1)
+	go func(sliceErrors *[]error) {
+		defer wg.Done()
+		for err := range errors {
+			*sliceErrors = append(*sliceErrors, err)
+		}
+	}(&sliceErrors)
+
+	sliceIds := []uint{}
+	wg.Add(1)
+	go func(sliceIds *[]uint) {
+		defer wg.Done()
+		for id := range ids {
+			*sliceIds = append(*sliceIds, id)
+		}
+	}(&sliceIds)
+	wg.Wait()
+
+	return sliceIds, sliceErrors
 }
 
 func (s *JuryAssignmentsService) CreateJuryAssignments(dto juryAssignmentsDto.JuryAssignmentsDTO) (uint, error) {
