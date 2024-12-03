@@ -19,7 +19,7 @@ type JuryAssignmentsServiceInterface interface {
 	GetAllJuryAssignmentsByFilter(juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
 	GetPartOfAllJuryAssignmentsByFilter([]string, juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
 	GetJuryAssignmentsByFilter(juryAssignmentsDto.JuryAssignmentsDTO) (juryAssignmentsDto.JuryAssignmentsDTO, error)
-	CreateManyAssignmentsByOneJury(juryAssignmentsDto.OneJuryManyAssignments) ([]uint, []error)
+	CreateManyAssignmentsByOneJury(juryAssignmentsDto.OneJuryManyAssignments) ([]uint, error)
 	CreateJuryAssignments(juryAssignmentsDto.JuryAssignmentsDTO) (uint, error)
 	UpdateJuryAssignments(juryAssignmentsDto.JuryAssignmentsDTO) (uint, error)
 	DeleteJuryAssignments(uint) error
@@ -153,9 +153,9 @@ func (h *JureAssignmentHandler) CreateManyAssignmentsByOneJury(w http.ResponseWr
 		return
 	}
 
-	ids, errors := h.service.CreateManyAssignmentsByOneJury(dto)
-	if len(errors) != 0 {
-		log.Error("failde to create many Assignments,", errors)
+	ids, err := h.service.CreateManyAssignmentsByOneJury(dto)
+	if err != nil {
+		log.Error("failde to create many Assignments,", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to create many Assignments"))
 		return
 	}

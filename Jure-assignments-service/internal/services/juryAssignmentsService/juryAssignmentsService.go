@@ -6,7 +6,8 @@ import (
 	"main/internal/lib/converter/dtoConverter"
 	"main/internal/lib/supportRequest"
 	"main/internal/models/juryAssignments"
-	"sync"
+
+	"golang.org/x/sync/errgroup"
 
 	"gorm.io/gorm"
 )
@@ -108,49 +109,54 @@ func isExistingEventID(id uint) bool {
 	return false
 }
 
-func (s *JuryAssignmentsService) CreateManyAssignmentsByOneJury(dto juryAssignmentsDto.OneJuryManyAssignments) ([]uint, []error) {
-	wg := sync.WaitGroup{}
-	errors := make(chan error, len(dto.EventsID))
+func (s *JuryAssignmentsService) CreateManyAssignmentsByOneJury(dto juryAssignmentsDto.OneJuryManyAssignments) ([]uint, error) {
+	const op = "services.juryAssignmentsService.CreateManyAssignmentsByOneJury"
+
+	errGroup := errgroup.Group{}
+
 	ids := make(chan uint, len(dto.EventsID))
 
 	for _, eventID := range dto.EventsID {
-		wg.Add(1)
 		tempDto := juryAssignmentsDto.JuryAssignmentsDTO{JuryID: dto.JuryID, EventID: eventID}
-		go func(goDto juryAssignmentsDto.JuryAssignmentsDTO) {
-			defer wg.Done()
-			id, err := s.CreateJuryAssignments(goDto)
+		errGroup.Go(func() error {
+			id, err := s.CreateJuryAssignments(tempDto)
 			if err != nil {
-				errors <- err
-				return
+				return err
 			}
 			ids <- id
-		}(tempDto)
-		fmt.Println()
+			return nil
+		})
 	}
-	wg.Wait()
-	close(errors)
+
+	if err := errGroup.Wait(); err != nil {
+		close(ids)
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
 	close(ids)
 
-	sliceErrors := []error{}
-	wg.Add(1)
-	go func(sliceErrors *[]error) {
-		defer wg.Done()
-		for err := range errors {
-			*sliceErrors = append(*sliceErrors, err)
-		}
-	}(&sliceErrors)
-
 	sliceIds := []uint{}
-	wg.Add(1)
-	go func(sliceIds *[]uint) {
-		defer wg.Done()
-		for id := range ids {
-			*sliceIds = append(*sliceIds, id)
-		}
-	}(&sliceIds)
-	wg.Wait()
+	for id := range ids {
+		sliceIds = append(sliceIds, id)
+	}
 
-	return sliceIds, sliceErrors
+	return sliceIds, nil
+}
+
+func (s *JuryAssignmentsService) CreateJuryAssignmentsWithTransactionSupport(db *gorm.DB, dto juryAssignmentsDto.JuryAssignmentsDTO) (uint, error) {
+	const op = "services.juryAssignmentsService.CreateJuryAssignments"
+	if !isExistingUserID(dto.JuryID) {
+		return 0, fmt.Errorf("%s: Jury is not exist", op)
+	}
+	if !isExistingEventID(dto.EventID) {
+		return 0, fmt.Errorf("%s: Event is not exist", op)
+	}
+
+	model := dtoConverter.ConvertDTOtoJuryAssignments(dto)
+	id, err := s.repository.CreateJuryAssignments(db, model)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	return id, nil
 }
 
 func (s *JuryAssignmentsService) CreateJuryAssignments(dto juryAssignmentsDto.JuryAssignmentsDTO) (uint, error) {
