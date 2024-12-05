@@ -13,7 +13,7 @@ HTTP_SERVER_INFO:
   host: "localhost"
   port: "8080"
 
- JWT_TEMP_INFO:
+JWT_TEMP_INFO:
   key: "lololololololololololololololololololololololololololololol"
 
 
