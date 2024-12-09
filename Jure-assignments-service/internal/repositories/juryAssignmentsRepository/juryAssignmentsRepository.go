@@ -3,8 +3,7 @@ package juryAssignmentsRepository
 import (
 	"fmt"
 	"main/internal/models/juryAssignments"
-
-	"gorm.io/gorm"
+	"main/internal/storage/orm"
 )
 
 type JuryAssignmentsRepository struct{}
@@ -14,67 +13,66 @@ func NewJuryAssignmentsRepository() *JuryAssignmentsRepository {
 }
 
 func (r *JuryAssignmentsRepository) GetJuryAssignmentsByFilter(
-	db *gorm.DB, filter juryAssignments.JuryAssignments) (juryAssignments.JuryAssignments, error) {
+	myOrm orm.ORM, filter juryAssignments.JuryAssignments) (juryAssignments.JuryAssignments, error) {
 	const op = "repositories.juryAssignmentsRepository.GetJuryAssignmentsByID"
-	if err := db.First(&filter).Error; err != nil {
+	if err := myOrm.First(&filter); err != nil {
 		return juryAssignments.JuryAssignments{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return filter, nil
 }
 
 func (r *JuryAssignmentsRepository) GetPartOfAllJuryAssignmentsByFilter(
-	db *gorm.DB, fields []string, filter juryAssignments.JuryAssignments) ([]juryAssignments.JuryAssignments, error) {
-	const op = "repositories.juryAssignmentsRepository.GetPartOfGetJuryAssignmentsByFilter"
+	myOrm orm.ORM, fields []string, filter juryAssignments.JuryAssignments) ([]juryAssignments.JuryAssignments, error) {
+	const op = "repositories.juryAssignmentsRepository.GetPartOfAllJuryAssignmentsByFilter"
 	partOfJuryAssignmentsRes := []juryAssignments.JuryAssignments{}
-	if err := db.Select(fields).First(&partOfJuryAssignmentsRes, filter).Error; err != nil {
+	if err := myOrm.FindWithSelect(fields, &partOfJuryAssignmentsRes, filter); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return partOfJuryAssignmentsRes, nil
 }
 
-func (r *JuryAssignmentsRepository) GetAllJuryAssignments(db *gorm.DB) ([]juryAssignments.JuryAssignments, error) {
+func (r *JuryAssignmentsRepository) GetAllJuryAssignments(myOrm orm.ORM, conds ...interface{}) ([]juryAssignments.JuryAssignments, error) {
 	const op = "repositories.juryAssignmentsRepository.GetAllJuryAssignments"
 	juryAssignmentsRes := []juryAssignments.JuryAssignments{}
-	if err := db.Find(&juryAssignmentsRes).Error; err != nil {
+	if err := myOrm.Find(&juryAssignmentsRes, conds...); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return juryAssignmentsRes, nil
 }
 
 func (r *JuryAssignmentsRepository) GetAllJuryAssignmentsByFilter(
-	db *gorm.DB, filter juryAssignments.JuryAssignments) ([]juryAssignments.JuryAssignments, error) {
+	myOrm orm.ORM, filter juryAssignments.JuryAssignments) ([]juryAssignments.JuryAssignments, error) {
 	const op = "repositories.juryAssignmentsRepository.GetAllJuryAssignmentsByFilter"
 	juryAssignmentsRes := []juryAssignments.JuryAssignments{}
-	err := db.Find(&juryAssignmentsRes, filter).Error
-	if err != nil {
+	if err := myOrm.Find(&juryAssignmentsRes, filter); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return juryAssignmentsRes, nil
 }
 
 func (r *JuryAssignmentsRepository) CreateJuryAssignments(
-	db *gorm.DB, juryAssignments juryAssignments.JuryAssignments) (uint, error) {
+	myOrm orm.ORM, juryAssignments juryAssignments.JuryAssignments) (uint, error) {
 	const op = "repositories.juryAssignmentsRepository.CreateJuryAssignments"
 
-	if err := db.Create(&juryAssignments).Error; err != nil {
+	if err := myOrm.Create(&juryAssignments); err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 	return juryAssignments.ID, nil
 }
 
 func (r *JuryAssignmentsRepository) UpdateJuryAssignments(
-	db *gorm.DB, juryAssignments juryAssignments.JuryAssignments) (uint, error) {
+	myOrm orm.ORM, juryAssignments juryAssignments.JuryAssignments) (uint, error) {
 	const op = "repositories.juryAssignmentsRepository.UpdateJuryAssignments"
 
-	if err := db.Updates(&juryAssignments).Error; err != nil {
+	if err := myOrm.Updates(&juryAssignments); err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 	return juryAssignments.ID, nil
 }
 
-func (r *JuryAssignmentsRepository) DeleteJuryAssignments(db *gorm.DB, id uint) error {
+func (r *JuryAssignmentsRepository) DeleteJuryAssignments(myOrm orm.ORM, id uint) error {
 	const op = "repositories.juryAssignmentsRepository.DeleteJuryAssignments"
-	if err := db.Delete(&juryAssignments.JuryAssignments{ID: id}).Error; err != nil {
+	if err := myOrm.Delete(&juryAssignments.JuryAssignments{ID: id}); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
