@@ -6,9 +6,11 @@ import (
 	"main/internal/config"
 	"main/internal/handlers/jureAssignmentsHandler"
 	"main/internal/lib/liblogger"
-	"main/internal/lib/midlogger"
+	"main/internal/middleware/auth"
+	"main/internal/middleware/midlogger"
 	"main/internal/repositories/juryAssignmentsRepository"
 	"main/internal/services/juryAssignmentsService"
+	"main/internal/storage/orm"
 	"main/internal/storage/postgresql"
 	"net/http"
 	"os"
@@ -18,12 +20,14 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 )
 
 const localConfigPath = "config-yaml/local.yaml"
+const DebugLocalFilePath = "C:/code_folder/OlympiadProject/Jure-assignments-service/config-yaml/local.yaml"
 
 func main() {
-	cfg := config.GetConfig(localConfigPath)
+	cfg := config.GetConfig(DebugLocalFilePath)
 
 	log := liblogger.SetupLogger(cfg.Env)
 	log.Info("start jure-assignments-service")
@@ -39,14 +43,30 @@ func main() {
 
 	// init chi router
 	router := chi.NewRouter()
+	// init  middlewares cors
+	corsOptions := cors.Options{
+		AllowedOrigins:   []string{cfg.ReactVision}, // React URL
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300, // В секундах
+	}
+	router.Use(cors.Handler(corsOptions))
 	// init middlewares
 	router.Use(midlogger.New(log))
 	router.Use(middleware.URLFormat)
+	// add Authentication with JWT token
+	router.Use(func(next http.Handler) http.Handler {
+		return auth.AuthenticateMiddleware(next, cfg.Key)
+	})
 
 	// init repository
 	repository := juryAssignmentsRepository.NewJuryAssignmentsRepository()
+	// init orm
+	gormOrm := orm.NewGormORM(storage)
 	// init sevice
-	service := juryAssignmentsService.NewJuryAssignmentsService(storage, repository)
+	service := juryAssignmentsService.NewJuryAssignmentsService(gormOrm, repository)
 	// init handler
 	handler := jureAssignmentsHandler.NewJureAssignmentHandler(service, log)
 
