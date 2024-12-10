@@ -4,6 +4,7 @@ import { MyEvent } from "../../types/event.ts";
 
 export interface EventModalFormProps {
   showSubjectField?: boolean;
+  // showSelectSubEventType?: boolean;
   event?: MyEvent;
   onSuccess?: () => void;
 }
@@ -27,6 +28,7 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
   const [startDate, setStartDate] = useState<string>(formatDateForInput(event?.StartDate || ""));
   const [endDate, setEndDate] = useState<string>(formatDateForInput(event?.EndDate || ""));
   const [additionalInfo, setAdditionalInfo] = useState<string>("");
+  // const [subEventType, setSubEventType] = useState<string>("")
 
   useEffect(() => {
     if (showSubjectField) {
@@ -71,6 +73,11 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
       return;
     }
 
+    // if (showSelectSubEventType && !subEventType) {
+    //   alert("Заполните поле Тип события!");
+    //   return;
+    // }
+
     const eventData: MyEvent = {
       PreviousEventID: event?.ID,
       Name: eventName,
@@ -111,6 +118,24 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
 
   return (
     <Form onSubmit={handleSubmit}>
+
+      {/* {showSelectSubEventType && (
+      <Form.Group className="mb-3">
+        <Form.Label>Тип события</Form.Label>
+        <Form.Control
+          as="select"
+          placeholder="Выберите тип"
+          value={subEventType}
+          onChange={(e) => setSubEventType(e.target.value)}>
+
+          <option value="">Выберите тип</option>
+          <option value="Просмотр работ">Просмотр работ</option>
+          <option value="Апелляция">Апелляция</option>
+        </Form.Control>
+
+      </Form.Group>
+      )} */}
+
       <Form.Group className="mb-3">
         <Form.Label>Название события</Form.Label>
         <Form.Control
