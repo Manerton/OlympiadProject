@@ -75,7 +75,7 @@ func main() {
 	router.Get("/jury-assignments/{id}", handler.GetJuryAssignmentsByID)
 	router.Get("/jury-assignments/jury/{event_id}", handler.GetAllJuryIDByEventID)
 	router.Post("/jury-assignments", handler.CreateJuryAssignments)
-	router.Post("/jury-assignments-many", handler.CreateManyAssignmentsByOneJury)
+	router.Post("/jury-assignments/many", handler.CreateManyAssignmentsByOneJury)
 	router.Put("/jure-assignments/{id}", handler.UpdateJuryAssignments)
 	router.Delete("/jure-assignments/{id}", handler.UpdateJuryAssignments)
 
