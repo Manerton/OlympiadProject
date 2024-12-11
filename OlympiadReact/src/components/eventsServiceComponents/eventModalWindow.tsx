@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { MyEvent } from "../../types/event.ts";
+import API_CONFIG from "../../config/apiConfig.ts";
 
 export interface EventModalFormProps {
   showSubjectField?: boolean;
@@ -34,7 +35,7 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
     if (showSubjectField) {
       const getSubjects = async () => {
         try {
-          const response = await fetch("http://localhost:8080/subjects", {
+          const response = await fetch(`${API_CONFIG.EVENTS}/subjects`, {
             method: "GET",
             credentials: "include", // Для отправки cookie
 
@@ -89,7 +90,7 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
     };
 
     try {
-      const response = await fetch("http://localhost:8080/events", {
+      const response = await fetch(`${API_CONFIG.EVENTS}`, {
         method: "POST",
         credentials: "include", // Для отправки cookie
         headers: {

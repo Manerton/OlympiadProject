@@ -2,6 +2,7 @@ import { MyEvent, REGIONAL_STAGE, STAGE, OLYMPIAD } from "../../types/event";
 import { Button, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useRole } from "../RoleContext";
+import API_CONFIG from "../../config/apiConfig";
 
 interface EventItemProps {
   event: MyEvent;
@@ -26,7 +27,7 @@ function EventItem({ event }: EventItemProps) {
 
   const deleteEvent = async () => {
 
-    const endPointDeleteEvent = `http://localhost:8080/events/${event.ID}`;
+    const endPointDeleteEvent = `${API_CONFIG.EVENTS}/${event.ID}`;
     const parentDeletedEventID = event.PreviousEventID
     try {
 

@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { MyEvent } from "../../../types/event";
 import EventList from "../eventList";
 import EventModalForm from "../eventModalWindow";
+import API_CONFIG from "../../../config/apiConfig";
 
 function SubStagePage() {
     // Триггер показа модального окна
@@ -23,13 +24,13 @@ function SubStagePage() {
         const fetchData = async () => {
             try {
                 const [eventResponse, eventsResponse, juriesResponse] = await Promise.all([
-                    fetch(`http://localhost:8080/events/${id}`, 
+                    fetch(`${API_CONFIG.EVENTS}/${id}`, 
                         { 
                             method: "GET", 
                             credentials: "include", // Отправка cookie
                             headers: { "Content-Type": "application/json" }
                         }),
-                    fetch(`http://localhost:8080/events/child/${id}`, 
+                    fetch(`${API_CONFIG.EVENTS}/child/${id}`, 
                         { 
                             method: "GET", 
                             credentials: "include", // Отправка cookie
@@ -86,7 +87,7 @@ function SubStagePage() {
     // Отправка на сервис juryAssignments для создания множества записей
     const handleSave = async () => {
         try {
-            const response = await fetch("http://localhost:8090/jury-assignments-many", {
+            const response = await fetch(`${API_CONFIG.JUREASSIGNMENTS}/many`, {
                 method: "POST",
                 credentials: "include", // Отправка cookie
                 headers: {
