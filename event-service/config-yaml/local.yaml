@@ -17,3 +17,4 @@ JWT_TEMP_INFO:
 
 ADDITIONAL_ADDRESSES:
   react: "http://localhost:5173"
+  jure-assignments: "http://localhost:8090"

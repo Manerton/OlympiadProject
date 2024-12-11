@@ -49,7 +49,7 @@ func main() {
 	router := chi.NewRouter()
 	// init  middlewares cors
 	corsOptions := cors.Options{
-		AllowedOrigins:   []string{cfg.ReactVision}, // React URL
+		AllowedOrigins:   []string{cfg.ReactVision, cfg.JureAssignmentsService}, // React URL
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
