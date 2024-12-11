@@ -73,7 +73,7 @@ func main() {
 	eventHandler := event_handler.NewEventHandler(eventService, log)
 
 	// init subjects route
-	router.Get("/subjects", subjectHandler.GetAllSubjects)
+	router.Get("/events/subjects", subjectHandler.GetAllSubjects)
 
 	// init events route
 	// 3 - organizer
