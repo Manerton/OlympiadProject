@@ -2,24 +2,12 @@ import React, { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { MyEvent } from "../../types/event.ts";
 import API_CONFIG from "../../config/apiConfig.ts";
+import formatDateForInput from "../../support/support.ts";
 
 export interface EventModalFormProps {
   showSubjectField?: boolean;
-  // showSelectSubEventType?: boolean;
   event?: MyEvent;
   onSuccess?: () => void;
-}
-
-function formatDateForInput(dateString: string): string {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const seconds = String(date.getSeconds()).padStart(2, "0");
-
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 }
 
 function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormProps) {
@@ -32,34 +20,33 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
   // const [subEventType, setSubEventType] = useState<string>("")
 
   useEffect(() => {
-    if (showSubjectField) {
-      const getSubjects = async () => {
-        try {
-          const response = await fetch(`${API_CONFIG.EVENTS}/subjects`, {
-            method: "GET",
-            credentials: "include", // Для отправки cookie
+    const getSubjects = async () => {
+      try {
+        const response = await fetch(`${API_CONFIG.EVENTS}/subjects`, {
+          method: "GET",
+          credentials: "include", // Для отправки cookie
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Ошибка API: ${errorText}`);
-          }
-
-          const result = await response.json();
-          console.log("Предметы получены!", result);
-          setSubjectList(result.data);
-        } catch (error) {
-          console.error("Ошибка при получении предметов:", error);
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Ошибка API: ${errorText}`);
         }
-      };
 
+        const result = await response.json();
+        console.log("Предметы получены!", result);
+        setSubjectList(result.data);
+      } catch (error) {
+        console.error("Ошибка при получении предметов:", error);
+      }
+    };
+
+    if (showSubjectField && subjectList.length === 0) {
       getSubjects();
     }
-  }, [showSubjectField]);
+  }, [showSubjectField, subjectList.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -181,8 +168,8 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
         <Form.Control
           type="datetime-local"
           value={startDate}
-          min={formatDateForInput(event?.StartDate || "")}
-          max={formatDateForInput(event?.EndDate || "")}
+          min={ event?.EventType != "STAGE" ? formatDateForInput(event?.StartDate || "") : formatDateForInput(event?.EndDate || "")}
+          max={ event?.EventType != "STAGE" ? formatDateForInput(event?.EndDate || "") : undefined }
           onChange={(e) => setStartDate(e.target.value)}
         />
       </Form.Group>
@@ -192,8 +179,8 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
         <Form.Control
           type="datetime-local"
           value={endDate}
-          min={formatDateForInput(event?.StartDate || "")}
-          max={formatDateForInput(event?.EndDate || "")}
+          min={ event?.EventType != "STAGE" ? formatDateForInput(event?.StartDate || "") : formatDateForInput(event?.EndDate || "")}
+          max={ event?.EventType != "STAGE" ? formatDateForInput(event?.EndDate || "") : undefined }
           onChange={(e) => setEndDate(e.target.value)}
         />
       </Form.Group>
