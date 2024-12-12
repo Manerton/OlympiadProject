@@ -5,6 +5,8 @@ import { MyEvent } from "../../../types/event";
 import EventList from "../eventList";
 import EventModalForm from "../eventModalWindow";
 import API_CONFIG from "../../../config/apiConfig";
+import { RoleProvider } from "../../RoleContext";
+import EventInfo from "../eventInfo";
 
 function SubStagePage() {
     // Триггер показа модального окна
@@ -23,7 +25,7 @@ function SubStagePage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [eventResponse, eventsResponse, juriesResponse] = await Promise.all([
+                const [eventResponse, eventsResponse,] = await Promise.all([
                     fetch(`${API_CONFIG.EVENTS}/${id}`, 
                         { 
                             method: "GET", 
@@ -36,37 +38,35 @@ function SubStagePage() {
                             credentials: "include", // Отправка cookie
                             headers: { "Content-Type": "application/json" } 
                         }),
-                    // TODO! Запрос на UserService для полчения списка жюри
-                    fetch(`http://localhost:8080/juries`, 
-                        { 
-                            method: "GET", 
-                            credentials: "include", // Отправка cookie
-                            headers: { "Content-Type": "application/json" } 
-                        }) // Запрос списка жюри
+                    // // TODO! Запрос на UserService для полчения списка жюри
+                    // fetch(`http://localhost:8080/juries`, 
+                    //     { 
+                    //         method: "GET", 
+                    //         credentials: "include", // Отправка cookie
+                    //         headers: { "Content-Type": "application/json" } 
+                    //     }) // Запрос списка жюри
                 ]);
 
-                if (!eventResponse.ok || !eventsResponse.ok || !juriesResponse.ok) {
+                if (!eventResponse.ok || !eventsResponse.ok ) {
                     const errorText = await Promise.all([
                         eventResponse.text(),
                         eventsResponse.text(),
-                        juriesResponse.text()
                     ]);
                     throw new Error(`Ошибка API: ${errorText.join(", ")}`);
                 }
 
-                const [eventResult, eventsResult, juriesResult] = await Promise.all([
+                const [eventResult, eventsResult] = await Promise.all([
                     eventResponse.json(),
                     eventsResponse.json(),
-                    juriesResponse.json()
                 ]);
 
                 console.log("Этап получен!", eventResult);
                 console.log("Подэтапы получены!", eventsResult);
-                console.log("Жюри получены!", juriesResult);
+                // console.log("Жюри получены!", juriesResult);
 
                 setEvent(eventResult.data);
                 setEvents(eventsResult.data);
-                setJuries(juriesResult.data); // Устанавливаем список жюри
+                // setJuries(juriesResult.data); // Устанавливаем список жюри
             } catch (error) {
                 console.error("Ошибка при получении данных:", error);
             }
@@ -141,17 +141,17 @@ function SubStagePage() {
                 )}
             </div>
 
-            <div className="mb-3">
-                <h6>Дата начала: {new Date(event?.StartDate || "").toLocaleString()}</h6>
-                <h6>Дата конца: {new Date(event?.EndDate || "").toLocaleString()}</h6>
-                <h6>Тип: {event?.EventType}</h6>
-            </div>
+            {event && (
+                <EventInfo event={event}></EventInfo>
+            )}
 
             <div className="row">
                 {/* Список подэтапов */}
                 <div className="col-8 border p-3">
                     <h5>Список подэтапов</h5>
-                    <EventList events={events} />
+                    <RoleProvider>
+                        <EventList events={events} />
+                    </RoleProvider>
                 </div>
 
                 {/* Список жюри */}
