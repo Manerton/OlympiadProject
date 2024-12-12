@@ -1,11 +1,12 @@
 import EventList from "../eventList"
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Button, Modal } from "react-bootstrap";
 import EventModalForm from "../eventModalWindow";
 import { MyEvent, OLYMPIAD, REGIONAL_STAGE, STAGE } from "../../../types/event";
 import { RoleProvider, useRole } from "../../RoleContext";
 import API_CONFIG from "../../../config/apiConfig"
+import EventInfo from "../eventInfo";
 // import Pagination from "./components/Pagination";
 // import { useUser } from "../contexts/UserContext";
 
@@ -25,12 +26,14 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
 
   const [events, setEvents] = useState([])
   const [event, setEvent] = useState()
+  const [isLoading, setIsLoading] = useState(true);
 
   const { role, id } = useRole();
 
+  const memoizedShowSubjectField = useMemo(() => showSubjectField, [showSubjectField]);
+
   const fetchEvents = async () => {
     let endPointEvents = ""
-
     switch (type) {
       case REGIONAL_STAGE:
         endPointEvents = `${API_CONFIG.EVENTS}/regional-stage`;
@@ -41,7 +44,6 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
       case STAGE:
         endPointEvents = `${API_CONFIG.EVENTS}/stages/${selectedEventId}`;
     }
-    const endPointEvent = `${API_CONFIG.EVENTS}/${selectedEventId}`;
     try {
       const response = await fetch(endPointEvents, {
         method: "GET",
@@ -51,12 +53,15 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json();
-      console.log("Response from API:", result);
-      setEvents(result.data);
+      console.log("EVENTS: Response from API:", result);
+      if (result.data){
+        setEvents(result.data);
+      }
     } catch (error) {
       console.error("Ошибка при загрузке региональных этапов:", error);
     }
 
+    const endPointEvent = `${API_CONFIG.EVENTS}/${selectedEventId}`;
     if (selectedEventId) {
       try {
         const response = await fetch(endPointEvent, {
@@ -67,7 +72,7 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const result = await response.json();
-        console.log("Response from API:", result);
+        console.log("EVENT: Response from API:", result);
         setEvent(result.data);
 
       } catch (error) {
@@ -103,8 +108,16 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
           </Button>
         )}
       </div>
+        {event && (
+          <EventInfo event={event}></EventInfo>
+        )}
+
       {/* Список этапов */}
-      <EventList events={events} parentEvent={event} />
+      {events.length > 0 ? (
+        <EventList events={events} />
+      ) : (
+        <p>Загрузка данных...</p>
+      )}
       {/* Пагинация */}
       {/* <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} /> */}
       {/* Модальное окно */}
@@ -114,7 +127,7 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
         </Modal.Header>
         <Modal.Body>
           {/* Форма создания */}
-          <EventModalForm onSuccess={OnUpdateListEvent} event={event} showSubjectField={showSubjectField} ></EventModalForm>
+          <EventModalForm onSuccess={OnUpdateListEvent} event={event} showSubjectField={memoizedShowSubjectField} ></EventModalForm>
         </Modal.Body>
       </Modal>
     </div>
