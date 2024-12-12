@@ -10,10 +10,7 @@ interface EventItemProps {
 
 function EventItem({ event }: EventItemProps) {
   const navigate = useNavigate();
-
-  console.log("event", event)
-
-  const {role, id} = useRole()
+  const { role, id } = useRole()
 
   const handleClick = () => {
     if (event.EventType === REGIONAL_STAGE) {
@@ -71,58 +68,60 @@ function EventItem({ event }: EventItemProps) {
           )}
         </div>
         <div>
-        {role === "3" && (
-          <Button variant="danger" onClick={deleteEvent} >
-            Удалить
-          </Button>
-        )}
+          {role === "3" && (
+            <Button variant="danger" onClick={deleteEvent} >
+              Удалить
+            </Button>
+          )}
         </div>
-     
-      {event.Events && event.Events.length > 0 && (
-        <div>
-          <button
-            className="btn btn-primary"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target={`#collapse-${event.ID}`}
-            aria-expanded="false"
-            aria-controls={`collapse-${event.ID}`}
-          >
-            Показать вложенные события
-          </button>
-          <div className="collapse" id={`collapse-${event.ID}`}>
-            <div className="card card-body">
-              {event.Events.map((childEvent) => (
-                <Card key={childEvent.ID} className="mb-3">
-                  <Card.Body>
-                    <Card.Title>{childEvent.Name}</Card.Title>
-                    <Card.Text>
-                      Дата начала: {new Date(childEvent.StartDate).toLocaleString()}
-                    </Card.Text>
-                    <Card.Text>
-                      Дата конца: {new Date(childEvent.EndDate).toLocaleString()}
-                    </Card.Text>
-                    {childEvent.AdditionalInfo && (
+
+
+      </Card.Body>
+      <Card.Footer>
+        {event.Events && event.Events.length > 0 && (
+          <div>
+            <button
+              className="btn btn-primary"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target={`#collapse-${event.ID}`}
+              aria-expanded="false"
+              aria-controls={`collapse-${event.ID}`}
+            >
+              Показать вложенные события
+            </button>
+            <div className="collapse" id={`collapse-${event.ID}`}>
+              <div className="card card-body">
+                {event.Events.map((childEvent) => (
+                  <Card key={childEvent.ID} className="mb-3">
+                    <Card.Body>
+                      <Card.Title>{childEvent.Name}</Card.Title>
                       <Card.Text>
-                        Дополнительная информация: {childEvent.AdditionalInfo}
+                        Дата начала: {new Date(childEvent.StartDate).toLocaleString()}
                       </Card.Text>
-                    )}
-                    {/* Дополнительные действия для вложенных событий */}
-                    <Button
-                      variant="primary"
-                      onClick={() => navigate(`/events/${childEvent.ID}`)}
-                    >
-                      Перейти к событию
-                    </Button>
-                  </Card.Body>
-                </Card>
-              ))}
+                      <Card.Text>
+                        Дата конца: {new Date(childEvent.EndDate).toLocaleString()}
+                      </Card.Text>
+                      {childEvent.AdditionalInfo && (
+                        <Card.Text>
+                          Дополнительная информация: {childEvent.AdditionalInfo}
+                        </Card.Text>
+                      )}
+                      {/* Дополнительные действия для вложенных событий */}
+                      <Button
+                        variant="primary"
+                        onClick={() => navigate(`/events/${childEvent.ID}`)}
+                      >
+                        Перейти к событию
+                      </Button>
+                    </Card.Body>
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      )}
-       </Card.Body>
-
+        )}
+      </Card.Footer>
 
     </Card>
   )
