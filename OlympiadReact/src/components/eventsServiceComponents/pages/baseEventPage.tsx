@@ -25,7 +25,7 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
   //   const { user } = useUser(); // Доступ к информации о пользователе
 
   const [events, setEvents] = useState([])
-  const [event, setEvent] = useState()
+  const [event, setEvent] = useState<MyEvent>()
   const [isLoading, setIsLoading] = useState(true);
 
   const { role, id } = useRole();
@@ -54,7 +54,7 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
       }
       const result = await response.json();
       console.log("EVENTS: Response from API:", result);
-      if (result.data){
+      if (result.data) {
         setEvents(result.data);
       }
     } catch (error) {
@@ -93,44 +93,51 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
 
   return (
 
-    <div>
-      <div className="d-flex justify-content-between">
-        <h1>{pageName}</h1>
-        {/* Кнопка создания доступна только организаторам */}
-        <p>{role}</p>
-        {role === "3" && (
-          <Button
-            variant="primary"
-            className="mb-3"
-            onClick={() => setShowModal(true)}
-          >
-            Создать
-          </Button>
-        )}
-      </div>
-        {event && (
-          <EventInfo event={event}></EventInfo>
-        )}
+    <div className="row">
 
-      {/* Список этапов */}
-      {events.length > 0 ? (
-        <EventList events={events} />
-      ) : (
-        <p>Загрузка данных...</p>
+      {event && (
+        <div className="col-3">
+          <h3>Информация о {event.Name}</h3>
+          <EventInfo event={event}></EventInfo>
+        </div>
       )}
-      {/* Пагинация */}
-      {/* <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} /> */}
-      {/* Модальное окно */}
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Создать</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {/* Форма создания */}
-          <EventModalForm onSuccess={OnUpdateListEvent} event={event} showSubjectField={memoizedShowSubjectField} ></EventModalForm>
-        </Modal.Body>
-      </Modal>
-    </div>
+        <div className="col-9">
+          <div className="d-flex justify-content-between">
+            <h1>{pageName}</h1>
+            {/* Кнопка создания доступна только организаторам */}
+            <p>{role}</p>
+            {role === "3" && (
+              <Button
+                variant="primary"
+                className="mb-3"
+                onClick={() => setShowModal(true)}
+              >
+                Создать
+              </Button>
+            )}
+          </div>
+
+
+          {/* Список этапов */}
+          {events.length > 0 ? (
+            <EventList events={events} />
+          ) : (
+            <p>Загрузка данных...</p>
+          )}
+          {/* Пагинация */}
+          {/* <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} /> */}
+          {/* Модальное окно */}
+        </div>
+        <Modal show={showModal} onHide={() => setShowModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Создать</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {/* Форма создания */}
+            <EventModalForm onSuccess={OnUpdateListEvent} event={event} showSubjectField={memoizedShowSubjectField} ></EventModalForm>
+          </Modal.Body>
+        </Modal>
+      </div>
   );
 }
 
