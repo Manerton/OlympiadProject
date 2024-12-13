@@ -81,10 +81,10 @@ func (s *EventService) GetEventsByType(event_type event.EventType, offset, limit
 func (s *EventService) GetEventsTypeStageAndHisChilds(id uint) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventsTypeStageAndHisChilds"
 	// Get all event stage by previousID
-	tx := s.db.Begin()
-	events, err := s.repository.GetEventsByPreviousID(tx, id, nil, nil)
+	// tx := s.db.Begin()
+	events, err := s.repository.GetEventsByPreviousID(s.db, id, nil, nil)
 	if err != nil {
-		tx.Rollback()
+		// tx.Rollback()
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	eventsDto := ConvertManyEventsToDTO(events)
@@ -101,7 +101,7 @@ func (s *EventService) GetEventsTypeStageAndHisChilds(id uint) ([]event_dto.Even
 			mx.Lock()
 			id := eventsDto[i].ID
 			mx.Unlock()
-			childs, err := s.repository.GetEventsByPreviousID(tx, id, nil, nil)
+			childs, err := s.repository.GetEventsByPreviousID(s.db, id, nil, nil)
 			if err != nil {
 				errors <- err
 			}
@@ -112,10 +112,10 @@ func (s *EventService) GetEventsTypeStageAndHisChilds(id uint) ([]event_dto.Even
 	}
 	wg.Wait()
 	if len(errors) > 0 {
-		tx.Rollback()
+		// tx.Rollback()
 		return nil, fmt.Errorf("%s: %w", op, <-errors)
 	}
-	tx.Commit()
+	// tx.Commit()
 	return eventsDto, nil
 }
 
