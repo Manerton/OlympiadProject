@@ -4,7 +4,7 @@ DB_INFO:
   host: "localhost"
   name: "EventServiceDB"
   user: "postgres"
-  pass: "root"
+  pass: "timur"
   ssl_model: "disable"
 
 

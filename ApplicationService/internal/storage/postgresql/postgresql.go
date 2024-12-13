@@ -67,34 +67,34 @@ func seedData(db *gorm.DB) error {
 	// Тестовые данные для заявок
 	applications := []models.Application{
 		{
-			UserID:        1,
-			EventID:       101,
-			EventName:     "Олимпиада по информатике",     // ВРЕМЕННО
-			EventLocation: "Школа №122",                   // ВРЕМЕННО
-			EventDate:     time.Now().Add(48 * time.Hour), // ВРЕМЕННО
-			Status:        nil,
-			SubmittedAt:   time.Now().Add(-48 * time.Hour), // 2 дня назад
-			UpdatedAt:     time.Now(),
+			UserID:  1,
+			EventID: 101,
+			// EventName:     "Олимпиада по информатике",     // ВРЕМЕННО
+			// EventLocation: "Школа №122",                   // ВРЕМЕННО
+			// EventDate:     time.Now().Add(48 * time.Hour), // ВРЕМЕННО
+			Status:      nil,
+			SubmittedAt: time.Now().Add(-48 * time.Hour), // 2 дня назад
+			UpdatedAt:   time.Now(),
 		},
 		{
-			UserID:        1,
-			EventID:       102,
-			EventName:     "Олимпиада по математике",       // ВРЕМЕННО
-			EventLocation: "Школа №123",                    // ВРЕМЕННО
-			EventDate:     time.Now().Add(72 * time.Hour),  // ВРЕМЕННО
-			Status:        boolPtr(true),                   // Одобрено
-			SubmittedAt:   time.Now().Add(-24 * time.Hour), // 1 день назад
-			UpdatedAt:     time.Now(),
+			UserID:  1,
+			EventID: 102,
+			// EventName:     "Олимпиада по математике",       // ВРЕМЕННО
+			// EventLocation: "Школа №123",                    // ВРЕМЕННО
+			// EventDate:     time.Now().Add(72 * time.Hour),  // ВРЕМЕННО
+			Status:      boolPtr(true),                   // Одобрено
+			SubmittedAt: time.Now().Add(-24 * time.Hour), // 1 день назад
+			UpdatedAt:   time.Now(),
 		},
 		{
-			UserID:        1,
-			EventID:       103,
-			EventName:     "Олимпиада по Русскому языку",   // ВРЕМЕННО
-			EventLocation: "Школа №64",                     // ВРЕМЕННО
-			EventDate:     time.Now().Add(24 * time.Hour),  // ВРЕМЕННО
-			Status:        boolPtr(false),                  // Отклонено
-			SubmittedAt:   time.Now().Add(-72 * time.Hour), // 3 дня назад
-			UpdatedAt:     time.Now(),
+			UserID:  1,
+			EventID: 103,
+			// EventName:     "Олимпиада по Русскому языку",   // ВРЕМЕННО
+			// EventLocation: "Школа №64",                     // ВРЕМЕННО
+			// EventDate:     time.Now().Add(24 * time.Hour),  // ВРЕМЕННО
+			Status:      boolPtr(false),                  // Отклонено
+			SubmittedAt: time.Now().Add(-72 * time.Hour), // 3 дня назад
+			UpdatedAt:   time.Now(),
 		},
 	}
 
