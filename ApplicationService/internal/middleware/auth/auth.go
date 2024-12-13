@@ -95,18 +95,21 @@ func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 }
 
 // Check role for access
-func RoleBasedAccess(requiredRole string) func(next http.Handler) http.Handler {
+func RoleBasedAccess(requiredRole ...string) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			log.Println("Start rolebaseAccess")
 			user := r.Context().Value(UserInfoKey{}).(UserInfo)
+			for _, role := range requiredRole {
+				if user.role == role {
 
-			if user.role != requiredRole {
-				http.Error(w, "Access denied", http.StatusForbidden)
-				return
+					next.ServeHTTP(w, r)
+					return
+
+				}
 			}
+			http.Error(w, "Access denied", http.StatusForbidden)
 
-			next.ServeHTTP(w, r)
 		})
 	}
 }

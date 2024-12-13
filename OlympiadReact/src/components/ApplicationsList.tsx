@@ -91,7 +91,7 @@ export default ApplicationsPage; */
   
     useEffect(() => {
       // Запрос к API с использованием fetch
-      fetch("http://localhost:8080/applications")
+      fetch("http://localhost:8082/applications", {credentials: "include"}) 
         .then((response) => {
           if (!response.ok) {
             throw new Error("Ошибка при загрузке данных.");

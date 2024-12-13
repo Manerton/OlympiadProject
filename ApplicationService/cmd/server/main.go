@@ -4,6 +4,7 @@ import (
 	"OlimpiadPortal/ApplicationService/internal/config"
 	ApplicationHandler "OlimpiadPortal/ApplicationService/internal/handlers"
 	"OlimpiadPortal/ApplicationService/internal/lib/liblogger"
+	"OlimpiadPortal/ApplicationService/internal/middleware/auth"
 	"OlimpiadPortal/ApplicationService/internal/middleware/midlogger"
 	ApplicationRepository "OlimpiadPortal/ApplicationService/internal/repositories"
 	ApplicationService "OlimpiadPortal/ApplicationService/internal/services"
@@ -16,7 +17,7 @@ import (
 	"github.com/go-chi/cors"
 )
 
-const LocalFilePath = "D:/go_dev/Olimpiad_portal/Application_Service/config-yaml/local.yaml"
+const LocalFilePath = "config-yaml/local.yaml"
 
 func main() {
 	// Init config
@@ -37,9 +38,6 @@ func main() {
 
 	// init chi router
 	router := chi.NewRouter()
-	// init middlewares
-	router.Use(midlogger.New(log))
-	router.Use(middleware.URLFormat)
 	// init cors
 	corsOptions := cors.Options{
 		AllowedOrigins:   []string{cfg.ReactVision}, // React URL
@@ -50,19 +48,42 @@ func main() {
 		MaxAge:           300, // В секундах
 	}
 	router.Use(cors.Handler(corsOptions))
+	// init middlewares
+	router.Use(midlogger.New(log))
+	router.Use(middleware.URLFormat)
+
+	// add Authentication with JWT token
+	router.Use(func(next http.Handler) http.Handler {
+		return auth.AuthenticateMiddleware(next, cfg.Key)
+	})
 
 	// init application service and handler
 	applicationService := ApplicationService.NewApplicationService(storage, &ApplicationRepository.ApplicationRepository{})
 	applicationHandler := ApplicationHandler.NewApplicationHandler(applicationService, log)
 
+	router.Get("/applications/{id}", applicationHandler.GetApplicationByID) //wtf
+
 	// init applications route
-	router.Get("/applications", applicationHandler.GetAllApplications)
-	router.Get("/applications/{id}", applicationHandler.GetApplicationByID)
-	router.Get("/applications/user/{userID}", applicationHandler.GetApplicationsByUserID)
-	router.Get("/applications/event/{eventID}", applicationHandler.GetApplicationsByEventID)
-	router.Post("/applications", applicationHandler.CreateApplication)
-	router.Put("/applications/{id}", applicationHandler.UpdateApplicationStatus)
-	router.Delete("/applications/{id}", applicationHandler.DeleteApplication)
+	router.With(auth.RoleBasedAccess("4")).Group(func(r chi.Router) {
+		router.Get("/applications", applicationHandler.GetAllApplications)
+	})
+
+	router.With(auth.RoleBasedAccess("2", "4")).Group(func(r chi.Router) {
+		router.Get("/applications/user/{userID}", applicationHandler.GetApplicationsByUserID)
+	})
+
+	router.With(auth.RoleBasedAccess("3")).Group(func(r chi.Router) {
+		router.Get("/applications/event/{eventID}", applicationHandler.GetApplicationsByEventID)
+	})
+
+	router.With(auth.RoleBasedAccess("2", "4")).Group(func(r chi.Router) {
+		router.Post("/applications", applicationHandler.CreateApplication)
+	})
+
+	router.With(auth.RoleBasedAccess("3", "4")).Group(func(r chi.Router) {
+		router.Put("/applications/{id}", applicationHandler.UpdateApplicationStatus)
+		router.Delete("/applications/{id}", applicationHandler.DeleteApplication)
+	})
 
 	// init server
 	server := &http.Server{
