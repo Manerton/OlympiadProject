@@ -101,8 +101,7 @@ function EventInfo({ event }: EventInfoProps) {
 
             {/* Даты и предмет */}
             {/* Название события */}
-            <div className="row">
-              <Form.Group className="col-md-4 mb-2">
+              <Form.Group className="mb-2">
                 <Form.Label>Название события</Form.Label>
                 <Form.Control
                   type="text"
@@ -112,7 +111,7 @@ function EventInfo({ event }: EventInfoProps) {
                 />
               </Form.Group>
 
-              <Form.Group className="col-md-4 mb-2">
+              <Form.Group className="mb-2">
                 <Form.Label>Дата начала</Form.Label>
                 <Form.Control
                   type="datetime-local"
@@ -120,7 +119,7 @@ function EventInfo({ event }: EventInfoProps) {
                   onChange={(e) => setStartDate(e.target.value)}
                 />
               </Form.Group>
-              <Form.Group className="col-md-4 mb-2">
+              <Form.Group className="mb-2">
                 <Form.Label>Дата конца</Form.Label>
                 <Form.Control
                   type="datetime-local"
@@ -128,7 +127,7 @@ function EventInfo({ event }: EventInfoProps) {
                   onChange={(e) => setEndDate(e.target.value)}
                 />
               </Form.Group>
-            </div>
+            
             {subject && (
 
               <Form.Group className="mb-3">
