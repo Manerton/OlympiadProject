@@ -1,20 +1,12 @@
 import EventItem from "./eventItem";
 import { MyEvent } from "../../types/event";
-import { Button, Form } from "react-bootstrap";
-import { useEffect, useState } from "react";
-import formatDateForInput from "../../support/support";
-import API_CONFIG from "../../config/apiConfig";
-
 
 interface EventListProps {
   events: MyEvent[]
+  onDelete:  (id: number) => void;
 }
 
-
-
-function EventList({ events }: EventListProps) {
-
-
+function EventList({ events, onDelete }: EventListProps) {
   if (!events) {
     return (
       <div>
@@ -26,12 +18,10 @@ function EventList({ events }: EventListProps) {
   return (
     <div>
       {events.map((event: MyEvent) => (
-        <EventItem key={event.ID} event={event} />
+        <EventItem key={event.ID} event={event} onDelete={onDelete} />
       ))}
     </div>
   )
-
-
 }
 
 export default EventList
