@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Button, Modal } from "react-bootstrap";
 import EventModalForm from "../eventModalWindow";
 import { MyEvent, OLYMPIAD, REGIONAL_STAGE, STAGE } from "../../../types/event";
-import { RoleProvider, useRole } from "../../RoleContext";
+import { useRole } from "../../RoleContext";
 import API_CONFIG from "../../../config/apiConfig"
 import EventInfo from "../eventInfo";
 // import Pagination from "./components/Pagination";
@@ -24,9 +24,8 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
   const [showModal, setShowModal] = useState(false);
   //   const { user } = useUser(); // Доступ к информации о пользователе
 
-  const [events, setEvents] = useState([])
+  const [events, setEvents] = useState<MyEvent[]>([])
   const [event, setEvent] = useState<MyEvent>()
-  const [isLoading, setIsLoading] = useState(true);
 
   const { role, id } = useRole();
 
@@ -79,7 +78,6 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
         console.error("Ошибка при загрузке региональных этапов:", error);
       }
     }
-
   };
 
   useEffect(() => {
@@ -90,11 +88,13 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
     setShowModal(false)
     fetchEvents()
   }
+  
+  const handleDeleteEvent = (id: number) => {
+    setEvents((events) => events.filter((event) => event.ID !== id));
+  };
 
   return (
-
     <div className="row">
-
       {event && (
         <div className="col-3">
           <h3>Информация о {event.Name}</h3>
@@ -117,12 +117,11 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
             )}
           </div>
 
-
           {/* Список этапов */}
           {events.length > 0 ? (
-            <EventList events={events} />
+            <EventList events={events} onDelete={handleDeleteEvent} />
           ) : (
-            <p>Загрузка данных...</p>
+            <p>Список пуст...</p>
           )}
           {/* Пагинация */}
           {/* <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} /> */}
