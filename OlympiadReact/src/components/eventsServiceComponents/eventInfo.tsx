@@ -3,6 +3,7 @@ import API_CONFIG from "../../config/apiConfig";
 import { useEffect, useState } from "react";
 import formatDateForInput from "../../support/support";
 import { MyEvent } from "../../types/event";
+import { useRole } from "../RoleContext";
 
 interface EventInfoProps {
   event: MyEvent
@@ -15,6 +16,9 @@ function EventInfo({ event }: EventInfoProps) {
   const [startDate, setStartDate] = useState<string>(formatDateForInput(event.StartDate || ""));
   const [endDate, setEndDate] = useState<string>(formatDateForInput(event.EndDate || ""));
   const [additionalInfo, setAdditionalInfo] = useState<string>(event.AdditionalInfo || "");
+
+
+  const { role, id } = useRole();
 
   useEffect(() => {
     if (event.Subject) {
@@ -93,89 +97,103 @@ function EventInfo({ event }: EventInfoProps) {
     }
   }
   return (
-      <div className="card shadow-sm mb-3">
-        <div className="card-body">
-          <h5 className="card-title">Редактировать событие</h5>
-          <Form onSubmit={UpdateEvent}>
+    <div className="card shadow-sm mb-3">
+      <div className="card-body">
+        {role === "3" && (
+          <h5 className="card-title" >Редактировать событие</h5>
+        )}
+        <Form onSubmit={UpdateEvent}>
 
 
-            {/* Даты и предмет */}
-            {/* Название события */}
-              <Form.Group className="mb-2">
-                <Form.Label>Название события</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Введите название"
-                  value={eventName}
-                  onChange={(e) => setEventName(e.target.value)}
-                />
-              </Form.Group>
+          {/* Даты и предмет */}
+          {/* Название события */}
+          <Form.Group className="mb-2">
+            <Form.Label>Название события</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="Введите название"
+              value={eventName}
+              onChange={(e) => setEventName(e.target.value)}
+              disabled={role !== "3"}
+            />
+          </Form.Group>
 
-              <Form.Group className="mb-2">
-                <Form.Label>Дата начала</Form.Label>
-                <Form.Control
-                  type="datetime-local"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
-              </Form.Group>
-              <Form.Group className="mb-2">
-                <Form.Label>Дата конца</Form.Label>
-                <Form.Control
-                  type="datetime-local"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
-              </Form.Group>
-            
-            {subject && (
+          <Form.Group className="mb-2">
+            <Form.Label>Дата начала</Form.Label>
+            <Form.Control
+              type="datetime-local"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              disabled={role !== "3"}
+            />
+          </Form.Group>
+          <Form.Group className="mb-2">
+            <Form.Label>Дата конца</Form.Label>
+            <Form.Control
+              type="datetime-local"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              disabled={role !== "3"}
+            />
+          </Form.Group>
 
-              <Form.Group className="mb-3">
-                <Form.Label>Предмет</Form.Label>
-                <div className="dropdown">
-                  <button
-                    className="btn btn-secondary dropdown-toggle w-100"
-                    type="button"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    {subject || "Выберите предмет"}
-                  </button>
-                  <ul className="dropdown-menu w-100">
-                    {subjectList.map((subject_str, index) => (
-                      <li key={index}>
-                        <a
-                          className="dropdown-item"
-                          onClick={() => setSubject(subject_str)}
-                          style={{ cursor: "pointer" }}
-                        >
-                          {subject_str}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </Form.Group>)}
+          {subject && (
 
-            {/* Дополнительная информация */}
             <Form.Group className="mb-3">
-              <Form.Label>Дополнительная информация</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={3}
-                value={additionalInfo}
-                onChange={(e) => setAdditionalInfo(e.target.value)}
-              />
+              <Form.Label>Предмет</Form.Label>
+              <div className="dropdown">
+                <button
+                  className="btn btn-secondary dropdown-toggle w-100"
+                  type="button"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  disabled={role !== "3"}
+                >
+                  {subject || "Выберите предмет"}
+                </button>
+                <ul className="dropdown-menu w-100">
+                  {subjectList.map((subject_str, index) => (
+                    <li key={index}>
+                      <a
+                        className="dropdown-item"
+                        onClick={() => setSubject(subject_str)}
+                        style={{ cursor: "pointer" }}
+                      >
+                        {subject_str}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </Form.Group>
+          )}
 
+          {/* Дополнительная информация */}
+          {event.AdditionalInfo && (
+          <Form.Group className="mb-3">
+            <Form.Label>Дополнительная информация</Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={3}
+              value={additionalInfo}
+              onChange={(e) => setAdditionalInfo(e.target.value)}
+              disabled={role !== "3"}
+              
+            />
+          </Form.Group>
+          )}
+
+          {role == "3" && (
             <div className="text-end">
               <Button variant="primary" type="submit">
                 Сохранить
               </Button>
             </div>
-          </Form>
-        </div>
+          )}
+
+        </Form>
       </div>
+    </div>
 
 
 
