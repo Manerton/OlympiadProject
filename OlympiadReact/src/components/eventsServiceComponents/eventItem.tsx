@@ -6,9 +6,10 @@ import API_CONFIG from "../../config/apiConfig";
 
 interface EventItemProps {
   event: MyEvent;
+  onDelete: (id: number) => void;
 }
 
-function EventItem({ event }: EventItemProps) {
+function EventItem({ event, onDelete }: EventItemProps) {
   const navigate = useNavigate();
   const { role, id } = useRole()
 
@@ -25,10 +26,13 @@ function EventItem({ event }: EventItemProps) {
   const deleteEvent = async () => {
 
     const endPointDeleteEvent = `${API_CONFIG.EVENTS}/${event.ID}`;
-    const parentDeletedEventID = event.PreviousEventID
     try {
 
-      const response = await fetch(endPointDeleteEvent, { method: 'DELETE' });
+      const response = await fetch(endPointDeleteEvent, {
+        method: 'DELETE',
+        credentials: "include", // Отправка cookie
+        headers: { "Content-Type": "application/json" }
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -38,14 +42,7 @@ function EventItem({ event }: EventItemProps) {
       console.error("Ошибка при загрузке региональных этапов:", error);
     }
 
-    console.log("deleted ID:", parentDeletedEventID)
-    if (event.EventType === REGIONAL_STAGE) {
-      navigate(`/events`);
-    } else if (event.EventType === OLYMPIAD) {
-      navigate(`/olympiads/${parentDeletedEventID}`);
-    } else if (event.EventType === STAGE) {
-      navigate(`/olympiad-stages/${parentDeletedEventID}`);
-    }
+    onDelete(event.ID || 0)
   }
 
   return (
@@ -55,7 +52,7 @@ function EventItem({ event }: EventItemProps) {
     //Переход на вложенный eventList по id
     >
       <Card.Body className="d-flex justify-content-between">
-        <div onClick={handleClick} style={{ cursor: "pointer" }}>
+        <div className="justify-content-start" onClick={handleClick} style={{ cursor: "pointer" }}>
           <Card.Title>{event.Name}</Card.Title>
 
           <Card.Text>Дата начала: {new Date(event.StartDate).toLocaleString()}</Card.Text>
@@ -74,11 +71,10 @@ function EventItem({ event }: EventItemProps) {
             </Button>
           )}
         </div>
-
-
       </Card.Body>
-      <Card.Footer>
-        {event.Events && event.Events.length > 0 && (
+      {event.Events && event.Events.length > 0 && (
+        <Card.Footer>
+
           <div>
             <button
               className="btn btn-primary"
@@ -91,38 +87,40 @@ function EventItem({ event }: EventItemProps) {
               Показать вложенные события
             </button>
             <div className="collapse" id={`collapse-${event.ID}`}>
-              <div className="card card-body">
+              <div className="d-flex">
                 {event.Events.map((childEvent) => (
-                  <Card key={childEvent.ID} className="mb-3">
-                    <Card.Body>
-                      <Card.Title>{childEvent.Name}</Card.Title>
-                      <Card.Text>
-                        Дата начала: {new Date(childEvent.StartDate).toLocaleString()}
-                      </Card.Text>
-                      <Card.Text>
-                        Дата конца: {new Date(childEvent.EndDate).toLocaleString()}
-                      </Card.Text>
-                      {childEvent.AdditionalInfo && (
+                  <div className="col m-1">
+                    <Card key={childEvent.ID} className="mb-3">
+                      <Card.Body>
+                        <Card.Title>{childEvent.Name}</Card.Title>
                         <Card.Text>
-                          Дополнительная информация: {childEvent.AdditionalInfo}
+                          Дата начала: {new Date(childEvent.StartDate).toLocaleString()}
                         </Card.Text>
-                      )}
-                      {/* Дополнительные действия для вложенных событий */}
-                      <Button
+                        <Card.Text>
+                          Дата конца: {new Date(childEvent.EndDate).toLocaleString()}
+                        </Card.Text>
+                        {childEvent.AdditionalInfo && (
+                          <Card.Text>
+                            Дополнительная информация: {childEvent.AdditionalInfo}
+                          </Card.Text>
+                        )}
+                        {/* Дополнительные действия для вложенных событий */}
+                        {/* <Button
                         variant="primary"
                         onClick={() => navigate(`/events/${childEvent.ID}`)}
                       >
                         Перейти к событию
-                      </Button>
-                    </Card.Body>
-                  </Card>
+                      </Button> */}
+                      </Card.Body>
+                    </Card>
+                  </div>
                 ))}
               </div>
             </div>
           </div>
-        )}
-      </Card.Footer>
+        </Card.Footer>
 
+      )}
     </Card>
   )
 }
