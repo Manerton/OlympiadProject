@@ -117,12 +117,12 @@ func ConvertApplicationToDTO(application models.Application) ApplicationDto.Appl
 		ApplicationID: application.ApplicationID,
 		UserID:        application.UserID,
 		EventID:       application.EventID,
-		EventName:     application.EventName,
-		EventLocation: application.EventLocation,
-		EventDate:     application.EventDate,
-		Status:        application.Status,
-		SubmittedAt:   application.SubmittedAt,
-		UpdatedAt:     application.UpdatedAt,
+		//EventName:     application.EventName,
+		//EventLocation: application.EventLocation,
+		//EventDate:     application.EventDate,
+		Status:      application.Status,
+		SubmittedAt: application.SubmittedAt,
+		UpdatedAt:   application.UpdatedAt,
 	}
 }
 

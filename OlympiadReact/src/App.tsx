@@ -10,14 +10,17 @@ import SubStagePage from './components/eventsServiceComponents/pages/subStagePag
 import OlympiadStagesPage from './components/eventsServiceComponents/pages/olympiadStagesPage.tsx'
 import RegionalStagesPage from './components/eventsServiceComponents/pages/regionalStagesPage.tsx'
 import OlympiadsPage from './components/eventsServiceComponents/pages/olympiadsPage.tsx'
-
+import { RoleProvider } from "./components/RoleContext";
 
 function App() {
 
 
   return (
     <Router>
-      <Header />
+      <RoleProvider>
+        <Header />
+      </RoleProvider>
+      
       <div className="container mt-4">
         <Routes>
           <Route path="/events" element={<RegionalStagesPage />} />

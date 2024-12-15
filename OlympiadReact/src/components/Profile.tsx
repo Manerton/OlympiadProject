@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Tabs, Tab, Table, Badge,Button } from "react-bootstrap";
+import { useRole } from "./RoleContext";
 
 // Интерфейсы данных
 interface UserInfo {

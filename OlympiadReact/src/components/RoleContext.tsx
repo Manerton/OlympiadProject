@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
-// Создаем контекст для роли и ID
-const RoleContext = createContext<{ role: string | null; id: string | null } | null>(null);
+// Создаем контекст для роли и ID и name
+const RoleContext = createContext<{ role: string | null; id: string | null; name: string | null } | null>(null);
 
 interface RoleProviderProps {
     children: React.ReactNode;
@@ -11,6 +11,7 @@ interface RoleProviderProps {
 export function RoleProvider({ children }: RoleProviderProps) {
     const [role, setRole] = useState<string | null>(null);
     const [id, setID] = useState<string | null>(null);
+    const [name, setName] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -25,6 +26,7 @@ export function RoleProvider({ children }: RoleProviderProps) {
       
                 setRole(result.role || null);
                 setID(result.id || null);
+                setName(result.name || null);
             }
         };
 
@@ -32,7 +34,7 @@ export function RoleProvider({ children }: RoleProviderProps) {
     }, []);
 
     return (
-        <RoleContext.Provider value={{ role, id }}>
+        <RoleContext.Provider value={{ role, id, name }}>
             {children}
         </RoleContext.Provider>
     );
@@ -46,5 +48,5 @@ export function useRole() {
         throw new Error("useRole must be used within a RoleProvider");
     }
 
-    return context; // Возвращает объект { role, id }
+    return context; // Возвращает объект { role, id, name }
 }

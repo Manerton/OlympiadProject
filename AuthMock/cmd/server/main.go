@@ -371,10 +371,48 @@ func GetMyRoleAndID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println(claims["id"], reflect.TypeOf(claims["name"]))
+	// Get id
+	name, ok := claims["name"].(string)
+	if !ok {
+		fmt.Println("name missing in JWT")
+		http.Error(w, "name missing in JWT", http.StatusForbidden)
+		return
+	}
+
 	render.JSON(w, r, map[string]interface{}{
 		"id":   uint(id),
 		"role": role,
+		"name": name,
 	})
+}
+
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	// Clear the token cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "token",
+		Value:    "",
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/",
+		Expires:  time.Unix(0, 0), // Expire immediately
+	})
+
+	// Optionally clear the refresh token cookie if used
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		HttpOnly: false,
+		Secure:   false,
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+	})
+
+	// Respond with a success message
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "Logged out successfully")
 }
 
 func main() {
@@ -399,7 +437,9 @@ func main() {
 	// Определяем эндпоинт для получения текущего пользователя
 	r.Post("/login", loginHandler)
 	r.Post("/refresh", refreshHandler)
+	r.Post("/logout", logoutHandler)
 	r.Get("/my-info", GetMyRoleAndID)
+
 	// Запускаем сервер
 	fmt.Println("Server running on http://localhost:8081")
 	http.ListenAndServe(":8081", r)

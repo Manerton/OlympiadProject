@@ -2,21 +2,41 @@ import React, { useState, useEffect } from "react";
 import { Navbar, Nav, Dropdown, Container } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
 import { PersonCircle, BoxArrowInRight, BoxArrowInLeft } from "react-bootstrap-icons";
+import { useRole } from "./RoleContext";
+import { useNavigate } from "react-router-dom";
 
 function Header() {
   // Simulating authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
+   const { role, id, name } = useRole();
   // Check authentication (e.g., from localStorage or API)
-  useEffect(() => {
-    const userToken = localStorage.getItem("userToken"); // Example: check for a token
-    setIsAuthenticated(!!userToken);
-  }, []);
-
+  const navigate = useNavigate(); // Initialize the navigation hook
   // Logout function
-  const handleLogout = () => {
-    localStorage.removeItem("userToken"); // Clear token or session
-    setIsAuthenticated(false);
+  async function handleLogout () {
+    try{
+      // Делаем POST запрос на сервер для выхода
+    const response = await fetch('http://localhost:8081/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json', // Указываем формат запроса
+      },
+      credentials: 'include', // Включает cookies
+    });
+
+    // Проверяем статус ответа
+    if (!response.ok) {
+      // Если сервер вернул ошибку
+      throw new Error('Выход не удался');
+    }
+
+    // Выход успешен, выполняем перенаправление или очистку данных клиента
+    console.log('Выход выполнен успешно');
+    
+    navigate('/login'); // Перенаправляем пользователя на страницу входа
+  } catch (error) {
+    // Обрабатываем ошибки
+    console.error('Ошибка при выходе:', error);
+    alert('Ошибка при выходе. Попробуйте снова.');
+  }
   };
 
   return (
@@ -30,16 +50,20 @@ function Header() {
               <Nav.Link>События</Nav.Link>
             </LinkContainer>
             {/* тут role == 1,2 */}
+            
             <LinkContainer to="/applications">
               <Nav.Link>Статус заявки</Nav.Link>
             </LinkContainer>
-            {/* тут role == 3 */}
-            <LinkContainer to="/attendance">
-              <Nav.Link>Отметить присутствие</Nav.Link>
-            </LinkContainer>
+            {/* тут role == 3 или скорее всего организаторам нужно дать прямую ссылку для отметок*/}
+            {role === "3" && (
+              <LinkContainer to="/attendance">
+               <Nav.Link>Отметить присутствие</Nav.Link>
+             </LinkContainer>
+            )}
+           
           </Nav>
           <Nav className="ms-auto">
-            {isAuthenticated ? (
+            {id ? (
               <Dropdown align="end">
                 <Dropdown.Toggle
                   variant="light"
@@ -47,7 +71,9 @@ function Header() {
                   className="d-flex align-items-center border-0 bg-transparent"
                 >
                   <PersonCircle size={24} className="me-2" />
-                  <span>Имя пользователя</span>
+                  <span>({name})</span>
+                  <span>id-{id}</span>
+                  <span>role-{role} </span>
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
