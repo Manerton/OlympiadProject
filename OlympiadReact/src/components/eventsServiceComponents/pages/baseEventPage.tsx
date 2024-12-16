@@ -54,7 +54,12 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
       const result = await response.json();
       console.log("EVENTS: Response from API:", result);
       if (result.data) {
-        setEvents(result.data);
+        const eventsWithDates = result.data.map((event: MyEvent) => ({
+          ...event,
+          StartDate: new Date(event.StartDate),
+          EndDate: new Date(event.EndDate),
+        }));
+        setEvents(eventsWithDates);
       }
     } catch (error) {
       console.error("Ошибка при загрузке региональных этапов:", error);
@@ -72,8 +77,15 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
         }
         const result = await response.json();
         console.log("EVENT: Response from API:", result);
-        setEvent(result.data);
 
+        if (result.data) {
+          const eventWithDates = {
+            ...result.data,
+            StartDate: new Date(result.data.StartDate),
+            EndDate: new Date(result.data.EndDate),
+          };
+          setEvent(eventWithDates);
+        }
       } catch (error) {
         console.error("Ошибка при загрузке региональных этапов:", error);
       }
@@ -88,10 +100,21 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
     setShowModal(false)
     fetchEvents()
   }
-  
+
   const handleDeleteEvent = (id: number) => {
     setEvents((events) => events.filter((event) => event.ID !== id));
   };
+
+  const sortEvents = (order: "asc" | "desc") => {
+    setEvents((prevEvents) =>
+      [...prevEvents].sort((a, b) => {
+        const dateA = a.StartDate.getTime();
+        const dateB = b.StartDate.getTime();
+        return order === "asc" ? dateA - dateB : dateB - dateA;
+      })
+    );
+  };
+
 
   return (
     <div className="row d-flex justify-content-center">
@@ -101,42 +124,76 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
           <EventInfo event={event}></EventInfo>
         </div>
       )}
-        <div className="col-9">
-          <div className="d-flex justify-content-between">
-            <h1>{pageName}</h1>
+      <div className="col-9">
+        <div className="d-flex justify-content-between align-items-center">
+          <h1>{pageName}</h1>
+
+          <div className="d-flex">
+            <div className="dropdown">
+              <button
+                className="btn btn-secondary dropdown-toggle"
+                type="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Сортировать
+              </button>
+              <ul className="dropdown-menu">
+                <li>
+                  <a
+                    className="dropdown-item"
+                    onClick={() => sortEvents("asc")}
+                    style={{ cursor: "pointer" }}
+                  >
+                    По дате возрастания
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="dropdown-item"
+                    onClick={() => sortEvents("desc")}
+                    style={{ cursor: "pointer" }}
+                  >
+                    По дате убывания
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+
             {/* Кнопка создания доступна только организаторам */}
-            <p>{role}</p>
             {role === "3" && (
               <Button
                 variant="primary"
-                className="mb-3"
+                className="ms-2"
                 onClick={() => setShowModal(true)}
               >
                 Создать
               </Button>
             )}
           </div>
-
-          {/* Список этапов */}
-          {events.length > 0 ? (
-            <EventList events={events} onDelete={handleDeleteEvent} />
-          ) : (
-            <p>Список пуст...</p>
-          )}
-          {/* Пагинация */}
-          {/* <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} /> */}
-          {/* Модальное окно */}
         </div>
-        <Modal show={showModal} onHide={() => setShowModal(false)}>
-          <Modal.Header closeButton>
-            <Modal.Title>Создать</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            {/* Форма создания */}
-            <EventModalForm onSuccess={OnUpdateListEvent} event={event} showSubjectField={memoizedShowSubjectField} ></EventModalForm>
-          </Modal.Body>
-        </Modal>
+
+        {/* Список этапов */}
+        {events.length > 0 ? (
+          <EventList events={events} onDelete={handleDeleteEvent} />
+        ) : (
+          <p>Список пуст...</p>
+        )}
+        {/* Пагинация */}
+        {/* <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} /> */}
+        {/* Модальное окно */}
       </div>
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Создать</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {/* Форма создания */}
+          <EventModalForm onSuccess={OnUpdateListEvent} event={event} showSubjectField={memoizedShowSubjectField} ></EventModalForm>
+        </Modal.Body>
+      </Modal>
+    </div>
   );
 }
 
