@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"main/internal/config"
-	"main/internal/handlers/jureAssignmentsHandler"
+	"main/internal/handlers/jureassignmentshandler"
 	"main/internal/lib/liblogger"
 	"main/internal/middleware/auth"
 	"main/internal/middleware/midlogger"
-	"main/internal/repositories/juryAssignmentsRepository"
-	"main/internal/services/juryAssignmentsService"
+	"main/internal/repositories/juryassignmentsrepository"
+	"main/internal/services/juryassignmentsservice"
 	"main/internal/storage/orm"
 	"main/internal/storage/postgresql"
 	"net/http"
@@ -62,13 +62,13 @@ func main() {
 	})
 
 	// init repository
-	repository := juryAssignmentsRepository.NewJuryAssignmentsRepository()
+	repository := juryassignmentsrepository.NewJuryAssignmentsRepository()
 	// init orm
 	gormOrm := orm.NewGormORM(storage)
 	// init sevice
-	service := juryAssignmentsService.NewJuryAssignmentsService(gormOrm, repository)
+	service := juryassignmentsservice.NewJuryAssignmentsService(gormOrm, repository)
 	// init handler
-	handler := jureAssignmentsHandler.NewJureAssignmentHandler(service, log)
+	handler := jureassignmentshandler.NewJureAssignmentHandler(service, log)
 
 	// init route
 	router.Get("/jury-assignments", handler.GetAllJuryAssignments)

@@ -1,4 +1,4 @@
-package jureAssignmentsHandler
+package jureassignmentshandler
 
 import (
 	"fmt"

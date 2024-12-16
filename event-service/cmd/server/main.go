@@ -4,15 +4,16 @@ import (
 	"context"
 	"log/slog"
 	"main/internal/config"
-	"main/internal/handlers/event_handler"
-	"main/internal/handlers/subject_handler"
+	"main/internal/handlers/eventhandler"
+	"main/internal/handlers/subjecthandler"
 	"main/internal/lib/liblogger"
 	"main/internal/middleware/auth"
 	"main/internal/middleware/midlogger"
 	"main/internal/models/subject"
-	"main/internal/repositories/event_repository"
-	"main/internal/services/event_service"
+	"main/internal/repositories/eventrepository"
+	"main/internal/services/eventservice"
 	"main/internal/storage/postgresql"
+	"main/support/userrole"
 	"net/http"
 	"os"
 	"os/signal"
@@ -67,18 +68,16 @@ func main() {
 
 	// init subject service and handler
 	subjectStorage := subject.NewSubjectsStorage()
-	subjectHandler := subject_handler.NewSubjectHandler(subjectStorage, log)
+	subjectHandler := subjecthandler.NewSubjectHandler(subjectStorage, log)
 	// init events service and handler
-	eventService := event_service.NewEventService(storage, &event_repository.EventRepository{})
-	eventHandler := event_handler.NewEventHandler(eventService, log)
+	eventService := eventservice.NewEventService(storage, &eventrepository.EventRepository{})
+	eventHandler := eventhandler.NewEventHandler(eventService, log)
 
 	// init subjects route
 	router.Get("/events/subjects", subjectHandler.GetAllSubjects)
 
 	// init events route
-	// 3 - organizer
-	// TODO!!! EDIT ROLE
-	router.With(auth.RoleBasedAccess("3")).Group(func(r chi.Router) {
+	router.With(auth.RoleBasedAccess(userrole.JuryRole)).Group(func(r chi.Router) {
 		r.Post("/events", eventHandler.CreateEvent)
 		r.Put("/events/{id}", eventHandler.UpdateEvent)
 		r.Delete("/events/{id}", eventHandler.DeleteEvent)
@@ -92,9 +91,7 @@ func main() {
 	router.Get("/events/stages/{id}", eventHandler.GetEventsTypeStageAndHisChilds)
 	router.Get("/events/child/{id}", eventHandler.GetEventsByPreviousID)
 	router.Get("/events/list/", eventHandler.GetEventsByListID)
-	// router.Post("/events", eventHandler.CreateEvent)
-	// router.Put("/events/{id}", eventHandler.UpdateEvent)
-	// router.Delete("/events/{id}", eventHandler.DeleteEvent)
+
 	// init server
 	server := &http.Server{
 		Addr:    cfg.GetAddress(),

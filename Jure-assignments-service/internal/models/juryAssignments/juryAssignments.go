@@ -1,4 +1,4 @@
-package juryAssignments
+package juryassignments
 
 type JuryAssignments struct {
 	ID      uint `gorm:"primaryKey"`

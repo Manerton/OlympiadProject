@@ -1,26 +1,26 @@
-package juryAssignmentsService
+package juryassignmentsservice
 
 import (
 	"fmt"
 	"main/internal/dto/juryAssignmentsDto"
 	"main/internal/lib/converter/dtoConverter"
 	"main/internal/lib/supportRequest"
-	"main/internal/models/juryAssignments"
+	"main/internal/models/juryassignments"
 	"main/internal/storage/orm"
 
 	"golang.org/x/sync/errgroup"
 )
 
 type juryAssignmentsRepositoryInterface interface {
-	GetJuryAssignmentsByFilter(orm.ORM, juryAssignments.JuryAssignments) (juryAssignments.JuryAssignments, error)
-	GetAllJuryAssignments(orm.ORM, ...interface{}) ([]juryAssignments.JuryAssignments, error)
-	GetAllJuryAssignmentsByFilter(orm.ORM, juryAssignments.JuryAssignments) ([]juryAssignments.JuryAssignments, error)
+	GetJuryAssignmentsByFilter(orm.ORM, juryassignments.JuryAssignments) (juryassignments.JuryAssignments, error)
+	GetAllJuryAssignments(orm.ORM, ...interface{}) ([]juryassignments.JuryAssignments, error)
+	GetAllJuryAssignmentsByFilter(orm.ORM, juryassignments.JuryAssignments) ([]juryassignments.JuryAssignments, error)
 	GetPartOfAllJuryAssignmentsByFilter(
-		orm.ORM, []string, juryAssignments.JuryAssignments) ([]juryAssignments.JuryAssignments, error)
+		orm.ORM, []string, juryassignments.JuryAssignments) ([]juryassignments.JuryAssignments, error)
 	CreateJuryAssignments(
-		orm.ORM, juryAssignments.JuryAssignments) (uint, error)
+		orm.ORM, juryassignments.JuryAssignments) (uint, error)
 	UpdateJuryAssignments(
-		orm.ORM, juryAssignments.JuryAssignments) (uint, error)
+		orm.ORM, juryassignments.JuryAssignments) (uint, error)
 	DeleteJuryAssignments(orm.ORM, uint) error
 }
 

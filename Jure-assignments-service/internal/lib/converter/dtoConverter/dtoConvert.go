@@ -2,18 +2,18 @@ package dtoConverter
 
 import (
 	"main/internal/dto/juryAssignmentsDto"
-	"main/internal/models/juryAssignments"
+	"main/internal/models/juryassignments"
 )
 
-func ConvertDTOtoJuryAssignments(dto juryAssignmentsDto.JuryAssignmentsDTO) juryAssignments.JuryAssignments {
-	return juryAssignments.JuryAssignments{
+func ConvertDTOtoJuryAssignments(dto juryAssignmentsDto.JuryAssignmentsDTO) juryassignments.JuryAssignments {
+	return juryassignments.JuryAssignments{
 		ID:      dto.ID,
 		EventID: dto.EventID,
 		JuryID:  dto.JuryID,
 	}
 }
 
-func ConvertManyJuryAssignmentsToDTO(models []juryAssignments.JuryAssignments) []juryAssignmentsDto.JuryAssignmentsDTO {
+func ConvertManyJuryAssignmentsToDTO(models []juryassignments.JuryAssignments) []juryAssignmentsDto.JuryAssignmentsDTO {
 	result := []juryAssignmentsDto.JuryAssignmentsDTO{}
 	for _, model := range models {
 		result = append(result, ConvertJuryAssignmentsToDTO(model))
@@ -21,7 +21,7 @@ func ConvertManyJuryAssignmentsToDTO(models []juryAssignments.JuryAssignments) [
 	return result
 }
 
-func ConvertJuryAssignmentsToDTO(model juryAssignments.JuryAssignments) juryAssignmentsDto.JuryAssignmentsDTO {
+func ConvertJuryAssignmentsToDTO(model juryassignments.JuryAssignments) juryAssignmentsDto.JuryAssignmentsDTO {
 	return juryAssignmentsDto.JuryAssignmentsDTO{
 		ID:      model.ID,
 		EventID: model.EventID,

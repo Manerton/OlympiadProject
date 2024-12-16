@@ -3,7 +3,7 @@ package event_repository_test
 import (
 	"fmt"
 	"main/internal/models/event"
-	"main/internal/repositories/event_repository"
+	"main/internal/repositories/eventrepository"
 	"testing"
 	"time"
 
@@ -63,7 +63,7 @@ func setupTestDB(t *testing.T) *gorm.DB {
 
 func TestCreateEvent(t *testing.T) {
 	db := setupTestDB(t)
-	repo := event_repository.EventRepository{}
+	repo := eventrepository.EventRepository{}
 
 	var Subject string = ""
 	var UnCorrectPreviousEventID uint = 99
@@ -207,7 +207,7 @@ func TestCreateEvent(t *testing.T) {
 
 func TestGetEventByID(t *testing.T) {
 	db := setupTestDB(t)
-	repo := event_repository.EventRepository{}
+	repo := eventrepository.EventRepository{}
 
 	tempEvent := event.Event{
 		Name:      "RegionalStage",
@@ -272,7 +272,7 @@ func TestGetEventByID(t *testing.T) {
 
 func TestGetEventsByPreviousID(t *testing.T) {
 	db := setupTestDB(t)
-	repo := event_repository.EventRepository{}
+	repo := eventrepository.EventRepository{}
 
 	var Subject string = "Математика"
 	mainEvent := event.Event{
@@ -338,7 +338,7 @@ func TestGetEventsByPreviousID(t *testing.T) {
 
 func TestGetEventsByType(t *testing.T) {
 	db := setupTestDB(t)
-	repo := event_repository.EventRepository{}
+	repo := eventrepository.EventRepository{}
 
 	var Subject string = "Математика"
 	var MainRegionalEventID uint = 1
@@ -417,7 +417,7 @@ func TestGetEventsByType(t *testing.T) {
 
 func TestGetAllEvents(t *testing.T) {
 	db := setupTestDB(t)
-	repo := event_repository.EventRepository{}
+	repo := eventrepository.EventRepository{}
 
 	var Subject string = "Математика"
 	var MainRegionalEventID uint = 1
@@ -460,7 +460,7 @@ func TestGetAllEvents(t *testing.T) {
 
 func TestUpdateEvent(t *testing.T) {
 	db := setupTestDB(t)
-	repo := event_repository.EventRepository{}
+	repo := eventrepository.EventRepository{}
 
 	var Subject string = "Математика"
 	var NewSubject string = "Руссикй язык"
@@ -543,7 +543,7 @@ func TestUpdateEvent(t *testing.T) {
 
 func TestDeleteEvent(t *testing.T) {
 	db := setupTestDB(t)
-	repo := event_repository.EventRepository{}
+	repo := eventrepository.EventRepository{}
 
 	var Subject string = "Математика"
 	var MainRegionalEventID uint = 1

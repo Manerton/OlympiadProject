@@ -1,4 +1,4 @@
-package event_repository
+package eventrepository
 
 import (
 	"fmt"
@@ -10,9 +10,9 @@ import (
 type EventRepository struct{}
 
 func (r *EventRepository) GetEventByFilterAndFields(db *gorm.DB, filter event.Event, fields *[]string) (event.Event, error) {
-	const op = "repositories.event_repository.GetEventByFilter"
-	// query := db.Model(event.Event{})
-	query := db.Debug().Model(event.Event{})
+	const op = "repositories.eventrepository.GetEventByFilter"
+	query := db.Model(event.Event{})
+	// query := db.Debug().Model(event.Event{})
 	if fields != nil {
 		query.Select(*fields)
 	}
@@ -24,7 +24,7 @@ func (r *EventRepository) GetEventByFilterAndFields(db *gorm.DB, filter event.Ev
 }
 
 func (r *EventRepository) GetEventsByFilterAndFields(db *gorm.DB, filter event.Event, fields *[]string, offset, limit *int) ([]event.Event, error) {
-	const op = "repositories.event_repository.GetEventsByFilterAndFields"
+	const op = "repositories.eventrepository.GetEventsByFilterAndFields"
 	query := db.Model(event.Event{})
 	if fields != nil {
 		query.Select(*fields)
@@ -45,7 +45,7 @@ func (r *EventRepository) GetEventsByFilterAndFields(db *gorm.DB, filter event.E
 
 // Get event by ID
 func (r *EventRepository) GetEventByID(db *gorm.DB, id uint) (event.Event, error) {
-	const op = "repositories.event_repository.GetEventById"
+	const op = "repositories.eventrepository.GetEventById"
 
 	eventRes := event.Event{ID: id}
 	if err := db.First(&eventRes).Error; err != nil {
@@ -56,7 +56,7 @@ func (r *EventRepository) GetEventByID(db *gorm.DB, id uint) (event.Event, error
 
 // Get list events by list id
 func (r *EventRepository) GetEventsByListID(db *gorm.DB, ids []uint) ([]event.Event, error) {
-	const op = "repositories.event_repository.GetEventById"
+	const op = "repositories.eventrepository.GetEventById"
 
 	eventRes := []event.Event{}
 	if err := db.Find(&eventRes, ids).Error; err != nil {
@@ -68,7 +68,7 @@ func (r *EventRepository) GetEventsByListID(db *gorm.DB, ids []uint) ([]event.Ev
 // Get list events by EventType
 // Offset, limit can be nil
 func (r *EventRepository) GetEventsByType(db *gorm.DB, eventType event.EventType, offset, limit *int) ([]event.Event, error) {
-	const op = "repositories.event_repository.GetEventsByType"
+	const op = "repositories.eventrepository.GetEventsByType"
 	eventsRes := []event.Event{}
 
 	query := db.Model(event.Event{})
@@ -88,7 +88,7 @@ func (r *EventRepository) GetEventsByType(db *gorm.DB, eventType event.EventType
 // Get all events by PreviousID
 // Offset, limit can be nil
 func (r *EventRepository) GetEventsByPreviousID(db *gorm.DB, previousID uint, offset, limit *int) ([]event.Event, error) {
-	const op = "repositories.event_repository.GetEventsByPreviousID"
+	const op = "repositories.eventrepository.GetEventsByPreviousID"
 	events := []event.Event{}
 
 	query := db.Model(event.Event{})
@@ -108,7 +108,7 @@ func (r *EventRepository) GetEventsByPreviousID(db *gorm.DB, previousID uint, of
 // Get all events with offset and limit
 // Offset, limit can be nil
 func (r *EventRepository) GetAllEvents(db *gorm.DB, offset, limit *int) ([]event.Event, error) {
-	const op = "repositories.event_repository.GetAllEvents"
+	const op = "repositories.eventrepository.GetAllEvents"
 	eventsRes := []event.Event{}
 
 	query := db.Model(event.Event{})
@@ -127,7 +127,7 @@ func (r *EventRepository) GetAllEvents(db *gorm.DB, offset, limit *int) ([]event
 
 // Add new event in DB
 func (r *EventRepository) CreateEvent(db *gorm.DB, event event.Event) (uint, error) {
-	const op = "repositories.event_repository.CreateEvent"
+	const op = "repositories.eventrepository.CreateEvent"
 	if err := db.Create(&event).Error; err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -136,7 +136,7 @@ func (r *EventRepository) CreateEvent(db *gorm.DB, event event.Event) (uint, err
 
 // Update event
 func (r *EventRepository) UpdateEvent(db *gorm.DB, event event.Event) (uint, error) {
-	const op = "repositories.event_repository.UpdateEvent"
+	const op = "repositories.eventrepository.UpdateEvent"
 	if err := db.Updates(&event).Error; err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -145,7 +145,7 @@ func (r *EventRepository) UpdateEvent(db *gorm.DB, event event.Event) (uint, err
 
 // Delete event
 func (r *EventRepository) DeleteEvent(db *gorm.DB, id uint) error {
-	const op = "repositories.event_repository.DeleteEvent"
+	const op = "repositories.eventrepository.DeleteEvent"
 	if err := db.Delete(&event.Event{ID: id}).Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
