@@ -13,8 +13,12 @@ function EventInfo({ event }: EventInfoProps) {
   const [eventName, setEventName] = useState<string>(event.Name || "");
   const [subjectList, setSubjectList] = useState<string[]>([]);
   const [subject, setSubject] = useState<string>(event.Subject || "");
-  const [startDate, setStartDate] = useState<string>(formatDateForInput(event.StartDate || ""));
-  const [endDate, setEndDate] = useState<string>(formatDateForInput(event.EndDate || ""));
+  const [startDate, setStartDate] = useState<string>(
+    event?.StartDate ? formatDateForInput(new Date(event.StartDate).toISOString()) : ""
+  );
+  const [endDate, setEndDate] = useState<string>(
+    event?.EndDate ? formatDateForInput(new Date(event.EndDate).toISOString()) : ""
+  );
   const [additionalInfo, setAdditionalInfo] = useState<string>(event.AdditionalInfo || "");
 
 
@@ -67,8 +71,8 @@ function EventInfo({ event }: EventInfoProps) {
       ID: event.ID,
       PreviousEventID: event.PreviousEventID,
       Name: eventName,
-      StartDate: new Date(startDate).toISOString(),
-      EndDate: new Date(endDate).toISOString(),
+      StartDate: new Date(startDate),
+      EndDate: new Date(endDate),
       EventType: event.EventType || "",
       Subject: subject,
       AdditionalInfo: additionalInfo,
@@ -103,8 +107,6 @@ function EventInfo({ event }: EventInfoProps) {
           <h5 className="card-title" >Редактировать событие</h5>
         )}
         <Form onSubmit={UpdateEvent}>
-
-
           {/* Даты и предмет */}
           {/* Название события */}
           <Form.Group className="mb-2">

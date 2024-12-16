@@ -1,8 +1,8 @@
 export interface MyEvent {
     ID?: number 
     Name: string;
-    StartDate: string;
-    EndDate: string;
+    StartDate: Date;
+    EndDate: Date;
     PreviousEventID?: number
     EventType: string;
     Subject?: string;

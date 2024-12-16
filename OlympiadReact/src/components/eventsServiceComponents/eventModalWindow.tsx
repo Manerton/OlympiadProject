@@ -11,13 +11,16 @@ export interface EventModalFormProps {
 }
 
 function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormProps) {
-  const [eventName, setEventName] = useState("");
+  const [eventName, setEventName] = useState(event?.Name || "");
   const [subjectList, setSubjectList] = useState<string[]>([]);
-  const [subject, setSubject] = useState("");
-  const [startDate, setStartDate] = useState<string>(formatDateForInput(event?.StartDate || ""));
-  const [endDate, setEndDate] = useState<string>(formatDateForInput(event?.EndDate || ""));
-  const [additionalInfo, setAdditionalInfo] = useState<string>("");
-  // const [subEventType, setSubEventType] = useState<string>("")
+  const [subject, setSubject] = useState(event?.Subject || "");
+  const [startDate, setStartDate] = useState<string>(
+    event?.StartDate ? formatDateForInput(new Date(event.StartDate).toISOString()) : ""
+  );
+  const [endDate, setEndDate] = useState<string>(
+    event?.EndDate ? formatDateForInput(new Date(event.EndDate).toISOString()) : ""
+  );
+  const [additionalInfo, setAdditionalInfo] = useState(event?.AdditionalInfo || "");
 
   useEffect(() => {
     const getSubjects = async () => {
@@ -36,7 +39,6 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
         }
 
         const result = await response.json();
-        console.log("Предметы получены!", result);
         setSubjectList(result.data);
       } catch (error) {
         console.error("Ошибка при получении предметов:", error);
@@ -61,17 +63,12 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
       return;
     }
 
-    // if (showSelectSubEventType && !subEventType) {
-    //   alert("Заполните поле Тип события!");
-    //   return;
-    // }
-
     const eventData: MyEvent = {
       PreviousEventID: event?.ID,
       Name: eventName,
-      StartDate: new Date(startDate).toISOString(),
-      EndDate: new Date(endDate).toISOString(),
-      EventType: "",
+      StartDate: new Date(startDate),
+      EndDate: new Date(endDate),
+      EventType: event?.EventType || "",
       Subject: subject,
       AdditionalInfo: additionalInfo,
     };
@@ -91,10 +88,6 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
         throw new Error(`Ошибка API: ${errorText}`);
       }
 
-      const result = await response.json();
-      console.log("Событие создано!", result.Date);
-
-      setEventName("");
       if (onSuccess) {
         onSuccess();
       }
@@ -106,24 +99,6 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
 
   return (
     <Form onSubmit={handleSubmit}>
-
-      {/* {showSelectSubEventType && (
-      <Form.Group className="mb-3">
-        <Form.Label>Тип события</Form.Label>
-        <Form.Control
-          as="select"
-          placeholder="Выберите тип"
-          value={subEventType}
-          onChange={(e) => setSubEventType(e.target.value)}>
-
-          <option value="">Выберите тип</option>
-          <option value="Просмотр работ">Просмотр работ</option>
-          <option value="Апелляция">Апелляция</option>
-        </Form.Control>
-
-      </Form.Group>
-      )} */}
-
       <Form.Group className="mb-3">
         <Form.Label>Название события</Form.Label>
         <Form.Control
@@ -137,29 +112,17 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
       {showSubjectField && (
         <Form.Group controlId="eventSubject" className="mb-3">
           <Form.Label>Предмет</Form.Label>
-          <div className="dropdown">
-            <button
-              className="btn btn-secondary dropdown-toggle"
-              type="button"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              {subject || "Выберите предмет"}
-            </button>
-            <ul className="dropdown-menu">
-              {subjectList.map((subject_str) => (
-                <li>
-                  <a
-                    className="dropdown-item"
-                    onClick={() => setSubject(subject_str)}
-                    style={{ cursor: "pointer" }}
-                  >
-                    {subject_str}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <Form.Select
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+          >
+            <option value="">Выберите предмет</option>
+            {subjectList.map((subject_str) => (
+              <option key={subject_str} value={subject_str}>
+                {subject_str}
+              </option>
+            ))}
+          </Form.Select>
         </Form.Group>
       )}
 
@@ -168,8 +131,6 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
         <Form.Control
           type="datetime-local"
           value={startDate}
-          min={ event?.EventType != "STAGE" ? formatDateForInput(event?.StartDate || "") : formatDateForInput(event?.EndDate || "")}
-          max={ event?.EventType != "STAGE" ? formatDateForInput(event?.EndDate || "") : undefined }
           onChange={(e) => setStartDate(e.target.value)}
         />
       </Form.Group>
@@ -179,8 +140,6 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
         <Form.Control
           type="datetime-local"
           value={endDate}
-          min={ event?.EventType != "STAGE" ? formatDateForInput(event?.StartDate || "") : formatDateForInput(event?.EndDate || "")}
-          max={ event?.EventType != "STAGE" ? formatDateForInput(event?.EndDate || "") : undefined }
           onChange={(e) => setEndDate(e.target.value)}
         />
       </Form.Group>
@@ -189,10 +148,10 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
         <Form.Label>Дополнительная информация</Form.Label>
         <Form.Control
           as="textarea"
-          rows={5}
+          rows={3}
           value={additionalInfo}
           onChange={(e) => setAdditionalInfo(e.target.value)}
-          placeholder="Введите здесь дополнительную информацию"
+          placeholder="Введите дополнительную информацию"
         />
       </Form.Group>
 
