@@ -94,7 +94,7 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
   };
 
   return (
-    <div className="row">
+    <div className="row d-flex justify-content-center">
       {event && (
         <div className="col-3">
           <h3>Информация о {event.Name}</h3>
