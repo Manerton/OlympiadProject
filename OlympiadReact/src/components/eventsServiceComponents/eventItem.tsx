@@ -2,6 +2,7 @@ import { MyEvent, REGIONAL_STAGE, STAGE, OLYMPIAD } from "../../types/event";
 import { Button, Card } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 import { useRole } from "../RoleContext";
+// import { FaTrash, FaChevronDown } from "react-icons/fa";
 import API_CONFIG from "../../config/apiConfig";
 
 interface EventItemProps {
@@ -46,27 +47,37 @@ function EventItem({ event, onDelete }: EventItemProps) {
   }
 
   return (
-    <Card
-      key={event.ID}
-      className="mb-3"
-    //Переход на вложенный eventList по id
-    >
-      <Card.Body className="d-flex justify-content-between">
-        <div className="justify-content-start" onClick={handleClick} style={{ cursor: "pointer" }}>
-          <Card.Title>{event.Name}</Card.Title>
-
-          <Card.Text>Дата начала: {new Date(event.StartDate).toLocaleString()}</Card.Text>
-          <Card.Text>Дата конца: {new Date(event.EndDate).toLocaleString()}</Card.Text>
+    <Card key={event.ID} className="mb-3">
+      <Card.Body className="d-flex justify-content-between align-items-start">
+        {/* Левая часть: текст названия и даты */}
+        <div onClick={handleClick} style={{ cursor: "pointer", textAlign: "left" }}>
+          <Card.Title className="fw-bold mb-2" style={{ fontSize: "1.2rem" }}>
+            {event.Name}
+          </Card.Title>
+          <Card.Text className="text-muted mb-1">
+            <strong>Дата начала:</strong> {new Date(event.StartDate).toLocaleString()}
+          </Card.Text>
+          <Card.Text className="text-muted mb-1">
+            <strong>Дата конца:</strong> {new Date(event.EndDate).toLocaleString()}
+          </Card.Text>
           {event.AdditionalInfo && (
-            <div>
+            <Card.Text className="mt-3">
               <hr />
-              <Card.Text>Дополнительная информация: {event.AdditionalInfo}</Card.Text>
-            </div>
+              <strong>Дополнительно:</strong> {event.AdditionalInfo}
+            </Card.Text>
           )}
         </div>
-        <div>
+
+        {/* Правая часть: кнопки */}
+        <div className="d-flex flex-column align-items-end">
           {role === "3" && (
-            <Button variant="danger" onClick={deleteEvent} >
+            <Button
+              variant="outline-danger"
+              className="mb-2"
+              onClick={deleteEvent}
+              style={{ display: "flex", alignItems: "center" }}
+            >
+              {/* <FaTrash className="me-2" /> */}
               Удалить
             </Button>
           )}
@@ -94,23 +105,16 @@ function EventItem({ event, onDelete }: EventItemProps) {
                       <Card.Body>
                         <Card.Title>{childEvent.Name}</Card.Title>
                         <Card.Text>
-                          Дата начала: {new Date(childEvent.StartDate).toLocaleString()}
+                          {new Date(childEvent.StartDate).toLocaleString()} -  {new Date(childEvent.EndDate).toLocaleString()}
                         </Card.Text>
-                        <Card.Text>
+                        {/* <Card.Text>
                           Дата конца: {new Date(childEvent.EndDate).toLocaleString()}
-                        </Card.Text>
+                        </Card.Text> */}
                         {childEvent.AdditionalInfo && (
                           <Card.Text>
                             Дополнительная информация: {childEvent.AdditionalInfo}
                           </Card.Text>
                         )}
-                        {/* Дополнительные действия для вложенных событий */}
-                        {/* <Button
-                        variant="primary"
-                        onClick={() => navigate(`/events/${childEvent.ID}`)}
-                      >
-                        Перейти к событию
-                      </Button> */}
                       </Card.Body>
                     </Card>
                   </div>
