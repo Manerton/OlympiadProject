@@ -32,57 +32,56 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
         setEvents((events) => events.filter((event) => event.ID !== id));
     };
 
+    const fetchData = async () => {
+        try {
+            const [eventResponse, eventsResponse,] = await Promise.all([
+                fetch(`${API_CONFIG.EVENTS}/${eventId}`,
+                    {
+                        method: "GET",
+                        credentials: "include", // Отправка cookie
+                        headers: { "Content-Type": "application/json" }
+                    }),
+                fetch(`${API_CONFIG.EVENTS}/child/${eventId}`,
+                    {
+                        method: "GET",
+                        credentials: "include", // Отправка cookie
+                        headers: { "Content-Type": "application/json" }
+                    }),
+                // // TODO! Запрос на UserService для полчения списка жюри
+                // fetch(`http://localhost:8080/juries`, 
+                //     { 
+                //         method: "GET", 
+                //         credentials: "include", // Отправка cookie
+                //         headers: { "Content-Type": "application/json" } 
+                //     }) // Запрос списка жюри
+            ]);
+
+            if (!eventResponse.ok || !eventsResponse.ok) {
+                const errorText = await Promise.all([
+                    eventResponse.text(),
+                    eventsResponse.text(),
+                ]);
+                throw new Error(`Ошибка API: ${errorText.join(", ")}`);
+            }
+
+            const [eventResult, eventsResult] = await Promise.all([
+                eventResponse.json(),
+                eventsResponse.json(),
+            ]);
+
+            console.log("Этап получен!", eventResult);
+            console.log("Подэтапы получены!", eventsResult);
+            // console.log("Жюри получены!", juriesResult);
+
+            setEvent(eventResult.data);
+            setEvents(eventsResult.data);
+            // setJuries(juriesResult.data); // Устанавливаем список жюри
+        } catch (error) {
+            console.error("Ошибка при получении данных:", error);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [eventResponse, eventsResponse,] = await Promise.all([
-                    fetch(`${API_CONFIG.EVENTS}/${eventId}`,
-                        {
-                            method: "GET",
-                            credentials: "include", // Отправка cookie
-                            headers: { "Content-Type": "application/json" }
-                        }),
-                    fetch(`${API_CONFIG.EVENTS}/child/${eventId}`,
-                        {
-                            method: "GET",
-                            credentials: "include", // Отправка cookie
-                            headers: { "Content-Type": "application/json" }
-                        }),
-                    // // TODO! Запрос на UserService для полчения списка жюри
-                    // fetch(`http://localhost:8080/juries`, 
-                    //     { 
-                    //         method: "GET", 
-                    //         credentials: "include", // Отправка cookie
-                    //         headers: { "Content-Type": "application/json" } 
-                    //     }) // Запрос списка жюри
-                ]);
-
-                if (!eventResponse.ok || !eventsResponse.ok) {
-                    const errorText = await Promise.all([
-                        eventResponse.text(),
-                        eventsResponse.text(),
-                    ]);
-                    throw new Error(`Ошибка API: ${errorText.join(", ")}`);
-                }
-
-                const [eventResult, eventsResult] = await Promise.all([
-                    eventResponse.json(),
-                    eventsResponse.json(),
-                ]);
-
-                console.log("Этап получен!", eventResult);
-                console.log("Подэтапы получены!", eventsResult);
-                // console.log("Жюри получены!", juriesResult);
-
-                setEvent(eventResult.data);
-                setEvents(eventsResult.data);
-                // setJuries(juriesResult.data); // Устанавливаем список жюри
-            } catch (error) {
-                console.error("Ошибка при получении данных:", error);
-            }
-        };
-
         fetchData();
     }, [id]);
 
@@ -124,6 +123,12 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
         }
     };
 
+    const OnUpdateListEvent = () => {
+        setShowModal(false)
+        fetchData()
+      }
+      
+
     return (
         <div className="container">
             <div className="row">
@@ -136,9 +141,6 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
                         <EventInfo event={event}></EventInfo>
                     )}
                 </div>
-
-
-
 
                 {/* Список подэтапов */}
                 <div className="col-5">
@@ -161,7 +163,7 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
                                 </Modal.Header>
                                 <Modal.Body>
                                     {/* Форма для создания подэтапа */}
-                                    <EventModalForm event={event} showSubjectField={false} ></EventModalForm>
+                                    <EventModalForm onSuccess={OnUpdateListEvent} event={event} showSubjectField={false} ></EventModalForm>
                                 </Modal.Body>
                                 <Modal.Footer>
                                     <Button variant="secondary" onClick={() => setShowModal(false)}>Закрыть</Button>
