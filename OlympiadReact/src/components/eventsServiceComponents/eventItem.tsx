@@ -8,11 +8,13 @@ import API_CONFIG from "../../config/apiConfig";
 interface EventItemProps {
   event: MyEvent;
   onDelete: (id: number) => void;
+  isSubmitApplication: boolean;
 }
 
-function EventItem({ event, onDelete }: EventItemProps) {
+function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
   const navigate = useNavigate();
-  const { role, id } = useRole()
+  const { role, id, name, clearRoleData } = useRole();
+  
 
   const handleClick = () => {
     if (event.EventType === REGIONAL_STAGE) {
@@ -46,6 +48,26 @@ function EventItem({ event, onDelete }: EventItemProps) {
     onDelete(event.ID || 0)
   }
 
+  const onSubmitApplication = async () => {
+    const endPointSubmitApplication = `${API_CONFIG.APPLICATION}`
+    try{
+      const response = await fetch(endPointSubmitApplication, {
+        method: "POST",
+        credentials: "include", // Отправка cookie
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log("Response from API:", result);
+
+    }catch (error) {
+      console.error("Ошибка при подачи заявки")
+    }
+  }
+
   return (
     <Card key={event.ID} className="mb-3">
       <Card.Body className="d-flex justify-content-between align-items-start">
@@ -62,7 +84,6 @@ function EventItem({ event, onDelete }: EventItemProps) {
           </Card.Text>
           {event.AdditionalInfo && (
             <Card.Text className="mt-3">
-              <hr />
               <strong>Дополнительно:</strong> {event.AdditionalInfo}
             </Card.Text>
           )}
@@ -70,7 +91,7 @@ function EventItem({ event, onDelete }: EventItemProps) {
 
         {/* Правая часть: кнопки */}
         <div className="d-flex flex-column align-items-end">
-          {role === "3" && (
+          {role === "3" ? (
             <Button
               variant="outline-danger"
               className="mb-2"
@@ -79,6 +100,15 @@ function EventItem({ event, onDelete }: EventItemProps) {
             >
               {/* <FaTrash className="me-2" /> */}
               Удалить
+            </Button>
+          ) : role === "1" && isSubmitApplication &&(
+            <Button
+              variant="outline-success"
+              className="mb-2"
+              onClick={onSubmitApplication}
+              style={{ display: "flex", alignItems: "center" }}
+            >
+              Подавть заявку
             </Button>
           )}
         </div>
@@ -100,16 +130,12 @@ function EventItem({ event, onDelete }: EventItemProps) {
             <div className="collapse" id={`collapse-${event.ID}`}>
               <div className="d-flex">
                 {event.Events.map((childEvent) => (
-                  <div className="col m-1">
-                    <Card key={childEvent.ID} className="mb-3">
+                    <Card key={childEvent.ID} className="col m-1 mb-3">
                       <Card.Body>
                         <Card.Title>{childEvent.Name}</Card.Title>
                         <Card.Text>
                           {new Date(childEvent.StartDate).toLocaleString()} -  {new Date(childEvent.EndDate).toLocaleString()}
                         </Card.Text>
-                        {/* <Card.Text>
-                          Дата конца: {new Date(childEvent.EndDate).toLocaleString()}
-                        </Card.Text> */}
                         {childEvent.AdditionalInfo && (
                           <Card.Text>
                             Дополнительная информация: {childEvent.AdditionalInfo}
@@ -117,7 +143,6 @@ function EventItem({ event, onDelete }: EventItemProps) {
                         )}
                       </Card.Body>
                     </Card>
-                  </div>
                 ))}
               </div>
             </div>
