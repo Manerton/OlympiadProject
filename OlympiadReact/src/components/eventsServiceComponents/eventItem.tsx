@@ -55,27 +55,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
         method: "POST",
         credentials: "include", // Отправка cookie
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ "user_id": id, "event_id": event.ID }), // Тело запроса в формате JSON
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const result = await response.json();
-      console.log("Response from API:", result);
-
-    }catch (error) {
-      console.error("Ошибка при подачи заявки")
-    }
-  }
-
-  const onViewApplications = async () => {
-    const endPointViewApplication = `${API_CONFIG.APPLICATION}/${event.ID}`
-    try{
-      const response = await fetch(endPointSubmitApplication, {
-        method: "POST",
-        credentials: "include", // Отправка cookie
-        headers: { "Content-Type": "application/json" }
+        body: JSON.stringify({ "user_id": id, "event_id": event.ID }),
       });
 
       if (!response.ok) {
