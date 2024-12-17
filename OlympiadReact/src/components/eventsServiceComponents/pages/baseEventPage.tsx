@@ -27,7 +27,7 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
   const [events, setEvents] = useState<MyEvent[]>([])
   const [event, setEvent] = useState<MyEvent>()
 
-  const { role, id } = useRole();
+  const { role } = useRole();
 
   const memoizedShowSubjectField = useMemo(() => showSubjectField, [showSubjectField]);
 
@@ -176,7 +176,7 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
 
         {/* Список этапов */}
         {events.length > 0 ? (
-          <EventList events={events} onDelete={handleDeleteEvent} />
+          <EventList isSubmitItem={type === OLYMPIAD ? true : false} events={events} onDelete={handleDeleteEvent} />
         ) : (
           <p>Список пуст...</p>
         )}

@@ -9,9 +9,7 @@ function SubStagePage() {
     const { id } = useParams<{ id: string }>();
 
     return (
-        <RoleProvider>
-            <SubStageMainPage eventId={id}></SubStageMainPage>
-        </RoleProvider>
+        <SubStageMainPage eventId={id}></SubStageMainPage>
     );
 }
 

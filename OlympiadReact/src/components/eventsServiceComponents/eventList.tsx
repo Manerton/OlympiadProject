@@ -4,9 +4,10 @@ import { MyEvent } from "../../types/event";
 interface EventListProps {
   events: MyEvent[]
   onDelete:  (id: number) => void;
+  isSubmitItem?: boolean
 }
 
-function EventList({ events, onDelete }: EventListProps) {
+function EventList({ events, onDelete, isSubmitItem}: EventListProps) {
   if (!events) {
     return (
       <div>
@@ -18,7 +19,7 @@ function EventList({ events, onDelete }: EventListProps) {
   return (
     <div>
       {events.map((event: MyEvent) => (
-        <EventItem key={event.ID} event={event} onDelete={onDelete} />
+        <EventItem isSubmitApplication={isSubmitItem || false} key={event.ID} event={event} onDelete={onDelete} />
       ))}
     </div>
   )
