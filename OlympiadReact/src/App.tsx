@@ -19,7 +19,6 @@ function App() {
     <Router>
       <RoleProvider>
         <Header />
-      </RoleProvider>
       
       <div className="container mt-4">
         <Routes>
@@ -34,6 +33,8 @@ function App() {
           <Route path="/login" element={<Login />} />
         </Routes>
       </div>
+      </RoleProvider>
+
     </Router>
   )
 }

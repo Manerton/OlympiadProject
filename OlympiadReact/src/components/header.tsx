@@ -5,39 +5,33 @@ import { PersonCircle, BoxArrowInRight, BoxArrowInLeft } from "react-bootstrap-i
 import { useRole } from "./RoleContext";
 import { useNavigate } from "react-router-dom";
 
+
+
+
 function Header() {
   // Simulating authentication state
-   const { role, id, name } = useRole();
   // Check authentication (e.g., from localStorage or API)
   const navigate = useNavigate(); // Initialize the navigation hook
   // Logout function
-  async function handleLogout () {
-    try{
-      // Делаем POST запрос на сервер для выхода
-    const response = await fetch('http://localhost:8081/logout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json', // Указываем формат запроса
-      },
-      credentials: 'include', // Включает cookies
-    });
+  const { role, id, name, clearRoleData } = useRole();
 
-    // Проверяем статус ответа
-    if (!response.ok) {
-      // Если сервер вернул ошибку
-      throw new Error('Выход не удался');
+  async function handleLogout() {
+    try {
+      const response = await fetch("http://localhost:8081/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+  
+      if (!response.ok) throw new Error("Выход не удался");
+  
+      console.log("Выход выполнен успешно");
+      clearRoleData(); // Очищаем контекст
+      navigate("/login");
+    } catch (error) {
+      console.error("Ошибка при выходе:", error);
+      alert("Ошибка при выходе. Попробуйте снова.");
     }
-
-    // Выход успешен, выполняем перенаправление или очистку данных клиента
-    console.log('Выход выполнен успешно');
-    
-    navigate('/login'); // Перенаправляем пользователя на страницу входа
-  } catch (error) {
-    // Обрабатываем ошибки
-    console.error('Ошибка при выходе:', error);
-    alert('Ошибка при выходе. Попробуйте снова.');
   }
-  };
 
   return (
     <Navbar bg="light" expand="lg">
