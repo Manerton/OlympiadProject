@@ -19,9 +19,9 @@ type ApplicationResponseDTO struct {
 	UserID        uint `json:"userID"`
 	EventID       uint `json:"eventID"`
 	//ВРЕМЕННО ПОДУМАТЬ НАСЧЕТ КЭШИРОВАНИЯ
-	EventName     string    `json:"eventName"`     //ВРЕМЕННО
-	EventLocation string    `json:"eventLocation"` //ВРЕМЕННО
-	EventDate     time.Time `json:"eventDate"`     //ВРЕМЕННО
+	// EventName     string    `json:"eventName"`     //ВРЕМЕННО
+	// EventLocation string    `json:"eventLocation"` //ВРЕМЕННО
+	// EventDate     time.Time `json:"eventDate"`     //ВРЕМЕННО
 	//ВРЕМЕННО ПОДУМАТЬ НАСЧЕТ КЭШИРОВАНИЯ
 	Status      *bool     `json:"status"`
 	SubmittedAt time.Time `json:"submittedAt"`

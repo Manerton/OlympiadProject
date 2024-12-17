@@ -26,7 +26,7 @@ function App() {
           <Route path="/olympiads/:id" element={<OlympiadsPage />} />
           <Route path="/olympiad-stages/:id" element={<OlympiadStagesPage />} />
           <Route path="/sub-stage/:id" element={<SubStagePage />}/>
-          <Route path="/applications" element={<ApplicationsPage />} />
+          <Route path="/applications/user/:id" element={<ApplicationsPage />} />
 
           <Route path="/attendance" element={<AttendancePage />} />
           <Route path="/profile" element={<ProfilePage />} />

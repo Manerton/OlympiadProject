@@ -84,7 +84,7 @@ func main() {
 	})
 
 	router.Get("/events/details/one", eventHandler.GetEventByFilterAndFields)
-	router.Get("/events/details", eventHandler.GetEventsByFilterAndFields)
+	router.Post("/events/details", eventHandler.GetEventsByFilterAndFields)
 	router.Get("/events", eventHandler.GetAllEvents)
 	router.Get("/events/{id}", eventHandler.GetEventByID)
 	router.Get("/events/regional-stage", eventHandler.GetEventsTypeRegionalStage)

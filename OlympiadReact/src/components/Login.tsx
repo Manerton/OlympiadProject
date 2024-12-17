@@ -55,16 +55,16 @@ const Login: React.FC = () => {
 
 
   const fetchUserInfo = async () => {
-    const response = await fetch("http://localhost:8081/my-info", {
+     const response = await fetch("http://localhost:8081/my-info", {
       method: "GET",
-      credentials: "include", // Для отправки cookie
+       credentials: "include", // Для отправки cookie
     });
 
 
     if (response.ok) {
       const result = await response.json();
       setRoleData(result.id, result.role, result.name);
-    }
+     }
   };
 
 

@@ -3,7 +3,7 @@ env: "local"
 DB_INFO:
   host: "localhost"
   user: "postgres"
-  pass: "timur"
+  pass: "root"
   name: "ApplicationServiceDB"
   port: "5432"
   ssl_model: "disable"

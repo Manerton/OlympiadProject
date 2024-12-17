@@ -68,7 +68,7 @@ const ApplicationCard: React.FC<ApplicationCardProps> = ({ application }) => {
                   <strong>Событие:</strong> {application.eventName}
                 </p>
                 <p>
-                  <strong>Место:</strong> {application.eventLocation}
+                  <strong>Предмет:</strong> {application.subject}
                 </p>
                 <p>
                   <strong>Дата проведения:</strong> {" "}

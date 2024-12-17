@@ -58,7 +58,7 @@ func NewPostgreSQL(connectStr string) (*gorm.DB, error) {
 	}
 
 	// Add fixed data after migration
-	seedData(db)
+	//seedData(db)
 
 	return db, nil
 }

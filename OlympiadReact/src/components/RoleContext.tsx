@@ -1,4 +1,4 @@
-// import { createContext, useContext, useEffect, useState } from "react";
+//import { createContext, useContext, useEffect, useState } from "react";
 
 // // Создаем контекст для роли и ID и name
 // const RoleContext = createContext<{ role: string | null; id: number | null; name: string | null } | null>(null);
@@ -50,7 +50,7 @@
 
 //     return context; // Возвращает объект { role, id, name }
 // }
-import React, { createContext, useState, useContext, ReactNode } from "react";
+import React, { createContext, useState, useContext, ReactNode,useEffect } from "react";
 
 // Определение типа контекста
 interface RoleContextType {
@@ -70,6 +70,20 @@ export const RoleProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [id, setId] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(null);
 
+  const fetchUserInfo = async () => {
+    const response = await fetch("http://localhost:8081/my-info", {
+      method: "GET",
+      credentials: "include", // Для отправки cookie
+    });
+
+
+    if (response.ok) {
+      const result = await response.json();
+      setRoleData(result.id, result.role, result.name);
+    }
+  };
+
+    
   // Функция для установки данных роли
   const setRoleData = (newId: string, newRole: string, newName: string) => {
     setId(newId);
@@ -84,12 +98,17 @@ export const RoleProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setName(null);
   };
 
+    useEffect(() => {
+        fetchUserInfo()
+    } , []
+    )
   return (
     <RoleContext.Provider value={{ role, id, name, setRoleData, clearRoleData }}>
       {children}
     </RoleContext.Provider>
   );
 };
+
 
 // Хук для удобного использования контекста
 export const useRole = () => {

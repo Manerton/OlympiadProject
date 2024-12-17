@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ApplicationCard from "./Application";
 import { Application } from "../types/application";
+import { useRole } from "./RoleContext";
 
 /* const ApplicationsPage: React.FC = () => {
   const [applications, setApplications] = useState<Application[]>([]);
@@ -88,28 +89,95 @@ export default ApplicationsPage; */
     const [applications, setApplications] = useState<Application[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-  
+    const { role, id, name, clearRoleData } = useRole();
+   
+    /* useEffect(() => {
+      // Ensure 'id' is defined before making the request
+      if (id) {
+        fetch(`http://localhost:8082/applications/user/${id}`, {
+          credentials: "include",
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            console.log("Fetched data:", data);
+            setApplications(data.data || []); // Устанавливаем преобразованные данные
+            setIsLoading(false);
+          })
+          .catch((error) => {
+            console.error("Error fetching data:", error);
+            setIsLoading(false);
+          });
+      }
+    }, [id]); // Add 'id' as a dependency to the useEffect */
+
     useEffect(() => {
-      // Запрос к API с использованием fetch
-      fetch("http://localhost:8082/applications", {credentials: "include"}) 
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Ошибка при загрузке данных.");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          console.log("Полученные данные:", data);
-          //const convertedData = convertKeysToCamelCase(data.data || []);
-          setApplications(data.data || []); // Устанавливаем преобразованные данные
-          setIsLoading(false);
-        })
-        .catch((err) => {
-          setError("Не удалось загрузить данные. Попробуйте позже.");
-          setIsLoading(false);
-        });
-    }, []);
+      const fetchApplications = async () => {
+        try {
+          // Шаг 1: Получение заявок
+          const appResponse = await fetch(
+            `http://localhost:8082/applications/user/${id}`,
+            { credentials: "include" }
+          );
   
+          if (!appResponse.ok) throw new Error("Failed to fetch applications");
+  
+          const appData = await appResponse.json();
+  
+          const applicationsData = appData.data || [];
+  
+          // Шаг 2: Получение данных о событиях для всех eventID
+          const eventIDs = applicationsData.map((app: any) => app.eventID);
+  
+          const eventResponse = await fetch(
+            `http://localhost:8080/events/details`, // URL сервиса events
+            {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                EventDTO: { ids: eventIDs }, // Фильтруем события по ID
+                Fields: ["id", "name", "start_date", "subject"], // Нужные поля
+              }),
+            }
+          );
+  
+          if (!eventResponse.ok) throw new Error("Failed to fetch event details");
+  
+          const eventData = await eventResponse.json();
+          const events = eventData.data || [];
+          console.log("Events data:", events);
+          // Шаг 3: Объединяем данные заявок и событий
+          const mergedApplications = applicationsData.map((app: any) => {
+            const event = events.find((e: any) => e.id === app.eventID);
+
+            console.log("Matched Event for App:", app.eventID, "->", event);
+
+            return {
+              applicationID: app.applicationID,
+              userID: app.userID,
+              eventID: app.eventID,
+              eventName: event?.name || "Не указано",
+              eventDate: event?.start_date || "",
+              subject: event.subject || "Не указано",
+              status: app.status,
+              submittedAt: app.submittedAt,
+              updatedAt: app.updatedAt,
+            };
+          });
+  
+          setApplications(mergedApplications);
+        } catch (error) {
+          console.error("Error fetching applications:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+  
+      if (id) {
+        fetchApplications();
+      }
+    }, [id]);
+
     return (
       <div className="container mt-4">
         <h1>Мои заявки</h1>

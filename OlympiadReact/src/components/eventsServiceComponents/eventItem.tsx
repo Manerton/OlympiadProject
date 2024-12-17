@@ -54,6 +54,27 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
       const response = await fetch(endPointSubmitApplication, {
         method: "POST",
         credentials: "include", // Отправка cookie
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ "user_id": id, "event_id": event.ID }), // Тело запроса в формате JSON
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log("Response from API:", result);
+
+    }catch (error) {
+      console.error("Ошибка при подачи заявки")
+    }
+  }
+
+  const onViewApplications = async () => {
+    const endPointViewApplication = `${API_CONFIG.APPLICATION}/${event.ID}`
+    try{
+      const response = await fetch(endPointSubmitApplication, {
+        method: "POST",
+        credentials: "include", // Отправка cookie
         headers: { "Content-Type": "application/json" }
       });
 
@@ -101,6 +122,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
               {/* <FaTrash className="me-2" /> */}
               Удалить
             </Button>
+
           ) : role === "1" && isSubmitApplication &&(
             <Button
               variant="outline-success"
@@ -108,7 +130,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
               onClick={onSubmitApplication}
               style={{ display: "flex", alignItems: "center" }}
             >
-              Подавть заявку
+              Подать заявку
             </Button>
           )}
         </div>

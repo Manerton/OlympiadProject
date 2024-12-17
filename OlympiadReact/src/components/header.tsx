@@ -45,7 +45,7 @@ function Header() {
             </LinkContainer>
             {/* тут role == 1,2 */}
             
-            <LinkContainer to="/applications">
+            <LinkContainer to={`/applications/user/${id}`}>
               <Nav.Link>Статус заявки</Nav.Link>
             </LinkContainer>
             {/* тут role == 3 или скорее всего организаторам нужно дать прямую ссылку для отметок*/}
