@@ -54,7 +54,8 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
       const response = await fetch(endPointSubmitApplication, {
         method: "POST",
         credentials: "include", // Отправка cookie
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ "user_id": id, "event_id": event.ID }),
       });
 
       if (!response.ok) {
