@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import ApplicationCard from "./Application";
 import { Application } from "../types/application";
 import { useRole } from "./RoleContext";
+import API_CONFIG from "../config/apiConfig";
+import { MyEvent } from "../types/event";
 
 /* const ApplicationsPage: React.FC = () => {
   const [applications, setApplications] = useState<Application[]>([]);
@@ -129,14 +131,13 @@ export default ApplicationsPage; */
           const eventIDs = applicationsData.map((app: any) => app.eventID);
   
           const eventResponse = await fetch(
-            `http://localhost:8080/events/details`, // URL сервиса events
+            `${API_CONFIG.EVENTS}/list`, // URL сервиса events
             {
               method: "POST",
               credentials: "include",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                EventDTO: { ids: eventIDs }, // Фильтруем события по ID
-                Fields: ["id", "name", "start_date", "subject"], // Нужные поля
+                ids:  eventIDs , // Фильтруем события по ID
               }),
             }
           );
@@ -148,7 +149,7 @@ export default ApplicationsPage; */
           console.log("Events data:", events);
           // Шаг 3: Объединяем данные заявок и событий
           const mergedApplications = applicationsData.map((app: any) => {
-            const event = events.find((e: any) => e.id === app.eventID);
+            const event: MyEvent = events.find((e: MyEvent) => e.ID === app.eventID);
 
             console.log("Matched Event for App:", app.eventID, "->", event);
 
@@ -156,9 +157,9 @@ export default ApplicationsPage; */
               applicationID: app.applicationID,
               userID: app.userID,
               eventID: app.eventID,
-              eventName: event?.name || "Не указано",
-              eventDate: event?.start_date || "",
-              subject: event.subject || "Не указано",
+              eventName: event?.Name || "Не указано",
+              eventDate: event?.StartDate || "",
+              subject: event.Subject || "Не указано",
               status: app.status,
               submittedAt: app.submittedAt,
               updatedAt: app.updatedAt,
