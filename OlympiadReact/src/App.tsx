@@ -10,6 +10,7 @@ import SubStagePage from './components/eventsServiceComponents/pages/subStagePag
 import OlympiadStagesPage from './components/eventsServiceComponents/pages/olympiadStagesPage.tsx'
 import RegionalStagesPage from './components/eventsServiceComponents/pages/regionalStagesPage.tsx'
 import OlympiadsPage from './components/eventsServiceComponents/pages/olympiadsPage.tsx'
+import ApplicationOrganizerPage from './components/ApplicationOrganizerPage.tsx' 
 import { RoleProvider } from "./components/RoleContext";
 
 function App() {
@@ -27,7 +28,7 @@ function App() {
           <Route path="/olympiad-stages/:id" element={<OlympiadStagesPage />} />
           <Route path="/sub-stage/:id" element={<SubStagePage />}/>
           <Route path="/applications/user/:id" element={<ApplicationsPage />} />
-
+          <Route path="/applications/event/:id" element={<ApplicationOrganizerPage />} />
           <Route path="/attendance" element={<AttendancePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/login" element={<Login />} />

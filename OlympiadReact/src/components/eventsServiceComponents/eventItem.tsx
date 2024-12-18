@@ -1,6 +1,6 @@
 import { MyEvent, REGIONAL_STAGE, STAGE, OLYMPIAD } from "../../types/event";
 import { Button, Card } from "react-bootstrap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,Link  } from "react-router-dom";
 import { useRole } from "../RoleContext";
 // import { FaTrash, FaChevronDown } from "react-icons/fa";
 import API_CONFIG from "../../config/apiConfig";
@@ -113,6 +113,19 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
               Подать заявку
             </Button>
           )}
+          {/* Кнопка для перехода на страницу заявок */}
+          {role === "3" && (
+            <Link to={`/applications/event/${event.ID}`}>
+              <Button
+                variant="outline-primary"
+                className="mb-2"
+                style={{ display: "flex", alignItems: "center" }}
+              >
+                Перейти к заявкам
+              </Button>
+            </Link>
+          )}
+
         </div>
       </Card.Body>
       {event.Events && event.Events.length > 0 && (
