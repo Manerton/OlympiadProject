@@ -114,7 +114,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
             </Button>
           )}
           {/* Кнопка для перехода на страницу заявок */}
-          {role === "3" && (
+          {role === "3" && isSubmitApplication &&(
             <Link to={`/applications/event/${event.ID}`}>
               <Button
                 variant="outline-primary"
