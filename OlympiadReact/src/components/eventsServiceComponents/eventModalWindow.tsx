@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { MyEvent } from "../../types/event.ts";
+import { MyEvent, OLYMPIAD, REGIONAL_STAGE, STAGE } from "../../types/event.ts";
 import API_CONFIG from "../../config/apiConfig.ts";
 import formatDateForInput from "../../support/support.ts";
 
@@ -11,18 +11,22 @@ export interface EventModalFormProps {
 }
 
 function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormProps) {
-  const [eventName, setEventName] = useState(event?.Name || "");
+  const [eventName, setEventName] = useState("");
   const [subjectList, setSubjectList] = useState<string[]>([]);
-  const [subject, setSubject] = useState(event?.Subject || "");
+  const [subject, setSubject] = useState("");
   const [startDate, setStartDate] = useState<string>(
     event?.StartDate ? formatDateForInput(new Date(event.StartDate).toISOString()) : ""
   );
   const [endDate, setEndDate] = useState<string>(
     event?.EndDate ? formatDateForInput(new Date(event.EndDate).toISOString()) : ""
   );
-  const [additionalInfo, setAdditionalInfo] = useState(event?.AdditionalInfo || "");
+  const [additionalInfo, setAdditionalInfo] = useState("");
+
+
 
   useEffect(() => {
+
+
     const getSubjects = async () => {
       try {
         const response = await fetch(`${API_CONFIG.EVENTS}/subjects`, {
@@ -100,7 +104,7 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
   return (
     <Form onSubmit={handleSubmit}>
       <Form.Group className="mb-3">
-        <Form.Label>Название события</Form.Label>
+        <Form.Label>Название</Form.Label>
         <Form.Control
           type="text"
           placeholder="Введите название"
@@ -127,7 +131,7 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
       )}
 
       <Form.Group className="mb-3">
-        <Form.Label>Дата начала события</Form.Label>
+        <Form.Label>Дата начала</Form.Label>
         <Form.Control
           type="datetime-local"
           value={startDate}
@@ -136,7 +140,7 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
       </Form.Group>
 
       <Form.Group className="mb-3">
-        <Form.Label>Дата конца события</Form.Label>
+        <Form.Label>Дата конца</Form.Label>
         <Form.Control
           type="datetime-local"
           value={endDate}
