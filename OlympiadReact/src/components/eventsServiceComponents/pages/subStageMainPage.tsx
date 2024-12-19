@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
 import { Button, Modal, Form } from "react-bootstrap";
-import { useParams } from "react-router-dom";
 import { MyEvent } from "../../../types/event";
 import EventList from "../eventList";
 import EventModalForm from "../eventModalWindow";
 import API_CONFIG from "../../../config/apiConfig";
 import { useRole } from "../../RoleContext";
 import EventInfo from "../eventInfo";
+import UserRoles from "../../../types/user";
 
 interface BaseEventPageProps {
     eventId?: string
-
 }
 
 function SubStagMainPage({ eventId }: BaseEventPageProps) {
@@ -24,7 +23,6 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
     const [juries, setJuries] = useState<{ id: string; name: string }[]>([]);
     // Выбранные жюри
     const [selectedJuries, setSelectedJuries] = useState<string[]>([]);
-
 
     const { role, id } = useRole();
 
@@ -85,7 +83,6 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
         fetchData();
     }, [id]);
 
-
     const handleJuryChange = (juryId: string) => {
         setSelectedJuries((prevSelected) =>
             prevSelected.includes(juryId)
@@ -100,10 +97,7 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
             const response = await fetch(`${API_CONFIG.JUREASSIGNMENTS}/many`, {
                 method: "POST",
                 credentials: "include", // Отправка cookie
-                headers: {
-                    "Content-Type": "application/json",
-
-                },
+                headers: {"Content-Type": "application/json",},
                 body: JSON.stringify({
                     eventId: id,
                     juryIds: selectedJuries,
@@ -128,13 +122,10 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
         fetchData()
       }
       
-
     return (
         <div className="container">
             <div className="row">
-
                 <h1>{event?.Name || "Неизвестный этап"}</h1>
-
                 <div className="col-3">
                     <h3>Информация о {event?.Name}</h3>
                     {event && (
@@ -145,8 +136,8 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
                 {/* Список подэтапов */}
                 <div className="col-5">
                     <div className="d-flex align-items-center justify-content-between">
-                        <h5>Список подэтапов</h5>
-                        {role === "3" && (
+                        <h5>Список стадий</h5>
+                        {role === UserRoles.Organaizer && (
                             <Button
                                 variant="primary"
                                 className="mb-2"
@@ -159,7 +150,7 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
                         {showModal && (
                             <Modal show onHide={() => setShowModal(false)}>
                                 <Modal.Header closeButton>
-                                    <Modal.Title>Создать подэтап</Modal.Title>
+                                    <Modal.Title>Создать стадию</Modal.Title>
                                 </Modal.Header>
                                 <Modal.Body>
                                     {/* Форма для создания подэтапа */}
@@ -183,7 +174,7 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
                     <div className="d-flex align-items-center justify-content-between">
                         <h5>Список жюри</h5>
 
-                        {role === "3" && (
+                        {role === UserRoles.Organaizer && (
                         <Button
                             variant="success"
                             className="mb-2"
