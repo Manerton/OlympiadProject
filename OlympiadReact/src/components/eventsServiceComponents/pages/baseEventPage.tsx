@@ -7,6 +7,8 @@ import { MyEvent, OLYMPIAD, REGIONAL_STAGE, STAGE } from "../../../types/event";
 import { useRole } from "../../RoleContext";
 import API_CONFIG from "../../../config/apiConfig"
 import EventInfo from "../eventInfo";
+import UserRoles from "../../../types/user";
+import { Type } from "react-bootstrap-icons";
 // import Pagination from "./components/Pagination";
 // import { useUser } from "../contexts/UserContext";
 
@@ -14,11 +16,11 @@ interface BaseEventPageProps {
   selectedEventId?: string
   pageName: string
   showSubjectField?: boolean
-  type: string
+  EventType: string
 }
 
 
-function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = false }: BaseEventPageProps) {
+function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField = false }: BaseEventPageProps) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
@@ -28,12 +30,14 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
   const [event, setEvent] = useState<MyEvent>()
 
   const { role } = useRole();
+  const [eventFieldName, setEventFieldName] = useState("")
+  
 
   const memoizedShowSubjectField = useMemo(() => showSubjectField, [showSubjectField]);
 
   const fetchEvents = async () => {
     let endPointEvents = ""
-    switch (type) {
+    switch (EventType) {
       case REGIONAL_STAGE:
         endPointEvents = `${API_CONFIG.EVENTS}/regional-stage`;
         break
@@ -93,6 +97,25 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
   };
 
   useEffect(() => {
+
+    switch (EventType) {
+      case OLYMPIAD: 
+        setEventFieldName("олимпиады")
+        break 
+      case STAGE:
+        setEventFieldName("этапа олимпиады")
+        break
+      case STAGE:
+        setEventFieldName("стадии этапа")
+        break
+      case REGIONAL_STAGE:
+        setEventFieldName("регионального этапа")
+        break
+      default:
+        setEventFieldName("события")
+    }
+
+
     fetchEvents();
   }, [selectedEventId]);
 
@@ -115,7 +138,6 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
     );
   };
 
-
   return (
     <div className="row d-flex justify-content-center">
       {event && (
@@ -127,7 +149,6 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
       <div className="col-9">
         <div className="d-flex justify-content-between align-items-center">
           <h1>{pageName}</h1>
-
           <div className="d-flex">
             <div className="dropdown">
               <button
@@ -162,7 +183,7 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
 
 
             {/* Кнопка создания доступна только организаторам */}
-            {role === "3" && (
+            {role === UserRoles.Organaizer && EventType != OLYMPIAD && (
               <Button
                 variant="primary"
                 className="ms-2"
@@ -176,7 +197,7 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
 
         {/* Список этапов */}
         {events.length > 0 ? (
-          <EventList isSubmitItem={type === OLYMPIAD ? true : false} events={events} onDelete={handleDeleteEvent} />
+          <EventList isSubmitItem={EventType === OLYMPIAD ? true : false} events={events} onDelete={handleDeleteEvent} />
         ) : (
           <p>Список пуст...</p>
         )}
@@ -186,7 +207,7 @@ function BaseEventPage({ selectedEventId, pageName, type, showSubjectField = fal
       </div>
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
-          <Modal.Title>Создать</Modal.Title>
+          <Modal.Title>Создание {eventFieldName}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {/* Форма создания */}
