@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import formatDateForInput from "../../support/support";
 import { MyEvent } from "../../types/event";
 import { useRole } from "../RoleContext";
+import UserRoles from "../../types/user";
 
 interface EventInfoProps {
   event: MyEvent
@@ -21,8 +22,7 @@ function EventInfo({ event }: EventInfoProps) {
   );
   const [additionalInfo, setAdditionalInfo] = useState<string>(event.AdditionalInfo || "");
 
-
-  const { role, id } = useRole();
+  const { role } = useRole();
 
   useEffect(() => {
     if (event.Subject) {
@@ -66,7 +66,6 @@ function EventInfo({ event }: EventInfoProps) {
       return
     }
 
-
     const eventData: MyEvent = {
       ID: event.ID,
       PreviousEventID: event.PreviousEventID,
@@ -103,7 +102,7 @@ function EventInfo({ event }: EventInfoProps) {
   return (
     <div className="card shadow-sm mb-3">
       <div className="card-body">
-        {role === "3" && (
+        {role === UserRoles.Organaizer && (
           <h5 className="card-title" >Редактировать событие</h5>
         )}
         <Form onSubmit={UpdateEvent}>
@@ -116,7 +115,7 @@ function EventInfo({ event }: EventInfoProps) {
               placeholder="Введите название"
               value={eventName}
               onChange={(e) => setEventName(e.target.value)}
-              disabled={role !== "3"}
+              disabled={role !== UserRoles.Organaizer}
             />
           </Form.Group>
 
@@ -126,7 +125,7 @@ function EventInfo({ event }: EventInfoProps) {
               type="datetime-local"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              disabled={role !== "3"}
+              disabled={role !== UserRoles.Organaizer}
             />
           </Form.Group>
           <Form.Group className="mb-2">
@@ -135,7 +134,7 @@ function EventInfo({ event }: EventInfoProps) {
               type="datetime-local"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              disabled={role !== "3"}
+              disabled={role !== UserRoles.Organaizer}
             />
           </Form.Group>
 
@@ -149,7 +148,7 @@ function EventInfo({ event }: EventInfoProps) {
                   type="button"
                   data-bs-toggle="dropdown"
                   aria-expanded="false"
-                  disabled={role !== "3"}
+                  disabled={role !== UserRoles.Organaizer}
                 >
                   {subject || "Выберите предмет"}
                 </button>
@@ -179,13 +178,13 @@ function EventInfo({ event }: EventInfoProps) {
               rows={3}
               value={additionalInfo}
               onChange={(e) => setAdditionalInfo(e.target.value)}
-              disabled={role !== "3"}
+              disabled={role !==  UserRoles.Organaizer}
               
             />
           </Form.Group>
           )}
 
-          {role == "3" && (
+          {role == UserRoles.Organaizer && (
             <div className="text-end">
               <Button variant="primary" type="submit">
                 Сохранить

@@ -4,6 +4,7 @@ import { useNavigate,Link  } from "react-router-dom";
 import { useRole } from "../RoleContext";
 // import { FaTrash, FaChevronDown } from "react-icons/fa";
 import API_CONFIG from "../../config/apiConfig";
+import UserRoles from "../../types/user";
 
 interface EventItemProps {
   event: MyEvent;
@@ -13,7 +14,7 @@ interface EventItemProps {
 
 function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
   const navigate = useNavigate();
-  const { role, id, name, clearRoleData } = useRole();
+  const { role, id } = useRole();
   
 
   const handleClick = () => {
@@ -92,7 +93,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
 
         {/* Правая часть: кнопки */}
         <div className="d-flex flex-column align-items-end">
-          {role === "3" ? (
+          {role === UserRoles.Organaizer ? (
             <Button
               variant="outline-danger"
               className="mb-2"
@@ -103,7 +104,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
               Удалить
             </Button>
 
-          ) : role === "1" && isSubmitApplication &&(
+          ) : role === UserRoles.Student && isSubmitApplication &&(
             <Button
               variant="outline-success"
               className="mb-2"
@@ -114,7 +115,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
             </Button>
           )}
           {/* Кнопка для перехода на страницу заявок */}
-          {role === "3" && isSubmitApplication &&(
+          {role === UserRoles.Organaizer && isSubmitApplication &&(
             <Link to={`/applications/event/${event.ID}`}>
               <Button
                 variant="outline-primary"
