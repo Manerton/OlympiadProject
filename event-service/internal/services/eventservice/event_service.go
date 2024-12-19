@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"main/internal/dto/event_dto"
 	"main/internal/models/event"
+	"main/internal/models/subject"
 	"main/internal/repositories/eventrepository"
 	"sync"
 	"time"
@@ -237,18 +238,51 @@ func (s *EventService) checkCorrectEventDTO(eventDTO *event_dto.EventDTO, isUpda
 }
 
 // Create event
-func (s *EventService) CreateEvent(event_dto event_dto.EventDTO) (uint, error) {
+func (s *EventService) CreateEvent(eventDTO event_dto.EventDTO) (uint, error) {
 	const op = "services.eventservice.CreateEvent"
-	err := s.checkCorrectEventDTO(&event_dto, false)
+	err := s.checkCorrectEventDTO(&eventDTO, false)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
+	eventModel := ConvertDTOtoEvent(eventDTO)
+	if eventModel.EventType == event.RegionalStage {
+		id, err := s.createEventsBySubjects(eventModel)
+		if err != nil {
+			return 0, fmt.Errorf("%s: %w", op, err)
+		}
+		return id, nil
+	}
+	id, err := s.repository.CreateEvent(s.db, eventModel)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	return id, nil
+}
 
-	event := ConvertDTOtoEvent(event_dto)
-	id, err := s.repository.CreateEvent(s.db, event)
+func (s *EventService) createEventsBySubjects(eventModel event.Event) (uint, error) {
+	const op = "services.eventservice.createEventsBySubjects"
+	tx := s.db.Begin()
+	id, err := s.repository.CreateEvent(tx, eventModel)
 	if err != nil {
+		tx.Rollback()
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
+	for _, subject := range subject.NewSubjectsStorage().GetAllSubject() {
+		eventBySubject := event.Event{
+			Name:            fmt.Sprintf("Олимпиада по %s", subject),
+			PreviousEventID: &id,
+			StartDate:       eventModel.StartDate,
+			EndDate:         eventModel.EndDate,
+			EventType:       event.Olympiad,
+			Subject:         subject,
+		}
+		_, err := s.repository.CreateEvent(tx, eventBySubject)
+		if err != nil {
+			tx.Rollback()
+			return 0, fmt.Errorf("%s - create auto event by subjects: %w", op, err)
+		}
+	}
+	tx.Commit()
 	return id, nil
 }
 
