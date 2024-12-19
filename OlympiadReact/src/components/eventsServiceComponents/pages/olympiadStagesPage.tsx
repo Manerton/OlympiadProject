@@ -7,7 +7,7 @@ import { RoleProvider } from "../../RoleContext";
 function OlympiadStagesPage() {
     const { id } = useParams<{ id: string }>();
     return (
-        <BaseEventPage type={STAGE} selectedEventId={id} pageName="Этапы олимпиады" />
+        <BaseEventPage EventType={STAGE} selectedEventId={id} pageName="Этапы олимпиады" />
     )
 }
 
