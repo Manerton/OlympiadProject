@@ -15,7 +15,6 @@ interface EventItemProps {
 function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
   const navigate = useNavigate();
   const { role, id } = useRole();
-  
 
   const handleClick = () => {
     if (event.EventType === REGIONAL_STAGE) {
@@ -41,12 +40,15 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json();
+      if (result.status === "Error") {
+        alert("Это событие связано с другими событиями, поэтому его нельзя удалить!");
+      } else {
+        onDelete(event.ID || 0)
+      }
       console.log("Response from API:", result);
     } catch (error) {
       console.error("Ошибка при загрузке региональных этапов:", error);
     }
-
-    onDelete(event.ID || 0)
   }
 
   const onSubmitApplication = async () => {
@@ -84,6 +86,11 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
           <Card.Text className="text-muted mb-1">
             <strong>Дата конца:</strong> {new Date(event.EndDate).toLocaleString()}
           </Card.Text>
+          {event.Subject && (
+              <Card.Text className="text-muted mb-1">
+                <strong>Предмет:</strong> {event.Subject}
+              </Card.Text>
+          )}
           {event.AdditionalInfo && (
             <Card.Text className="mt-3">
               <strong>Дополнительно:</strong> {event.AdditionalInfo}
