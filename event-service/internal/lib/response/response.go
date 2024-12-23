@@ -12,6 +12,11 @@ type ApiResponse struct {
 	Error   string      `json:"error,omitempty"`
 }
 
+type PaginatedResponse struct {
+	Events     interface{} `json:"events"`
+	TotalCount int         `json:"totalCount"`
+}
+
 func Error(err string) ApiResponse {
 	return ApiResponse{
 		Status: StatusError,
