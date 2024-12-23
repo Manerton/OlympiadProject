@@ -9,7 +9,8 @@ import API_CONFIG from "../../../config/apiConfig"
 import EventInfo from "../eventInfo";
 import UserRoles from "../../../types/user";
 import { Type } from "react-bootstrap-icons";
-// import Pagination from "./components/Pagination";
+import Pagination from "../pagination";
+import { number } from "yup";
 // import { useUser } from "../contexts/UserContext";
 
 interface BaseEventPageProps {
@@ -19,12 +20,13 @@ interface BaseEventPageProps {
   EventType: string
 }
 
+const limit = 2
+
 
 function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField = false }: BaseEventPageProps) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
-  //   const { user } = useUser(); // Доступ к информации о пользователе
 
   const [events, setEvents] = useState<MyEvent[]>([])
   const [event, setEvent] = useState<MyEvent>()
@@ -35,14 +37,15 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
 
   const memoizedShowSubjectField = useMemo(() => showSubjectField, [showSubjectField]);
 
-  const fetchEvents = async () => {
+
+  const eventsResponse = async (offset: number) => {
     let endPointEvents = ""
     switch (EventType) {
       case REGIONAL_STAGE:
-        endPointEvents = `${API_CONFIG.EVENTS}/regional-stage`;
+        endPointEvents = `${API_CONFIG.EVENTS}/regional-stage?offset=${offset}&limit=${limit}`;
         break
       case OLYMPIAD:
-        endPointEvents = `${API_CONFIG.EVENTS}/child/${selectedEventId}`;
+        endPointEvents = `${API_CONFIG.EVENTS}/child/${selectedEventId}?offset=${offset}&limit=${limit}`;
         break
       case STAGE:
         endPointEvents = `${API_CONFIG.EVENTS}/stages/${selectedEventId}`;
@@ -52,23 +55,36 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
         method: "GET",
         credentials: "include", // Отправка cookie
       });
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json();
       console.log("EVENTS: Response from API:", result);
-      if (result.data) {
+      if (EventType === STAGE && result.data) {
         const eventsWithDates = result.data.map((event: MyEvent) => ({
           ...event,
           StartDate: new Date(event.StartDate),
           EndDate: new Date(event.EndDate),
         }));
         setEvents(eventsWithDates);
+      } else {
+        const eventsWithDates = result.data.events.map((event: MyEvent) => ({
+          ...event,
+          StartDate: new Date(event.StartDate),
+          EndDate: new Date(event.EndDate),
+        }));
+        setEvents(eventsWithDates);
+        const totalCount = result.data.totalCount
+        setTotalPages(totalCount/limit)
       }
     } catch (error) {
       console.error("Ошибка при загрузке региональных этапов:", error);
     }
+  }
 
+
+  const eventResponse = async () => {
     const endPointEvent = `${API_CONFIG.EVENTS}/${selectedEventId}`;
     if (selectedEventId) {
       try {
@@ -94,10 +110,21 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
         console.error("Ошибка при загрузке региональных этапов:", error);
       }
     }
+  }
+
+  const updateBySetPage = async(newPage: number) => {
+    setPage(newPage)
+    let offset = newPage * limit - limit
+    eventsResponse(offset)
+  }
+
+
+  const fetchEvents = async () => {
+    await eventsResponse(0)
+    await eventResponse()
   };
 
   useEffect(() => {
-
     switch (EventType) {
       case OLYMPIAD: 
         setEventFieldName("олимпиады")
@@ -114,7 +141,6 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
       default:
         setEventFieldName("события")
     }
-
 
     fetchEvents();
   }, [selectedEventId]);
@@ -202,7 +228,7 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
           <p>Список пуст...</p>
         )}
         {/* Пагинация */}
-        {/* <Pagination currentPage={page} totalPages={totalPages} onPageChange={setPage} /> */}
+        <Pagination currentPage={page} totalPages={totalPages} onPageChange={updateBySetPage} />
         {/* Модальное окно */}
       </div>
       <Modal show={showModal} onHide={() => setShowModal(false)}>
