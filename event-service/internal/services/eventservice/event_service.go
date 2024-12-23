@@ -69,10 +69,28 @@ func (s *EventService) GetEventsByFilterAndFields(filter event_dto.EventDTO, fie
 	return ConvertManyEventsToDetails(events), nil
 }
 
+func (s *EventService) GetCountEventsByType(eventType event.EventType) (int64, error) {
+	const op = "services.eventservice.GetCountEventsByType"
+	count, err := s.repository.GetCountEventsByType(s.db, eventType)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %v", op, err)
+	}
+	return count, err
+}
+
+func (s *EventService) GetCountEventsByPreviousID(id uint) (int64, error) {
+	const op = "services.eventservice.GetCountEvents"
+	count, err := s.repository.GetCountEventsByPreviousID(s.db, id)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %v", op, err)
+	}
+	return count, err
+}
+
 // Get list events by type
-func (s *EventService) GetEventsByType(event_type event.EventType, offset, limit *int) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetEventsByType(eventType event.EventType, offset, limit *int) ([]event_dto.EventDTO, error) {
 	const op = "services.eventservice.GetEventsByType"
-	events, err := s.repository.GetEventsByType(s.db, event_type, offset, limit)
+	events, err := s.repository.GetEventsByType(s.db, eventType, offset, limit)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
