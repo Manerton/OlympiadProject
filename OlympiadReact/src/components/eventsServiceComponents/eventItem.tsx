@@ -138,7 +138,6 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
       </Card.Body>
       {event.Events && event.Events.length > 0 && (
         <Card.Footer>
-
           <div>
             <button
               className="btn btn-primary"
@@ -171,7 +170,6 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
             </div>
           </div>
         </Card.Footer>
-
       )}
     </Card>
   )
