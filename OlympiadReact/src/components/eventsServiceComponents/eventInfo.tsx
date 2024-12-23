@@ -139,7 +139,6 @@ function EventInfo({ event }: EventInfoProps) {
           </Form.Group>
 
           {subject && (
-
             <Form.Group className="mb-3">
               <Form.Label>Предмет</Form.Label>
               <div className="dropdown">
