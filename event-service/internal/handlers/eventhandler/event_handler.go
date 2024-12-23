@@ -169,10 +169,29 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 	}
 	log.Info("events getted", slog.Any("events", eventsDTO))
 
+	if offset == nil && limit == nil {
+		render.JSON(w, r, response.ApiResponse{
+			Status: response.StatusOK,
+			Data:   eventsDTO,
+		})
+		return
+	}
+
+	count, err := h.service.GetCountEventsByType(event.RegionalStage)
+	if err != nil {
+		log.Error("failed to get count events by type", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to get count events by type"))
+		return
+	}
+
 	render.JSON(w, r, response.ApiResponse{
 		Status: response.StatusOK,
-		Data:   eventsDTO,
+		Data: response.PaginatedResponse{
+			Events:     eventsDTO,
+			TotalCount: int(count),
+		},
 	})
+
 }
 
 func (h *EventHandler) GetEventsTypeStageAndHisChilds(w http.ResponseWriter, r *http.Request) {
@@ -214,8 +233,8 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 
 	offset, limit, err := parsing.ParseOffsetLimit(offsetStr, limitStr)
 	if err != nil {
-		log.Error("failed to get events", liblogger.Err(err))
-		render.JSON(w, r, response.Error("failed to get events"))
+		log.Error("failed to parse offsetStr/limitStr", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to pares offset/limit"))
 		return
 	}
 
@@ -236,9 +255,28 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 	}
 
 	log.Info("events getted")
+
+	if offset == nil && limit == nil {
+		render.JSON(w, r, response.ApiResponse{
+			Status: response.StatusOK,
+			Data:   eventsDTO,
+		})
+		return
+	}
+
+	count, err := h.service.GetCountEventsByPreviousID(uint(searchedID))
+	if err != nil {
+		log.Error("failed to get count events by type", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to get count events by type"))
+		return
+	}
+
 	render.JSON(w, r, response.ApiResponse{
 		Status: response.StatusOK,
-		Data:   eventsDTO,
+		Data: response.PaginatedResponse{
+			Events:     eventsDTO,
+			TotalCount: int(count),
+		},
 	})
 }
 
