@@ -25,8 +25,6 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
 
 
   useEffect(() => {
-
-
     const getSubjects = async () => {
       try {
         const response = await fetch(`${API_CONFIG.EVENTS}/subjects`, {
@@ -91,9 +89,12 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
         const errorText = await response.text();
         throw new Error(`Ошибка API: ${errorText}`);
       }
-
-      if (onSuccess) {
-        onSuccess();
+      const result = await response.json();
+      if (result.status === "Error") {
+        alert(`Не удалось создать событие: ${result.error}`);
+        if (onSuccess) {
+          onSuccess();
+        }
       }
     } catch (error) {
       console.error("Ошибка при создании события:", error);
@@ -112,7 +113,7 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
           onChange={(e) => setEventName(e.target.value)}
         />
       </Form.Group>
-
+      
       {showSubjectField && (
         <Form.Group controlId="eventSubject" className="mb-3">
           <Form.Label>Предмет</Form.Label>
