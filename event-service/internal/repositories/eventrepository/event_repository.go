@@ -125,6 +125,26 @@ func (r *EventRepository) GetAllEvents(db *gorm.DB, offset, limit *int) ([]event
 	return eventsRes, nil
 }
 
+func (r *EventRepository) GetCountEventsByType(db *gorm.DB, eventType event.EventType) (int64, error) {
+	const op = "repositories.eventrepository.GetCountEventsByType"
+	var resultCount int64 = 0
+	err := db.Model(&event.Event{}).Where("event_type = ?", eventType).Count(&resultCount).Error
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	return resultCount, nil
+}
+
+func (r *EventRepository) GetCountEventsByPreviousID(db *gorm.DB, previousID uint) (int64, error) {
+	const op = "repositories.eventrepository.GetCountEventsByPreviousID"
+	var resultCount int64 = 0
+	err := db.Model(&event.Event{}).Where("previous_event_id = ?", previousID).Count(&resultCount).Error
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	return resultCount, nil
+}
+
 // Add new event in DB
 func (r *EventRepository) CreateEvent(db *gorm.DB, event event.Event) (uint, error) {
 	const op = "repositories.eventrepository.CreateEvent"
