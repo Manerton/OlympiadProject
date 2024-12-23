@@ -20,7 +20,7 @@ interface BaseEventPageProps {
   EventType: string
 }
 
-const limit = 2
+const limit = 10
 
 
 function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField = false }: BaseEventPageProps) {
