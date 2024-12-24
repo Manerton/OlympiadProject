@@ -11,7 +11,7 @@ import (
 	"main/internal/lib/request"
 	"main/internal/lib/response"
 	"main/internal/models/event"
-	"main/internal/services/eventservice"
+	"main/internal/services/event_service"
 	"net/http"
 	"strconv"
 
@@ -21,11 +21,11 @@ import (
 )
 
 type EventHandler struct {
-	service *eventservice.EventService
+	service *event_service.EventService
 	log     *slog.Logger
 }
 
-func NewEventHandler(service *eventservice.EventService, log *slog.Logger) *EventHandler {
+func NewEventHandler(service *event_service.EventService, log *slog.Logger) *EventHandler {
 	return &EventHandler{service: service, log: log}
 }
 
