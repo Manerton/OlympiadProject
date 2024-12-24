@@ -92,9 +92,9 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
       const result = await response.json();
       if (result.status === "Error") {
         alert(`Не удалось создать событие: ${result.error}`);
-        if (onSuccess) {
-          onSuccess();
-        }
+      }
+      if (onSuccess) {
+        onSuccess();
       }
     } catch (error) {
       console.error("Ошибка при создании события:", error);

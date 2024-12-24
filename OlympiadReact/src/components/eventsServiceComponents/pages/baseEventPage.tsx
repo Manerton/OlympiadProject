@@ -83,7 +83,6 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
     }
   }
 
-
   const eventResponse = async () => {
     const endPointEvent = `${API_CONFIG.EVENTS}/${selectedEventId}`;
     if (selectedEventId) {
