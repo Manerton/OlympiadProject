@@ -1,0 +1,211 @@
+package event_repository
+
+import (
+	"fmt"
+	"main/internal/models/event"
+	"main/internal/storage/orm"
+)
+
+type EventRepository struct{}
+
+func (r *EventRepository) GetEventByFilterAndFields(orm orm.ORM, filter event.Event, fields *[]string) (event.Event, error) {
+	const op = "repositories.event_repository.GetEventByFilter"
+	if err := orm.First(event.Event{}, fields, &filter); err != nil {
+		return event.Event{}, fmt.Errorf("%s: %w", op, err)
+	}
+	// query := db.Model(event.Event{})
+	// // query := db.Debug().Model(event.Event{})
+	// if fields != nil {
+	// 	query.Select(*fields)
+	// }
+
+	// if err := query.First(&filter).Error; err != nil {
+	// 	return event.Event{}, fmt.Errorf("%s: %w", op, err)
+	// }
+	return filter, nil
+}
+
+func (r *EventRepository) GetEventsByFilterAndFields(orm orm.ORM, filter event.Event, fields *[]string, offset, limit *int) ([]event.Event, error) {
+	const op = "repositories.event_repository.GetEventsByFilterAndFields"
+	eventRes := []event.Event{}
+
+	if err := orm.Find(event.Event{}, fields, offset, limit, &eventRes, filter); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	// query := db.Model(event.Event{})
+	// if fields != nil {
+	// 	query.Select(*fields)
+	// }
+	// if offset != nil {
+	// 	query = query.Offset(*offset)
+	// }
+	// if limit != nil {
+	// 	query = query.Limit(*limit)
+	// }
+	// eventRes := []event.Event{}
+
+	// if err := query.Find(&eventRes, filter).Error; err != nil {
+	// 	return nil, fmt.Errorf("%s: %w", op, err)
+	// }
+	return eventRes, nil
+}
+
+// Get event by ID
+func (r *EventRepository) GetEventByID(orm orm.ORM, id uint) (event.Event, error) {
+	const op = "repositories.event_repository.GetEventByID"
+
+	eventRes := event.Event{ID: id}
+	if err := orm.First(event.Event{}, nil, &eventRes); err != nil {
+		return event.Event{}, fmt.Errorf("%s: %w", op, err)
+	}
+	// if err := db.First(&eventRes).Error; err != nil {
+	// 	return event.Event{}, fmt.Errorf("%s: %w", op, err)
+	// }
+	return eventRes, nil
+}
+
+// Get list events by list id
+func (r *EventRepository) GetEventsByListID(orm orm.ORM, ids []uint) ([]event.Event, error) {
+	const op = "repositories.event_repository.GetEventsByListID"
+
+	eventRes := []event.Event{}
+	if err := orm.Find(event.Event{}, nil, nil, nil, &eventRes, ids); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	// if err := db.Find(&eventRes, ids).Error; err != nil {
+	// 	return nil, fmt.Errorf("%s: %w", op, err)
+	// }
+	return eventRes, nil
+}
+
+// Get list events by EventType
+// Offset, limit can be nil
+func (r *EventRepository) GetEventsByType(orm orm.ORM, eventType event.EventType, offset, limit *int) ([]event.Event, error) {
+	const op = "repositories.event_repository.GetEventsByType"
+	eventsRes := []event.Event{}
+
+	if err := orm.Find(event.Event{}, nil, offset, limit, &eventsRes, event.Event{EventType: eventType}); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	// query := db.Model(event.Event{})
+	// if offset != nil {
+	// 	query = query.Offset(*offset)
+	// }
+	// if limit != nil {
+	// 	query = query.Limit(*limit)
+	// }
+
+	// if err := query.Find(&eventsRes, event.Event{EventType: eventType}).Error; err != nil {
+	// 	return nil, fmt.Errorf("%s: %w", op, err)
+	// }
+	return eventsRes, nil
+}
+
+// Get all events by PreviousID
+// Offset, limit can be nil
+func (r *EventRepository) GetEventsByPreviousID(orm orm.ORM, previousID uint, offset, limit *int) ([]event.Event, error) {
+	const op = "repositories.event_repository.GetEventsByPreviousID"
+	eventsRes := []event.Event{}
+
+	if err := orm.Find(event.Event{}, nil, offset, limit, &eventsRes, event.Event{PreviousEventID: &previousID}); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	// query := db.Model(event.Event{})
+	// if offset != nil {
+	// 	query = query.Offset(*offset)
+	// }
+	// if limit != nil {
+	// 	query = query.Limit(*limit)
+	// }
+
+	// if err := query.Find(&events, event.Event{PreviousEventID: &previousID}).Error; err != nil {
+	// 	return nil, fmt.Errorf("%s: %w", op, err)
+	// }
+	return eventsRes, nil
+}
+
+// Get all events with offset and limit
+// Offset, limit can be nil
+func (r *EventRepository) GetAllEvents(orm orm.ORM, offset, limit *int) ([]event.Event, error) {
+	const op = "repositories.event_repository.GetAllEvents"
+	eventsRes := []event.Event{}
+
+	if err := orm.Find(event.Event{}, nil, offset, limit, &eventsRes); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	// query := db.Model(event.Event{})
+	// if offset != nil {
+	// 	query = query.Offset(*offset)
+	// }
+	// if limit != nil {
+	// 	query = query.Limit(*limit)
+	// }
+
+	// if err := query.Find(&eventsRes).Error; err != nil {
+	// 	return nil, fmt.Errorf("%s: %w", op, err)
+	// }
+	return eventsRes, nil
+}
+
+func (r *EventRepository) GetCountEventsByType(orm orm.ORM, eventType event.EventType) (int64, error) {
+	const op = "repositories.event_repository.GetCountEventsByType"
+	var resultCount int64 = 0
+	err := orm.Count(&event.Event{}, &resultCount, "event_type = ?", eventType)
+
+	// err := db.Model(&event.Event{}).Where("event_type = ?", eventType).Count(&resultCount).Error
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	return resultCount, nil
+}
+
+func (r *EventRepository) GetCountEventsByPreviousID(orm orm.ORM, previousID uint) (int64, error) {
+	const op = "repositories.event_repository.GetCountEventsByPreviousID"
+	var resultCount int64 = 0
+	err := orm.Count(&event.Event{}, &resultCount, "previous_event_id = ?", previousID)
+
+	// err := db.Model(&event.Event{}).Where("previous_event_id = ?", previousID).Count(&resultCount).Error
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	return resultCount, nil
+}
+
+// Add new event in DB
+func (r *EventRepository) CreateEvent(orm orm.ORM, event event.Event) (uint, error) {
+	const op = "repositories.event_repository.CreateEvent"
+	if err := orm.Create(&event); err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	// if err := db.Create(&event).Error; err != nil {
+	// 	return 0, fmt.Errorf("%s: %w", op, err)
+	// }
+	return event.ID, nil
+}
+
+// Update event
+func (r *EventRepository) UpdateEvent(orm orm.ORM, event event.Event) (uint, error) {
+	const op = "repositories.event_repository.UpdateEvent"
+	if err := orm.Updates(&event); err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+	// if err := db.Updates(&event).Error; err != nil {
+	// 	return 0, fmt.Errorf("%s: %w", op, err)
+	// }
+	return event.ID, nil
+}
+
+// Delete event
+func (r *EventRepository) DeleteEvent(orm orm.ORM, id uint) error {
+	const op = "repositories.event_repository.DeleteEvent"
+	if err := orm.Delete(&event.Event{ID: id}); err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	// if err := db.Delete(&event.Event{ID: id}).Error; err != nil {
+	// 	return fmt.Errorf("%s: %w", op, err)
+	// }
+	return nil
+}

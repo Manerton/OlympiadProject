@@ -10,8 +10,9 @@ import (
 	"main/internal/middleware/auth"
 	"main/internal/middleware/midlogger"
 	"main/internal/models/subject"
-	"main/internal/repositories/eventrepository"
-	"main/internal/services/eventservice"
+	"main/internal/repositories/event_repository"
+	"main/internal/services/event_service"
+	"main/internal/storage/orm"
 	"main/internal/storage/postgresql"
 	"main/support/userrole"
 	"net/http"
@@ -69,8 +70,11 @@ func main() {
 	// init subject service and handler
 	subjectStorage := subject.NewSubjectsStorage()
 	subjectHandler := subjecthandler.NewSubjectHandler(subjectStorage, log)
+	// init orm
+	gormORM := orm.NewGormORM(storage)
+
 	// init events service and handler
-	eventService := eventservice.NewEventService(storage, &eventrepository.EventRepository{})
+	eventService := event_service.NewEventService(gormORM, &event_repository.EventRepository{})
 	eventHandler := eventhandler.NewEventHandler(eventService, log)
 
 	// init subjects route

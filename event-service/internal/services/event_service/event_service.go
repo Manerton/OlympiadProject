@@ -1,4 +1,4 @@
-package eventservice
+package event_service
 
 import (
 	"errors"
@@ -6,21 +6,37 @@ import (
 	"main/internal/dto/event_dto"
 	"main/internal/models/event"
 	"main/internal/models/subject"
-	"main/internal/repositories/eventrepository"
+	"main/internal/repositories/event_repository"
+	"main/internal/storage/orm"
 	"sync"
 	"time"
-
-	"gorm.io/gorm"
 )
 
-type EventService struct {
-	db         *gorm.DB
-	repository *eventrepository.EventRepository
+type EventRepositoryInterface interface {
+	GetEventByFilterAndFields(orm orm.ORM, filter event.Event, fields *[]string) (event.Event, error)
+	GetEventsByFilterAndFields(orm orm.ORM, filter event.Event, fields *[]string, offset, limit *int) ([]event.Event, error)
+	GetEventByID(orm orm.ORM, id uint) (event.Event, error)
+	GetEventsByListID(orm orm.ORM, ids []uint) ([]event.Event, error)
+	GetEventsByType(orm orm.ORM, eventType event.EventType, offset, limit *int) ([]event.Event, error)
+	GetEventsByPreviousID(orm orm.ORM, previousID uint, offset, limit *int) ([]event.Event, error)
+	GetAllEvents(orm orm.ORM, offset, limit *int) ([]event.Event, error)
+
+	GetCountEventsByType(orm orm.ORM, eventType event.EventType) (int64, error)
+	etCountEventsByPreviousID(orm orm.ORM, previousID uint) (int64, error)
+
+	CreateEvent(orm orm.ORM, event event.Event) (uint, error)
+	UpdateEvent(orm orm.ORM, event event.Event) (uint, error)
+	DeleteEvent(orm orm.ORM, id uint) error
 }
 
-func NewEventService(db *gorm.DB, er *eventrepository.EventRepository) *EventService {
+type EventService struct {
+	db         orm.ORM
+	repository *event_repository.EventRepository
+}
+
+func NewEventService(orm orm.ORM, er *event_repository.EventRepository) *EventService {
 	return &EventService{
-		db:         db,
+		db:         orm,
 		repository: er,
 	}
 }
@@ -279,10 +295,14 @@ func (s *EventService) CreateEvent(eventDTO event_dto.EventDTO) (uint, error) {
 
 func (s *EventService) createEventsBySubjects(eventModel event.Event) (uint, error) {
 	const op = "services.eventservice.createEventsBySubjects"
-	tx := s.db.Begin()
+	tx, err := s.db.TransactionBegin()
+	if err != nil {
+		tx.TransactionRollback()
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
 	id, err := s.repository.CreateEvent(tx, eventModel)
 	if err != nil {
-		tx.Rollback()
+		tx.TransactionRollback()
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 	for _, subject := range subject.NewSubjectsStorage().GetAllSubject() {
@@ -296,11 +316,11 @@ func (s *EventService) createEventsBySubjects(eventModel event.Event) (uint, err
 		}
 		_, err := s.repository.CreateEvent(tx, eventBySubject)
 		if err != nil {
-			tx.Rollback()
+			tx.TransactionRollback()
 			return 0, fmt.Errorf("%s - create auto event by subjects: %w", op, err)
 		}
 	}
-	tx.Commit()
+	tx.TransactionCommit()
 	return id, nil
 }
 

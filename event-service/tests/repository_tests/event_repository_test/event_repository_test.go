@@ -3,7 +3,8 @@ package event_repository_test
 import (
 	"fmt"
 	"main/internal/models/event"
-	"main/internal/repositories/eventrepository"
+	"main/internal/repositories/event_repository"
+	"main/internal/storage/orm"
 	"testing"
 	"time"
 
@@ -12,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func setupTestDB(t *testing.T) *gorm.DB {
+func setupTestDB(t *testing.T) orm.ORM {
 	// Создаем in-memory базу данных SQLite для тестирования
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	if err != nil {
@@ -58,12 +59,12 @@ func setupTestDB(t *testing.T) *gorm.DB {
 	// 	t.Fatalf("failed to create support subjects: %v", err)
 	// }
 
-	return db
+	return &orm.Gorm{DB: db}
 }
 
 func TestCreateEvent(t *testing.T) {
 	db := setupTestDB(t)
-	repo := eventrepository.EventRepository{}
+	repo := event_repository.EventRepository{}
 
 	var Subject string = ""
 	var UnCorrectPreviousEventID uint = 99
@@ -207,7 +208,7 @@ func TestCreateEvent(t *testing.T) {
 
 func TestGetEventByID(t *testing.T) {
 	db := setupTestDB(t)
-	repo := eventrepository.EventRepository{}
+	repo := event_repository.EventRepository{}
 
 	tempEvent := event.Event{
 		Name:      "RegionalStage",
@@ -272,7 +273,7 @@ func TestGetEventByID(t *testing.T) {
 
 func TestGetEventsByPreviousID(t *testing.T) {
 	db := setupTestDB(t)
-	repo := eventrepository.EventRepository{}
+	repo := event_repository.EventRepository{}
 
 	var Subject string = "Математика"
 	mainEvent := event.Event{
@@ -338,7 +339,7 @@ func TestGetEventsByPreviousID(t *testing.T) {
 
 func TestGetEventsByType(t *testing.T) {
 	db := setupTestDB(t)
-	repo := eventrepository.EventRepository{}
+	repo := event_repository.EventRepository{}
 
 	var Subject string = "Математика"
 	var MainRegionalEventID uint = 1
@@ -417,7 +418,7 @@ func TestGetEventsByType(t *testing.T) {
 
 func TestGetAllEvents(t *testing.T) {
 	db := setupTestDB(t)
-	repo := eventrepository.EventRepository{}
+	repo := event_repository.EventRepository{}
 
 	var Subject string = "Математика"
 	var MainRegionalEventID uint = 1
@@ -460,7 +461,7 @@ func TestGetAllEvents(t *testing.T) {
 
 func TestUpdateEvent(t *testing.T) {
 	db := setupTestDB(t)
-	repo := eventrepository.EventRepository{}
+	repo := event_repository.EventRepository{}
 
 	var Subject string = "Математика"
 	var NewSubject string = "Руссикй язык"
@@ -543,7 +544,7 @@ func TestUpdateEvent(t *testing.T) {
 
 func TestDeleteEvent(t *testing.T) {
 	db := setupTestDB(t)
-	repo := eventrepository.EventRepository{}
+	repo := event_repository.EventRepository{}
 
 	var Subject string = "Математика"
 	var MainRegionalEventID uint = 1
