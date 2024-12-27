@@ -6,7 +6,6 @@ import (
 	"main/internal/dto/event_dto"
 	"main/internal/models/event"
 	"main/internal/models/subject"
-	"main/internal/repositories/event_repository"
 	"main/internal/storage/orm"
 	"sync"
 	"time"
@@ -22,7 +21,7 @@ type EventRepositoryInterface interface {
 	GetAllEvents(orm orm.ORM, offset, limit *int) ([]event.Event, error)
 
 	GetCountEventsByType(orm orm.ORM, eventType event.EventType) (int64, error)
-	etCountEventsByPreviousID(orm orm.ORM, previousID uint) (int64, error)
+	GetCountEventsByPreviousID(orm orm.ORM, previousID uint) (int64, error)
 
 	CreateEvent(orm orm.ORM, event event.Event) (uint, error)
 	UpdateEvent(orm orm.ORM, event event.Event) (uint, error)
@@ -31,10 +30,10 @@ type EventRepositoryInterface interface {
 
 type EventService struct {
 	db         orm.ORM
-	repository *event_repository.EventRepository
+	repository EventRepositoryInterface
 }
 
-func NewEventService(orm orm.ORM, er *event_repository.EventRepository) *EventService {
+func NewEventService(orm orm.ORM, er EventRepositoryInterface) *EventService {
 	return &EventService{
 		db:         orm,
 		repository: er,

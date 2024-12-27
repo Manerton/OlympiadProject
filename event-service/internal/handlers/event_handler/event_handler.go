@@ -1,4 +1,4 @@
-package eventhandler
+package event_handler
 
 import (
 	"errors"
@@ -11,7 +11,6 @@ import (
 	"main/internal/lib/request"
 	"main/internal/lib/response"
 	"main/internal/models/event"
-	"main/internal/services/event_service"
 	"net/http"
 	"strconv"
 
@@ -20,12 +19,28 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+type EventServiceInterface interface {
+	GetAllEvents(offset, limit *int) ([]event_dto.EventDTO, error)
+	GetEventByID(id uint) (event_dto.EventDTO, error)
+	GetEventByFilterAndFields(filter event_dto.EventDTO, fields *[]string) (event_dto.DetailsEvent, error)
+	GetEventsByFilterAndFields(filter event_dto.EventDTO, fields *[]string, offset, limit *int) ([]event_dto.DetailsEvent, error)
+	GetCountEventsByType(eventType event.EventType) (int64, error)
+	GetCountEventsByPreviousID(id uint) (int64, error)
+	GetEventsByType(eventType event.EventType, offset, limit *int) ([]event_dto.EventDTO, error)
+	GetEventsTypeStageAndHisChilds(id uint) ([]event_dto.EventDTO, error)
+	GetEventsByPreviousID(id uint, offset, limit *int) ([]event_dto.EventDTO, error)
+	GetEventsByListID(ids []uint) ([]event_dto.EventDTO, error)
+	CreateEvent(eventDTO event_dto.EventDTO) (uint, error)
+	UpdateEvent(event_dto event_dto.EventDTO) (uint, error)
+	DeleteEvent(id uint) error
+}
+
 type EventHandler struct {
-	service *event_service.EventService
+	service EventServiceInterface
 	log     *slog.Logger
 }
 
-func NewEventHandler(service *event_service.EventService, log *slog.Logger) *EventHandler {
+func NewEventHandler(service EventServiceInterface, log *slog.Logger) *EventHandler {
 	return &EventHandler{service: service, log: log}
 }
 

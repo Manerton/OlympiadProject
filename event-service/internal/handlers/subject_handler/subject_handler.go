@@ -1,4 +1,4 @@
-package subjecthandler
+package subject_handler
 
 import (
 	"log/slog"
