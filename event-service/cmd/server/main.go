@@ -4,8 +4,8 @@ import (
 	"context"
 	"log/slog"
 	"main/internal/config"
-	"main/internal/handlers/eventhandler"
-	"main/internal/handlers/subjecthandler"
+	"main/internal/handlers/event_handler"
+	"main/internal/handlers/subject_handler"
 	"main/internal/lib/liblogger"
 	"main/internal/middleware/auth"
 	"main/internal/middleware/midlogger"
@@ -69,13 +69,13 @@ func main() {
 
 	// init subject service and handler
 	subjectStorage := subject.NewSubjectsStorage()
-	subjectHandler := subjecthandler.NewSubjectHandler(subjectStorage, log)
+	subjectHandler := subject_handler.NewSubjectHandler(subjectStorage, log)
 	// init orm
 	gormORM := orm.NewGormORM(storage)
 
 	// init events service and handler
 	eventService := event_service.NewEventService(gormORM, &event_repository.EventRepository{})
-	eventHandler := eventhandler.NewEventHandler(eventService, log)
+	eventHandler := event_handler.NewEventHandler(eventService, log)
 
 	// init subjects route
 	router.Get("/events/subjects", subjectHandler.GetAllSubjects)
