@@ -68,6 +68,7 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
           EndDate: new Date(event.EndDate),
         }));
         setEvents(eventsWithDates);
+        setTotalPages(0)
       } else {
         const eventsWithDates = result.data.events.map((event: MyEvent) => ({
           ...event,
@@ -76,7 +77,8 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
         }));
         setEvents(eventsWithDates);
         const totalCount = result.data.totalCount
-        setTotalPages(totalCount/limit)
+        const totalPage = totalCount / limit
+        setTotalPages(totalCount%limit == 0 ? totalPage : totalPage + 1)
       }
     } catch (error) {
       console.error("Ошибка при загрузке региональных этапов:", error);
