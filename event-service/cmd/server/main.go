@@ -81,7 +81,7 @@ func main() {
 	router.Get("/events/subjects", subjectHandler.GetAllSubjects)
 
 	// init events route
-	router.With(auth.RoleBasedAccess(userrole.JuryRole)).Group(func(r chi.Router) {
+	router.With(auth.RoleBasedAccess(userrole.OrganizerRole)).Group(func(r chi.Router) {
 		r.Post("/events", eventHandler.CreateEvent)
 		r.Put("/events/{id}", eventHandler.UpdateEvent)
 		r.Delete("/events/{id}", eventHandler.DeleteEvent)

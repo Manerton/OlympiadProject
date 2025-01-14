@@ -1,5 +1,5 @@
 package userrole
 
 const (
-	JuryRole = "3"
+	OrganizerRole = "organizer"
 )
