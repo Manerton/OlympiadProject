@@ -278,6 +278,7 @@ func (s *EventService) CreateEvent(eventDTO event_dto.EventDTO) (uint, error) {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 	eventModel := ConvertDTOtoEvent(eventDTO)
+	// Auto create events for all subject
 	if eventModel.EventType == event.RegionalStage {
 		id, err := s.createEventsBySubjects(eventModel)
 		if err != nil {
