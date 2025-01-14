@@ -107,22 +107,22 @@ var usersjwt = map[uint]UserJwt{
 	1: {
 		ID:   1,
 		Name: "Макаров Макар Макарович",
-		Role: "1",
+		Role: "student",
 	},
 	2: {
 		ID:   2,
 		Name: "Иван Иванович Иванов",
-		Role: "2",
+		Role: "jury",
 	},
 	3: {
 		ID:   3,
 		Name: "Организатор организаторович",
-		Role: "3",
+		Role: "organizer",
 	},
 	4: {
 		ID:   4,
 		Name: "Администратор администраторович",
-		Role: "4",
+		Role: "admin",
 	},
 }
 
@@ -331,6 +331,10 @@ func refreshHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Access token refreshed"))
+}
+
+func GetAllJury(w http.ResponseWriter, r *http.Request) {
+
 }
 
 func GetMyRoleAndID(w http.ResponseWriter, r *http.Request) {
