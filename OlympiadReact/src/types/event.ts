@@ -13,3 +13,6 @@ export interface MyEvent {
 export const REGIONAL_STAGE = "REGIONAL_STAGE"
 export const OLYMPIAD = "OLYMPIAD"
 export const STAGE = "STAGE"
+export const VIEW_WORKS = "VIEW_WORKS"
+export const APPEAL = "APPEAL"
+
