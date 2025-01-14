@@ -4,6 +4,7 @@ import { LinkContainer } from "react-router-bootstrap";
 import { PersonCircle, BoxArrowInRight, BoxArrowInLeft } from "react-bootstrap-icons";
 import { useRole } from "./RoleContext";
 import { useNavigate } from "react-router-dom";
+import UserRoles from "../types/user";
 
 
 
@@ -49,7 +50,7 @@ function Header() {
               <Nav.Link>Статус заявки</Nav.Link>
             </LinkContainer>
             {/* тут role == 3 или скорее всего организаторам нужно дать прямую ссылку для отметок*/}
-            {role === "3" && (
+            {role === UserRoles.Organaizer && (
               <LinkContainer to="/attendance">
                <Nav.Link>Отметить присутствие</Nav.Link>
              </LinkContainer>
