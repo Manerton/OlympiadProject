@@ -1,8 +1,8 @@
 const UserRoles = {
-    Student: "1",
-    Organaizer: "3",
-    Admin: "",
-    Jury: ""
+    Student: "student",
+    Organaizer: "organizer",
+    Admin: "admin",
+    Jury: "jury"
 }
     
 export default UserRoles
