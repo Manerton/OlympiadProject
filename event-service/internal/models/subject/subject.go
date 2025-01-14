@@ -11,10 +11,18 @@ type SubjectStorage struct {
 
 func NewSubjectsStorage() *SubjectStorage {
 	subjects := []string{
-		"Математика",
-		"Русский язык",
-		"Английский язык",
 		"История",
+		"Биология",
+		"География",
+		"Иностранный язык",
+		"Информатика и ИКТ",
+		"История",
+		"Литература",
+		"Математика",
+		"Обществознание",
+		"Русский язык",
+		"Физика",
+		"Химия",
 	}
 	return &SubjectStorage{subjects: subjects}
 }
