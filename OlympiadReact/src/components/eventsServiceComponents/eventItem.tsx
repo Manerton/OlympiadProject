@@ -1,6 +1,6 @@
-import { MyEvent, REGIONAL_STAGE, STAGE, OLYMPIAD } from "../../types/event";
+import { MyEvent, REGIONAL_STAGE, STAGE, OLYMPIAD, APPEAL, VIEW_WORKS } from "../../types/event";
 import { Button, Card } from "react-bootstrap";
-import { useNavigate,Link  } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useRole } from "../RoleContext";
 // import { FaTrash, FaChevronDown } from "react-icons/fa";
 import API_CONFIG from "../../config/apiConfig";
@@ -53,7 +53,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
 
   const onSubmitApplication = async () => {
     const endPointSubmitApplication = `${API_CONFIG.APPLICATION}`
-    try{
+    try {
       const response = await fetch(endPointSubmitApplication, {
         method: "POST",
         credentials: "include", // Отправка cookie
@@ -67,7 +67,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
       const result = await response.json();
       console.log("Response from API:", result);
 
-    }catch (error) {
+    } catch (error) {
       console.error("Ошибка при подачи заявки")
     }
   }
@@ -80,6 +80,12 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
           <Card.Title className="fw-bold mb-2" style={{ fontSize: "1.2rem" }}>
             {event.Name}
           </Card.Title>
+          {(event.EventType === APPEAL || event.EventType === VIEW_WORKS) && (
+            <Card.Title className="fw-bold mb-2" style={{ fontSize: "1.2rem" }}>
+              {event.EventType === APPEAL ? ("Апелляция") : ("Просмотр работ")}
+            </Card.Title>
+          )}
+
           <Card.Text className="text-muted mb-1">
             <strong>Дата начала:</strong> {new Date(event.StartDate).toLocaleString()}
           </Card.Text>
@@ -87,9 +93,9 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
             <strong>Дата конца:</strong> {new Date(event.EndDate).toLocaleString()}
           </Card.Text>
           {event.Subject && (
-              <Card.Text className="text-muted mb-1">
-                <strong>Предмет:</strong> {event.Subject}
-              </Card.Text>
+            <Card.Text className="text-muted mb-1">
+              <strong>Предмет:</strong> {event.Subject}
+            </Card.Text>
           )}
           {event.AdditionalInfo && (
             <Card.Text className="mt-3">
@@ -111,7 +117,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
               Удалить
             </Button>
 
-          ) : role === UserRoles.Student && isSubmitApplication &&(
+          ) : role === UserRoles.Student && isSubmitApplication && (
             <Button
               variant="outline-success"
               className="mb-2"
@@ -122,7 +128,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
             </Button>
           )}
           {/* Кнопка для перехода на страницу заявок */}
-          {role === UserRoles.Organaizer && isSubmitApplication &&(
+          {role === UserRoles.Organaizer && isSubmitApplication && (
             <Link to={`/applications/event/${event.ID}`}>
               <Button
                 variant="outline-primary"
@@ -152,19 +158,19 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
             <div className="collapse" id={`collapse-${event.ID}`}>
               <div className="d-flex">
                 {event.Events.map((childEvent) => (
-                    <Card key={childEvent.ID} className="col m-1 mb-3">
-                      <Card.Body>
-                        <Card.Title>{childEvent.Name}</Card.Title>
+                  <Card key={childEvent.ID} className="col m-1 mb-3">
+                    <Card.Body>
+                      <Card.Title>{childEvent.Name}</Card.Title>
+                      <Card.Text>
+                        {new Date(childEvent.StartDate).toLocaleString()} -  {new Date(childEvent.EndDate).toLocaleString()}
+                      </Card.Text>
+                      {childEvent.AdditionalInfo && (
                         <Card.Text>
-                          {new Date(childEvent.StartDate).toLocaleString()} -  {new Date(childEvent.EndDate).toLocaleString()}
+                          Дополнительная информация: {childEvent.AdditionalInfo}
                         </Card.Text>
-                        {childEvent.AdditionalInfo && (
-                          <Card.Text>
-                            Дополнительная информация: {childEvent.AdditionalInfo}
-                          </Card.Text>
-                        )}
-                      </Card.Body>
-                    </Card>
+                      )}
+                    </Card.Body>
+                  </Card>
                 ))}
               </div>
             </div>
