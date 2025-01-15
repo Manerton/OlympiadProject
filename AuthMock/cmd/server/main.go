@@ -124,6 +124,16 @@ var usersjwt = map[uint]UserJwt{
 		Name: "Администратор администраторович",
 		Role: "admin",
 	},
+	5: {
+		ID:   5,
+		Name: "Тестовый Организатор 1",
+		Role: "organizer",
+	},
+	6: {
+		ID:   6,
+		Name: "Тестовый Организатор 2",
+		Role: "organizer",
+	},
 }
 
 // Add a new global variable for the secret key
@@ -164,7 +174,6 @@ func createRefreshToken() (string, error) {
 		"iss":   "localhost:8081",
 		"token": fmt.Sprintf("%x", b),
 		"exp":   time.Now().Add(time.Hour * 24 * 7).Unix(), // Срок действия 7 дней
-
 	})
 	return claims.SignedString(secretKey)
 }
@@ -333,8 +342,22 @@ func refreshHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Access token refreshed"))
 }
 
-func GetAllJury(w http.ResponseWriter, r *http.Request) {
+type ResponseUser struct {
+	Status string
+	Data   interface{} `json:"data"`
+}
 
+func GetAllJury(w http.ResponseWriter, r *http.Request) {
+	organaizerIDList := []uint{3, 5, 6}
+	resultUserJWT := []UserJwt{}
+	for _, id := range organaizerIDList {
+		resultUserJWT = append(resultUserJWT, usersjwt[id])
+	}
+
+	render.JSON(w, r, ResponseUser{
+		Status: "OK",
+		Data:   resultUserJWT,
+	})
 }
 
 func GetMyRoleAndID(w http.ResponseWriter, r *http.Request) {
@@ -443,6 +466,7 @@ func main() {
 	r.Post("/refresh", refreshHandler)
 	r.Post("/logout", logoutHandler)
 	r.Get("/my-info", GetMyRoleAndID)
+	r.Get("/juries", GetAllJury)
 
 	// Запускаем сервер
 	fmt.Println("Server running on http://localhost:8081")
