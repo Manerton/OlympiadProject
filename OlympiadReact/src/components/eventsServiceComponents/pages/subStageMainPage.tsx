@@ -20,7 +20,7 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
     // Событие
     const [event, setEvent] = useState<MyEvent>();
     // Список жюри
-    const [juries, setJuries] = useState<{ id: string; name: string }[]>([]);
+    const [juries, setJuries] = useState<{ id: string; name: string , role: string}[]>([]);
     // Выбранные жюри
     const [selectedJuries, setSelectedJuries] = useState<string[]>([]);
 
@@ -32,7 +32,7 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
 
     const fetchData = async () => {
         try {
-            const [eventResponse, eventsResponse,] = await Promise.all([
+            const [eventResponse, eventsResponse, juriesResponse] = await Promise.all([
                 fetch(`${API_CONFIG.EVENTS}/${eventId}`,
                     {
                         method: "GET",
@@ -45,35 +45,39 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
                         credentials: "include", // Отправка cookie
                         headers: { "Content-Type": "application/json" }
                     }),
-                // // TODO! Запрос на UserService для полчения списка жюри
-                // fetch(`http://localhost:8080/juries`, 
-                //     { 
-                //         method: "GET", 
-                //         credentials: "include", // Отправка cookie
-                //         headers: { "Content-Type": "application/json" } 
-                //     }) // Запрос списка жюри
+                // TODO! Запрос на UserService для полчения списка жюри
+                fetch(`http://localhost:8081/juries`, 
+                    { 
+                        method: "GET", 
+                        credentials: "include", // Отправка cookie
+                        headers: { "Content-Type": "application/json" } 
+                    }) // Запрос списка жюри
             ]);
 
-            if (!eventResponse.ok || !eventsResponse.ok) {
+            if (!eventResponse.ok || !eventsResponse.ok || !juriesResponse.ok) {
                 const errorText = await Promise.all([
                     eventResponse.text(),
                     eventsResponse.text(),
+                    juriesResponse.text(),
                 ]);
                 throw new Error(`Ошибка API: ${errorText.join(", ")}`);
             }
 
-            const [eventResult, eventsResult] = await Promise.all([
+            const [eventResult, eventsResult, juriesResult] = await Promise.all([
                 eventResponse.json(),
                 eventsResponse.json(),
+                juriesResponse.json(),
             ]);
 
             console.log("Этап получен!", eventResult);
             console.log("Подэтапы получены!", eventsResult);
-            // console.log("Жюри получены!", juriesResult);
+            console.log("Жюри получены!", juriesResult);
 
             setEvent(eventResult.data);
             setEvents(eventsResult.data);
-            // setJuries(juriesResult.data); // Устанавливаем список жюри
+            setJuries(juriesResult.data);
+            console.log("Жюри dscf!", juries);
+
         } catch (error) {
             console.error("Ошибка при получении данных:", error);
         }
@@ -186,10 +190,10 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
                     </div>
                     
                     <div className="card shadow-sm mb-2">
-                        <div className="card-body">
+                        <div className=" card-body">
                             <Form>
                                 {juries.length > 0 ? ( juries.map((jury) => (
-                                    <Form.Check
+                                    <Form.Check className="d-flex justify-content-between "
                                         key={jury.id}
                                         type="checkbox"
                                         id={`jury-${jury.id}`}
