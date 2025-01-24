@@ -30,6 +30,7 @@ type EventServiceInterface interface {
 	GetEventsTypeStageAndHisChilds(id uint) ([]event_dto.EventDTO, error)
 	GetEventsByPreviousID(id uint, offset, limit *int) ([]event_dto.EventDTO, error)
 	GetEventsByListID(ids []uint) ([]event_dto.EventDTO, error)
+	CreateEventsByJSON(event_dto.EventDTO) error
 	CreateEvent(eventDTO event_dto.EventDTO) (uint, error)
 	UpdateEvent(event_dto event_dto.EventDTO) (uint, error)
 	DeleteEvent(id uint) error
@@ -329,6 +330,34 @@ func (h *EventHandler) GetEventsByListID(w http.ResponseWriter, r *http.Request)
 		Status: response.StatusOK,
 		Data:   eventsDTO,
 	})
+}
+
+func (h *EventHandler) CreateEventsByJSON(w http.ResponseWriter, r *http.Request) {
+	const op = "handlers.event_handlers.CreateEventsByJSON"
+	log := h.log.With(
+		slog.String("op", op),
+	)
+
+	var eventsJSON event_dto.EventDTO
+	err := render.DecodeJSON(r.Body, eventsJSON)
+	if errors.Is(err, io.EOF) {
+		log.Error("render body is empty")
+		render.JSON(w, r, response.Error("empty request"))
+		return
+	}
+
+	if err != nil {
+		log.Error("failed to decode request body", liblogger.Err(err))
+		render.JSON(w, r, response.Error("failed to decode request"))
+		return
+	}
+	log.Info("events on request body decoded", slog.Any("events", eventsJSON))
+
+	err = h.service.CreateEventsByJSON(eventsJSON)
+	if err != nil {
+
+	}
+
 }
 
 func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
