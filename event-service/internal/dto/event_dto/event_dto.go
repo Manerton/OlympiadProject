@@ -14,7 +14,7 @@ type EventDTO struct {
 	PreviousEventID *uint
 	Subject         string
 	AdditionalInfo  string
-	Events          []EventDTO
+	Events          *[]EventDTO
 }
 
 type DetailsEvent struct {
