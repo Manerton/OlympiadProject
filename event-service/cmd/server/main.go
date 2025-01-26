@@ -83,10 +83,12 @@ func main() {
 	// init events route
 	router.With(auth.RoleBasedAccess(userrole.OrganizerRole)).Group(func(r chi.Router) {
 		r.Post("/events", eventHandler.CreateEvent)
+		r.Post("/events/byjson", eventHandler.CreateEventsByJSON)
 		r.Put("/events/{id}", eventHandler.UpdateEvent)
 		r.Delete("/events/{id}", eventHandler.DeleteEvent)
 	})
 
+	// router.Post("/events/byjson", eventHandler.CreateEventsByJSON)
 	router.Post("/events/details/one", eventHandler.GetEventByFilterAndFields)
 	router.Post("/events/details", eventHandler.GetEventsByFilterAndFields)
 	router.Get("/events", eventHandler.GetAllEvents)
