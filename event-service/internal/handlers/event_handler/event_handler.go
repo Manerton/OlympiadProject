@@ -339,7 +339,7 @@ func (h *EventHandler) CreateEventsByJSON(w http.ResponseWriter, r *http.Request
 	)
 
 	var eventsJSON event_dto.EventDTO
-	err := render.DecodeJSON(r.Body, eventsJSON)
+	err := render.DecodeJSON(r.Body, &eventsJSON)
 	if errors.Is(err, io.EOF) {
 		log.Error("render body is empty")
 		render.JSON(w, r, response.Error("empty request"))

@@ -464,6 +464,7 @@ func ConvertEventToDTO(event event.Event) event_dto.EventDTO {
 		Subject:         event.Subject,
 		AdditionalInfo:  event.AdditionalInfo,
 		EventType:       event.EventType,
+		Events:          &[]event_dto.EventDTO{},
 	}
 }
 
