@@ -5,40 +5,48 @@ import (
 	"log"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	_ "github.com/lib/pq" // Подключаем PostgreSQL драйвер
+	_ "github.com/lib/pq"
 	"github.com/pressly/goose/v3"
 )
 
-const LocalFilePath = "config-yaml/local.yaml"
-const migrationsDir = "./migrations"
+const (
+	UP   = "up"
+	DOWN = "down"
+)
 
 func main() {
-	dbDriver := "postgres"
-	dbString := "postgres://postgres:root@localhost:5432/EventServiceDB?sslmode=disable"
-	// open db
-	db, err := goose.OpenDBWithDriver(dbDriver, dbString)
+
+	const example = "postgres://user:password@localhost:port/dbname"
+
+	var dbDriver, dbStringConnect, migrationPath string
+
+	flag.StringVar(&dbDriver, "driver", "postgres", "driver for db")
+	flag.StringVar(&dbStringConnect, "dsn", "", "string for connect to db")
+	flag.StringVar(&migrationPath, "migration-path", "migration", "path to folder with migration files")
+
+	flag.Parse()
+
+	if len(flag.Args()) < 1 {
+		log.Fatalf("should be use command: UP or DOWM")
+	}
+
+	db, err := goose.OpenDBWithDriver(dbDriver, dbStringConnect)
 	if err != nil {
-		log.Fatalf("failed to open database: %s: %v", dbString, err)
+		log.Fatalf("failed to connect db: %v, example dsn=%s", err, example)
 	}
 	defer db.Close()
 
-	flag.Parse()
-	if len(flag.Args()) < 1 {
-		log.Fatalf("usage: migrator [command] [arguments]")
-	}
-
 	command := flag.Arg(0)
-
 	switch command {
-	case "up":
-		err = goose.Up(db, migrationsDir)
-	case "down":
-		err = goose.Down(db, migrationsDir)
+	case UP:
+		err = goose.Up(db, migrationPath)
+	case DOWN:
+		err = goose.Down(db, migrationPath)
 	default:
-		log.Fatalf("unknow command %s", command)
+		log.Fatalf("unknow command: %s", command)
 	}
 	if err != nil {
-		log.Fatalf("failed to execute command: %s ,%v", command, err)
+		log.Fatalf("failed to execute command: %s, %v", command, err)
 	}
 	log.Printf("command %s execute successfully", command)
 }
