@@ -66,6 +66,13 @@ func (s *EventService) GetEventByID(id uint) (event_dto.EventDTO, error) {
 	return ConvertEventToDTO(event), nil
 }
 
+// Get one event by filter and fileds.
+//
+// Example:
+//
+// filter -> EventDTO{name: "test", subject: "math"}.
+//
+// fields -> ["name", subject, start_date].
 func (s *EventService) GetEventByFilterAndFields(filter event_dto.EventDTO, fields *[]string) (event_dto.DetailsEvent, error) {
 	const op = "services.eventservice.GetEventByFilterAndFields"
 	modelFilter := ConvertDTOtoEvent(filter)
@@ -76,6 +83,13 @@ func (s *EventService) GetEventByFilterAndFields(filter event_dto.EventDTO, fiel
 	return ConvertEventToDetails(event), nil
 }
 
+// Get list events by filter and fileds.
+//
+// Example:
+//
+// filter -> EventDTO{name: "test", subject: "math"}.
+//
+// fields -> ["name", subject, start_date].
 func (s *EventService) GetEventsByFilterAndFields(filter event_dto.EventDTO, fields *[]string, offset, limit *int) ([]event_dto.DetailsEvent, error) {
 	const op = "services.event_service.GetEventsByFilterAndFields"
 	modelFilter := ConvertDTOtoEvent(filter)
@@ -86,6 +100,7 @@ func (s *EventService) GetEventsByFilterAndFields(filter event_dto.EventDTO, fie
 	return ConvertManyEventsToDetails(events), nil
 }
 
+// Get count events by event type (for pagination)
 func (s *EventService) GetCountEventsByType(eventType event.EventType) (int64, error) {
 	const op = "services.event_service.GetCountEventsByType"
 	count, err := s.repository.GetCountEventsByType(s.db, eventType)
@@ -95,6 +110,7 @@ func (s *EventService) GetCountEventsByType(eventType event.EventType) (int64, e
 	return count, err
 }
 
+// Get count events by previous id (for pagination)
 func (s *EventService) GetCountEventsByPreviousID(id uint) (int64, error) {
 	const op = "services.event_service.GetCountEvents"
 	count, err := s.repository.GetCountEventsByPreviousID(s.db, id)
@@ -114,6 +130,7 @@ func (s *EventService) GetEventsByType(eventType event.EventType, offset, limit 
 	return ConvertManyEventsToDTO(events), nil
 }
 
+// Get events where type=stage and his childs
 func (s *EventService) GetEventsTypeStageAndHisChilds(id uint) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventsTypeStageAndHisChilds"
 	// Get all event stage by previousID
@@ -175,6 +192,7 @@ func (s *EventService) GetEventsByListID(ids []uint) ([]event_dto.EventDTO, erro
 	return ConvertManyEventsToDTO(events), nil
 }
 
+// Find olympiad who is parent for stage
 func (s *EventService) getOlympiad(id uint) (event.Event, error) {
 
 	previousEvent, err := s.repository.GetEventByID(s.db, id)
