@@ -1,19 +1,20 @@
 package orm
 
 import (
+	"context"
 	"fmt"
 
 	"gorm.io/gorm"
 )
 
 type ORM interface {
-	Find(model interface{}, fields *[]string, offset, limit *int, dest interface{}, conds ...interface{}) error
-	First(model interface{}, fields *[]string, dest interface{}, conds ...interface{}) error
+	Find(ctx context.Context, model interface{}, fields *[]string, offset, limit *int, dest interface{}, conds ...interface{}) error
+	First(ctx context.Context, model interface{}, fields *[]string, dest interface{}, conds ...interface{}) error
 
-	Count(model interface{}, count *int64, query interface{}, args ...interface{}) error
-	Create(dest interface{}) error
-	Updates(dest interface{}) error
-	Delete(dest interface{}, conds ...interface{}) error
+	Count(ctx context.Context, model interface{}, count *int64, query interface{}, args ...interface{}) error
+	Create(ctx context.Context, dest interface{}) error
+	Updates(ctx context.Context, dest interface{}) error
+	Delete(ctx context.Context, dest interface{}, conds ...interface{}) error
 	TransactionBegin() (ORM, error)
 	TransactionCommit() error
 	TransactionRollback() error
@@ -27,42 +28,42 @@ func NewGormORM(db *gorm.DB) ORM {
 	return &Gorm{DB: db}
 }
 
-func (g *Gorm) Count(model interface{}, count *int64, query interface{}, args ...interface{}) error {
+func (g *Gorm) Count(ctx context.Context, model interface{}, count *int64, query interface{}, args ...interface{}) error {
 	const op = "storage.orm.Count"
-	err := g.DB.Model(model).Where(query, args).Count(count).Error
+	err := g.DB.WithContext(ctx).Model(model).Where(query, args).Count(count).Error
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
 }
 
-func (g *Gorm) Create(dest interface{}) error {
+func (g *Gorm) Create(ctx context.Context, dest interface{}) error {
 	const op = "storage.orm.Create"
-	if err := g.DB.Create(dest).Error; err != nil {
+	if err := g.DB.WithContext(ctx).Create(dest).Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
 }
 
-func (g *Gorm) Updates(dest interface{}) error {
+func (g *Gorm) Updates(ctx context.Context, dest interface{}) error {
 	const op = "storage.orm.Update"
-	if err := g.DB.Updates(dest).Error; err != nil {
+	if err := g.DB.WithContext(ctx).Updates(dest).Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
 }
 
-func (g *Gorm) Delete(dest interface{}, conds ...interface{}) error {
+func (g *Gorm) Delete(ctx context.Context, dest interface{}, conds ...interface{}) error {
 	const op = "storage.orm.Delete"
-	if err := g.DB.Delete(dest, conds...).Error; err != nil {
+	if err := g.DB.WithContext(ctx).Delete(dest, conds...).Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
 }
 
-func (g *Gorm) First(model interface{}, fields *[]string, dest interface{}, conds ...interface{}) error {
+func (g *Gorm) First(ctx context.Context, model interface{}, fields *[]string, dest interface{}, conds ...interface{}) error {
 	const op = "storage.orm.First"
-	query := g.DB.Model(model)
+	query := g.DB.WithContext(ctx).Model(model)
 	if fields != nil {
 		query.Select(*fields)
 	}
@@ -73,9 +74,9 @@ func (g *Gorm) First(model interface{}, fields *[]string, dest interface{}, cond
 	return nil
 }
 
-func (g *Gorm) Find(model interface{}, fields *[]string, offset, limit *int, dest interface{}, conds ...interface{}) error {
+func (g *Gorm) Find(ctx context.Context, model interface{}, fields *[]string, offset, limit *int, dest interface{}, conds ...interface{}) error {
 	const op = "storage.orm.Find"
-	query := g.DB.Model(model)
+	query := g.DB.WithContext(ctx).Model(model)
 	if fields != nil {
 		query.Select(*fields)
 	}
