@@ -1,6 +1,7 @@
 package event_handler
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -20,20 +21,20 @@ import (
 )
 
 type EventServiceInterface interface {
-	GetAllEvents(offset, limit *int) ([]event_dto.EventDTO, error)
-	GetEventByID(id uint) (event_dto.EventDTO, error)
-	GetEventByFilterAndFields(filter event_dto.EventDTO, fields *[]string) (event_dto.DetailsEvent, error)
-	GetEventsByFilterAndFields(filter event_dto.EventDTO, fields *[]string, offset, limit *int) ([]event_dto.DetailsEvent, error)
-	GetCountEventsByType(eventType event.EventType) (int64, error)
-	GetCountEventsByPreviousID(id uint) (int64, error)
-	GetEventsByType(eventType event.EventType, offset, limit *int) ([]event_dto.EventDTO, error)
-	GetEventsTypeStageAndHisChilds(id uint) ([]event_dto.EventDTO, error)
-	GetEventsByPreviousID(id uint, offset, limit *int) ([]event_dto.EventDTO, error)
-	GetEventsByListID(ids []uint) ([]event_dto.EventDTO, error)
-	CreateEventsByJSON(event_dto.EventDTO) error
-	CreateEvent(eventDTO event_dto.EventDTO) (uint, error)
-	UpdateEvent(event_dto event_dto.EventDTO) (uint, error)
-	DeleteEvent(id uint) error
+	GetAllEvents(ctx context.Context, offset, limit *int) ([]event_dto.EventDTO, error)
+	GetEventByID(ctx context.Context, id uint) (event_dto.EventDTO, error)
+	GetEventByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string) (event_dto.DetailsEvent, error)
+	GetEventsByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string, offset, limit *int) ([]event_dto.DetailsEvent, error)
+	GetCountEventsByType(ctx context.Context, eventType event.EventType) (int64, error)
+	GetCountEventsByPreviousID(ctx context.Context, id uint) (int64, error)
+	GetEventsByType(ctx context.Context, eventType event.EventType, offset, limit *int) ([]event_dto.EventDTO, error)
+	GetEventsTypeStageAndHisChilds(ctx context.Context, id uint) ([]event_dto.EventDTO, error)
+	GetEventsByPreviousID(ctx context.Context, id uint, offset, limit *int) ([]event_dto.EventDTO, error)
+	GetEventsByListID(ctx context.Context, ids []uint) ([]event_dto.EventDTO, error)
+	CreateEventsByJSON(ctx context.Context, eventDTO event_dto.EventDTO) error
+	CreateEvent(ctx context.Context, eventDTO event_dto.EventDTO) (uint, error)
+	UpdateEvent(ctx context.Context, eventDTO event_dto.EventDTO) (uint, error)
+	DeleteEvent(ctx context.Context, id uint) error
 }
 
 type EventHandler struct {
@@ -51,6 +52,9 @@ func (h *EventHandler) GetEventByFilterAndFields(w http.ResponseWriter, r *http.
 	log := h.log.With(
 		slog.String("op", op),
 	)
+
+	ctx := r.Context()
+
 	detailRequest := request.DetailRequest{}
 
 	err := render.DecodeJSON(r.Body, &detailRequest)
@@ -60,7 +64,7 @@ func (h *EventHandler) GetEventByFilterAndFields(w http.ResponseWriter, r *http.
 		return
 	}
 
-	eventDetails, err := h.service.GetEventByFilterAndFields(detailRequest.EventDTO, detailRequest.Fields)
+	eventDetails, err := h.service.GetEventByFilterAndFields(ctx, detailRequest.EventDTO, detailRequest.Fields)
 	if err != nil {
 		log.Error("failed to get event", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get event"))
@@ -81,6 +85,8 @@ func (h *EventHandler) GetEventsByFilterAndFields(w http.ResponseWriter, r *http
 	)
 	detailRequest := request.DetailRequest{}
 
+	ctx := r.Context()
+
 	err := render.DecodeJSON(r.Body, &detailRequest)
 	if err != nil {
 		log.Error("failed to decode details", liblogger.Err(err))
@@ -88,7 +94,7 @@ func (h *EventHandler) GetEventsByFilterAndFields(w http.ResponseWriter, r *http
 		return
 	}
 
-	eventDetails, err := h.service.GetEventsByFilterAndFields(detailRequest.EventDTO, detailRequest.Fields, detailRequest.Offset, detailRequest.Limit)
+	eventDetails, err := h.service.GetEventsByFilterAndFields(ctx, detailRequest.EventDTO, detailRequest.Fields, detailRequest.Offset, detailRequest.Limit)
 	if err != nil {
 		log.Error("failed to get events", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get events"))
@@ -108,6 +114,8 @@ func (h *EventHandler) GetAllEvents(w http.ResponseWriter, r *http.Request) {
 		slog.String("op", op),
 	)
 
+	ctx := r.Context()
+
 	offsetStr := r.URL.Query().Get("offset")
 	limitStr := r.URL.Query().Get("limit")
 
@@ -118,7 +126,7 @@ func (h *EventHandler) GetAllEvents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	eventsDTO, err := h.service.GetAllEvents(offset, limit)
+	eventsDTO, err := h.service.GetAllEvents(ctx, offset, limit)
 	if err != nil {
 		log.Error("failed to get events", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get events"))
@@ -138,6 +146,8 @@ func (h *EventHandler) GetEventByID(w http.ResponseWriter, r *http.Request) {
 		slog.String("op", op),
 	)
 
+	ctx := r.Context()
+
 	receivedID := chi.URLParam(r, "id")
 	searchedID, err := strconv.ParseUint(receivedID, 10, 32)
 	if err != nil {
@@ -147,7 +157,7 @@ func (h *EventHandler) GetEventByID(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Info("event id on request body decoded", slog.Any("event id", searchedID))
 
-	eventDTO, err := h.service.GetEventByID(uint(searchedID))
+	eventDTO, err := h.service.GetEventByID(ctx, uint(searchedID))
 	if err != nil {
 		log.Error("failed to get event", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get event"))
@@ -167,6 +177,8 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 		slog.String("op", op),
 	)
 
+	ctx := r.Context()
+
 	offsetStr := r.URL.Query().Get("offset")
 	limitStr := r.URL.Query().Get("limit")
 
@@ -177,7 +189,7 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 		return
 	}
 
-	eventsDTO, err := h.service.GetEventsByType(event.RegionalStage, offset, limit)
+	eventsDTO, err := h.service.GetEventsByType(ctx, event.RegionalStage, offset, limit)
 	if err != nil {
 		log.Error("failed to get events by type", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get events by type"))
@@ -193,7 +205,7 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 		return
 	}
 
-	count, err := h.service.GetCountEventsByType(event.RegionalStage)
+	count, err := h.service.GetCountEventsByType(ctx, event.RegionalStage)
 	if err != nil {
 		log.Error("failed to get count events by type", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get count events by type"))
@@ -216,6 +228,8 @@ func (h *EventHandler) GetEventsTypeStageAndHisChilds(w http.ResponseWriter, r *
 		slog.String("op", op),
 	)
 
+	ctx := r.Context()
+
 	receivedID := chi.URLParam(r, "id")
 	searchedID, err := strconv.ParseUint(receivedID, 10, 32)
 	if err != nil {
@@ -224,7 +238,7 @@ func (h *EventHandler) GetEventsTypeStageAndHisChilds(w http.ResponseWriter, r *
 		return
 	}
 
-	eventsDto, err := h.service.GetEventsTypeStageAndHisChilds(uint(searchedID))
+	eventsDto, err := h.service.GetEventsTypeStageAndHisChilds(ctx, uint(searchedID))
 	if err != nil {
 		log.Error("failed to get events", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get events"))
@@ -243,6 +257,8 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 	log := h.log.With(
 		slog.String("op", op),
 	)
+
+	ctx := r.Context()
 
 	offsetStr := r.URL.Query().Get("offset")
 	limitStr := r.URL.Query().Get("limit")
@@ -263,7 +279,7 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 	}
 	log.Info("event id on request body decoded", slog.Any("event id", searchedID))
 
-	eventsDTO, err := h.service.GetEventsByPreviousID(uint(searchedID), offset, limit)
+	eventsDTO, err := h.service.GetEventsByPreviousID(ctx, uint(searchedID), offset, limit)
 	if err != nil {
 		log.Error("failed to get events by previous id")
 		render.JSON(w, r, response.Error("failed to get events"))
@@ -280,7 +296,7 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	count, err := h.service.GetCountEventsByPreviousID(uint(searchedID))
+	count, err := h.service.GetCountEventsByPreviousID(ctx, uint(searchedID))
 	if err != nil {
 		log.Error("failed to get count events by type", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get count events by type"))
@@ -302,6 +318,8 @@ func (h *EventHandler) GetEventsByListID(w http.ResponseWriter, r *http.Request)
 		slog.String("op", op),
 	)
 
+	ctx := r.Context()
+
 	type ReqIds struct {
 		IDs []uint `json:"ids"`
 	}
@@ -319,7 +337,7 @@ func (h *EventHandler) GetEventsByListID(w http.ResponseWriter, r *http.Request)
 	}
 	log.Info("ids on request body decoded")
 
-	eventsDTO, err := h.service.GetEventsByListID(ids.IDs)
+	eventsDTO, err := h.service.GetEventsByListID(ctx, ids.IDs)
 	if err != nil {
 		log.Error("failed to get events", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get event"))
@@ -337,6 +355,7 @@ func (h *EventHandler) CreateEventsByJSON(w http.ResponseWriter, r *http.Request
 	log := h.log.With(
 		slog.String("op", op),
 	)
+	ctx := r.Context()
 
 	var eventsJSON event_dto.EventDTO
 	err := render.DecodeJSON(r.Body, &eventsJSON)
@@ -353,7 +372,7 @@ func (h *EventHandler) CreateEventsByJSON(w http.ResponseWriter, r *http.Request
 	}
 	log.Info("events on request body decoded", slog.Any("events", eventsJSON))
 
-	err = h.service.CreateEventsByJSON(eventsJSON)
+	err = h.service.CreateEventsByJSON(ctx, eventsJSON)
 	if err != nil {
 
 	}
@@ -365,6 +384,8 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	log := h.log.With(
 		slog.String("op", op),
 	)
+
+	ctx := r.Context()
 
 	var eventDTO event_dto.EventDTO
 	err := render.DecodeJSON(r.Body, &eventDTO)
@@ -388,7 +409,7 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.service.CreateEvent(eventDTO)
+	id, err := h.service.CreateEvent(ctx, eventDTO)
 	if err != nil {
 		log.Error("failed to create event", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to create event"))
@@ -403,6 +424,8 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	log := h.log.With(
 		slog.String("op", op),
 	)
+
+	ctx := r.Context()
 
 	var eventDTO event_dto.EventDTO
 	receivedID := chi.URLParam(r, "id")
@@ -427,7 +450,7 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Info("event on request body decoded", slog.Any("event", eventDTO))
 
-	id, err := h.service.UpdateEvent(eventDTO)
+	id, err := h.service.UpdateEvent(ctx, eventDTO)
 	if err != nil {
 		log.Error("failed to update event", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to update event"))
@@ -444,6 +467,8 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 		slog.String("op", op),
 	)
 
+	ctx := r.Context()
+
 	receivedID := chi.URLParam(r, "id")
 	deletedID, err := strconv.ParseUint(receivedID, 10, 32)
 	if err != nil {
@@ -452,7 +477,7 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Info("event id on request body decoded", slog.Any("event id", deletedID))
 
-	err = h.service.DeleteEvent(uint(deletedID))
+	err = h.service.DeleteEvent(ctx, uint(deletedID))
 	if err != nil {
 		log.Error("failed to delete event", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to delete event"))
