@@ -1,6 +1,7 @@
 package event_service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"main/internal/dto/event_dto"
@@ -14,20 +15,20 @@ import (
 )
 
 type EventRepositoryInterface interface {
-	GetEventByFilterAndFields(orm orm.ORM, filter event.Event, fields *[]string) (event.Event, error)
-	GetEventsByFilterAndFields(orm orm.ORM, filter event.Event, fields *[]string, offset, limit *int) ([]event.Event, error)
-	GetEventByID(orm orm.ORM, id uint) (event.Event, error)
-	GetEventsByListID(orm orm.ORM, ids []uint) ([]event.Event, error)
-	GetEventsByType(orm orm.ORM, eventType event.EventType, offset, limit *int) ([]event.Event, error)
-	GetEventsByPreviousID(orm orm.ORM, previousID uint, offset, limit *int) ([]event.Event, error)
-	GetAllEvents(orm orm.ORM, offset, limit *int) ([]event.Event, error)
+	GetEventByFilterAndFields(ctx context.Context, orm orm.ORM, filter event.Event, fields *[]string) (event.Event, error)
+	GetEventsByFilterAndFields(ctx context.Context, orm orm.ORM, filter event.Event, fields *[]string, offset, limit *int) ([]event.Event, error)
+	GetEventByID(ctx context.Context, orm orm.ORM, id uint) (event.Event, error)
+	GetEventsByListID(ctx context.Context, orm orm.ORM, ids []uint) ([]event.Event, error)
+	GetEventsByType(ctx context.Context, orm orm.ORM, eventType event.EventType, offset, limit *int) ([]event.Event, error)
+	GetEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uint, offset, limit *int) ([]event.Event, error)
+	GetAllEvents(ctx context.Context, orm orm.ORM, offset, limit *int) ([]event.Event, error)
 
-	GetCountEventsByType(orm orm.ORM, eventType event.EventType) (int64, error)
-	GetCountEventsByPreviousID(orm orm.ORM, previousID uint) (int64, error)
+	GetCountEventsByType(ctx context.Context, orm orm.ORM, eventType event.EventType) (int64, error)
+	GetCountEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uint) (int64, error)
 
-	CreateEvent(orm orm.ORM, event event.Event) (uint, error)
-	UpdateEvent(orm orm.ORM, event event.Event) (uint, error)
-	DeleteEvent(orm orm.ORM, id uint) error
+	CreateEvent(ctx context.Context, orm orm.ORM, event event.Event) (uint, error)
+	UpdateEvent(ctx context.Context, orm orm.ORM, event event.Event) (uint, error)
+	DeleteEvent(ctx context.Context, orm orm.ORM, id uint) error
 }
 
 type EventService struct {
@@ -43,9 +44,9 @@ func NewEventService(orm orm.ORM, er EventRepositoryInterface) *EventService {
 }
 
 // Get all events
-func (s *EventService) GetAllEvents(offset, limit *int) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetAllEvents(ctx context.Context, offset, limit *int) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetAllEvents"
-	events, err := s.repository.GetAllEvents(s.db, offset, limit)
+	events, err := s.repository.GetAllEvents(ctx, s.db, offset, limit)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -53,13 +54,13 @@ func (s *EventService) GetAllEvents(offset, limit *int) ([]event_dto.EventDTO, e
 }
 
 // Get event by id
-func (s *EventService) GetEventByID(id uint) (event_dto.EventDTO, error) {
+func (s *EventService) GetEventByID(ctx context.Context, id uint) (event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventByID"
 	if id == 0 {
 		return event_dto.EventDTO{}, fmt.Errorf("%s: invalid ID %d", op, id)
 	}
 
-	event, err := s.repository.GetEventByID(s.db, id)
+	event, err := s.repository.GetEventByID(ctx, s.db, id)
 	if err != nil {
 		return event_dto.EventDTO{}, fmt.Errorf("%s: %w", op, err)
 	}
@@ -73,10 +74,10 @@ func (s *EventService) GetEventByID(id uint) (event_dto.EventDTO, error) {
 // filter -> EventDTO{name: "test", subject: "math"}.
 //
 // fields -> ["name", subject, start_date].
-func (s *EventService) GetEventByFilterAndFields(filter event_dto.EventDTO, fields *[]string) (event_dto.DetailsEvent, error) {
+func (s *EventService) GetEventByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string) (event_dto.DetailsEvent, error) {
 	const op = "services.eventservice.GetEventByFilterAndFields"
 	modelFilter := ConvertDTOtoEvent(filter)
-	event, err := s.repository.GetEventByFilterAndFields(s.db, modelFilter, fields)
+	event, err := s.repository.GetEventByFilterAndFields(ctx, s.db, modelFilter, fields)
 	if err != nil {
 		return event_dto.DetailsEvent{}, fmt.Errorf("%s: %v", op, err)
 	}
@@ -90,10 +91,10 @@ func (s *EventService) GetEventByFilterAndFields(filter event_dto.EventDTO, fiel
 // filter -> EventDTO{name: "test", subject: "math"}.
 //
 // fields -> ["name", subject, start_date].
-func (s *EventService) GetEventsByFilterAndFields(filter event_dto.EventDTO, fields *[]string, offset, limit *int) ([]event_dto.DetailsEvent, error) {
+func (s *EventService) GetEventsByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string, offset, limit *int) ([]event_dto.DetailsEvent, error) {
 	const op = "services.event_service.GetEventsByFilterAndFields"
 	modelFilter := ConvertDTOtoEvent(filter)
-	events, err := s.repository.GetEventsByFilterAndFields(s.db, modelFilter, fields, offset, limit)
+	events, err := s.repository.GetEventsByFilterAndFields(ctx, s.db, modelFilter, fields, offset, limit)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %v", op, err)
 	}
@@ -101,9 +102,9 @@ func (s *EventService) GetEventsByFilterAndFields(filter event_dto.EventDTO, fie
 }
 
 // Get count events by event type (for pagination)
-func (s *EventService) GetCountEventsByType(eventType event.EventType) (int64, error) {
+func (s *EventService) GetCountEventsByType(ctx context.Context, eventType event.EventType) (int64, error) {
 	const op = "services.event_service.GetCountEventsByType"
-	count, err := s.repository.GetCountEventsByType(s.db, eventType)
+	count, err := s.repository.GetCountEventsByType(ctx, s.db, eventType)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %v", op, err)
 	}
@@ -111,9 +112,9 @@ func (s *EventService) GetCountEventsByType(eventType event.EventType) (int64, e
 }
 
 // Get count events by previous id (for pagination)
-func (s *EventService) GetCountEventsByPreviousID(id uint) (int64, error) {
+func (s *EventService) GetCountEventsByPreviousID(ctx context.Context, id uint) (int64, error) {
 	const op = "services.event_service.GetCountEvents"
-	count, err := s.repository.GetCountEventsByPreviousID(s.db, id)
+	count, err := s.repository.GetCountEventsByPreviousID(ctx, s.db, id)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %v", op, err)
 	}
@@ -121,9 +122,9 @@ func (s *EventService) GetCountEventsByPreviousID(id uint) (int64, error) {
 }
 
 // Get list events by type
-func (s *EventService) GetEventsByType(eventType event.EventType, offset, limit *int) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetEventsByType(ctx context.Context, eventType event.EventType, offset, limit *int) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventsByType"
-	events, err := s.repository.GetEventsByType(s.db, eventType, offset, limit)
+	events, err := s.repository.GetEventsByType(ctx, s.db, eventType, offset, limit)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -131,11 +132,11 @@ func (s *EventService) GetEventsByType(eventType event.EventType, offset, limit 
 }
 
 // Get events where type=stage and his childs
-func (s *EventService) GetEventsTypeStageAndHisChilds(id uint) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id uint) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventsTypeStageAndHisChilds"
 	// Get all event stage by previousID
 	// tx := s.db.Begin()
-	events, err := s.repository.GetEventsByPreviousID(s.db, id, nil, nil)
+	events, err := s.repository.GetEventsByPreviousID(ctx, s.db, id, nil, nil)
 	if err != nil {
 		// tx.Rollback()
 		return nil, fmt.Errorf("%s: %w", op, err)
@@ -154,7 +155,7 @@ func (s *EventService) GetEventsTypeStageAndHisChilds(id uint) ([]event_dto.Even
 			mx.Lock()
 			id := eventsDto[i].ID
 			mx.Unlock()
-			childs, err := s.repository.GetEventsByPreviousID(s.db, id, nil, nil)
+			childs, err := s.repository.GetEventsByPreviousID(ctx, s.db, id, nil, nil)
 			if err != nil {
 				errors <- err
 			}
@@ -173,9 +174,9 @@ func (s *EventService) GetEventsTypeStageAndHisChilds(id uint) ([]event_dto.Even
 }
 
 // Get list events by PreviousID
-func (s *EventService) GetEventsByPreviousID(id uint, offset, limit *int) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetEventsByPreviousID(ctx context.Context, id uint, offset, limit *int) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventsByPreviousID"
-	events, err := s.repository.GetEventsByPreviousID(s.db, id, offset, limit)
+	events, err := s.repository.GetEventsByPreviousID(ctx, s.db, id, offset, limit)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -183,9 +184,9 @@ func (s *EventService) GetEventsByPreviousID(id uint, offset, limit *int) ([]eve
 }
 
 // Get list events by list id
-func (s *EventService) GetEventsByListID(ids []uint) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetEventsByListID(ctx context.Context, ids []uint) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventsByListID"
-	events, err := s.repository.GetEventsByListID(s.db, ids)
+	events, err := s.repository.GetEventsByListID(ctx, s.db, ids)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -193,20 +194,20 @@ func (s *EventService) GetEventsByListID(ids []uint) ([]event_dto.EventDTO, erro
 }
 
 // Find olympiad who is parent for stage
-func (s *EventService) getOlympiad(id uint) (event.Event, error) {
+func (s *EventService) getOlympiad(ctx context.Context, id uint) (event.Event, error) {
 
-	previousEvent, err := s.repository.GetEventByID(s.db, id)
+	previousEvent, err := s.repository.GetEventByID(ctx, s.db, id)
 	if err != nil {
 		return event.Event{}, err
 	}
 	if previousEvent.EventType == event.Olympiad {
 		return previousEvent, nil
 	} else {
-		return s.getOlympiad(*previousEvent.PreviousEventID)
+		return s.getOlympiad(ctx, *previousEvent.PreviousEventID)
 	}
 }
 
-func (s *EventService) checkCorrectEventDTO(eventDTO *event_dto.EventDTO, isUpdate bool) error {
+func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventDTO *event_dto.EventDTO, isUpdate bool) error {
 	// Check date
 	if eventDTO.StartDate.IsZero() || eventDTO.EndDate.IsZero() {
 		return errors.New("date does not exist")
@@ -217,7 +218,7 @@ func (s *EventService) checkCorrectEventDTO(eventDTO *event_dto.EventDTO, isUpda
 	// check have previousEvent
 	previousEventID := eventDTO.PreviousEventID
 	if previousEventID != nil {
-		previousEvent, err := s.repository.GetEventByID(s.db, *previousEventID)
+		previousEvent, err := s.repository.GetEventByID(ctx, s.db, *previousEventID)
 		if err != nil {
 			return err
 		}
@@ -233,7 +234,7 @@ func (s *EventService) checkCorrectEventDTO(eventDTO *event_dto.EventDTO, isUpda
 				eventDTO.EventType = event.Stage
 			case event.Stage:
 				// check stage cannot have more than one ViewWorks
-				viewWorks, err := s.repository.GetEventsByPreviousID(s.db, *previousEventID, nil, nil)
+				viewWorks, err := s.repository.GetEventsByPreviousID(ctx, s.db, *previousEventID, nil, nil)
 				if err != nil {
 					return err
 				}
@@ -274,7 +275,7 @@ func (s *EventService) checkCorrectEventDTO(eventDTO *event_dto.EventDTO, isUpda
 				return errors.New("incorrect date limits")
 			}
 		} else {
-			tempPreviousEvent, err := s.getOlympiad(*previousEventID)
+			tempPreviousEvent, err := s.getOlympiad(ctx, *previousEventID)
 			if err != nil {
 				return err
 			}
@@ -290,20 +291,20 @@ func (s *EventService) checkCorrectEventDTO(eventDTO *event_dto.EventDTO, isUpda
 	return nil
 }
 
-func (s *EventService) CreateEventsByJSON(eventDTO event_dto.EventDTO) error {
+func (s *EventService) CreateEventsByJSON(ctx context.Context, eventDTO event_dto.EventDTO) error {
 	const op = "services.event_service.CreateEventsByJSON"
 
-	err := s.checkCorrectEventDTO(&eventDTO, false)
+	err := s.checkCorrectEventDTO(ctx, &eventDTO, false)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	eventModel := ConvertDTOtoEvent(eventDTO)
-	_, err = s.repository.CreateEvent(s.db, eventModel)
+	_, err = s.repository.CreateEvent(ctx, s.db, eventModel)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	err = s.createEventRecursion(eventDTO, nil)
+	err = s.createEventRecursion(ctx, eventDTO, nil)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -311,17 +312,17 @@ func (s *EventService) CreateEventsByJSON(eventDTO event_dto.EventDTO) error {
 	return nil
 }
 
-func (s *EventService) createEventRecursion(eventDTO event_dto.EventDTO, id *uint) error {
+func (s *EventService) createEventRecursion(ctx context.Context, eventDTO event_dto.EventDTO, id *uint) error {
 	const op = "services.event_service.createEventRecursion"
 	if id != nil {
 		eventDTO.PreviousEventID = id
 	}
-	err := s.checkCorrectEventDTO(&eventDTO, false)
+	err := s.checkCorrectEventDTO(ctx, &eventDTO, false)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	eventModel := ConvertDTOtoEvent(eventDTO)
-	newId, err := s.repository.CreateEvent(s.db, eventModel)
+	newId, err := s.repository.CreateEvent(ctx, s.db, eventModel)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -333,7 +334,7 @@ func (s *EventService) createEventRecursion(eventDTO event_dto.EventDTO, id *uin
 
 	for _, event := range *eventDTO.Events {
 		errgroup.Go(func() error {
-			err = s.createEventRecursion(event, &newId)
+			err = s.createEventRecursion(ctx, event, &newId)
 			if err != nil {
 				return err
 			}
@@ -347,36 +348,36 @@ func (s *EventService) createEventRecursion(eventDTO event_dto.EventDTO, id *uin
 }
 
 // Create event
-func (s *EventService) CreateEvent(eventDTO event_dto.EventDTO) (uint, error) {
+func (s *EventService) CreateEvent(ctx context.Context, eventDTO event_dto.EventDTO) (uint, error) {
 	const op = "services.event_service.CreateEvent"
-	err := s.checkCorrectEventDTO(&eventDTO, false)
+	err := s.checkCorrectEventDTO(ctx, &eventDTO, false)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 	eventModel := ConvertDTOtoEvent(eventDTO)
 	// Auto create events for all subject
 	if eventModel.EventType == event.RegionalStage {
-		id, err := s.createEventsBySubjects(eventModel)
+		id, err := s.createEventsBySubjects(ctx, eventModel)
 		if err != nil {
 			return 0, fmt.Errorf("%s: %w", op, err)
 		}
 		return id, nil
 	}
-	id, err := s.repository.CreateEvent(s.db, eventModel)
+	id, err := s.repository.CreateEvent(ctx, s.db, eventModel)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 	return id, nil
 }
 
-func (s *EventService) createEventsBySubjects(eventModel event.Event) (uint, error) {
+func (s *EventService) createEventsBySubjects(ctx context.Context, eventModel event.Event) (uint, error) {
 	const op = "services.event_service.createEventsBySubjects"
 	tx, err := s.db.TransactionBegin()
 	if err != nil {
 		tx.TransactionRollback()
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
-	id, err := s.repository.CreateEvent(tx, eventModel)
+	id, err := s.repository.CreateEvent(ctx, tx, eventModel)
 	if err != nil {
 		tx.TransactionRollback()
 		return 0, fmt.Errorf("%s: %w", op, err)
@@ -390,7 +391,7 @@ func (s *EventService) createEventsBySubjects(eventModel event.Event) (uint, err
 			EventType:       event.Olympiad,
 			Subject:         subject,
 		}
-		_, err := s.repository.CreateEvent(tx, eventBySubject)
+		_, err := s.repository.CreateEvent(ctx, tx, eventBySubject)
 		if err != nil {
 			tx.TransactionRollback()
 			return 0, fmt.Errorf("%s - create auto event by subjects: %w", op, err)
@@ -400,10 +401,10 @@ func (s *EventService) createEventsBySubjects(eventModel event.Event) (uint, err
 	return id, nil
 }
 
-func (s *EventService) updateEventDTO(updatedEventDTO event_dto.EventDTO) (event_dto.EventDTO, error) {
+func (s *EventService) updateEventDTO(ctx context.Context, updatedEventDTO event_dto.EventDTO) (event_dto.EventDTO, error) {
 	serchedID := updatedEventDTO.ID
 
-	event, err := s.repository.GetEventByID(s.db, serchedID)
+	event, err := s.repository.GetEventByID(ctx, s.db, serchedID)
 	newEventDTO := ConvertEventToDTO(event)
 	if err != nil {
 		return event_dto.EventDTO{}, nil
@@ -428,21 +429,21 @@ func (s *EventService) updateEventDTO(updatedEventDTO event_dto.EventDTO) (event
 }
 
 // Update event
-func (s *EventService) UpdateEvent(event_dto event_dto.EventDTO) (uint, error) {
+func (s *EventService) UpdateEvent(ctx context.Context, event_dto event_dto.EventDTO) (uint, error) {
 	const op = "services.event_service.UpdateEvent"
 
-	event_dto, err := s.updateEventDTO(event_dto)
+	event_dto, err := s.updateEventDTO(ctx, event_dto)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
-	err = s.checkCorrectEventDTO(&event_dto, true)
+	err = s.checkCorrectEventDTO(ctx, &event_dto, true)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
 
 	event := ConvertDTOtoEvent(event_dto)
-	id, err := s.repository.UpdateEvent(s.db, event)
+	id, err := s.repository.UpdateEvent(ctx, s.db, event)
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -450,9 +451,9 @@ func (s *EventService) UpdateEvent(event_dto event_dto.EventDTO) (uint, error) {
 }
 
 // Delete event
-func (s *EventService) DeleteEvent(id uint) error {
+func (s *EventService) DeleteEvent(ctx context.Context, id uint) error {
 	const op = "services.event_service.DeleteEvent"
-	err := s.repository.DeleteEvent(s.db, id)
+	err := s.repository.DeleteEvent(ctx, s.db, id)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
