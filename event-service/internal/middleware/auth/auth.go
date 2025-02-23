@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"reflect"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -66,7 +65,6 @@ func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 			return
 		}
 
-		fmt.Println(claims["role"], reflect.TypeOf(claims["role"]))
 		// Get role
 		role, ok := claims["role"].(string)
 		if !ok {
@@ -75,7 +73,6 @@ func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 			return
 		}
 
-		fmt.Println(claims["id"], reflect.TypeOf(claims["id"]))
 		// Get id
 		id, ok := claims["id"].(float64)
 		if !ok {
