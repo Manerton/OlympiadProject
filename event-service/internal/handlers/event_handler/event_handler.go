@@ -5,9 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"main/internal/dto/event_dto"
-	"main/internal/lib/liblogger"
 	"main/internal/lib/parsing"
 	"main/internal/lib/request"
 	"main/internal/lib/response"
@@ -39,19 +37,13 @@ type EventServiceInterface interface {
 
 type EventHandler struct {
 	service EventServiceInterface
-	log     *slog.Logger
 }
 
-func NewEventHandler(service EventServiceInterface, log *slog.Logger) *EventHandler {
-	return &EventHandler{service: service, log: log}
+func NewEventHandler(service EventServiceInterface) *EventHandler {
+	return &EventHandler{service: service}
 }
 
 func (h *EventHandler) GetEventByFilterAndFields(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.event_handler.GetEventByFilterAndFields"
-
-	log := h.log.With(
-		slog.String("op", op),
-	)
 
 	ctx := r.Context()
 
@@ -59,18 +51,15 @@ func (h *EventHandler) GetEventByFilterAndFields(w http.ResponseWriter, r *http.
 
 	err := render.DecodeJSON(r.Body, &detailRequest)
 	if err != nil {
-		log.Error("failed to decode details", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to decode details"))
 		return
 	}
 
 	eventDetails, err := h.service.GetEventByFilterAndFields(ctx, detailRequest.EventDTO, detailRequest.Fields)
 	if err != nil {
-		log.Error("failed to get event", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get event"))
 		return
 	}
-	log.Info("event getted", slog.Any("event", eventDetails))
 
 	render.JSON(w, r, response.ApiResponse{
 		Status: response.StatusOK,
@@ -79,28 +68,21 @@ func (h *EventHandler) GetEventByFilterAndFields(w http.ResponseWriter, r *http.
 }
 
 func (h *EventHandler) GetEventsByFilterAndFields(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.event_handler.GetEventsByFilterAndFields"
-	log := h.log.With(
-		slog.String("op", op),
-	)
 	detailRequest := request.DetailRequest{}
 
 	ctx := r.Context()
 
 	err := render.DecodeJSON(r.Body, &detailRequest)
 	if err != nil {
-		log.Error("failed to decode details", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to decode details"))
 		return
 	}
 
 	eventDetails, err := h.service.GetEventsByFilterAndFields(ctx, detailRequest.EventDTO, detailRequest.Fields, detailRequest.Offset, detailRequest.Limit)
 	if err != nil {
-		log.Error("failed to get events", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get events"))
 		return
 	}
-	log.Info("event getted", slog.Any("events", eventDetails))
 
 	render.JSON(w, r, response.ApiResponse{
 		Status: response.StatusOK,
@@ -109,10 +91,6 @@ func (h *EventHandler) GetEventsByFilterAndFields(w http.ResponseWriter, r *http
 }
 
 func (h *EventHandler) GetAllEvents(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.event_handler.GetAllEvents"
-	log := h.log.With(
-		slog.String("op", op),
-	)
 
 	ctx := r.Context()
 
@@ -121,18 +99,15 @@ func (h *EventHandler) GetAllEvents(w http.ResponseWriter, r *http.Request) {
 
 	offset, limit, err := parsing.ParseOffsetLimit(offsetStr, limitStr)
 	if err != nil {
-		log.Error("failed to get events", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get events"))
 		return
 	}
 
 	eventsDTO, err := h.service.GetAllEvents(ctx, offset, limit)
 	if err != nil {
-		log.Error("failed to get events", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get events"))
 		return
 	}
-	log.Info("event getted", slog.Any("events", eventsDTO))
 
 	render.JSON(w, r, response.ApiResponse{
 		Status: response.StatusOK,
@@ -141,29 +116,21 @@ func (h *EventHandler) GetAllEvents(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *EventHandler) GetEventByID(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.event_handler.GetEventByID"
-	log := h.log.With(
-		slog.String("op", op),
-	)
 
 	ctx := r.Context()
 
 	receivedID := chi.URLParam(r, "id")
 	searchedID, err := strconv.ParseUint(receivedID, 10, 32)
 	if err != nil {
-		log.Error("failed to parse id to uint", slog.String("received id", receivedID), liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to parse id"))
 		return
 	}
-	log.Info("event id on request body decoded", slog.Any("event id", searchedID))
 
 	eventDTO, err := h.service.GetEventByID(ctx, uint(searchedID))
 	if err != nil {
-		log.Error("failed to get event", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get event"))
 		return
 	}
-	log.Info("event getted", slog.Any("event", eventDTO))
 
 	render.JSON(w, r, response.ApiResponse{
 		Status: response.StatusOK,
@@ -172,10 +139,6 @@ func (h *EventHandler) GetEventByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.event_handler.GetEventsTypeRegionalStage"
-	log := h.log.With(
-		slog.String("op", op),
-	)
 
 	ctx := r.Context()
 
@@ -184,18 +147,15 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 
 	offset, limit, err := parsing.ParseOffsetLimit(offsetStr, limitStr)
 	if err != nil {
-		log.Error("failed to get events", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get events"))
 		return
 	}
 
 	eventsDTO, err := h.service.GetEventsByType(ctx, event.RegionalStage, offset, limit)
 	if err != nil {
-		log.Error("failed to get events by type", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get events by type"))
 		return
 	}
-	log.Info("events getted", slog.Any("events", eventsDTO))
 
 	if offset == nil && limit == nil {
 		render.JSON(w, r, response.ApiResponse{
@@ -207,7 +167,6 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 
 	count, err := h.service.GetCountEventsByType(ctx, event.RegionalStage)
 	if err != nil {
-		log.Error("failed to get count events by type", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get count events by type"))
 		return
 	}
@@ -223,28 +182,21 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 }
 
 func (h *EventHandler) GetEventsTypeStageAndHisChilds(w http.ResponseWriter, r *http.Request) {
-	const op = "handler.evend_handler.GetEventsTypeStageAndHisChilds"
-	log := h.log.With(
-		slog.String("op", op),
-	)
 
 	ctx := r.Context()
 
 	receivedID := chi.URLParam(r, "id")
 	searchedID, err := strconv.ParseUint(receivedID, 10, 32)
 	if err != nil {
-		log.Error("failed to parse id to uint", slog.String("received id", receivedID), liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to parse id"))
 		return
 	}
 
 	eventsDto, err := h.service.GetEventsTypeStageAndHisChilds(ctx, uint(searchedID))
 	if err != nil {
-		log.Error("failed to get events", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get events"))
 		return
 	}
-	log.Info("events getted")
 
 	render.JSON(w, r, response.ApiResponse{
 		Status: response.StatusOK,
@@ -253,10 +205,6 @@ func (h *EventHandler) GetEventsTypeStageAndHisChilds(w http.ResponseWriter, r *
 }
 
 func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.event_handler.GetEventsByPreviousID"
-	log := h.log.With(
-		slog.String("op", op),
-	)
 
 	ctx := r.Context()
 
@@ -265,7 +213,6 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 
 	offset, limit, err := parsing.ParseOffsetLimit(offsetStr, limitStr)
 	if err != nil {
-		log.Error("failed to parse offsetStr/limitStr", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to pares offset/limit"))
 		return
 	}
@@ -273,20 +220,15 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 	receivedID := chi.URLParam(r, "id")
 	searchedID, err := strconv.ParseUint(receivedID, 10, 32)
 	if err != nil {
-		log.Error("failed to parse id to uint", slog.String("received id", receivedID), liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to parse id"))
 		return
 	}
-	log.Info("event id on request body decoded", slog.Any("event id", searchedID))
 
 	eventsDTO, err := h.service.GetEventsByPreviousID(ctx, uint(searchedID), offset, limit)
 	if err != nil {
-		log.Error("failed to get events by previous id")
 		render.JSON(w, r, response.Error("failed to get events"))
 		return
 	}
-
-	log.Info("events getted")
 
 	if offset == nil && limit == nil {
 		render.JSON(w, r, response.ApiResponse{
@@ -298,7 +240,6 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 
 	count, err := h.service.GetCountEventsByPreviousID(ctx, uint(searchedID))
 	if err != nil {
-		log.Error("failed to get count events by type", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get count events by type"))
 		return
 	}
@@ -313,10 +254,6 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 }
 
 func (h *EventHandler) GetEventsByListID(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.event_handler.GetEventsByListID"
-	log := h.log.With(
-		slog.String("op", op),
-	)
 
 	ctx := r.Context()
 
@@ -326,24 +263,19 @@ func (h *EventHandler) GetEventsByListID(w http.ResponseWriter, r *http.Request)
 	var ids ReqIds
 	err := render.DecodeJSON(r.Body, &ids)
 	if errors.Is(err, io.EOF) {
-		log.Error("render body is empty")
 		render.JSON(w, r, response.Error("empty request"))
 		return
 	}
 	if err != nil {
-		log.Error("failed to decode request body", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failde to decode request"))
 		return
 	}
-	log.Info("ids on request body decoded")
 
 	eventsDTO, err := h.service.GetEventsByListID(ctx, ids.IDs)
 	if err != nil {
-		log.Error("failed to get events", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to get event"))
 		return
 	}
-	log.Info("events getted")
 	render.JSON(w, r, response.ApiResponse{
 		Status: response.StatusOK,
 		Data:   eventsDTO,
@@ -351,79 +283,59 @@ func (h *EventHandler) GetEventsByListID(w http.ResponseWriter, r *http.Request)
 }
 
 func (h *EventHandler) CreateEventsByJSON(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.event_handlers.CreateEventsByJSON"
-	log := h.log.With(
-		slog.String("op", op),
-	)
+
 	ctx := r.Context()
 
 	var eventsJSON event_dto.EventDTO
 	err := render.DecodeJSON(r.Body, &eventsJSON)
 	if errors.Is(err, io.EOF) {
-		log.Error("render body is empty")
 		render.JSON(w, r, response.Error("empty request"))
 		return
 	}
 
 	if err != nil {
-		log.Error("failed to decode request body", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to decode request"))
 		return
 	}
-	log.Info("events on request body decoded", slog.Any("events", eventsJSON))
 
 	err = h.service.CreateEventsByJSON(ctx, eventsJSON)
 	if err != nil {
-
+		// TODO! Complite creating events by json
 	}
 
 }
 
 func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.event_handlers.CreateEvent"
-	log := h.log.With(
-		slog.String("op", op),
-	)
 
 	ctx := r.Context()
 
 	var eventDTO event_dto.EventDTO
 	err := render.DecodeJSON(r.Body, &eventDTO)
 	if errors.Is(err, io.EOF) {
-		log.Error("render body is empty")
 		render.JSON(w, r, response.Error("empty request"))
 		return
 	}
 	if err != nil {
-		log.Error("failed to decode request body", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failde to decode request"))
 		return
 	}
-	log.Info("event on request body decoded", slog.Any("event", eventDTO))
 
 	err = validator.New().Struct(eventDTO)
 	if err != nil {
 		validateErr := err.(validator.ValidationErrors)
-		log.Error("invalid request", liblogger.Err(err))
 		render.JSON(w, r, response.Error(fmt.Sprintf("err %v", validateErr)))
 		return
 	}
 
 	id, err := h.service.CreateEvent(ctx, eventDTO)
 	if err != nil {
-		log.Error("failed to create event", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to create event"))
 		return
 	}
-	log.Info("event created", slog.Any("id", id))
 	render.JSON(w, r, response.Success(fmt.Sprintf("id = %d", id)))
 }
 
 func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.event_handler.UpdateEvent"
-	log := h.log.With(
-		slog.String("op", op),
-	)
 
 	ctx := r.Context()
 
@@ -431,59 +343,44 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	receivedID := chi.URLParam(r, "id")
 	updatedID, err := strconv.ParseUint(receivedID, 10, 32)
 	if err != nil {
-		log.Error("failed to parse id to uint", slog.String("received id", receivedID), liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to parse id"))
 	}
-	log.Info("event id on request body decoded", slog.Any("event id", updatedID))
 	eventDTO.ID = uint(updatedID)
 
 	err = render.DecodeJSON(r.Body, &eventDTO)
 	if errors.Is(err, io.EOF) {
-		log.Error("render body is empty")
 		render.JSON(w, r, response.Error("empty request"))
 		return
 	}
 	if err != nil {
-		log.Error("failed to decode event", liblogger.Err(err))
 		render.JSON(w, r, "failed to decode event")
 		return
 	}
-	log.Info("event on request body decoded", slog.Any("event", eventDTO))
 
 	id, err := h.service.UpdateEvent(ctx, eventDTO)
 	if err != nil {
-		log.Error("failed to update event", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to update event"))
 		return
 	}
-	log.Info("event updated", slog.Any("id", id))
 
 	render.JSON(w, r, response.Success(fmt.Sprintf("id = %d", id)))
 }
 
 func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.event_handler.DeleteEvent"
-	log := h.log.With(
-		slog.String("op", op),
-	)
 
 	ctx := r.Context()
 
 	receivedID := chi.URLParam(r, "id")
 	deletedID, err := strconv.ParseUint(receivedID, 10, 32)
 	if err != nil {
-		log.Error("failed to parse id to uint", slog.String("received id", receivedID), liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to parse id"))
 	}
-	log.Info("event id on request body decoded", slog.Any("event id", deletedID))
 
 	err = h.service.DeleteEvent(ctx, uint(deletedID))
 	if err != nil {
-		log.Error("failed to delete event", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to delete event"))
 		return
 	}
-	log.Info("event deleted", slog.Any("id", deletedID))
 
 	render.JSON(w, r, response.Success("Object deleted"))
 }
