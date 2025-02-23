@@ -11,28 +11,28 @@ import (
 	"main/internal/lib/response"
 	"main/internal/models/event"
 	"net/http"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 )
 
 type EventServiceInterface interface {
 	GetAllEvents(ctx context.Context, offset, limit *int) ([]event_dto.EventDTO, error)
-	GetEventByID(ctx context.Context, id uint) (event_dto.EventDTO, error)
+	GetEventByID(ctx context.Context, id uuid.UUID) (event_dto.EventDTO, error)
 	GetEventByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string) (event_dto.DetailsEvent, error)
 	GetEventsByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string, offset, limit *int) ([]event_dto.DetailsEvent, error)
 	GetCountEventsByType(ctx context.Context, eventType event.EventType) (int64, error)
-	GetCountEventsByPreviousID(ctx context.Context, id uint) (int64, error)
+	GetCountEventsByPreviousID(ctx context.Context, previousID uuid.UUID) (int64, error)
 	GetEventsByType(ctx context.Context, eventType event.EventType, offset, limit *int) ([]event_dto.EventDTO, error)
-	GetEventsTypeStageAndHisChilds(ctx context.Context, id uint) ([]event_dto.EventDTO, error)
-	GetEventsByPreviousID(ctx context.Context, id uint, offset, limit *int) ([]event_dto.EventDTO, error)
-	GetEventsByListID(ctx context.Context, ids []uint) ([]event_dto.EventDTO, error)
+	GetEventsTypeStageAndHisChilds(ctx context.Context, id uuid.UUID) ([]event_dto.EventDTO, error)
+	GetEventsByPreviousID(ctx context.Context, previousID uuid.UUID, offset, limit *int) ([]event_dto.EventDTO, error)
+	GetEventsByListID(ctx context.Context, ids []uuid.UUID) ([]event_dto.EventDTO, error)
 	CreateEventsByJSON(ctx context.Context, eventDTO event_dto.EventDTO) error
-	CreateEvent(ctx context.Context, eventDTO event_dto.EventDTO) (uint, error)
-	UpdateEvent(ctx context.Context, eventDTO event_dto.EventDTO) (uint, error)
-	DeleteEvent(ctx context.Context, id uint) error
+	CreateEvent(ctx context.Context, eventDTO event_dto.EventDTO) (uuid.UUID, error)
+	UpdateEvent(ctx context.Context, eventDTO event_dto.EventDTO) (uuid.UUID, error)
+	DeleteEvent(ctx context.Context, id uuid.UUID) error
 }
 
 type EventHandler struct {
@@ -120,13 +120,13 @@ func (h *EventHandler) GetEventByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	receivedID := chi.URLParam(r, "id")
-	searchedID, err := strconv.ParseUint(receivedID, 10, 32)
+	searchedID, err := uuid.Parse(receivedID)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to parse id"))
 		return
 	}
 
-	eventDTO, err := h.service.GetEventByID(ctx, uint(searchedID))
+	eventDTO, err := h.service.GetEventByID(ctx, searchedID)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to get event"))
 		return
@@ -186,13 +186,13 @@ func (h *EventHandler) GetEventsTypeStageAndHisChilds(w http.ResponseWriter, r *
 	ctx := r.Context()
 
 	receivedID := chi.URLParam(r, "id")
-	searchedID, err := strconv.ParseUint(receivedID, 10, 32)
+	searchedID, err := uuid.Parse(receivedID)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to parse id"))
 		return
 	}
 
-	eventsDto, err := h.service.GetEventsTypeStageAndHisChilds(ctx, uint(searchedID))
+	eventsDto, err := h.service.GetEventsTypeStageAndHisChilds(ctx, searchedID)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to get events"))
 		return
@@ -218,13 +218,13 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 	}
 
 	receivedID := chi.URLParam(r, "id")
-	searchedID, err := strconv.ParseUint(receivedID, 10, 32)
+	searchedID, err := uuid.Parse(receivedID)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to parse id"))
 		return
 	}
 
-	eventsDTO, err := h.service.GetEventsByPreviousID(ctx, uint(searchedID), offset, limit)
+	eventsDTO, err := h.service.GetEventsByPreviousID(ctx, searchedID, offset, limit)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to get events"))
 		return
@@ -238,7 +238,7 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	count, err := h.service.GetCountEventsByPreviousID(ctx, uint(searchedID))
+	count, err := h.service.GetCountEventsByPreviousID(ctx, searchedID)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to get count events by type"))
 		return
@@ -258,7 +258,7 @@ func (h *EventHandler) GetEventsByListID(w http.ResponseWriter, r *http.Request)
 	ctx := r.Context()
 
 	type ReqIds struct {
-		IDs []uint `json:"ids"`
+		IDs []uuid.UUID `json:"ids"`
 	}
 	var ids ReqIds
 	err := render.DecodeJSON(r.Body, &ids)
@@ -341,11 +341,11 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 
 	var eventDTO event_dto.EventDTO
 	receivedID := chi.URLParam(r, "id")
-	updatedID, err := strconv.ParseUint(receivedID, 10, 32)
+	updatedID, err := uuid.Parse(receivedID)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to parse id"))
 	}
-	eventDTO.ID = uint(updatedID)
+	eventDTO.ID = updatedID
 
 	err = render.DecodeJSON(r.Body, &eventDTO)
 	if errors.Is(err, io.EOF) {
@@ -371,12 +371,12 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	receivedID := chi.URLParam(r, "id")
-	deletedID, err := strconv.ParseUint(receivedID, 10, 32)
+	deletedID, err := uuid.Parse(receivedID)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to parse id"))
 	}
 
-	err = h.service.DeleteEvent(ctx, uint(deletedID))
+	err = h.service.DeleteEvent(ctx, deletedID)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to delete event"))
 		return

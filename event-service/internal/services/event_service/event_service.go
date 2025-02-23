@@ -13,24 +13,25 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"golang.org/x/sync/errgroup"
 )
 
 type EventRepositoryInterface interface {
 	GetEventByFilterAndFields(ctx context.Context, orm orm.ORM, filter event.Event, fields *[]string) (event.Event, error)
 	GetEventsByFilterAndFields(ctx context.Context, orm orm.ORM, filter event.Event, fields *[]string, offset, limit *int) ([]event.Event, error)
-	GetEventByID(ctx context.Context, orm orm.ORM, id uint) (event.Event, error)
-	GetEventsByListID(ctx context.Context, orm orm.ORM, ids []uint) ([]event.Event, error)
+	GetEventByID(ctx context.Context, orm orm.ORM, id uuid.UUID) (event.Event, error)
+	GetEventsByListID(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]event.Event, error)
 	GetEventsByType(ctx context.Context, orm orm.ORM, eventType event.EventType, offset, limit *int) ([]event.Event, error)
-	GetEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uint, offset, limit *int) ([]event.Event, error)
+	GetEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uuid.UUID, offset, limit *int) ([]event.Event, error)
 	GetAllEvents(ctx context.Context, orm orm.ORM, offset, limit *int) ([]event.Event, error)
 
 	GetCountEventsByType(ctx context.Context, orm orm.ORM, eventType event.EventType) (int64, error)
-	GetCountEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uint) (int64, error)
+	GetCountEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uuid.UUID) (int64, error)
 
-	CreateEvent(ctx context.Context, orm orm.ORM, event event.Event) (uint, error)
-	UpdateEvent(ctx context.Context, orm orm.ORM, event event.Event) (uint, error)
-	DeleteEvent(ctx context.Context, orm orm.ORM, id uint) error
+	CreateEvent(ctx context.Context, orm orm.ORM, event event.Event) (uuid.UUID, error)
+	UpdateEvent(ctx context.Context, orm orm.ORM, event event.Event) (uuid.UUID, error)
+	DeleteEvent(ctx context.Context, orm orm.ORM, id uuid.UUID) error
 }
 
 type EventService struct {
@@ -64,14 +65,14 @@ func (s *EventService) GetAllEvents(ctx context.Context, offset, limit *int) ([]
 }
 
 // Get event by id
-func (s *EventService) GetEventByID(ctx context.Context, id uint) (event_dto.EventDTO, error) {
+func (s *EventService) GetEventByID(ctx context.Context, id uuid.UUID) (event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventByID"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
-	if id == 0 {
+	if id == uuid.Nil {
 		log.Error("failed with id", slog.Any("invalid id:", id))
 		return event_dto.EventDTO{}, fmt.Errorf("%s: invalid ID %d", op, id)
 	}
@@ -158,7 +159,7 @@ func (s *EventService) GetCountEventsByType(ctx context.Context, eventType event
 }
 
 // Get count events by previous id (for pagination)
-func (s *EventService) GetCountEventsByPreviousID(ctx context.Context, id uint) (int64, error) {
+func (s *EventService) GetCountEventsByPreviousID(ctx context.Context, id uuid.UUID) (int64, error) {
 	const op = "services.event_service.GetCountEvents"
 
 	log := s.log.With(
@@ -196,7 +197,7 @@ func (s *EventService) GetEventsByType(ctx context.Context, eventType event.Even
 }
 
 // Get events where type=stage and his childs
-func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id uint) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id uuid.UUID) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventsTypeStageAndHisChilds"
 
 	log := s.log.With(
@@ -250,17 +251,17 @@ func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id ui
 }
 
 // Get list events by PreviousID
-func (s *EventService) GetEventsByPreviousID(ctx context.Context, id uint, offset, limit *int) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetEventsByPreviousID(ctx context.Context, previousId uuid.UUID, offset, limit *int) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventsByPreviousID"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
-	events, err := s.repository.GetEventsByPreviousID(ctx, s.db, id, offset, limit)
+	events, err := s.repository.GetEventsByPreviousID(ctx, s.db, previousId, offset, limit)
 	if err != nil {
 		log.Error("failed to get events by PreviousID",
-			slog.Any("id", id),
+			slog.Any("id", previousId),
 			liblogger.Err(err),
 		)
 		return nil, fmt.Errorf("%s: %w", op, err)
@@ -269,7 +270,7 @@ func (s *EventService) GetEventsByPreviousID(ctx context.Context, id uint, offse
 }
 
 // Get list events by list id
-func (s *EventService) GetEventsByListID(ctx context.Context, ids []uint) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetEventsByListID(ctx context.Context, ids []uuid.UUID) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventsByListID"
 
 	log := s.log.With(
@@ -284,11 +285,13 @@ func (s *EventService) GetEventsByListID(ctx context.Context, ids []uint) ([]eve
 		)
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+	log.Info("events getted", slog.Any("events", events))
+
 	return ConvertManyEventsToDTO(events), nil
 }
 
 // Find olympiad who is parent for stage
-func (s *EventService) getOlympiad(ctx context.Context, id uint) (event.Event, error) {
+func (s *EventService) getOlympiad(ctx context.Context, id uuid.UUID) (event.Event, error) {
 
 	previousEvent, err := s.repository.GetEventByID(ctx, s.db, id)
 	if err != nil {
@@ -411,11 +414,12 @@ func (s *EventService) CreateEventsByJSON(ctx context.Context, eventDTO event_dt
 		log.Error("failed create child events", liblogger.Err(err))
 		return fmt.Errorf("%s: %w", op, err)
 	}
+	log.Info("events by json success created")
 
 	return nil
 }
 
-func (s *EventService) createEventRecursion(ctx context.Context, eventDTO event_dto.EventDTO, id *uint) error {
+func (s *EventService) createEventRecursion(ctx context.Context, eventDTO event_dto.EventDTO, id *uuid.UUID) error {
 	const op = "services.event_service.createEventRecursion"
 	if id != nil {
 		eventDTO.PreviousEventID = id
@@ -451,7 +455,7 @@ func (s *EventService) createEventRecursion(ctx context.Context, eventDTO event_
 }
 
 // Create event
-func (s *EventService) CreateEvent(ctx context.Context, eventDTO event_dto.EventDTO) (uint, error) {
+func (s *EventService) CreateEvent(ctx context.Context, eventDTO event_dto.EventDTO) (uuid.UUID, error) {
 	const op = "services.event_service.CreateEvent"
 	log := s.log.With(
 		slog.String("op", op),
@@ -460,7 +464,7 @@ func (s *EventService) CreateEvent(ctx context.Context, eventDTO event_dto.Event
 	err := s.checkCorrectEventDTO(ctx, &eventDTO, false)
 	if err != nil {
 		log.Error("failed check correct event", liblogger.Err(err))
-		return 0, fmt.Errorf("%s: %w", op, err)
+		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 	eventModel := ConvertDTOtoEvent(eventDTO)
 	// Auto create events for all subject
@@ -468,29 +472,31 @@ func (s *EventService) CreateEvent(ctx context.Context, eventDTO event_dto.Event
 		id, err := s.createEventsBySubjects(ctx, eventModel)
 		if err != nil {
 			log.Error("failed create event by subjects", liblogger.Err(err))
-			return 0, fmt.Errorf("%s: %w", op, err)
+			return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 		}
+		log.Info("events success created (with all subjects)", slog.Any("eventID", id))
 		return id, nil
 	}
 	id, err := s.repository.CreateEvent(ctx, s.db, eventModel)
 	if err != nil {
 		log.Error("failed to create event", liblogger.Err(err))
-		return 0, fmt.Errorf("%s: %w", op, err)
+		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
+	log.Info("event success created (only one)", slog.Any("eventID", id))
 	return id, nil
 }
 
-func (s *EventService) createEventsBySubjects(ctx context.Context, eventModel event.Event) (uint, error) {
+func (s *EventService) createEventsBySubjects(ctx context.Context, eventModel event.Event) (uuid.UUID, error) {
 	const op = "services.event_service.createEventsBySubjects"
 	tx, err := s.db.TransactionBegin()
 	if err != nil {
 		tx.TransactionRollback()
-		return 0, fmt.Errorf("%s: %w", op, err)
+		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 	id, err := s.repository.CreateEvent(ctx, tx, eventModel)
 	if err != nil {
 		tx.TransactionRollback()
-		return 0, fmt.Errorf("%s: %w", op, err)
+		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 	for _, subject := range subject.NewSubjectsStorage().GetAllSubject() {
 		eventBySubject := event.Event{
@@ -504,7 +510,7 @@ func (s *EventService) createEventsBySubjects(ctx context.Context, eventModel ev
 		_, err := s.repository.CreateEvent(ctx, tx, eventBySubject)
 		if err != nil {
 			tx.TransactionRollback()
-			return 0, fmt.Errorf("%s - create auto event by subjects: %w", op, err)
+			return uuid.Nil, fmt.Errorf("%s - create auto event by subjects: %w", op, err)
 		}
 	}
 	tx.TransactionCommit()
@@ -539,7 +545,7 @@ func (s *EventService) updateEventDTO(ctx context.Context, updatedEventDTO event
 }
 
 // Update event
-func (s *EventService) UpdateEvent(ctx context.Context, event_dto event_dto.EventDTO) (uint, error) {
+func (s *EventService) UpdateEvent(ctx context.Context, event_dto event_dto.EventDTO) (uuid.UUID, error) {
 	const op = "services.event_service.UpdateEvent"
 	log := s.log.With(
 		slog.String("op", op),
@@ -547,26 +553,27 @@ func (s *EventService) UpdateEvent(ctx context.Context, event_dto event_dto.Even
 	event_dto, err := s.updateEventDTO(ctx, event_dto)
 	if err != nil {
 		log.Error("failed update EventDTO", liblogger.Err(err))
-		return 0, fmt.Errorf("%s: %w", op, err)
+		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 
 	err = s.checkCorrectEventDTO(ctx, &event_dto, true)
 	if err != nil {
 		log.Error("failed check correct event", liblogger.Err(err))
-		return 0, fmt.Errorf("%s: %w", op, err)
+		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 
 	event := ConvertDTOtoEvent(event_dto)
 	id, err := s.repository.UpdateEvent(ctx, s.db, event)
 	if err != nil {
 		log.Error("failed update event", liblogger.Err(err))
-		return 0, fmt.Errorf("%s: %w", op, err)
+		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
+	log.Info("event success updated")
 	return id, nil
 }
 
 // Delete event
-func (s *EventService) DeleteEvent(ctx context.Context, id uint) error {
+func (s *EventService) DeleteEvent(ctx context.Context, id uuid.UUID) error {
 	const op = "services.event_service.DeleteEvent"
 	log := s.log.With(
 		slog.String("op", op),
@@ -576,6 +583,7 @@ func (s *EventService) DeleteEvent(ctx context.Context, id uint) error {
 		log.Error("failed to delete event", liblogger.Err(err))
 		return fmt.Errorf("%s: %w", op, err)
 	}
+	log.Info("event success deleted")
 	return nil
 }
 

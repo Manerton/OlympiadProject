@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"main/internal/models/event"
 	"main/internal/storage/orm"
+
+	"github.com/google/uuid"
 )
 
 type EventRepository struct{}
@@ -53,7 +55,7 @@ func (r *EventRepository) GetEventsByFilterAndFields(ctx context.Context, orm or
 }
 
 // Get event by ID
-func (r *EventRepository) GetEventByID(ctx context.Context, orm orm.ORM, id uint) (event.Event, error) {
+func (r *EventRepository) GetEventByID(ctx context.Context, orm orm.ORM, id uuid.UUID) (event.Event, error) {
 	const op = "repositories.event_repository.GetEventByID"
 
 	eventRes := event.Event{ID: id}
@@ -67,7 +69,7 @@ func (r *EventRepository) GetEventByID(ctx context.Context, orm orm.ORM, id uint
 }
 
 // Get list events by list id
-func (r *EventRepository) GetEventsByListID(ctx context.Context, orm orm.ORM, ids []uint) ([]event.Event, error) {
+func (r *EventRepository) GetEventsByListID(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetEventsByListID"
 
 	eventRes := []event.Event{}
@@ -106,7 +108,7 @@ func (r *EventRepository) GetEventsByType(ctx context.Context, orm orm.ORM, even
 
 // Get all events by PreviousID
 // Offset, limit can be nil
-func (r *EventRepository) GetEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uint, offset, limit *int) ([]event.Event, error) {
+func (r *EventRepository) GetEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uuid.UUID, offset, limit *int) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetEventsByPreviousID"
 	eventsRes := []event.Event{}
 
@@ -163,7 +165,7 @@ func (r *EventRepository) GetCountEventsByType(ctx context.Context, orm orm.ORM,
 	return resultCount, nil
 }
 
-func (r *EventRepository) GetCountEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uint) (int64, error) {
+func (r *EventRepository) GetCountEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uuid.UUID) (int64, error) {
 	const op = "repositories.event_repository.GetCountEventsByPreviousID"
 	var resultCount int64 = 0
 	err := orm.Count(ctx, &event.Event{}, &resultCount, "previous_event_id = ?", previousID)
@@ -176,10 +178,10 @@ func (r *EventRepository) GetCountEventsByPreviousID(ctx context.Context, orm or
 }
 
 // Add new event in DB
-func (r *EventRepository) CreateEvent(ctx context.Context, orm orm.ORM, event event.Event) (uint, error) {
+func (r *EventRepository) CreateEvent(ctx context.Context, orm orm.ORM, event event.Event) (uuid.UUID, error) {
 	const op = "repositories.event_repository.CreateEvent"
 	if err := orm.Create(ctx, &event); err != nil {
-		return 0, fmt.Errorf("%s: %w", op, err)
+		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 	// if err := db.Create(&event).Error; err != nil {
 	// 	return 0, fmt.Errorf("%s: %w", op, err)
@@ -188,10 +190,10 @@ func (r *EventRepository) CreateEvent(ctx context.Context, orm orm.ORM, event ev
 }
 
 // Update event
-func (r *EventRepository) UpdateEvent(ctx context.Context, orm orm.ORM, event event.Event) (uint, error) {
+func (r *EventRepository) UpdateEvent(ctx context.Context, orm orm.ORM, event event.Event) (uuid.UUID, error) {
 	const op = "repositories.event_repository.UpdateEvent"
 	if err := orm.Updates(ctx, &event); err != nil {
-		return 0, fmt.Errorf("%s: %w", op, err)
+		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 	// if err := db.Updates(&event).Error; err != nil {
 	// 	return 0, fmt.Errorf("%s: %w", op, err)
@@ -200,7 +202,7 @@ func (r *EventRepository) UpdateEvent(ctx context.Context, orm orm.ORM, event ev
 }
 
 // Delete event
-func (r *EventRepository) DeleteEvent(ctx context.Context, orm orm.ORM, id uint) error {
+func (r *EventRepository) DeleteEvent(ctx context.Context, orm orm.ORM, id uuid.UUID) error {
 	const op = "repositories.event_repository.DeleteEvent"
 	if err := orm.Delete(ctx, &event.Event{ID: id}); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
