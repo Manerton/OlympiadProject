@@ -74,8 +74,8 @@ func main() {
 	gormORM := orm.NewGormORM(storage)
 
 	// init events service and handler
-	eventService := event_service.NewEventService(gormORM, &event_repository.EventRepository{})
-	eventHandler := event_handler.NewEventHandler(eventService, log)
+	eventService := event_service.NewEventService(gormORM, &event_repository.EventRepository{}, log)
+	eventHandler := event_handler.NewEventHandler(eventService)
 
 	// init subjects route
 	router.Get("/events/subjects", subjectHandler.GetAllSubjects)
@@ -111,7 +111,7 @@ func main() {
 			log.Error("failed to start server")
 		}
 	}()
-	log.Error("server start")
+	log.Info("server started")
 	<-done
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
