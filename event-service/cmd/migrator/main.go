@@ -16,6 +16,7 @@ const (
 
 func main() {
 
+	// postgres://postgres:root@localhost:5432/EventServicDB
 	const example = "postgres://user:password@localhost:port/dbname"
 
 	var dbDriver, dbStringConnect, migrationPath string
