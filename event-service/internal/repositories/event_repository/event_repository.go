@@ -28,11 +28,11 @@ func (r *EventRepository) GetEventByFilterAndFields(ctx context.Context, orm orm
 	return filter, nil
 }
 
-func (r *EventRepository) GetEventsByFilterAndFields(ctx context.Context, orm orm.ORM, filter event.Event, fields *[]string, offset, limit *int) ([]event.Event, error) {
+func (r *EventRepository) GetEventsByFilterAndFields(ctx context.Context, orm orm.ORM, filter event.Event, fields *[]string, offset, limit *int, order *string) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetEventsByFilterAndFields"
 	eventRes := []event.Event{}
 
-	if err := orm.Find(ctx, event.Event{}, fields, offset, limit, &eventRes, filter); err != nil {
+	if err := orm.Find(ctx, event.Event{}, fields, offset, limit, order, &eventRes, filter); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -73,7 +73,7 @@ func (r *EventRepository) GetEventsByListID(ctx context.Context, orm orm.ORM, id
 	const op = "repositories.event_repository.GetEventsByListID"
 
 	eventRes := []event.Event{}
-	if err := orm.Find(ctx, event.Event{}, nil, nil, nil, &eventRes, ids); err != nil {
+	if err := orm.Find(ctx, event.Event{}, nil, nil, nil, nil, &eventRes, ids); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	// if err := db.Find(&eventRes, ids).Error; err != nil {
@@ -84,11 +84,11 @@ func (r *EventRepository) GetEventsByListID(ctx context.Context, orm orm.ORM, id
 
 // Get list events by EventType
 // Offset, limit can be nil
-func (r *EventRepository) GetEventsByType(ctx context.Context, orm orm.ORM, eventType event.EventType, offset, limit *int) ([]event.Event, error) {
+func (r *EventRepository) GetEventsByType(ctx context.Context, orm orm.ORM, eventType event.EventType, offset, limit *int, order *string) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetEventsByType"
 	eventsRes := []event.Event{}
 
-	if err := orm.Find(ctx, event.Event{}, nil, offset, limit, &eventsRes, event.Event{EventType: eventType}); err != nil {
+	if err := orm.Find(ctx, event.Event{}, nil, offset, limit, order, &eventsRes, event.Event{EventType: eventType}); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -108,11 +108,11 @@ func (r *EventRepository) GetEventsByType(ctx context.Context, orm orm.ORM, even
 
 // Get all events by PreviousID
 // Offset, limit can be nil
-func (r *EventRepository) GetEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uuid.UUID, offset, limit *int) ([]event.Event, error) {
+func (r *EventRepository) GetEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uuid.UUID, offset, limit *int, order *string) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetEventsByPreviousID"
 	eventsRes := []event.Event{}
 
-	if err := orm.Find(ctx, event.Event{}, nil, offset, limit, &eventsRes, event.Event{PreviousEventID: &previousID}); err != nil {
+	if err := orm.Find(ctx, event.Event{}, nil, offset, limit, order, &eventsRes, event.Event{PreviousEventID: &previousID}); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	// query := db.Model(event.Event{})
@@ -135,7 +135,7 @@ func (r *EventRepository) GetAllEvents(ctx context.Context, orm orm.ORM, offset,
 	const op = "repositories.event_repository.GetAllEvents"
 	eventsRes := []event.Event{}
 
-	if err := orm.Find(ctx, event.Event{}, nil, offset, limit, &eventsRes); err != nil {
+	if err := orm.Find(ctx, event.Event{}, nil, offset, limit, nil, &eventsRes); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 

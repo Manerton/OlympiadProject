@@ -22,12 +22,12 @@ type EventServiceInterface interface {
 	GetAllEvents(ctx context.Context, offset, limit *int) ([]event_dto.EventDTO, error)
 	GetEventByID(ctx context.Context, id uuid.UUID) (event_dto.EventDTO, error)
 	GetEventByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string) (event_dto.DetailsEvent, error)
-	GetEventsByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string, offset, limit *int) ([]event_dto.DetailsEvent, error)
+	GetEventsByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string, offset, limit *int, order *string) ([]event_dto.DetailsEvent, error)
 	GetCountEventsByType(ctx context.Context, eventType event.EventType) (int64, error)
 	GetCountEventsByPreviousID(ctx context.Context, previousID uuid.UUID) (int64, error)
-	GetEventsByType(ctx context.Context, eventType event.EventType, offset, limit *int) ([]event_dto.EventDTO, error)
+	GetEventsByType(ctx context.Context, eventType event.EventType, offset, limit *int, order *string) ([]event_dto.EventDTO, error)
 	GetEventsTypeStageAndHisChilds(ctx context.Context, id uuid.UUID) ([]event_dto.EventDTO, error)
-	GetEventsByPreviousID(ctx context.Context, previousID uuid.UUID, offset, limit *int) ([]event_dto.EventDTO, error)
+	GetEventsByPreviousID(ctx context.Context, previousID uuid.UUID, offset, limit *int, order *string) ([]event_dto.EventDTO, error)
 	GetEventsByListID(ctx context.Context, ids []uuid.UUID) ([]event_dto.EventDTO, error)
 	CreateEventsByJSON(ctx context.Context, eventDTO event_dto.EventDTO) error
 	CreateEvent(ctx context.Context, eventDTO event_dto.EventDTO) (uuid.UUID, error)
@@ -78,7 +78,8 @@ func (h *EventHandler) GetEventsByFilterAndFields(w http.ResponseWriter, r *http
 		return
 	}
 
-	eventDetails, err := h.service.GetEventsByFilterAndFields(ctx, detailRequest.EventDTO, detailRequest.Fields, detailRequest.Offset, detailRequest.Limit)
+	eventDetails, err := h.service.GetEventsByFilterAndFields(ctx,
+		detailRequest.EventDTO, detailRequest.Fields, detailRequest.Offset, detailRequest.Limit, detailRequest.Order)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to get events"))
 		return
@@ -144,6 +145,7 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 
 	offsetStr := r.URL.Query().Get("offset")
 	limitStr := r.URL.Query().Get("limit")
+	orderStr := r.URL.Query().Get("order")
 
 	offset, limit, err := parsing.ParseOffsetLimit(offsetStr, limitStr)
 	if err != nil {
@@ -151,7 +153,7 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 		return
 	}
 
-	eventsDTO, err := h.service.GetEventsByType(ctx, event.RegionalStage, offset, limit)
+	eventsDTO, err := h.service.GetEventsByType(ctx, event.RegionalStage, offset, limit, &orderStr)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to get events by type"))
 		return
@@ -210,6 +212,7 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 
 	offsetStr := r.URL.Query().Get("offset")
 	limitStr := r.URL.Query().Get("limit")
+	orderStr := r.URL.Query().Get("order")
 
 	offset, limit, err := parsing.ParseOffsetLimit(offsetStr, limitStr)
 	if err != nil {
@@ -224,7 +227,7 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	eventsDTO, err := h.service.GetEventsByPreviousID(ctx, searchedID, offset, limit)
+	eventsDTO, err := h.service.GetEventsByPreviousID(ctx, searchedID, offset, limit, &orderStr)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to get events"))
 		return

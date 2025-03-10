@@ -6,5 +6,6 @@ type DetailRequest struct {
 	Fields *[]string `json:"fields"`
 	Limit  *int      `json:"limit"`
 	Offset *int      `json:"offset"`
+	Order  *string   `json:"order"`
 	event_dto.EventDTO
 }

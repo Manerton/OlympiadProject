@@ -8,7 +8,16 @@ import (
 )
 
 type ORM interface {
-	Find(ctx context.Context, model interface{}, fields *[]string, offset, limit *int, dest interface{}, conds ...interface{}) error
+	// Find by parametrs
+	//
+	// model - your db model
+	//
+	// fields - []string filelds model for select
+	//
+	// offset, limit - just ofset and limit)
+	//
+	// order - ORDER BY
+	Find(ctx context.Context, model interface{}, fields *[]string, offset, limit *int, order *string, dest interface{}, conds ...interface{}) error
 	First(ctx context.Context, model interface{}, fields *[]string, dest interface{}, conds ...interface{}) error
 
 	Count(ctx context.Context, model interface{}, count *int64, query interface{}, args ...interface{}) error
@@ -74,9 +83,13 @@ func (g *Gorm) First(ctx context.Context, model interface{}, fields *[]string, d
 	return nil
 }
 
-func (g *Gorm) Find(ctx context.Context, model interface{}, fields *[]string, offset, limit *int, dest interface{}, conds ...interface{}) error {
+// Find by parametrs
+func (g *Gorm) Find(ctx context.Context, model interface{}, fields *[]string, offset, limit *int, order *string, dest interface{}, conds ...interface{}) error {
 	const op = "storage.orm.Find"
 	query := g.DB.WithContext(ctx).Model(model)
+	if order != nil {
+		query.Order(*order)
+	}
 	if fields != nil {
 		query.Select(*fields)
 	}
