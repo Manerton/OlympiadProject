@@ -11,46 +11,31 @@ import (
 
 type EventRepository struct{}
 
+// Get first event by parametrs filter and fields
+//
+// filter - Event fields used for the search
+// Exemple: Event{name: "Test"}
+//
+// fileds - fields that you want to get, if all just use nil
 func (r *EventRepository) GetEventByFilterAndFields(ctx context.Context, orm orm.ORM, filter event.Event, fields *[]string) (event.Event, error) {
 	const op = "repositories.event_repository.GetEventByFilter"
-	if err := orm.First(ctx, event.Event{}, fields, &filter); err != nil {
+
+	var eventRes event.Event
+	if err := orm.First(ctx, event.Event{}, fields, &eventRes, filter); err != nil {
 		return event.Event{}, fmt.Errorf("%s: %w", op, err)
 	}
-	// query := db.Model(event.Event{})
-	// // query := db.Debug().Model(event.Event{})
-	// if fields != nil {
-	// 	query.Select(*fields)
-	// }
 
-	// if err := query.First(&filter).Error; err != nil {
-	// 	return event.Event{}, fmt.Errorf("%s: %w", op, err)
-	// }
-	return filter, nil
+	return eventRes, nil
 }
 
 func (r *EventRepository) GetEventsByFilterAndFields(ctx context.Context, orm orm.ORM, filter event.Event, fields *[]string, offset, limit *int, order *string) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetEventsByFilterAndFields"
-	eventRes := []event.Event{}
 
+	var eventRes []event.Event
 	if err := orm.Find(ctx, event.Event{}, fields, offset, limit, order, &eventRes, filter); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	// query := db.Model(event.Event{})
-	// if fields != nil {
-	// 	query.Select(*fields)
-	// }
-	// if offset != nil {
-	// 	query = query.Offset(*offset)
-	// }
-	// if limit != nil {
-	// 	query = query.Limit(*limit)
-	// }
-	// eventRes := []event.Event{}
-
-	// if err := query.Find(&eventRes, filter).Error; err != nil {
-	// 	return nil, fmt.Errorf("%s: %w", op, err)
-	// }
 	return eventRes, nil
 }
 
@@ -62,9 +47,7 @@ func (r *EventRepository) GetEventByID(ctx context.Context, orm orm.ORM, id uuid
 	if err := orm.First(ctx, event.Event{}, nil, &eventRes); err != nil {
 		return event.Event{}, fmt.Errorf("%s: %w", op, err)
 	}
-	// if err := db.First(&eventRes).Error; err != nil {
-	// 	return event.Event{}, fmt.Errorf("%s: %w", op, err)
-	// }
+
 	return eventRes, nil
 }
 
@@ -73,12 +56,13 @@ func (r *EventRepository) GetEventsByListID(ctx context.Context, orm orm.ORM, id
 	const op = "repositories.event_repository.GetEventsByListID"
 
 	eventRes := []event.Event{}
+
+	// orderByName := "name"
+
 	if err := orm.Find(ctx, event.Event{}, nil, nil, nil, nil, &eventRes, ids); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	// if err := db.Find(&eventRes, ids).Error; err != nil {
-	// 	return nil, fmt.Errorf("%s: %w", op, err)
-	// }
+
 	return eventRes, nil
 }
 
@@ -92,17 +76,6 @@ func (r *EventRepository) GetEventsByType(ctx context.Context, orm orm.ORM, even
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	// query := db.Model(event.Event{})
-	// if offset != nil {
-	// 	query = query.Offset(*offset)
-	// }
-	// if limit != nil {
-	// 	query = query.Limit(*limit)
-	// }
-
-	// if err := query.Find(&eventsRes, event.Event{EventType: eventType}).Error; err != nil {
-	// 	return nil, fmt.Errorf("%s: %w", op, err)
-	// }
 	return eventsRes, nil
 }
 
@@ -115,17 +88,7 @@ func (r *EventRepository) GetEventsByPreviousID(ctx context.Context, orm orm.ORM
 	if err := orm.Find(ctx, event.Event{}, nil, offset, limit, order, &eventsRes, event.Event{PreviousEventID: &previousID}); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	// query := db.Model(event.Event{})
-	// if offset != nil {
-	// 	query = query.Offset(*offset)
-	// }
-	// if limit != nil {
-	// 	query = query.Limit(*limit)
-	// }
 
-	// if err := query.Find(&events, event.Event{PreviousEventID: &previousID}).Error; err != nil {
-	// 	return nil, fmt.Errorf("%s: %w", op, err)
-	// }
 	return eventsRes, nil
 }
 
@@ -139,17 +102,6 @@ func (r *EventRepository) GetAllEvents(ctx context.Context, orm orm.ORM, offset,
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	// query := db.Model(event.Event{})
-	// if offset != nil {
-	// 	query = query.Offset(*offset)
-	// }
-	// if limit != nil {
-	// 	query = query.Limit(*limit)
-	// }
-
-	// if err := query.Find(&eventsRes).Error; err != nil {
-	// 	return nil, fmt.Errorf("%s: %w", op, err)
-	// }
 	return eventsRes, nil
 }
 
@@ -158,7 +110,6 @@ func (r *EventRepository) GetCountEventsByType(ctx context.Context, orm orm.ORM,
 	var resultCount int64 = 0
 	err := orm.Count(ctx, &event.Event{}, &resultCount, "event_type = ?", eventType)
 
-	// err := db.Model(&event.Event{}).Where("event_type = ?", eventType).Count(&resultCount).Error
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -170,7 +121,6 @@ func (r *EventRepository) GetCountEventsByPreviousID(ctx context.Context, orm or
 	var resultCount int64 = 0
 	err := orm.Count(ctx, &event.Event{}, &resultCount, "previous_event_id = ?", previousID)
 
-	// err := db.Model(&event.Event{}).Where("previous_event_id = ?", previousID).Count(&resultCount).Error
 	if err != nil {
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -183,9 +133,7 @@ func (r *EventRepository) CreateEvent(ctx context.Context, orm orm.ORM, event ev
 	if err := orm.Create(ctx, &event); err != nil {
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
-	// if err := db.Create(&event).Error; err != nil {
-	// 	return 0, fmt.Errorf("%s: %w", op, err)
-	// }
+
 	return event.ID, nil
 }
 
@@ -195,9 +143,7 @@ func (r *EventRepository) UpdateEvent(ctx context.Context, orm orm.ORM, event ev
 	if err := orm.Updates(ctx, &event); err != nil {
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
-	// if err := db.Updates(&event).Error; err != nil {
-	// 	return 0, fmt.Errorf("%s: %w", op, err)
-	// }
+
 	return event.ID, nil
 }
 
@@ -207,8 +153,6 @@ func (r *EventRepository) DeleteEvent(ctx context.Context, orm orm.ORM, id uuid.
 	if err := orm.Delete(ctx, &event.Event{ID: id}); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
-	// if err := db.Delete(&event.Event{ID: id}).Error; err != nil {
-	// 	return fmt.Errorf("%s: %w", op, err)
-	// }
+
 	return nil
 }
