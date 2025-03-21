@@ -56,8 +56,13 @@ func (g *Gorm) Create(ctx context.Context, dest interface{}) error {
 
 func (g *Gorm) Updates(ctx context.Context, dest interface{}) error {
 	const op = "storage.orm.Update"
-	if err := g.DB.WithContext(ctx).Updates(dest).Error; err != nil {
+	result := g.DB.WithContext(ctx).Updates(dest)
+	if err := result.Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("record not found for update")
 	}
 	return nil
 }
@@ -87,16 +92,16 @@ func (g *Gorm) First(ctx context.Context, model interface{}, fields *[]string, d
 func (g *Gorm) Find(ctx context.Context, model interface{}, fields *[]string, offset, limit *int, order *string, dest interface{}, conds ...interface{}) error {
 	const op = "storage.orm.Find"
 	query := g.DB.WithContext(ctx).Model(model)
-	if order != nil {
+	if order != nil && *order != "" {
 		query.Order(*order)
 	}
-	if fields != nil {
+	if fields != nil && len(*fields) != 0 {
 		query.Select(*fields)
 	}
-	if offset != nil {
+	if offset != nil && *offset > 0 {
 		query = query.Offset(*offset)
 	}
-	if limit != nil {
+	if limit != nil && *limit > 0 {
 		query = query.Limit(*limit)
 	}
 
