@@ -64,6 +64,7 @@ func TestCreateEvent(t *testing.T) {
 		EndDate:   time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
 		EventType: event.RegionalStage,
 	}
+
 	if err := db.Create(mainContext, &mainEvent); err != nil {
 		return
 	}
@@ -305,7 +306,9 @@ func TestGetEventByListID(t *testing.T) {
 	}
 
 	// create test data
-	db.Create(context.Background(), testData)
+	if err := db.Create(context.Background(), testData); err != nil {
+		return
+	}
 
 	testCases := []struct {
 		name           string
@@ -380,7 +383,9 @@ func TestGetEventsByType(t *testing.T) {
 			PreviousEventID: &IdWithChild,
 		},
 	}
-	db.Create(context.Background(), testData)
+	if err := db.Create(context.Background(), testData); err != nil {
+		return
+	}
 	// Create test cases
 	testCases := []struct {
 		name           string
@@ -448,7 +453,9 @@ func TestGetEventsByPreviousID(t *testing.T) {
 	}
 
 	// create test data
-	db.Create(context.Background(), testData)
+	if err := db.Create(context.Background(), testData); err != nil {
+		return
+	}
 
 	testCases := []struct {
 		name              string
@@ -514,7 +521,9 @@ func TestGetAllEvents(t *testing.T) {
 		},
 	}
 
-	db.Create(context.Background(), testData)
+	if err := db.Create(context.Background(), testData); err != nil {
+		return
+	}
 
 	events, err := repo.GetAllEvents(context.Background(), db, nil, nil)
 	assert.NoError(t, err, "no error expected")
@@ -551,7 +560,9 @@ func TestGetEventByFilterAndFields(t *testing.T) {
 		},
 	}
 
-	db.Create(context.Background(), testData)
+	if err := db.Create(context.Background(), testData); err != nil {
+		return
+	}
 
 	testCases := []struct {
 		name           string
@@ -664,7 +675,9 @@ func TestGetEventsByFilterAndFields(t *testing.T) {
 		},
 	}
 
-	db.Create(context.Background(), testData)
+	if err := db.Create(context.Background(), testData); err != nil {
+		return
+	}
 
 	testCases := []struct {
 		name           string
@@ -750,7 +763,9 @@ func TestUpdateEvent(t *testing.T) {
 		},
 	}
 
-	db.Create(context.Background(), testData)
+	if err := db.Create(context.Background(), testData); err != nil {
+		return
+	}
 
 	expectedEvent := testData[0]
 	expectedEvent.StartDate = mainNewStartDate
@@ -804,79 +819,80 @@ func TestUpdateEvent(t *testing.T) {
 
 }
 
-// func TestDeleteEvent(t *testing.T) {
-// 	db := setupTestDB(t)
-// 	repo := event_repository.EventRepository{}
+func TestDeleteEvent(t *testing.T) {
+	db := setupTestDB(t)
+	repo := event_repository.EventRepository{}
 
-// 	var Subject string = "Математика"
-// 	var MainRegionalEventID uint = 1
-// 	tempEvents := []event.Event{
-// 		{
-// 			ID:        MainRegionalEventID,
-// 			Name:      "RegionalStageMain",
-// 			StartDate: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
-// 			EndDate:   time.Date(2024, time.December, 1, 1, 1, 1, 1, time.UTC),
-// 			EventType: event.RegionalStage,
-// 		},
-// 		{
-// 			ID:              14,
-// 			Name:            "Olympiad1",
-// 			StartDate:       time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
-// 			EndDate:         time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
-// 			EventType:       event.Olympiad,
-// 			PreviousEventID: &MainRegionalEventID,
-// 			Subject:         Subject,
-// 		},
-// 		{
-// 			ID:              15,
-// 			Name:            "Olympiad2",
-// 			StartDate:       time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
-// 			EndDate:         time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
-// 			EventType:       event.Olympiad,
-// 			PreviousEventID: &MainRegionalEventID,
-// 			Subject:         Subject,
-// 		},
-// 	}
-// 	if err := db.Create(&tempEvents).Error; err != nil {
-// 		return
-// 	}
-// 	testCases := []struct {
-// 		name           string
-// 		delete_id      uint
-// 		expectError    bool
-// 		expectedErrMsg string
-// 	}{
-// 		{
-// 			name:        "Delete existing event",
-// 			delete_id:   14,
-// 			expectError: false,
-// 		},
-// 		{
-// 			name:           "Delete event with child",
-// 			delete_id:      MainRegionalEventID,
-// 			expectError:    true,
-// 			expectedErrMsg: "",
-// 		},
-// 		{
-// 			name:           "Delete non-existing event",
-// 			delete_id:      99,
-// 			expectError:    true,
-// 			expectedErrMsg: "",
-// 		},
-// 	}
-// 	for _, tc := range testCases {
-// 		t.Run(tc.name, func(t *testing.T) {
-// 			err := repo.DeleteEvent(db, tc.delete_id)
-// 			events, err2 := repo.GetAllEvents(db, nil, nil)
-// 			_, _ = events, err2
-// 			if tc.expectError {
-// 				assert.Error(t, err, "expected an error for case: %s", tc.name)
-// 				if err != nil {
-// 					assert.Contains(t, err.Error(), tc.expectedErrMsg, "expected error message to contain: %s", tc.expectedErrMsg)
-// 				}
-// 			} else {
-// 				assert.NoError(t, err, "expected no error for case: %s", tc.name)
-// 			}
-// 		})
-// 	}
-// }
+	var subject string = "Математика"
+	var mainRegionalEventID uuid.UUID = uuid.New()
+	var childEventId uuid.UUID = uuid.New()
+	testData := []event.Event{
+		{
+			ID:        mainRegionalEventID,
+			Name:      "RegionalStageMain",
+			StartDate: time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
+			EndDate:   time.Date(2024, time.December, 1, 1, 1, 1, 1, time.UTC),
+			EventType: event.RegionalStage,
+		},
+		{
+			ID:              childEventId,
+			Name:            "Olympiad1",
+			StartDate:       time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
+			EndDate:         time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
+			EventType:       event.Olympiad,
+			PreviousEventID: &mainRegionalEventID,
+			Subject:         subject,
+		},
+		{
+			ID:              uuid.New(),
+			Name:            "Olympiad2",
+			StartDate:       time.Date(2024, time.January, 1, 1, 1, 1, 1, time.UTC),
+			EndDate:         time.Date(2024, time.February, 1, 1, 1, 1, 1, time.UTC),
+			EventType:       event.Olympiad,
+			PreviousEventID: &mainRegionalEventID,
+			Subject:         subject,
+		},
+	}
+	if err := db.Create(context.Background(), testData); err != nil {
+		return
+	}
+	testCases := []struct {
+		name           string
+		deleteId       uuid.UUID
+		expectError    bool
+		expectedErrMsg string
+	}{
+		{
+			name:        "Delete existing event",
+			deleteId:    childEventId,
+			expectError: false,
+		},
+		{
+			name:           "Delete event with child",
+			deleteId:       mainRegionalEventID,
+			expectError:    true,
+			expectedErrMsg: "",
+		},
+		{
+			name:           "Delete non-existing event",
+			deleteId:       uuid.Max,
+			expectError:    false,
+			expectedErrMsg: "",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := repo.DeleteEvent(context.Background(), db, tc.deleteId)
+			if tc.expectError {
+				assert.Error(t, err, "expected an error for case: %s", tc.name)
+				if err != nil {
+					assert.Contains(t, err.Error(), tc.expectedErrMsg, "expected error message to contain: %s", tc.expectedErrMsg)
+				}
+			} else {
+				assert.NoError(t, err, "expected no error for case: %s", tc.name)
+				_, err := repo.GetEventByID(context.Background(), db, tc.deleteId)
+				assert.Contains(t, err.Error(), "record not found")
+			}
+		})
+	}
+}
