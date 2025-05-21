@@ -54,22 +54,21 @@ func (cfg *Config) GetAddress() string {
 	return fmt.Sprintf("%s:%s", cfg.HTTPServerConfig.Host, cfg.HTTPServerConfig.Port)
 }
 
-func GetConfig(configPath string) *Config {
+func MustConfig(configPath string) *Config {
 	if configPath == "" {
 		configPath = os.Getenv("CONFIG_PATH")
 		if configPath == "" {
-			log.Fatalf("CONFIG PATH is not set")
+			log.Fatalf("Config path is not set")
 		}
 	}
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config file does not exist: %s", configPath)
+		log.Fatalf("Config file does not exist: %s", configPath)
 	}
 
-	var myconfig Config
-	if err := cleanenv.ReadConfig(configPath, &myconfig); err != nil {
-		log.Fatalf("Can not read config file %s: %s", configPath, err)
+	var config Config
+	if err := cleanenv.ReadConfig(configPath, &config); err != nil {
+		log.Fatalf("Can not reaf config file %s: %s", configPath, err)
 	}
-
-	return &myconfig
+	return &config
 }
