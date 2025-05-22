@@ -2,7 +2,7 @@ package main
 
 import "main/internal/config"
 
-const configPath = ""
+const configPath = "config-yaml/local.yaml"
 
 func main() {
 
