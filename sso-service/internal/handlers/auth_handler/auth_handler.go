@@ -34,3 +34,9 @@ func (ah *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		"test": 1,
 	})
 }
+
+func (ah *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	ah.authService.Register(ctx, "", "")
+}
