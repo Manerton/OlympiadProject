@@ -8,7 +8,8 @@ import (
 
 type Participant struct {
 	ID          uuid.UUID
-	UserId      user.User
+	UserId      uuid.UUID
+	User        user.User
 	OVZ         int
 	SchoolName  string
 	City        string
