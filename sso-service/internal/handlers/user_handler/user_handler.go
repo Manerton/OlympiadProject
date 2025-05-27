@@ -17,4 +17,8 @@ type UserHandler struct {
 
 func (uh *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
 
+	var id string = r.URL.Query().Get("id")
+
+	_ = id
+
 }
