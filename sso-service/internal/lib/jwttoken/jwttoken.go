@@ -1,0 +1,5 @@
+package jwttoken
+
+func CreateJWTToken() {
+
+}

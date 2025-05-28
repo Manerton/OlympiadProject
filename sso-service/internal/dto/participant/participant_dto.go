@@ -12,10 +12,10 @@ type ParticipantResponseDTO struct {
 }
 
 type UpdateParticipantRequestDTO struct {
-	OVZ         string `json:"ovz"`
-	SchoolName  string `json:"school_name"`
-	City        string `json:"city"`
-	Reason      string `json:"reason"`
-	Citizenship string `json:"citizenship"`
-	ClassNumber int    `json:"class_number"`
+	OVZ         *string `json:"ovz"`
+	SchoolName  *string `json:"school_name"`
+	City        *string `json:"city"`
+	Reason      *string `json:"reason"`
+	Citizenship *string `json:"citizenship"`
+	ClassNumber *int    `json:"class_number"`
 }
