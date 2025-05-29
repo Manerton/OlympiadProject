@@ -281,8 +281,8 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		Name:     "token",
 		Value:    token,
 		HttpOnly: true,
-		Secure:   true,
-		Domain:   "localhost",
+		Secure:   false,
+		Domain:   "172.16.1.39",
 		SameSite: http.SameSiteStrictMode,
 		Path:     "/",
 		Expires:  time.Now().Add(24 * time.Hour), // Match the token expiration
@@ -293,7 +293,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		Value:    refreshToken,
 		HttpOnly: false,
 		Secure:   false, // только по HTTPS
-		Domain:   "localhost",
+		Domain:   "",
 		SameSite: http.SameSiteStrictMode,
 		Path:     "/",
 	})
@@ -453,7 +453,7 @@ func main() {
 
 	// init cors
 	corsOptions := cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173"}, // React URL
+		AllowedOrigins:   []string{"http://172.16.1.39:5173"}, // React URL
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -469,6 +469,6 @@ func main() {
 	r.Get("/juries", GetAllJury)
 
 	// Запускаем сервер
-	fmt.Println("Server running on http://localhost:8081")
-	http.ListenAndServe(":8081", r)
+	fmt.Println("Server running on http://172.16.1.39:8081")
+	http.ListenAndServe("172.16.1.39:8081", r)
 }

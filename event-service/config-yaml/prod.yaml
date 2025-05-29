@@ -1,0 +1,21 @@
+env: "prod"
+
+DB_INFO:
+  host: "localhost"
+  name: "EventServiceDB"
+  user: "postgres"
+  pass: "root"
+  ssl_model: "disable"
+
+
+HTTP_SERVER_INFO:
+  host: "172.16.1.39"
+  port: "8080"
+
+JWT_TEMP_INFO:
+  key: "lololololololololololololololololololololololololololololol"
+
+ADDITIONAL_ADDRESSES:
+  react: "http://172.16.1.39:5173"
+  jure-assignments: "http://localhost:8090"
+  olymp-result: "http://172.16.0.94:8080"
