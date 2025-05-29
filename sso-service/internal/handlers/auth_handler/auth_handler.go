@@ -19,7 +19,7 @@ type AuthHandler struct {
 	authService AuthService
 }
 
-func (ah *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
@@ -32,7 +32,7 @@ func (ah *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	loginResponse, err := ah.authService.Login(ctx, &loginRequest)
+	loginResponse, err := h.authService.Login(ctx, &loginRequest)
 	if err != nil {
 		// Create error response
 		render.JSON(w, r, map[string]string{
@@ -44,7 +44,7 @@ func (ah *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, loginResponse)
 }
 
-func (ah *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var registerRequest register_dto.RegisterParticipantRequestDTO
@@ -55,7 +55,7 @@ func (ah *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	registerResponse, err := ah.authService.Register(ctx, &registerRequest)
+	registerResponse, err := h.authService.Register(ctx, &registerRequest)
 	if err != nil {
 		render.JSON(w, r, "failed")
 		return

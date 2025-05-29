@@ -1,6 +1,7 @@
 package user_handler
 
 import (
+	"context"
 	user_dto "main/internal/dto/user"
 	"main/internal/lib/response"
 	"net/http"
@@ -10,19 +11,20 @@ import (
 )
 
 type UserService interface {
-	GetById(id string) (user_dto.UserResponseDTO, error)
-	GetByListId(ids []string) ([]user_dto.UserResponseDTO, error)
+	GetById(ctx context.Context, id string) (user_dto.UserResponseDTO, error)
+	GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error)
 }
 
 type UserHandler struct {
 	UserService UserService
 }
 
-func (uh *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
 	var id string = chi.URLParam(r, "id")
 
-	userResponse, err := uh.UserService.GetById(id)
+	userResponse, err := h.UserService.GetById(ctx, id)
 	if err != nil {
 		render.JSON(w, r, response.ErrorResponse("failed to find user"))
 		return
@@ -36,7 +38,9 @@ func (uh *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (uh *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
 	type IdsReq struct {
 		Ids []string `json:"ids"`
 	}
@@ -48,7 +52,7 @@ func (uh *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	usersResponse, err := uh.UserService.GetByListId(ids.Ids)
+	usersResponse, err := h.UserService.GetByListId(ctx, ids.Ids)
 	if err != nil {
 		render.JSON(w, r, response.ErrorResponse("failed to find users"))
 		return
@@ -60,5 +64,4 @@ func (uh *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) 
 		StatusCode: http.StatusOK,
 		Data:       usersResponse,
 	})
-
 }
