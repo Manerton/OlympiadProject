@@ -5,6 +5,7 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useRole } from "./RoleContext";
+import API_CONFIG from "../config/apiConfig";
 
 interface LoginFormValues {
   email: string;
@@ -32,7 +33,7 @@ const Login: React.FC = () => {
     const { email, password } = values;
 
     try {
-      const response = await fetch("http://localhost:8081/login", {
+      const response = await fetch(`${API_CONFIG.AUTH}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -51,7 +52,7 @@ const Login: React.FC = () => {
   };
 
   const fetchUserInfo = async () => {
-     const response = await fetch("http://localhost:8081/my-info", {
+     const response = await fetch(`${API_CONFIG.AUTH}/my-info`, {
       method: "GET",
        credentials: "include", // Для отправки cookie
     });
