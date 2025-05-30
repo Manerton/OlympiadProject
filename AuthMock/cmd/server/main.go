@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
-	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
@@ -18,9 +17,9 @@ import (
 
 // Структура пользователя
 type User struct {
-	Email    string
-	Name     string
-	Password string
+	Email    string `json:"email"`
+	Name     string `json:"name"`
+	Password string `json:"password"`
 }
 
 // Моковые пользователи
@@ -297,9 +296,11 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteStrictMode,
 		Path:     "/",
 	})
-	// Respond with success
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Login successful")
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, map[string]interface{}{
+		"data": user,
+		"code": 200,
+	})
 }
 
 func refreshHandler(w http.ResponseWriter, r *http.Request) {
@@ -452,15 +453,15 @@ func main() {
 	r.Use(middleware.URLFormat)
 
 	// init cors
-	corsOptions := cors.Options{
-		AllowedOrigins:   []string{"http://172.16.1.39:5173"}, // React URL
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: true,
-		MaxAge:           300, // В секундах
-	}
-	r.Use(cors.Handler(corsOptions))
+	// corsOptions := cors.Options{
+	// 	AllowedOrigins:   []string{"http://172.16.1.39:5173", "http://172.16.0.94:"}, // React URL
+	// 	AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+	// 	AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+	// 	ExposedHeaders:   []string{"Link"},
+	// 	AllowCredentials: true,
+	// 	MaxAge:           300, // В секундах
+	// }
+	// r.Use(cors.Handler(corsOptions))
 	// Определяем эндпоинт для получения текущего пользователя
 	r.Post("/login", loginHandler)
 	r.Post("/refresh", refreshHandler)

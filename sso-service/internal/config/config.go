@@ -36,6 +36,8 @@ type JwtTemp struct {
 type AdditionalAddressesConfig struct {
 	ReactVision            string `yaml:"react"`
 	JureAssignmentsService string `yaml:"jure-assignments"`
+	Event                  string `yaml:"event"`
+	OlympiadResult         string `yaml:"olympiad"`
 }
 
 func (cfg *Config) GetDataSourceName() string {

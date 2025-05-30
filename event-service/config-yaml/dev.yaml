@@ -1,4 +1,4 @@
-env: "prod"
+env: "dev"
 
 DB_INFO:
   host: "localhost"

@@ -62,5 +62,4 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	render.JSON(w, r, registerResponse)
-
 }

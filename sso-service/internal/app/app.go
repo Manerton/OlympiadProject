@@ -1,0 +1,94 @@
+package app
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+	"main/internal/config"
+	"main/internal/lib/liblogger"
+	"main/internal/storage/orm"
+	"main/internal/storage/postgresql"
+	"net/http"
+	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
+)
+
+type App struct {
+	storage interface{}
+	server  *http.Server
+	log     *slog.Logger
+}
+
+func New(log *slog.Logger, cfg config.Config) *App {
+
+	// init storage
+	storage := postgresql.MustPosgreSQL(cfg.GetDataSourceName())
+	log.Info("storage are enabled")
+	// init orm
+	gormORM := orm.NewGormORM(storage)
+
+	_ = gormORM
+
+	router := chi.NewRouter()
+
+	var app *App
+	app.initCors(router, cfg.AdditionalAddressesConfig)
+
+	return app
+}
+
+func (a *App) initCors(router *chi.Mux, cfg config.AdditionalAddressesConfig) {
+	corsOptions := cors.Options{
+		AllowedOrigins: []string{cfg.ReactVision, cfg.JureAssignmentsService},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowedHeaders: []string{
+			"Accept",
+			"Authorization",
+			"Content-Type",
+			"X-CSRF-Token",
+			"X-Requested-With",
+		},
+		ExposedHeaders: []string{
+			"Link",
+			"Content-Length",
+			"Access-Control-Allow-Origin",
+			"Access-Control-Allow-Credentials",
+		},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}
+	router.Use(cors.Handler(corsOptions))
+}
+
+func (a *App) initRoutes(router *chi.Mux) {
+
+}
+
+func (a *App) MustRun() {
+	if err := a.Run(); err != nil {
+		panic(err)
+	}
+}
+
+func (a *App) Run() error {
+	const op = "app.Run"
+
+	a.log.Info("server starting")
+	if err := a.server.ListenAndServe(); err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (a *App) Stop() {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := a.server.Shutdown(ctx); err != nil {
+		a.log.Error("failed to stop server", liblogger.Err(err))
+		return
+	}
+	a.log.Info("server stopped")
+}
