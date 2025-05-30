@@ -21,20 +21,29 @@ type App struct {
 	log     *slog.Logger
 }
 
-func New(log *slog.Logger, cfg config.Config) *App {
+func New(log *slog.Logger, cfg *config.Config) *App {
 
 	// init storage
 	storage := postgresql.MustPosgreSQL(cfg.GetDataSourceName())
 	log.Info("storage are enabled")
 	// init orm
 	gormORM := orm.NewGormORM(storage)
-
 	_ = gormORM
+	// TODO! init repositories
+	// TODO! init services
+	// TODO! init handlers
 
 	router := chi.NewRouter()
+	// TODO! init routes
 
-	var app *App
+	app := &App{}
 	app.initCors(router, cfg.AdditionalAddressesConfig)
+
+	// init server
+	app.server = &http.Server{
+		Addr:    cfg.GetAddress(),
+		Handler: router,
+	}
 
 	return app
 }

@@ -7,17 +7,19 @@ import (
 	user_dto "main/internal/dto/user"
 	"main/internal/lib/liblogger"
 	"main/internal/models/user"
+	"main/internal/storage/orm"
 
 	"github.com/google/uuid"
 )
 
 type UserRepository interface {
-	GetById(ctx context.Context, id uuid.UUID) (user.User, error)
-	GetByListId(ctx context.Context, ids []uuid.UUID) ([]user.User, error)
+	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (user.User, error)
+	GetByListId(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]user.User, error)
 }
 
 type UserService struct {
 	userRepository UserRepository
+	db             orm.ORM
 	log            *slog.Logger
 }
 
@@ -35,7 +37,7 @@ func (s *UserService) GetById(ctx context.Context, id string) (user_dto.UserResp
 		return user_dto.UserResponseDTO{}, fmt.Errorf(errMsg)
 	}
 
-	userResult, err := s.userRepository.GetById(ctx, uid)
+	userResult, err := s.userRepository.GetById(ctx, s.db, uid)
 	if err != nil {
 		log.Error("failed to get user", liblogger.Err(err))
 		return user_dto.UserResponseDTO{}, fmt.Errorf(errMsg)
@@ -62,7 +64,7 @@ func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto
 		uids = append(uids, uid)
 	}
 
-	usersResult, err := s.userRepository.GetByListId(ctx, uids)
+	usersResult, err := s.userRepository.GetByListId(ctx, s.db, uids)
 	if err != nil {
 		log.Error("failed to get users by list id: %v", ids, liblogger.Err(err))
 		return nil, fmt.Errorf(errMsg)
