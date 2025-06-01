@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	user_dto "main/internal/dto/user"
 	"main/internal/lib/liblogger"
+	"main/internal/lib/mapper/user_mapper"
 	"main/internal/models/user"
 	"main/internal/storage/orm"
 
@@ -21,6 +22,14 @@ type UserService struct {
 	userRepository UserRepository
 	db             orm.ORM
 	log            *slog.Logger
+}
+
+func New(log *slog.Logger, orm orm.ORM, userRepository UserRepository) *UserService {
+	return &UserService{
+		userRepository: userRepository,
+		db:             orm,
+		log:            log,
+	}
 }
 
 func (s *UserService) GetById(ctx context.Context, id string) (user_dto.UserResponseDTO, error) {
@@ -43,7 +52,7 @@ func (s *UserService) GetById(ctx context.Context, id string) (user_dto.UserResp
 		return user_dto.UserResponseDTO{}, fmt.Errorf(errMsg)
 	}
 
-	return user.ToDTO(userResult), nil
+	return user_mapper.ToDTO(userResult), nil
 }
 
 func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error) {
@@ -54,7 +63,7 @@ func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto
 		slog.String("op", op),
 	)
 
-	uids := make([]uuid.UUID, len(ids))
+	uids := make([]uuid.UUID, 0, len(ids))
 	for _, id := range ids {
 		uid, err := uuid.Parse(id)
 		if err != nil {
@@ -66,13 +75,13 @@ func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto
 
 	usersResult, err := s.userRepository.GetByListId(ctx, s.db, uids)
 	if err != nil {
-		log.Error("failed to get users by list id: %v", ids, liblogger.Err(err))
+		log.Error("failed to get users by list id", slog.Any("ids", ids), liblogger.Err(err))
 		return nil, fmt.Errorf(errMsg)
 	}
 
-	usersDTO := make([]user_dto.UserResponseDTO, len(usersResult))
+	usersDTO := make([]user_dto.UserResponseDTO, 0, len(usersResult))
 	for _, userResult := range usersResult {
-		usersDTO = append(usersDTO, user.ToDTO(userResult))
+		usersDTO = append(usersDTO, user_mapper.ToDTO(userResult))
 	}
 	return usersDTO, nil
 }

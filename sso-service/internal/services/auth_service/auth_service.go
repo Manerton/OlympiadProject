@@ -9,26 +9,40 @@ import (
 	"main/internal/lib/crypt"
 	"main/internal/lib/jwttoken"
 	"main/internal/lib/liblogger"
+	paricipant_mapper "main/internal/lib/mapper/participant_mapper"
+	"main/internal/lib/mapper/user_mapper"
+	"main/internal/models/participant"
 	"main/internal/models/user"
 	"main/internal/storage/orm"
+
+	"github.com/google/uuid"
 )
 
 type UserRepository interface {
 	GetByEmail(ctx context.Context, orm orm.ORM, email string) (user.User, error)
+	Create(ctx context.Context, orm orm.ORM, user *user.User) (uuid.UUID, error)
+}
+
+type ParticipantRepository interface {
+	Create(ctx context.Context, orm orm.ORM, participant *participant.Participant) (uuid.UUID, error)
 }
 
 type AuthService struct {
-	log            *slog.Logger
-	jwtManager     *jwttoken.JWTManager
-	db             orm.ORM
-	userRepository UserRepository
+	log                   *slog.Logger
+	jwtManager            *jwttoken.JWTManager
+	db                    orm.ORM
+	userRepository        UserRepository
+	participantRepository ParticipantRepository
 }
 
-func NewAuthService(log *slog.Logger, jwtManager *jwttoken.JWTManager, userRepository UserRepository) *AuthService {
+func New(log *slog.Logger, orm orm.ORM, jwtManager *jwttoken.JWTManager,
+	userRepository UserRepository, participantRepository ParticipantRepository) *AuthService {
 	return &AuthService{
-		log:            log,
-		jwtManager:     jwtManager,
-		userRepository: userRepository,
+		log:                   log,
+		db:                    orm,
+		jwtManager:            jwtManager,
+		userRepository:        userRepository,
+		participantRepository: participantRepository,
 	}
 }
 
@@ -74,6 +88,32 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 
 func (s *AuthService) Register(ctx context.Context, registerRequst *register_dto.RegisterParticipantRequestDTO) error {
 	const op = "services.auth_service.Register"
+	const errMsg = "failed register"
 
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	userModel := user_mapper.FromRegisterToModel(registerRequst)
+	transaction, err := s.db.TransactionBegin()
+	if err != nil {
+		log.Error("failed when begin transaction", liblogger.Err(err))
+		return fmt.Errorf("%s", errMsg)
+	}
+	userId, err := s.userRepository.Create(ctx, transaction, &userModel)
+	if err != nil {
+		transaction.TransactionRollback()
+		log.Error("failed when create user", liblogger.Err(err))
+		return fmt.Errorf("%s", errMsg)
+	}
+	participantModel := paricipant_mapper.FromRegisterToModel(registerRequst, userId)
+	_, err = s.participantRepository.Create(ctx, transaction, &participantModel)
+	if err != nil {
+		transaction.TransactionRollback()
+		log.Error("failed when create participant", liblogger.Err(err))
+		return fmt.Errorf("%s", errMsg)
+	}
+
+	transaction.TransactionCommit()
 	return nil
 }
