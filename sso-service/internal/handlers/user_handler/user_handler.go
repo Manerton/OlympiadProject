@@ -19,6 +19,12 @@ type UserHandler struct {
 	UserService UserService
 }
 
+func New(userService UserService) *UserHandler {
+	return &UserHandler{
+		UserService: userService,
+	}
+}
+
 func (h *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

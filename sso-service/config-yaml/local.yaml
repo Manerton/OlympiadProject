@@ -1,4 +1,4 @@
-env: "dev"
+env: "local"
 
 DB_INFO:
   host: "localhost"
@@ -9,7 +9,7 @@ DB_INFO:
 
 
 HTTP_SERVER_INFO:
-  host: "172.16.1.39"
+  host: "localhost"
   port: "8181"
 
 JWT_INFO:
