@@ -4,19 +4,25 @@ import (
 	"context"
 	login_dto "main/internal/dto/auth/login"
 	register_dto "main/internal/dto/auth/register"
+	"main/internal/lib/response"
 	"net/http"
 
 	"github.com/go-chi/render"
-	"github.com/google/uuid"
 )
 
 type AuthService interface {
 	Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO) (*login_dto.LoginResponseDTO, error)
-	Register(ctx context.Context, registerRequest *register_dto.RegisterParticipantRequestDTO) (uuid.UUID, error)
+	Register(ctx context.Context, registerRequest *register_dto.RegisterParticipantRequestDTO) error
 }
 
 type AuthHandler struct {
 	authService AuthService
+}
+
+func New(authService AuthService) *AuthHandler {
+	return &AuthHandler{
+		authService: authService,
+	}
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
@@ -27,20 +33,17 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	err := render.DecodeJSON(r.Body, &loginRequest)
 	if err != nil {
-		// Create error response
-		render.JSON(w, r, "failed decode request data")
+		render.JSON(w, r, response.ErrorResponse("failed to decode json"))
 		return
 	}
 
 	loginResponse, err := h.authService.Login(ctx, &loginRequest)
 	if err != nil {
-		// Create error response
-		render.JSON(w, r, map[string]string{
-			"Error": "failted login",
-		})
+		render.JSON(w, r, response.ErrorResponse(err.Error()))
 		return
 	}
 
+	render.Status(r, http.StatusOK)
 	render.JSON(w, r, loginResponse)
 }
 
@@ -51,15 +54,16 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	err := render.DecodeJSON(r.Body, &registerRequest)
 	if err != nil {
-		render.JSON(w, r, "failed")
+		render.JSON(w, r, response.ErrorResponse("failed to decode json"))
 		return
 	}
 
-	registerResponse, err := h.authService.Register(ctx, &registerRequest)
+	err = h.authService.Register(ctx, &registerRequest)
 	if err != nil {
-		render.JSON(w, r, "failed")
+		render.JSON(w, r, response.ErrorResponse(err.Error()))
 		return
 	}
 
-	render.JSON(w, r, registerResponse)
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, response.SuccessResponse("Register success"))
 }

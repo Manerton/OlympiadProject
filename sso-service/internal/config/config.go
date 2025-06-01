@@ -13,7 +13,7 @@ type Config struct {
 	DatabaseConfig            `yaml:"DB_INFO"`
 	HTTPServerConfig          `yaml:"HTTP_SERVER_INFO"`
 	AdditionalAddressesConfig `yaml:"ADDITIONAL_ADDRESSES"`
-	JwtTemp                   `yaml:"JWT_TEMP_INFO"`
+	JwtConfig                 `yaml:"JWT_CONFIG"`
 }
 
 type DatabaseConfig struct {
@@ -29,8 +29,9 @@ type HTTPServerConfig struct {
 	Host string `yaml:"host"`
 }
 
-type JwtTemp struct {
-	Key string `yaml:"key"`
+type JwtConfig struct {
+	Key      string `yaml:"key"`
+	Duration int    `yaml:"duration"`
 }
 
 type AdditionalAddressesConfig struct {

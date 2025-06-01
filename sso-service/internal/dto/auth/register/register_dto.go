@@ -1,13 +1,19 @@
 package register_dto
 
-type RegisterParticipantRequestDTO struct {
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Surname   string `json:"surname"`
+import "time"
 
-	OVZ         string `json:"ovz"`
+type RegisterParticipantRequestDTO struct {
+	Email       string    `json:"email"`
+	Password    string    `json:"password"`
+	FirstName   string    `json:"first_name"`
+	LastName    string    `json:"last_name"`
+	Surname     string    `json:"surname"`
+	PhoneNumber string    `json:"phone_number"`
+	BirthDate   time.Time `json:"birth_date"`
+	Sex         string    `json:"sex"`
+	Role        string    `json:"role"`
+
+	OVZ         int    `json:"ovz"`
 	SchoolName  string `json:"school_name"`
 	City        string `json:"city"`
 	Reason      string `json:"reason"`
