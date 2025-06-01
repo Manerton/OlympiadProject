@@ -5,7 +5,14 @@ import (
 	"fmt"
 	"log/slog"
 	"main/internal/config"
+	"main/internal/handlers/auth_handler"
+	"main/internal/handlers/user_handler"
+	"main/internal/lib/jwttoken"
 	"main/internal/lib/liblogger"
+	"main/internal/repositories/participant_repository"
+	"main/internal/repositories/user_repository"
+	"main/internal/services/auth_service"
+	"main/internal/services/user_service"
 	"main/internal/storage/orm"
 	"main/internal/storage/postgresql"
 	"net/http"
@@ -28,16 +35,28 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	log.Info("storage are enabled")
 	// init orm
 	gormORM := orm.NewGormORM(storage)
-	_ = gormORM
-	// TODO! init repositories
-	// TODO! init services
-	// TODO! init handlers
+	// init jwtManager
+	jwtManager := jwttoken.NewJWTManager(cfg.Key, time.Duration(cfg.Duration))
+	// init repositories
+	userRepository := &user_repository.UserRepository{}
+	// init services
+	authService := auth_service.New(log, gormORM, jwtManager, userRepository, &participant_repository.ParticipantRepository{})
+	userService := user_service.New(log, gormORM, userRepository)
+	// init handlers
+	userHandler := user_handler.New(userService)
+	authHandler := auth_handler.New(authService)
 
 	router := chi.NewRouter()
-	// TODO! init routes
 
-	app := &App{}
+	app := &App{log: log}
+	// init cors
 	app.initCors(router, cfg.AdditionalAddressesConfig)
+
+	// TODO! init routes
+	router.Post("/users/login", authHandler.Login)
+	router.Post("/users/register", authHandler.Register)
+	router.Get("/users/{id}", userHandler.GetUserById)
+	router.Get("/users/list", userHandler.GetUsersByListId)
 
 	// init server
 	app.server = &http.Server{
@@ -69,10 +88,6 @@ func (a *App) initCors(router *chi.Mux, cfg config.AdditionalAddressesConfig) {
 		MaxAge:           300,
 	}
 	router.Use(cors.Handler(corsOptions))
-}
-
-func (a *App) initRoutes(router *chi.Mux) {
-
 }
 
 func (a *App) MustRun() {
