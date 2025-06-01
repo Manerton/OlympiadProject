@@ -8,15 +8,27 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func CreateToken(user user.User, secretKey string, duration time.Duration) (string, error) {
-	claims := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
+type JWTManager struct {
+	secretKey string
+	duration  time.Duration
+}
+
+func NewJWTManager(secretKey string, duration time.Duration) *JWTManager {
+	return &JWTManager{
+		secretKey: secretKey,
+		duration:  duration,
+	}
+}
+
+func (m *JWTManager) CreateToken(user user.User) (string, error) {
+	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":    user.ID,
 		"email": user.Email,
 		"role":  user.Role,
-		"exp":   time.Now().Add(duration).Unix(),
+		"exp":   time.Now().Add(m.duration).Unix(),
 	})
 
-	tokenStr, err := claims.SignedString(secretKey)
+	tokenStr, err := claims.SignedString(m.secretKey)
 	if err != nil {
 		return "", err
 	}
@@ -24,13 +36,13 @@ func CreateToken(user user.User, secretKey string, duration time.Duration) (stri
 	return tokenStr, nil
 }
 
-func CreateRefreshToken() (string, error) {
+func (m *JWTManager) CreateRefreshToken(user user.User) (string, error) {
 	return "", nil
 }
 
-func VerifyToken(token string, secretKey []byte) (bool, error) {
+func (m *JWTManager) VerifyToken(token string) (bool, error) {
 	tokenParsed, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-		return secretKey, nil
+		return m.secretKey, nil
 	})
 
 	if err != nil {
