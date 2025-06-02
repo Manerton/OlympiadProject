@@ -16,7 +16,7 @@ const (
 )
 
 type User struct {
-	ID           uuid.UUID
+	ID           uuid.UUID `gorm:"type:uuid;default:get_random_uuid();primaryKey"`
 	Email        string
 	PasswordHash string
 	FirstName    string
@@ -24,6 +24,7 @@ type User struct {
 	Surname      string
 	PhoneNumber  string
 	BirthDate    time.Time
-	Sex          string
+	Gender       string
 	Role         RoleType
+	Status       bool
 }

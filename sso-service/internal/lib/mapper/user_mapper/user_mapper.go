@@ -13,10 +13,11 @@ func ToDTO(user user.User) user_dto.UserResponseDTO {
 		FirstName:   user.FirstName,
 		LastName:    user.LastName,
 		Surname:     user.Surname,
-		Sex:         user.Sex,
+		Gender:      user.Gender,
 		Role:        string(user.Role),
 		PhoneNumber: user.PhoneNumber,
 		BirthDate:   user.BirthDate.String(),
+		Status:      user.Status,
 	}
 }
 
@@ -28,6 +29,8 @@ func FromRegisterToModel(regiterDTO *register_dto.RegisterParticipantRequestDTO)
 		Surname:     regiterDTO.Surname,
 		PhoneNumber: regiterDTO.PhoneNumber,
 		BirthDate:   regiterDTO.BirthDate,
-		Sex:         regiterDTO.Sex,
+		Gender:      regiterDTO.Gender,
+		Role:        user.PARTICIPANT,
+		Status:      false,
 	}
 }

@@ -19,7 +19,7 @@ import (
 )
 
 type UserRepository interface {
-	GetByEmail(ctx context.Context, orm orm.ORM, email string) (user.User, error)
+	GetByEmail(ctx context.Context, orm orm.ORM, email string) (*user.User, error)
 	Create(ctx context.Context, orm orm.ORM, user *user.User) (uuid.UUID, error)
 }
 
@@ -46,7 +46,7 @@ func New(log *slog.Logger, orm orm.ORM, jwtManager *jwttoken.JWTManager,
 	}
 }
 
-func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO) (*login_dto.LoginResponseDTO, error) {
+func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO) (*login_dto.AuthResultDTO, error) {
 	const op = "services.auth_services.Login"
 	const errMsg = "failed login"
 
@@ -57,7 +57,7 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 	userResult, err := s.userRepository.GetByEmail(ctx, s.db, loginRequest.Email)
 	if err != nil {
 		log.Error("failed to get user by email: %s", loginRequest.Email, liblogger.Err(err))
-		return nil, fmt.Errorf(errMsg)
+		return nil, fmt.Errorf("%s", errMsg)
 	}
 
 	// check password hash
@@ -67,26 +67,27 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 	}
 
 	// create token
-	token, err := s.jwtManager.CreateToken(userResult)
+	token, err := s.jwtManager.CreateToken(*userResult)
 	if err != nil {
 		log.Error("failed when create token:", liblogger.Err(err))
 		return nil, fmt.Errorf("%s", errMsg)
 	}
 
 	// create refresh token
-	refreshToken, err := s.jwtManager.CreateRefreshToken(userResult)
+	refreshToken, err := s.jwtManager.CreateRefreshToken(*userResult)
 	if err != nil {
 		log.Error("failed when create refresh token", liblogger.Err(err))
 		return nil, fmt.Errorf("%s", errMsg)
 	}
 
-	return &login_dto.LoginResponseDTO{
+	return &login_dto.AuthResultDTO{
 		AccessToken:  token,
 		RefreshToken: refreshToken,
+		ExpiresIn:    int64(s.jwtManager.GetAccessDuration().Seconds()),
 	}, err
 }
 
-func (s *AuthService) Register(ctx context.Context, registerRequst *register_dto.RegisterParticipantRequestDTO) error {
+func (s *AuthService) RegisterParticipant(ctx context.Context, registerRequst *register_dto.RegisterParticipantRequestDTO) error {
 	const op = "services.auth_service.Register"
 	const errMsg = "failed register"
 
@@ -94,12 +95,30 @@ func (s *AuthService) Register(ctx context.Context, registerRequst *register_dto
 		slog.String("op", op),
 	)
 
+	userFind, err := s.userRepository.GetByEmail(ctx, s.db, registerRequst.Email)
+	if err != nil {
+		log.Error("failed when check user exist", liblogger.Err(err))
+		return fmt.Errorf("%s", err)
+	}
+
+	if userFind != nil {
+		log.Error("failed user exist")
+		return fmt.Errorf("%s: %s", errMsg, "user already exist")
+	}
+
 	userModel := user_mapper.FromRegisterToModel(registerRequst)
 	transaction, err := s.db.TransactionBegin()
 	if err != nil {
 		log.Error("failed when begin transaction", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
+
+	userModel.PasswordHash, err = crypt.HashPassword(registerRequst.Password)
+	if err != nil {
+		log.Error("failed when hash password", liblogger.Err(err))
+		return fmt.Errorf("%s", errMsg)
+	}
+
 	userId, err := s.userRepository.Create(ctx, transaction, &userModel)
 	if err != nil {
 		transaction.TransactionRollback()

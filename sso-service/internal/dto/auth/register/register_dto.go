@@ -10,7 +10,7 @@ type RegisterParticipantRequestDTO struct {
 	Surname     string    `json:"surname"`
 	PhoneNumber string    `json:"phone_number"`
 	BirthDate   time.Time `json:"birth_date"`
-	Sex         string    `json:"sex"`
+	Gender      string    `json:"gender"`
 	Role        string    `json:"role"`
 
 	OVZ         int    `json:"ovz"`

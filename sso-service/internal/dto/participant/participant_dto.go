@@ -1,7 +1,7 @@
 package participant_dto
 
 type ParticipantResponseDTO struct {
-	ID          string `json:"id"`
+	// ID          string `json:"id"`
 	UserId      string `json:"user_id"`
 	OVZ         int    `json:"ovz"`
 	SchoolName  string `json:"school_name"`

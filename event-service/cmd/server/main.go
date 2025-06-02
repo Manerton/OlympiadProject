@@ -26,7 +26,7 @@ import (
 	"github.com/go-chi/cors"
 )
 
-const LocalFilePath = "config-yaml/local.yaml"
+const LocalFilePath = "config-yaml/dev.yaml"
 
 var DockerFilePath string = os.Getenv("CONFIG_PATH")
 
