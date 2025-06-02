@@ -1,6 +1,8 @@
 -- +goose Up
 CREATE TYPE role_type AS ENUM ('judge', 'participant', 'admin', 'organizer');
 
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) NOT NULL UNIQUE,
@@ -10,7 +12,7 @@ CREATE TABLE users (
     surname VARCHAR(128) NOT NULL,
     phone_number VARCHAR(20),
     birth_date DATE NOT NULL,
-    sex VARCHAR(10),
+    gender VARCHAR(10),
     role role_type NOT NULL
 );
 

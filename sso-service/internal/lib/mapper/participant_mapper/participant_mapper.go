@@ -2,10 +2,23 @@ package paricipant_mapper
 
 import (
 	register_dto "main/internal/dto/auth/register"
+	participant_dto "main/internal/dto/participant"
 	"main/internal/models/participant"
 
 	"github.com/google/uuid"
 )
+
+func ToDTO(participantModel participant.Participant) participant_dto.ParticipantResponseDTO {
+	return participant_dto.ParticipantResponseDTO{
+		UserId:      participantModel.UserId.String(),
+		OVZ:         participantModel.OVZ,
+		SchoolName:  participantModel.SchoolName,
+		City:        participantModel.City,
+		Reason:      participantModel.Reason,
+		Citizenship: participantModel.Citizenship,
+		ClassNumber: participantModel.ClassNumber,
+	}
+}
 
 func FromRegisterToModel(registerDTO *register_dto.RegisterParticipantRequestDTO, userId uuid.UUID) participant.Participant {
 	return participant.Participant{

@@ -7,7 +7,7 @@ import (
 )
 
 type Participant struct {
-	ID          uuid.UUID
+	ID          uuid.UUID `gorm:"type:uuid;default:get_random_uuid();primaryKey"`
 	UserId      uuid.UUID
 	User        user.User
 	OVZ         int
