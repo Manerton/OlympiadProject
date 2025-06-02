@@ -12,6 +12,7 @@ import (
 
 type UserService interface {
 	GetById(ctx context.Context, id string) (user_dto.UserResponseDTO, error)
+	GetParticipantUserById(ctx context.Context, id string) (user_dto.ParticipantUserResponseDTO, error)
 	GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error)
 }
 
@@ -41,6 +42,25 @@ func (h *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
 		Status:     response.SUCCESS,
 		StatusCode: 200,
 		Data:       userResponse,
+	})
+}
+
+func (h *UserHandler) GetParticipantUserById(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var id string = chi.URLParam(r, "id")
+
+	participantUserResponse, err := h.UserService.GetParticipantUserById(ctx, id)
+	if err != nil {
+		render.JSON(w, r, response.ErrorResponse("failed to find user"))
+		return
+	}
+
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: 200,
+		Data:       participantUserResponse,
 	})
 }
 

@@ -2,22 +2,27 @@ package user_repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"main/internal/models/user"
 	"main/internal/storage/orm"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type UserRepository struct{}
 
-func (r *UserRepository) GetByEmail(ctx context.Context, orm orm.ORM, email string) (user.User, error) {
+func (r *UserRepository) GetByEmail(ctx context.Context, orm orm.ORM, email string) (*user.User, error) {
 	const op = "repositories.UserRepository.GetByEmail"
 
-	userResult := user.User{}
-	err := orm.First(ctx, user.User{}, nil, &userResult, user.User{Email: email})
+	userResult := &user.User{}
+	err := orm.First(ctx, user.User{}, nil, userResult, user.User{Email: email})
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
-		return user.User{}, fmt.Errorf("%s: %w", op, err)
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
 	return userResult, nil
@@ -25,7 +30,13 @@ func (r *UserRepository) GetByEmail(ctx context.Context, orm orm.ORM, email stri
 
 func (r *UserRepository) GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (user.User, error) {
 	const op = "repositories.UserRepository.GetById"
-	return user.User{}, nil
+
+	userResult := user.User{}
+	err := orm.First(ctx, user.User{}, nil, &userResult, user.User{ID: id})
+	if err != nil {
+		return user.User{}, fmt.Errorf("%s: %w", op, err)
+	}
+	return userResult, nil
 }
 
 func (r *UserRepository) GetByListId(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]user.User, error) {

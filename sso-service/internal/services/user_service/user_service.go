@@ -6,7 +6,9 @@ import (
 	"log/slog"
 	user_dto "main/internal/dto/user"
 	"main/internal/lib/liblogger"
+	paricipant_mapper "main/internal/lib/mapper/participant_mapper"
 	"main/internal/lib/mapper/user_mapper"
+	"main/internal/models/participant"
 	"main/internal/models/user"
 	"main/internal/storage/orm"
 
@@ -18,17 +20,23 @@ type UserRepository interface {
 	GetByListId(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]user.User, error)
 }
 
-type UserService struct {
-	userRepository UserRepository
-	db             orm.ORM
-	log            *slog.Logger
+type ParticipantRepository interface {
+	GetByUserId(ctx context.Context, orm orm.ORM, id uuid.UUID) (participant.Participant, error)
 }
 
-func New(log *slog.Logger, orm orm.ORM, userRepository UserRepository) *UserService {
+type UserService struct {
+	db                    orm.ORM
+	log                   *slog.Logger
+	userRepository        UserRepository
+	participantRepository ParticipantRepository
+}
+
+func New(log *slog.Logger, orm orm.ORM, userRepository UserRepository, participantRepository ParticipantRepository) *UserService {
 	return &UserService{
-		userRepository: userRepository,
-		db:             orm,
-		log:            log,
+		participantRepository: participantRepository,
+		userRepository:        userRepository,
+		db:                    orm,
+		log:                   log,
 	}
 }
 
@@ -43,16 +51,49 @@ func (s *UserService) GetById(ctx context.Context, id string) (user_dto.UserResp
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		log.Error("failed to parse id from string to uuid", liblogger.Err(err))
-		return user_dto.UserResponseDTO{}, fmt.Errorf(errMsg)
+		return user_dto.UserResponseDTO{}, fmt.Errorf("%s", errMsg)
 	}
 
 	userResult, err := s.userRepository.GetById(ctx, s.db, uid)
 	if err != nil {
 		log.Error("failed to get user", liblogger.Err(err))
-		return user_dto.UserResponseDTO{}, fmt.Errorf(errMsg)
+		return user_dto.UserResponseDTO{}, fmt.Errorf("%s", errMsg)
 	}
 
 	return user_mapper.ToDTO(userResult), nil
+}
+
+func (s *UserService) GetParticipantUserById(ctx context.Context, id string) (user_dto.ParticipantUserResponseDTO, error) {
+	const op = "services.user_services.GetParticipantUserById"
+	const errMsg = "failed to find all info user"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error("failed to parse id from string to uuid", liblogger.Err(err))
+		return user_dto.ParticipantUserResponseDTO{}, fmt.Errorf("%s", errMsg)
+	}
+
+	userResult, err := s.userRepository.GetById(ctx, s.db, uid)
+	if err != nil {
+		log.Error("failed to get user", liblogger.Err(err))
+		return user_dto.ParticipantUserResponseDTO{}, fmt.Errorf("%s", errMsg)
+	}
+
+	participantResult, err := s.participantRepository.GetByUserId(ctx, s.db, userResult.ID)
+	if err != nil {
+		log.Error("failed to get participant", liblogger.Err(err))
+		return user_dto.ParticipantUserResponseDTO{}, fmt.Errorf("%s", errMsg)
+	}
+
+	return user_dto.ParticipantUserResponseDTO{
+		UserResponseDTO:        user_mapper.ToDTO(userResult),
+		ParticipantResponseDTO: paricipant_mapper.ToDTO(participantResult),
+	}, nil
+
 }
 
 func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error) {
