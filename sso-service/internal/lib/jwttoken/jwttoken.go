@@ -9,15 +9,21 @@ import (
 )
 
 type JWTManager struct {
-	secretKey string
-	duration  time.Duration
+	secretKey       []byte
+	accessDuration  time.Duration
+	refreshDuration time.Duration
 }
 
-func NewJWTManager(secretKey string, duration time.Duration) *JWTManager {
+func NewJWTManager(secretKey []byte, accessDuration time.Duration, refreshDuration time.Duration) *JWTManager {
 	return &JWTManager{
-		secretKey: secretKey,
-		duration:  duration,
+		secretKey:       secretKey,
+		accessDuration:  accessDuration,
+		refreshDuration: refreshDuration,
 	}
+}
+
+func (m *JWTManager) GetAccessDuration() time.Duration {
+	return m.accessDuration
 }
 
 func (m *JWTManager) CreateToken(user user.User) (string, error) {
@@ -25,7 +31,7 @@ func (m *JWTManager) CreateToken(user user.User) (string, error) {
 		"id":    user.ID,
 		"email": user.Email,
 		"role":  user.Role,
-		"exp":   time.Now().Add(m.duration).Unix(),
+		"exp":   time.Now().Add(m.accessDuration).Unix(),
 	})
 
 	tokenStr, err := claims.SignedString(m.secretKey)
@@ -37,7 +43,19 @@ func (m *JWTManager) CreateToken(user user.User) (string, error) {
 }
 
 func (m *JWTManager) CreateRefreshToken(user user.User) (string, error) {
-	return "", nil
+	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":    user.ID,
+		"email": user.Email,
+		"role":  user.Role,
+		"exp":   time.Now().Add(m.refreshDuration).Unix(),
+	})
+
+	tokenStr, err := claims.SignedString(m.secretKey)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenStr, nil
 }
 
 func (m *JWTManager) VerifyToken(token string) (bool, error) {

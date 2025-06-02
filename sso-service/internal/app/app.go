@@ -9,6 +9,7 @@ import (
 	"main/internal/handlers/user_handler"
 	"main/internal/lib/jwttoken"
 	"main/internal/lib/liblogger"
+	"main/internal/middleware/midlogger"
 	"main/internal/repositories/participant_repository"
 	"main/internal/repositories/user_repository"
 	"main/internal/services/auth_service"
@@ -19,6 +20,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 )
 
@@ -36,12 +38,14 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	// init orm
 	gormORM := orm.NewGormORM(storage)
 	// init jwtManager
-	jwtManager := jwttoken.NewJWTManager(cfg.Key, time.Duration(cfg.Duration))
+	jwtManager := jwttoken.NewJWTManager([]byte(cfg.Key), time.Duration(cfg.AccessDuration)*time.Minute, time.Duration(cfg.RefreshDuration)*time.Hour*24)
 	// init repositories
 	userRepository := &user_repository.UserRepository{}
+	participantRepository := &participant_repository.ParticipantRepository{}
+
 	// init services
-	authService := auth_service.New(log, gormORM, jwtManager, userRepository, &participant_repository.ParticipantRepository{})
-	userService := user_service.New(log, gormORM, userRepository)
+	authService := auth_service.New(log, gormORM, jwtManager, userRepository, participantRepository)
+	userService := user_service.New(log, gormORM, userRepository, participantRepository)
 	// init handlers
 	userHandler := user_handler.New(userService)
 	authHandler := auth_handler.New(authService)
@@ -51,11 +55,15 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	app := &App{log: log}
 	// init cors
 	app.initCors(router, cfg.AdditionalAddressesConfig)
+	// init middleware
+	router.Use(midlogger.NewMidLogger(log))
+	router.Use(middleware.URLFormat)
 
 	// TODO! init routes
 	router.Post("/users/login", authHandler.Login)
 	router.Post("/users/register", authHandler.Register)
 	router.Get("/users/{id}", userHandler.GetUserById)
+	router.Get("/users/all-info/{id}", userHandler.GetParticipantUserById)
 	router.Get("/users/list", userHandler.GetUsersByListId)
 
 	// init server

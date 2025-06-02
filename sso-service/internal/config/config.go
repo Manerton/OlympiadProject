@@ -30,8 +30,9 @@ type HTTPServerConfig struct {
 }
 
 type JwtConfig struct {
-	Key      string `yaml:"key"`
-	Duration int    `yaml:"duration"`
+	Key             string `yaml:"key"`
+	AccessDuration  int    `yaml:"access_duration"`
+	RefreshDuration int    `yaml:"refresh_duration"`
 }
 
 type AdditionalAddressesConfig struct {
