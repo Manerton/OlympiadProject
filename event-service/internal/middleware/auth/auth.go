@@ -45,6 +45,7 @@ func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 		cookie, err := r.Cookie("token")
 		if err != nil {
 			log.Println("Token missing in cookie")
+			http.Error(w, "Invalid token claims", http.StatusUnauthorized)
 			return
 		}
 
@@ -52,6 +53,7 @@ func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 		token, err := verifyToken(cookie.Value, []byte(key))
 		if err != nil {
 			log.Printf("Token verification failed: %v\n", err)
+			http.Error(w, "Invalid token claims", http.StatusUnauthorized)
 			return
 		}
 
