@@ -18,11 +18,15 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
     // Список событий 
     const [events, setEvents] = useState<MyEvent[]>([]);
     // Событие
-    const [event, setEvent] = useState<MyEvent>();
+    const [event, setEvent] = useState<MyEvent | null>(null); 
     // Список жюри
     const [juries, setJuries] = useState<{ id: string; name: string , role: string}[]>([]);
     // Выбранные жюри
     const [selectedJuries, setSelectedJuries] = useState<string[]>([]);
+
+    const [isLoading, setIsLoading] = useState(true); // Добавляем состояние загрузки
+    const [error, setError] = useState<string | null>(null); // Добавляем состояние ошибки
+
 
     const { role, id } = useRole();
 
@@ -31,8 +35,10 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
     };
 
     const fetchData = async () => {
+        setIsLoading(true);
+        setError(null);
         try {
-            const [eventResponse, eventsResponse, juriesResponse] = await Promise.all([
+            const [eventResponse, eventsResponse] = await Promise.all([
                 fetch(`${API_CONFIG.EVENTS}/${eventId}`,
                     {
                         method: "GET",
@@ -46,46 +52,45 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
                         headers: { "Content-Type": "application/json" }
                     }),
                 // TODO! Запрос на UserService для полчения списка жюри
-                fetch(`http://localhost:8081/juries`, 
-                    { 
-                        method: "GET", 
-                        credentials: "include", // Отправка cookie
-                        headers: { "Content-Type": "application/json" } 
-                    }) // Запрос списка жюри
+                // fetch(`http://localhost:8081/juries`, 
+                //     { 
+                //         method: "GET", 
+                //         credentials: "include", // Отправка cookie
+                //         headers: { "Content-Type": "application/json" } 
+                //     }) // Запрос списка жюри
             ]);
 
-            if (!eventResponse.ok || !eventsResponse.ok || !juriesResponse.ok) {
+            if (!eventResponse.ok || !eventsResponse.ok ) {
                 const errorText = await Promise.all([
                     eventResponse.text(),
                     eventsResponse.text(),
-                    juriesResponse.text(),
                 ]);
                 throw new Error(`Ошибка API: ${errorText.join(", ")}`);
             }
 
-            const [eventResult, eventsResult, juriesResult] = await Promise.all([
+            const [eventResult, eventsResult] = await Promise.all([
                 eventResponse.json(),
                 eventsResponse.json(),
-                juriesResponse.json(),
             ]);
 
             console.log("Этап получен!", eventResult);
             console.log("Подэтапы получены!", eventsResult);
-            console.log("Жюри получены!", juriesResult);
 
             setEvent(eventResult.data);
             setEvents(eventsResult.data);
-            setJuries(juriesResult.data);
+            // setJuries(juriesResult.data);
             console.log("Жюри dscf!", juries);
 
         } catch (error) {
             console.error("Ошибка при получении данных:", error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     useEffect(() => {
         fetchData();
-    }, [id]);
+    }, [eventId]);
 
     const handleJuryChange = (juryId: string) => {
         setSelectedJuries((prevSelected) =>
@@ -125,6 +130,23 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
         setShowModal(false)
         fetchData()
       }
+
+    if (isLoading) {
+        return <div className="container text-center mt-5">
+            <div className="spinner-border" role="status">
+                <span className="visually-hidden">Загрузка...</span>
+            </div>
+        </div>;
+    }
+
+    if (error) {
+        return <div className="container alert alert-danger mt-3">{error}</div>;
+    }
+
+    if (!event) {
+        return <div className="container alert alert-warning mt-3">Событие не найдено</div>;
+    }
+
       
     return (
         <div className="container">

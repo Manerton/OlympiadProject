@@ -51,6 +51,7 @@
 //     return context; // Возвращает объект { role, id, name }
 // }
 import React, { createContext, useState, useContext, ReactNode,useEffect } from "react";
+import API_CONFIG from "../config/apiConfig";
 
 // Определение типа контекста
 interface RoleContextType {
@@ -71,7 +72,7 @@ export const RoleProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [name, setName] = useState<string | null>(null);
 
   const fetchUserInfo = async () => {
-    const response = await fetch("http://localhost:8081/my-info", {
+    const response = await fetch(`${API_CONFIG.AUTH}/my-info`, {
       method: "GET",
       credentials: "include", // Для отправки cookie
     });
