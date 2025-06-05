@@ -13,6 +13,7 @@ import (
 	"main/internal/lib/mapper/user_mapper"
 	"main/internal/models/participant"
 	"main/internal/models/user"
+	"main/internal/services/another_service"
 	"main/internal/storage/orm"
 
 	"github.com/google/uuid"
@@ -81,9 +82,10 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 	}
 
 	return &login_dto.AuthResultDTO{
-		AccessToken:  token,
-		RefreshToken: refreshToken,
-		ExpiresIn:    int64(s.jwtManager.GetAccessDuration().Seconds()),
+		AccessToken:      token,
+		RefreshToken:     refreshToken,
+		ExpiresInAccess:  int64(s.jwtManager.GetAccessDuration().Seconds()),
+		ExpiresInRefresh: int64(s.jwtManager.GetRefreshDuration().Seconds()),
 	}, err
 }
 
@@ -134,5 +136,12 @@ func (s *AuthService) RegisterParticipant(ctx context.Context, registerRequst *r
 	}
 
 	transaction.TransactionCommit()
+
+	code, err := another_service.SendNotifyAcceptAccount(userModel.Email)
+	if err != nil {
+		log.Error("failed cros service", liblogger.Err(err))
+		return fmt.Errorf("%s", errMsg)
+	}
+	log.Debug("%s", code)
 	return nil
 }

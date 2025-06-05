@@ -17,7 +17,7 @@ func ToDTO(user user.User) user_dto.UserResponseDTO {
 		Role:        string(user.Role),
 		PhoneNumber: user.PhoneNumber,
 		BirthDate:   user.BirthDate.String(),
-		Status:      user.Status,
+		Activated:   user.Activated,
 	}
 }
 
@@ -31,6 +31,6 @@ func FromRegisterToModel(regiterDTO *register_dto.RegisterParticipantRequestDTO)
 		BirthDate:   regiterDTO.BirthDate,
 		Gender:      regiterDTO.Gender,
 		Role:        user.PARTICIPANT,
-		Status:      false,
+		Activated:   false,
 	}
 }

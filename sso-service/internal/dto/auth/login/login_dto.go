@@ -6,9 +6,11 @@ type LoginRequestDTO struct {
 }
 
 type AuthResultDTO struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	ExpiresIn    int64  `json:"expires_in"` // seconds
+	AccessToken      string `json:"access_token"`
+	RefreshToken     string `json:"refresh_token"`
+	ExpiresInAccess  int64  `json:"expires_in_access"`  // seconds
+	ExpiresInRefresh int64  `json:"expires_in_refresh"` // seconds
+
 	// UserID       string `json:"user_id"`
 	// Role         string `json:"role"` // participant, admin, organizer, judge
 }

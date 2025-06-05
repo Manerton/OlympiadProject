@@ -26,6 +26,10 @@ func (m *JWTManager) GetAccessDuration() time.Duration {
 	return m.accessDuration
 }
 
+func (m *JWTManager) GetRefreshDuration() time.Duration {
+	return m.refreshDuration
+}
+
 func (m *JWTManager) CreateToken(user user.User) (string, error) {
 	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":    user.ID,

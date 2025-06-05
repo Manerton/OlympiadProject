@@ -55,7 +55,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		// Domain:   "172.16.1.39",
 		SameSite: http.SameSiteStrictMode,
 		Path:     "/users/refresh",
-		Expires:  time.Now().Add(24 * time.Hour), // Match the token expiration
+		Expires:  time.Now().Add(time.Duration(authResult.ExpiresInRefresh) * time.Second), // Match the token expiration
 	})
 
 	render.Status(r, http.StatusOK)
@@ -64,7 +64,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		StatusCode: http.StatusOK,
 		Data: login_dto.LoginResponseDTO{
 			AccessToken: authResult.AccessToken,
-			ExpiresIn:   authResult.ExpiresIn,
+			ExpiresIn:   authResult.ExpiresInAccess,
 		},
 	})
 }

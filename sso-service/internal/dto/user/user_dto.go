@@ -17,7 +17,7 @@ type UserResponseDTO struct {
 	BirthDate   string `json:"birth_date"`
 	Gender      string `json:"gender"`
 	Role        string `json:"role"`
-	Status      bool   `json:"status"`
+	Activated   bool   `json:"activated"`
 }
 
 type UpdateUserRequestDTO struct {

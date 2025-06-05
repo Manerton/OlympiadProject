@@ -13,7 +13,9 @@ CREATE TABLE users (
     phone_number VARCHAR(20),
     birth_date DATE NOT NULL,
     gender VARCHAR(10),
-    role role_type NOT NULL
+    role role_type NOT NULL,
+    activated BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE TABLE participants (

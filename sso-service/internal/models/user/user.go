@@ -26,5 +26,6 @@ type User struct {
 	BirthDate    time.Time
 	Gender       string
 	Role         RoleType
-	Status       bool
+	Activated    bool `gorm:"default:false"`
+	CreatedAt    time.Time
 }
