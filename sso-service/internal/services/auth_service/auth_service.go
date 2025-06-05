@@ -137,11 +137,23 @@ func (s *AuthService) RegisterParticipant(ctx context.Context, registerRequst *r
 
 	transaction.TransactionCommit()
 
-	code, err := another_service.SendNotifyAcceptAccount(userModel.Email)
+	return nil
+}
+
+func (s *AuthService) ActivateAccount(email string) error {
+	const op = "services.auth_service.ActivateAccount"
+	const errMsg = "failed to activate account"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	code, err := another_service.SendNotifyAcceptAccount(email)
 	if err != nil {
 		log.Error("failed cros service", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
-	log.Debug("%s", code)
+
+	_ = code
 	return nil
 }

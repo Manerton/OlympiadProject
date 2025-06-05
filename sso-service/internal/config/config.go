@@ -13,7 +13,8 @@ type Config struct {
 	DatabaseConfig            `yaml:"DB_INFO"`
 	HTTPServerConfig          `yaml:"HTTP_SERVER_INFO"`
 	AdditionalAddressesConfig `yaml:"ADDITIONAL_ADDRESSES"`
-	JwtConfig                 `yaml:"JWT_CONFIG"`
+	JwtConfig                 `yaml:"JWT_INFO"`
+	RedisConfig               `yaml:"REDIS_INFO"`
 }
 
 type DatabaseConfig struct {
@@ -33,6 +34,10 @@ type JwtConfig struct {
 	Key             string `yaml:"key"`
 	AccessDuration  int    `yaml:"access_duration"`
 	RefreshDuration int    `yaml:"refresh_duration"`
+}
+
+type RedisConfig struct {
+	AddressPath string `yaml:"address_path"`
 }
 
 type AdditionalAddressesConfig struct {

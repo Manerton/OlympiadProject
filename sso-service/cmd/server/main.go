@@ -5,6 +5,7 @@ import (
 	"main/internal/app"
 	"main/internal/config"
 	"main/internal/lib/liblogger"
+	redisdb "main/internal/storage/redis"
 	"os"
 	"os/signal"
 	"syscall"
@@ -20,6 +21,8 @@ func main() {
 	log.Info("start sso-service", slog.String("env", cfg.Env))
 	log.Debug("debug message are enable")
 
+	// init redis
+	redisdb.InitRedis(cfg.AddressPath)
 	// init app
 	app := app.New(log, cfg)
 

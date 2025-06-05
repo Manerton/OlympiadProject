@@ -16,6 +16,9 @@ JWT_INFO:
   key: "lololololololololololololololololololololololololololololol"
   duration: 30
 
+REDIS_INFO:
+  address_path: "172.16.0.94:6379"
+
 ADDITIONAL_ADDRESSES:
   react: "http://172.16.1.39:5173"
   jure-assignments: "http://localhost:8090"
