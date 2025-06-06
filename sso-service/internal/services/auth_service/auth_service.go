@@ -15,6 +15,7 @@ import (
 	"main/internal/models/user"
 	"main/internal/services/another_service"
 	"main/internal/storage/orm"
+	redisdb "main/internal/storage/redis"
 
 	"github.com/google/uuid"
 )
@@ -137,10 +138,16 @@ func (s *AuthService) RegisterParticipant(ctx context.Context, registerRequst *r
 
 	transaction.TransactionCommit()
 
+	err = another_service.SendNotifyAcceptAccount(userModel.Email)
+	if err != nil {
+		log.Error("failed send notify on email: %w", liblogger.Err(err))
+		return fmt.Errorf("%s", errMsg)
+	}
+
 	return nil
 }
 
-func (s *AuthService) ActivateAccount(email string) error {
+func (s *AuthService) ActivateAccount(email string, userCode string) error {
 	const op = "services.auth_service.ActivateAccount"
 	const errMsg = "failed to activate account"
 
@@ -148,12 +155,18 @@ func (s *AuthService) ActivateAccount(email string) error {
 		slog.String("op", op),
 	)
 
-	code, err := another_service.SendNotifyAcceptAccount(email)
+	trustCode, err := redisdb.GetActivationCode(email)
 	if err != nil {
-		log.Error("failed cros service", liblogger.Err(err))
+		log.Error("failed get trust code: %w", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
 
-	_ = code
+	if trustCode == userCode {
+		// TODO! Update status user
+	} else {
+		log.Error("userCode incorrent")
+		return fmt.Errorf("%s", errMsg)
+	}
+
 	return nil
 }
