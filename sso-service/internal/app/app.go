@@ -12,7 +12,6 @@ import (
 	"main/internal/middleware/midlogger"
 	"main/internal/repositories/participant_repository"
 	"main/internal/repositories/user_repository"
-	"main/internal/services/another_service"
 	"main/internal/services/auth_service"
 	"main/internal/services/user_service"
 	"main/internal/storage/orm"
@@ -36,12 +35,6 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	// init storage
 	storage := postgresql.MustPosgreSQL(cfg.GetDataSourceName())
 	log.Info("storage are enabled")
-
-	code, err := another_service.SendNotifyAcceptAccount("ridilov@schooltech.ru")
-	if err != nil {
-		log.Error("", liblogger.Err(err))
-	}
-	log.Debug(code)
 
 	// init orm
 	gormORM := orm.NewGormORM(storage)

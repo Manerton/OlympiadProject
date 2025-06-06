@@ -14,7 +14,9 @@ HTTP_SERVER_INFO:
 
 JWT_INFO:
   key: "lololololololololololololololololololololololololololololol"
-  duration: 30
+  access_duration: 30
+  refresh_duration: 7
+
 
 REDIS_INFO:
   address_path: "172.16.0.94:6379"

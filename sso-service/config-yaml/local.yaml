@@ -14,7 +14,9 @@ HTTP_SERVER_INFO:
 
 JWT_INFO:
   key: "lololololololololololololololololololololololololololololol"
-  duration: 30
+  access_duration: 30
+  refresh_duration: 7
+
 
 ADDITIONAL_ADDRESSES:
   react: "http://localhost:5173"

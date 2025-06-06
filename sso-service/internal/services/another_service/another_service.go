@@ -18,12 +18,12 @@ func New(notifyService string) *AnotherService {
 	}
 }
 
-func SendNotifyAcceptAccount(email string) (string, error) {
+func SendNotifyAcceptAccount(email string) error {
 	url := "https://172.16.0.94/olymp_notification/web/index.php?r=email%2Fsend-code"
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return "", fmt.Errorf("failed create request")
+		return fmt.Errorf("failed create request")
 	}
 	// Header set
 	req.Header.Set("requestToken", "1234567890")
@@ -36,14 +36,14 @@ func SendNotifyAcceptAccount(email string) (string, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("failed get respose %w", err)
+		return fmt.Errorf("failed get respose %w", err)
 	}
 
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("failed to read body %w", err)
+		return fmt.Errorf("failed to read body %w", err)
 	}
 
 	type NotifyResponse struct {
@@ -54,8 +54,8 @@ func SendNotifyAcceptAccount(email string) (string, error) {
 
 	err = json.Unmarshal(body, &notifyRes)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse body %w", err)
+		return fmt.Errorf("failed to parse body %w", err)
 	}
 
-	return notifyRes.Code, nil
+	return nil
 }
