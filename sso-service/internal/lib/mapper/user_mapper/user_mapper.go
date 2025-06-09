@@ -34,3 +34,27 @@ func FromRegisterToModel(regiterDTO *register_dto.RegisterParticipantRequestDTO)
 		Activated:   false,
 	}
 }
+
+func FromRegisterUserToModel(regiterDTO *register_dto.RegusterUserRequestDTO) user.User {
+	return user.User{
+		Email:       regiterDTO.Email,
+		FirstName:   regiterDTO.FirstName,
+		LastName:    regiterDTO.LastName,
+		Surname:     regiterDTO.Surname,
+		PhoneNumber: regiterDTO.PhoneNumber,
+		Gender:      regiterDTO.Gender,
+		Role:        user.RoleType(regiterDTO.Role),
+		BirthDate:   regiterDTO.BirthDate,
+		Activated:   true,
+	}
+}
+
+func FromUpdateToModel(updateDTO *user_dto.UpdateUserRequestDTO) user.User {
+	return user.User{
+		Email:       *updateDTO.Email,
+		FirstName:   *updateDTO.FirstName,
+		LastName:    *updateDTO.LastName,
+		Surname:     *updateDTO.Surname,
+		PhoneNumber: *updateDTO.PhoneNumber,
+	}
+}
