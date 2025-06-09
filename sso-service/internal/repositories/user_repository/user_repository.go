@@ -39,9 +39,14 @@ func (r *UserRepository) GetById(ctx context.Context, orm orm.ORM, id uuid.UUID)
 	return userResult, nil
 }
 
-func (r *UserRepository) GetByListId(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]user.User, error) {
+func (r *UserRepository) GetByListId(ctx context.Context, orm orm.ORM, ids []*uuid.UUID) ([]user.User, error) {
 	const op = "repositories.UserRepository.GetByListId"
-	return []user.User{}, nil
+	userResult := []user.User{}
+	err := orm.Find(ctx, user.User{}, nil, nil, nil, nil, &userResult, ids)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return userResult, nil
 }
 
 func (r *UserRepository) Create(ctx context.Context, orm orm.ORM, user *user.User) (uuid.UUID, error) {
@@ -55,6 +60,11 @@ func (r *UserRepository) Create(ctx context.Context, orm orm.ORM, user *user.Use
 }
 
 func (r *UserRepository) Update(ctx context.Context, orm orm.ORM, user *user.User) error {
+	const op = "repositories.use_repository.Update"
+	err := orm.Updates(ctx, user)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
 	return nil
 }
 

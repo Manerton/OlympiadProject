@@ -17,7 +17,8 @@ import (
 
 type UserRepository interface {
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (user.User, error)
-	GetByListId(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]user.User, error)
+	GetByListId(ctx context.Context, orm orm.ORM, ids []*uuid.UUID) ([]user.User, error)
+	Update(ctx context.Context, orm orm.ORM, userModel *user.User) error
 }
 
 type ParticipantRepository interface {
@@ -96,28 +97,28 @@ func (s *UserService) GetParticipantUserById(ctx context.Context, id string) (us
 
 }
 
-func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error) {
-	const op = "service.user_handler.GetByListId"
+func (s *UserService) GetByListId(ctx context.Context, ids []*string) ([]user_dto.UserResponseDTO, error) {
+	const op = "services.user_handler.GetByListId"
 	const errMsg = "failed to find users by list id"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
-	uids := make([]uuid.UUID, 0, len(ids))
+	uids := make([]*uuid.UUID, 0, len(ids))
 	for _, id := range ids {
-		uid, err := uuid.Parse(id)
+		uid, err := uuid.Parse(*id)
 		if err != nil {
-			log.Error("failed to parse id: %s", id, liblogger.Err(err))
-			return nil, fmt.Errorf(errMsg)
+			log.Error("failed to parse id:", liblogger.Err(err))
+			return nil, fmt.Errorf("%s", errMsg)
 		}
-		uids = append(uids, uid)
+		uids = append(uids, &uid)
 	}
 
 	usersResult, err := s.userRepository.GetByListId(ctx, s.db, uids)
 	if err != nil {
 		log.Error("failed to get users by list id", slog.Any("ids", ids), liblogger.Err(err))
-		return nil, fmt.Errorf(errMsg)
+		return nil, fmt.Errorf("%s", errMsg)
 	}
 
 	usersDTO := make([]user_dto.UserResponseDTO, 0, len(usersResult))
@@ -125,4 +126,22 @@ func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto
 		usersDTO = append(usersDTO, user_mapper.ToDTO(userResult))
 	}
 	return usersDTO, nil
+}
+
+func (s *UserService) Update(ctx context.Context, userDto *user_dto.UpdateUserRequestDTO) error {
+	const op = "services.user_sevice.Update"
+	const errMsg = "failed update user"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	userModel := user_mapper.FromUpdateToModel(userDto)
+	err := s.userRepository.Update(ctx, s.db, &userModel)
+	if err != nil {
+		log.Error("failed update user", liblogger.Err(err))
+		return fmt.Errorf("%s", errMsg)
+	}
+
+	return nil
 }

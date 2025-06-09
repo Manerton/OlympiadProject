@@ -13,7 +13,9 @@ import (
 type UserService interface {
 	GetById(ctx context.Context, id string) (user_dto.UserResponseDTO, error)
 	GetParticipantUserById(ctx context.Context, id string) (user_dto.ParticipantUserResponseDTO, error)
-	GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error)
+	GetByListId(ctx context.Context, ids []*string) ([]user_dto.UserResponseDTO, error)
+
+	Update(ctx context.Context, userDto *user_dto.UpdateUserRequestDTO) error
 }
 
 type UserHandler struct {
@@ -68,7 +70,7 @@ func (h *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	type IdsReq struct {
-		Ids []string `json:"ids"`
+		Ids []*string `json:"ids"`
 	}
 	var ids IdsReq
 
@@ -90,4 +92,23 @@ func (h *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) {
 		StatusCode: http.StatusOK,
 		Data:       usersResponse,
 	})
+}
+
+func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	userDto := &user_dto.UpdateUserRequestDTO{}
+
+	err := render.DecodeJSON(r.Body, userDto)
+	if err != nil {
+		render.JSON(w, r, response.ErrorResponse("failed decode json"))
+		return
+	}
+
+	err = h.UserService.Update(ctx, userDto)
+	if err != nil {
+		render.JSON(w, r, response.ErrorResponse("failed update user"))
+		return
+	}
+
 }
