@@ -18,7 +18,9 @@ import (
 type UserRepository interface {
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (user.User, error)
 	GetByListId(ctx context.Context, orm orm.ORM, ids []*uuid.UUID) ([]user.User, error)
+
 	Update(ctx context.Context, orm orm.ORM, userModel *user.User) error
+	Delete(ctx context.Context, orm orm.ORM, id uuid.UUID) error
 }
 
 type ParticipantRepository interface {
@@ -140,6 +142,29 @@ func (s *UserService) Update(ctx context.Context, userDto *user_dto.UpdateUserRe
 	err := s.userRepository.Update(ctx, s.db, &userModel)
 	if err != nil {
 		log.Error("failed update user", liblogger.Err(err))
+		return fmt.Errorf("%s", errMsg)
+	}
+
+	return nil
+}
+
+func (s *UserService) Delete(ctx context.Context, id string) error {
+	const op = "services.user_service.Delete"
+	const errMsg = "failed delete user"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error("failed parse id: %s - %w", id, liblogger.Err(err))
+		return fmt.Errorf("%s", errMsg)
+	}
+
+	err = s.userRepository.Delete(ctx, s.db, uid)
+	if err != nil {
+		log.Error("failed delete user: %w", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
 

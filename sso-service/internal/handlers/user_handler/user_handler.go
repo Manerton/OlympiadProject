@@ -16,6 +16,7 @@ type UserService interface {
 	GetByListId(ctx context.Context, ids []*string) ([]user_dto.UserResponseDTO, error)
 
 	Update(ctx context.Context, userDto *user_dto.UpdateUserRequestDTO) error
+	Delete(ctx context.Context, id string) error
 }
 
 type UserHandler struct {
@@ -111,4 +112,22 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, response.SuccessResponse("user update success"))
+}
+
+func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	id := chi.URLParam(r, "id")
+
+	err := h.UserService.Delete(ctx, id)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed delete user"))
+		return
+	}
+
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, response.SuccessResponse("user delete success"))
 }
