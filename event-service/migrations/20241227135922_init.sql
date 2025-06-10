@@ -8,6 +8,7 @@ CREATE TABLE events (
     start_date TIMESTAMP NOT NULL,
     end_date TIMESTAMP NOT NULL,
     event_type event_type NOT NULL,
+    class_number int,
     previous_event_id UUID,
     subject VARCHAR(128),
     additional_info TEXT,
