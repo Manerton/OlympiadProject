@@ -19,9 +19,9 @@ type User struct {
 	ID           uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
 	Email        string
 	PasswordHash string
-	FirstName    string
-	LastName     string
+	Firstname    string
 	Surname      string
+	Patronymic   string
 	PhoneNumber  string
 	BirthDate    time.Time
 	Gender       string

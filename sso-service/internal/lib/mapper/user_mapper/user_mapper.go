@@ -10,9 +10,9 @@ func ToDTO(user user.User) user_dto.UserResponseDTO {
 	return user_dto.UserResponseDTO{
 		ID:          user.ID.String(),
 		Email:       user.Email,
-		FirstName:   user.FirstName,
-		LastName:    user.LastName,
+		FirstName:   user.Firstname,
 		Surname:     user.Surname,
+		Patronymic:  user.Patronymic,
 		Gender:      user.Gender,
 		Role:        string(user.Role),
 		PhoneNumber: user.PhoneNumber,
@@ -24,9 +24,9 @@ func ToDTO(user user.User) user_dto.UserResponseDTO {
 func FromRegisterToModel(regiterDTO *register_dto.RegisterParticipantRequestDTO) user.User {
 	return user.User{
 		Email:       regiterDTO.Email,
-		FirstName:   regiterDTO.FirstName,
-		LastName:    regiterDTO.LastName,
+		Firstname:   regiterDTO.FirstName,
 		Surname:     regiterDTO.Surname,
+		Patronymic:  regiterDTO.Patronymic,
 		PhoneNumber: regiterDTO.PhoneNumber,
 		BirthDate:   regiterDTO.BirthDate,
 		Gender:      regiterDTO.Gender,
@@ -38,9 +38,9 @@ func FromRegisterToModel(regiterDTO *register_dto.RegisterParticipantRequestDTO)
 func FromRegisterUserToModel(regiterDTO *register_dto.RegusterUserRequestDTO) user.User {
 	return user.User{
 		Email:       regiterDTO.Email,
-		FirstName:   regiterDTO.FirstName,
-		LastName:    regiterDTO.LastName,
+		Firstname:   regiterDTO.FirstName,
 		Surname:     regiterDTO.Surname,
+		Patronymic:  regiterDTO.Patronymic,
 		PhoneNumber: regiterDTO.PhoneNumber,
 		Gender:      regiterDTO.Gender,
 		Role:        user.RoleType(regiterDTO.Role),
@@ -52,9 +52,9 @@ func FromRegisterUserToModel(regiterDTO *register_dto.RegusterUserRequestDTO) us
 func FromUpdateToModel(updateDTO *user_dto.UpdateUserRequestDTO) user.User {
 	return user.User{
 		Email:       *updateDTO.Email,
-		FirstName:   *updateDTO.FirstName,
-		LastName:    *updateDTO.LastName,
+		Firstname:   *updateDTO.FirstName,
 		Surname:     *updateDTO.Surname,
+		Patronymic:  *updateDTO.Patronymic,
 		PhoneNumber: *updateDTO.PhoneNumber,
 	}
 }

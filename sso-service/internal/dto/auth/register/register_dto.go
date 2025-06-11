@@ -5,9 +5,9 @@ import "time"
 type RegisterParticipantRequestDTO struct {
 	Email       string    `json:"email"`
 	Password    string    `json:"password"`
-	FirstName   string    `json:"first_name"`
-	LastName    string    `json:"last_name"`
+	FirstName   string    `json:"firstname"`
 	Surname     string    `json:"surname"`
+	Patronymic  string    `json:"patronymic"`
 	PhoneNumber string    `json:"phone_number"`
 	BirthDate   time.Time `json:"birth_date"`
 	Gender      string    `json:"gender"`
@@ -23,9 +23,9 @@ type RegisterParticipantRequestDTO struct {
 type RegusterUserRequestDTO struct {
 	Email       string    `json:"email"`
 	Password    string    `json:"password"`
-	FirstName   string    `json:"first_name"`
-	LastName    string    `json:"last_name"`
+	FirstName   string    `json:"firstname"`
 	Surname     string    `json:"surname"`
+	Patronymic  string    `json:"patronymic"`
 	PhoneNumber string    `json:"phone_number"`
 	BirthDate   time.Time `json:"birth_date"`
 	Gender      string    `json:"gender"`
