@@ -22,6 +22,8 @@ const (
 	PARTICIPANT_TABLE = "participant"
 )
 
+const op = "RabbitMQ consumer"
+
 type UserService interface {
 	Update(ctx context.Context, userDto *user_dto.UpdateUserRequestDTO) error
 	Delete(ctx context.Context, id string) error
@@ -40,7 +42,6 @@ func New(channel *amqp.Channel, userService UserService) *RabbitConsumer {
 }
 
 func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
-	const op = "RabbitMQ consumer"
 
 	msgs, err := c.rabbitCannel.Consume(
 		queueName,
@@ -109,9 +110,14 @@ func (c *RabbitConsumer) Create(rabbitData rabbit_dto.RabbitData) {
 
 	switch rabbitData.Table {
 	case USER_TABLE:
+		userJSON, err := json.Marshal(rabbitData.Attributes)
+		if err != nil {
+			log.Printf("%s: failed convert from data to json: %v", op, err)
+		}
+
 		userDTO := register_dto.RegusterUserRequestDTO{}
-		if err := json.Unmarshal([]byte{}, userDTO); err != nil {
-			// TODO!!! create parse
+		if err := json.Unmarshal(userJSON, &userDTO); err != nil {
+			log.Printf("%s: failed parse from json: %v", op, err)
 		}
 
 	case PARTICIPANT_TABLE:
