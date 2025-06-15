@@ -10,6 +10,8 @@ import (
 	"main/internal/lib/jwttoken"
 	"main/internal/lib/liblogger"
 	"main/internal/middleware/midlogger"
+	"main/internal/rabbitmq"
+	"main/internal/rabbitmq/consumer"
 	"main/internal/repositories/participant_repository"
 	"main/internal/repositories/user_repository"
 	"main/internal/services/auth_service"
@@ -51,6 +53,17 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	userHandler := user_handler.New(userService)
 	authHandler := auth_handler.New(authService)
 
+	// init rabbitMQ
+	rabbitConnect := rabbitmq.MustConnect(cfg.QueueName)
+	rabbitChannel, err := rabbitConnect.Channel()
+	if err != nil {
+		log.Error("failed create channel for RabbitMQ")
+	}
+	rabbitConsumer := consumer.New(rabbitChannel, userService, authService)
+	rabbitConsumer.Start(context.Background(), cfg.AddressRabbitPath)
+	log.Info("rabbit started")
+
+	// init router
 	router := chi.NewRouter()
 
 	app := &App{log: log}
@@ -60,7 +73,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	router.Use(midlogger.NewMidLogger(log))
 	router.Use(middleware.URLFormat)
 
-	// TODO! init routes
+	// init routes
 	router.Post("/users/login", authHandler.Login)
 	router.Post("/users/register", authHandler.Register)
 	router.Get("/users/{id}", userHandler.GetUserById)

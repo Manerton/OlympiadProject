@@ -15,6 +15,7 @@ type Config struct {
 	AdditionalAddressesConfig `yaml:"ADDITIONAL_ADDRESSES"`
 	JwtConfig                 `yaml:"JWT_INFO"`
 	RedisConfig               `yaml:"REDIS_INFO"`
+	RabbitConfig              `yaml:"RABBIT_INFO"`
 }
 
 type DatabaseConfig struct {
@@ -37,7 +38,12 @@ type JwtConfig struct {
 }
 
 type RedisConfig struct {
-	AddressPath string `yaml:"address_path"`
+	AddressRedisPath string `yaml:"address_path"`
+}
+
+type RabbitConfig struct {
+	AddressRabbitPath string `yaml:"address_path"`
+	QueueName         string `yaml:"queue_name"`
 }
 
 type AdditionalAddressesConfig struct {

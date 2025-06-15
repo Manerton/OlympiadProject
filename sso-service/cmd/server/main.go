@@ -22,7 +22,7 @@ func main() {
 	log.Debug("debug message are enable")
 
 	// init redis
-	redisdb.InitRedis(cfg.AddressPath)
+	redisdb.InitRedis(cfg.AddressRedisPath)
 	// init app
 	app := app.New(log, cfg)
 

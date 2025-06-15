@@ -11,12 +11,14 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+// command
 const (
 	CREATE = "create"
 	UPDATE = "update"
 	DELETE = "delete"
 )
 
+// table name
 const (
 	USER_TABLE        = "user"
 	PARTICIPANT_TABLE = "participant"
@@ -29,15 +31,23 @@ type UserService interface {
 	Delete(ctx context.Context, id string) error
 }
 
+type AuthService interface {
+	RegisterUser(ctx context.Context, registerUser *register_dto.RegusterUserRequestDTO) error
+	RegisterParticipant(ctx context.Context, registerRequst *register_dto.RegisterParticipantRequestDTO) error
+}
+
 type RabbitConsumer struct {
 	rabbitCannel *amqp.Channel
 	userService  UserService
+	authService  AuthService
 }
 
-func New(channel *amqp.Channel, userService UserService) *RabbitConsumer {
+// construct
+func New(channel *amqp.Channel, userService UserService, authService AuthService) *RabbitConsumer {
 	return &RabbitConsumer{
 		rabbitCannel: channel,
 		userService:  userService,
+		authService:  authService,
 	}
 }
 
@@ -79,7 +89,7 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 					continue
 				}
 
-				err = c.handler(rabbitDTO)
+				err = c.handler(ctx, rabbitDTO)
 				if err != nil {
 					log.Printf("%s: task failed: %v", op, err)
 					msg.Nack(false, false)
@@ -93,42 +103,54 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 	}()
 }
 
-func (c *RabbitConsumer) handler(rabbitDTO rabbit_dto.RabbitDTO) error {
+func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.RabbitDTO) error {
 	switch rabbitDTO.Method {
 	case CREATE:
-		c.Create(rabbitDTO.Data)
+		c.create(ctx, rabbitDTO.Data)
 	case UPDATE:
-		c.Update()
+		c.update()
 	case DELETE:
-		c.Delete()
+		c.delete()
 	}
 
 	return nil
 }
 
-func (c *RabbitConsumer) Create(rabbitData rabbit_dto.RabbitData) {
+func (c *RabbitConsumer) create(ctx context.Context, rabbitData rabbit_dto.RabbitData) {
+	dataJSON, err := json.Marshal(rabbitData.Attributes)
+	if err != nil {
+		log.Printf("%s: failed convert from data to json: %v", op, err)
+	}
 
 	switch rabbitData.Table {
 	case USER_TABLE:
-		userJSON, err := json.Marshal(rabbitData.Attributes)
-		if err != nil {
-			log.Printf("%s: failed convert from data to json: %v", op, err)
-		}
-
 		userDTO := register_dto.RegusterUserRequestDTO{}
-		if err := json.Unmarshal(userJSON, &userDTO); err != nil {
+		if err := json.Unmarshal(dataJSON, &userDTO); err != nil {
 			log.Printf("%s: failed parse from json: %v", op, err)
 		}
 
+		err = c.authService.RegisterUser(ctx, &userDTO)
+		if err != nil {
+			log.Printf("%s: failed register user: %v", op, err)
+		}
 	case PARTICIPANT_TABLE:
+		participantDTO := register_dto.RegisterParticipantRequestDTO{}
+		if err := json.Unmarshal(dataJSON, &participantDTO); err != nil {
+			log.Printf("%s: failed parse from json: %v", op, err)
+		}
+
+		err = c.authService.RegisterParticipant(ctx, &participantDTO)
+		if err != nil {
+			log.Printf("%s: failed register user: %v", op, err)
+		}
 	}
 
 }
 
-func (c *RabbitConsumer) Update() {
+func (c *RabbitConsumer) update() {
 
 }
 
-func (c *RabbitConsumer) Delete() {
+func (c *RabbitConsumer) delete() {
 
 }

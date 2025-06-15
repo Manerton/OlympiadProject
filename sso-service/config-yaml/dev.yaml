@@ -21,6 +21,10 @@ JWT_INFO:
 REDIS_INFO:
   address_path: "172.16.0.94:6379"
 
+RABBIT_INFO:
+  address_path: "amqps://test:test@rabbitmq:5671/"
+  queue_name: "auth_queue"
+
 ADDITIONAL_ADDRESSES:
   react: "http://172.16.1.39:5173"
   jure-assignments: "http://localhost:8090"
