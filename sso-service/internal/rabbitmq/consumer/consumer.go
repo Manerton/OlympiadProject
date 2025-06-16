@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"log/slog"
 	register_dto "main/internal/dto/auth/register"
 	rabbit_dto "main/internal/dto/rabbit"
 	user_dto "main/internal/dto/user"
+	"main/internal/lib/liblogger"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -24,8 +26,6 @@ const (
 	PARTICIPANT_TABLE = "participant"
 )
 
-const op = "RabbitMQ consumer"
-
 type UserService interface {
 	Update(ctx context.Context, userDto *user_dto.UpdateUserRequestDTO) error
 	Delete(ctx context.Context, id string) error
@@ -37,14 +37,22 @@ type AuthService interface {
 }
 
 type RabbitConsumer struct {
+	log          *slog.Logger
 	rabbitCannel *amqp.Channel
 	userService  UserService
 	authService  AuthService
 }
 
 // construct
-func New(channel *amqp.Channel, userService UserService, authService AuthService) *RabbitConsumer {
+func New(log *slog.Logger, channel *amqp.Channel, userService UserService, authService AuthService) *RabbitConsumer {
+	const op = "RabbitMQ consumer"
+
+	clog := log.With(
+		slog.String("op", op),
+	)
+
 	return &RabbitConsumer{
+		log:          clog,
 		rabbitCannel: channel,
 		userService:  userService,
 		authService:  authService,
@@ -64,7 +72,7 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 	)
 
 	if err != nil {
-		log.Printf("Failed consume queue: %s", queueName)
+		c.log.Error("Failed consume queue: %s, %w", queueName, liblogger.Err(err))
 	}
 
 	go func() {
@@ -73,25 +81,25 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 			case <-ctx.Done():
 				log.Println()
 				if err := c.rabbitCannel.Cancel("", false); err != nil {
-					log.Printf("%s: failed to cancel consumer", op)
+					c.log.Error("failed to cancel consumer: %w", liblogger.Err(err))
 				}
 				return
 			case msg, ok := <-msgs:
 				if !ok {
-					log.Printf("%s: message channel closed", op)
+					c.log.Info("message channel closed")
 					return
 				}
 
 				rabbitDTO := rabbit_dto.RabbitDTO{}
 				if err := json.Unmarshal(msg.Body, &rabbitDTO); err != nil {
-					log.Printf("%s: invalid message format: %v", op, err)
+					c.log.Error("invalid message format: %w", liblogger.Err(err))
 					msg.Nack(false, false)
 					continue
 				}
 
 				err = c.handler(ctx, rabbitDTO)
 				if err != nil {
-					log.Printf("%s: task failed: %v", op, err)
+					c.log.Error("task failed: %w", liblogger.Err(err))
 					msg.Nack(false, false)
 					continue
 				}
@@ -99,7 +107,6 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 				msg.Ack(false)
 			}
 		}
-
 	}()
 }
 
@@ -119,30 +126,32 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 func (c *RabbitConsumer) create(ctx context.Context, rabbitData rabbit_dto.RabbitData) {
 	dataJSON, err := json.Marshal(rabbitData.Attributes)
 	if err != nil {
-		log.Printf("%s: failed convert from data to json: %v", op, err)
+		c.log.Error("failed convert from data to json: %w", liblogger.Err(err))
 	}
 
 	switch rabbitData.Table {
 	case USER_TABLE:
 		userDTO := register_dto.RegusterUserRequestDTO{}
 		if err := json.Unmarshal(dataJSON, &userDTO); err != nil {
-			log.Printf("%s: failed parse from json: %v", op, err)
+			c.log.Error("failed parse from json: %w", liblogger.Err(err))
 		}
 
 		err = c.authService.RegisterUser(ctx, &userDTO)
 		if err != nil {
-			log.Printf("%s: failed register user: %v", op, err)
+			c.log.Error("failed register user: %w", liblogger.Err(err))
 		}
 	case PARTICIPANT_TABLE:
 		participantDTO := register_dto.RegisterParticipantRequestDTO{}
 		if err := json.Unmarshal(dataJSON, &participantDTO); err != nil {
-			log.Printf("%s: failed parse from json: %v", op, err)
+			c.log.Error("failed parse from json: %w", liblogger.Err(err))
 		}
 
 		err = c.authService.RegisterParticipant(ctx, &participantDTO)
 		if err != nil {
-			log.Printf("%s: failed register user: %v", op, err)
+			c.log.Error("failed register user: %w", liblogger.Err(err))
 		}
+	default:
+		c.log.Error("unexpected table: %s", slog.String("table", rabbitData.Table))
 	}
 
 }

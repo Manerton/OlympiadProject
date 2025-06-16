@@ -54,13 +54,13 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	authHandler := auth_handler.New(authService)
 
 	// init rabbitMQ
-	rabbitConnect := rabbitmq.MustConnect(cfg.QueueName)
+	rabbitConnect := rabbitmq.MustConnect(cfg.AddressRabbitPath)
 	rabbitChannel, err := rabbitConnect.Channel()
 	if err != nil {
 		log.Error("failed create channel for RabbitMQ")
 	}
-	rabbitConsumer := consumer.New(rabbitChannel, userService, authService)
-	rabbitConsumer.Start(context.Background(), cfg.AddressRabbitPath)
+	rabbitConsumer := consumer.New(log, rabbitChannel, userService, authService)
+	rabbitConsumer.Start(context.Background(), cfg.QueueName)
 	log.Info("rabbit started")
 
 	// init router
