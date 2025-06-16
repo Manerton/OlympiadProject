@@ -7,7 +7,7 @@ type RabbitDTO struct {
 }
 
 type RabbitData struct {
-	Table            string            `json:"table"`
-	Attributes       map[string]string `json:"attributes"`
-	SearchAttributes map[string]string `json:"searchAttributes"`
+	Table            string         `json:"table"`
+	Attributes       map[string]any `json:"attributes"`
+	SearchAttributes map[string]any `json:"searchAttributes"`
 }

@@ -23,8 +23,8 @@ type User struct {
 	Surname      string
 	Patronymic   string
 	PhoneNumber  string
-	BirthDate    time.Time `gorm:"column:birhdate"`
-	Gender       string
+	BirthDate    time.Time `gorm:"column:birthdate"`
+	Gender       int
 	Role         RoleType
 	Activated    bool `gorm:"default:false"`
 	CreatedAt    time.Time

@@ -11,7 +11,7 @@ CREATE TABLE users (
     patronymic VARCHAR(128) NOT NULL,
     phone_number VARCHAR(20),
     birthdate DATE NOT NULL,
-    gender VARCHAR(10),
+    gender int,
     role int NOT NULL,
     activated BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT now()

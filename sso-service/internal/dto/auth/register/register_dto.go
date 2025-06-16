@@ -1,16 +1,14 @@
 package register_dto
 
-import "time"
-
 type RegisterParticipantRequestDTO struct {
-	Email       string    `json:"email"`
-	Password    string    `json:"password"`
-	FirstName   string    `json:"firstname"`
-	Surname     string    `json:"surname"`
-	Patronymic  string    `json:"patronymic"`
-	PhoneNumber string    `json:"phone_number"`
-	BirthDate   time.Time `json:"birthdate"`
-	Gender      string    `json:"gender"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	FirstName   string `json:"firstname"`
+	Surname     string `json:"surname"`
+	Patronymic  string `json:"patronymic"`
+	PhoneNumber string `json:"phone_number"`
+	BirthDate   string `json:"birthdate"`
+	Gender      int    `json:"gender"`
 
 	OVZ         int    `json:"ovz"`
 	SchoolId    string `json:"school_id"`
@@ -21,13 +19,13 @@ type RegisterParticipantRequestDTO struct {
 }
 
 type RegusterUserRequestDTO struct {
-	Email       string    `json:"email"`
-	Password    string    `json:"password"`
-	FirstName   string    `json:"firstname"`
-	Surname     string    `json:"surname"`
-	Patronymic  string    `json:"patronymic"`
-	PhoneNumber string    `json:"phone_number"`
-	BirthDate   time.Time `json:"birthdate"`
-	Gender      string    `json:"gender"`
-	Role        int       `json:"role"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	FirstName   string `json:"firstname"`
+	Surname     string `json:"surname"`
+	Patronymic  string `json:"patronymic"`
+	PhoneNumber string `json:"phone_number"`
+	BirthDate   string `json:"birthdate"`
+	Gender      int    `json:"gender"`
+	Role        int    `json:"role"`
 }

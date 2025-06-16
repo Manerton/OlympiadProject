@@ -6,9 +6,9 @@ type CreateSchoolRequestDTO struct {
 }
 
 type UpdateSchoolRequestDTO struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	Region string `json:"region"`
+	ID     string  `json:"id"`
+	Name   *string `json:"name"`
+	Region *string `json:"region"`
 }
 
 type SchoolResponeDTO struct {

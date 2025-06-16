@@ -4,6 +4,7 @@ import (
 	register_dto "main/internal/dto/auth/register"
 	user_dto "main/internal/dto/user"
 	"main/internal/models/user"
+	"time"
 )
 
 func ToDTO(user user.User) user_dto.UserResponseDTO {
@@ -22,13 +23,15 @@ func ToDTO(user user.User) user_dto.UserResponseDTO {
 }
 
 func FromRegisterToModel(regiterDTO *register_dto.RegisterParticipantRequestDTO) user.User {
+	birhDate, _ := time.Parse("2006-01-02", regiterDTO.BirthDate)
+
 	return user.User{
 		Email:       regiterDTO.Email,
 		Firstname:   regiterDTO.FirstName,
 		Surname:     regiterDTO.Surname,
 		Patronymic:  regiterDTO.Patronymic,
 		PhoneNumber: regiterDTO.PhoneNumber,
-		BirthDate:   regiterDTO.BirthDate,
+		BirthDate:   birhDate,
 		Gender:      regiterDTO.Gender,
 		Role:        user.PARTICIPANT,
 		Activated:   false,
@@ -36,6 +39,8 @@ func FromRegisterToModel(regiterDTO *register_dto.RegisterParticipantRequestDTO)
 }
 
 func FromRegisterUserToModel(regiterDTO *register_dto.RegusterUserRequestDTO) user.User {
+	birthDate, _ := time.Parse("2006-01-02", regiterDTO.BirthDate)
+
 	return user.User{
 		Email:       regiterDTO.Email,
 		Firstname:   regiterDTO.FirstName,
@@ -44,7 +49,7 @@ func FromRegisterUserToModel(regiterDTO *register_dto.RegusterUserRequestDTO) us
 		PhoneNumber: regiterDTO.PhoneNumber,
 		Gender:      regiterDTO.Gender,
 		Role:        user.RoleType(regiterDTO.Role),
-		BirthDate:   regiterDTO.BirthDate,
+		BirthDate:   birthDate,
 		Activated:   true,
 	}
 }

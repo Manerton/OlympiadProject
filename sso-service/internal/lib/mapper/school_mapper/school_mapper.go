@@ -22,7 +22,7 @@ func FromCreateDTOToModel(schoolDto school_dto.CreateSchoolRequestDTO) school.Sc
 
 func FromUpdateDTOToModel(schoolDto school_dto.UpdateSchoolRequestDTO) school.School {
 	return school.School{
-		Name:   schoolDto.Name,
-		Region: schoolDto.Region,
+		Name:   *schoolDto.Name,
+		Region: *schoolDto.Region,
 	}
 }
