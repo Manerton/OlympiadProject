@@ -6,13 +6,13 @@ import (
 	"github.com/google/uuid"
 )
 
-type RoleType string
+type RoleType int
 
 const (
-	JUDGE       = "judge"
-	PARTICIPANT = "participant"
-	ADMIN       = "admin"
-	ORGANIZER   = "organizer"
+	ADMIN       = 0
+	PARTICIPANT = 1
+	JUDGE       = 2
+	ORGANIZER   = 3
 )
 
 type User struct {
@@ -23,7 +23,7 @@ type User struct {
 	Surname      string
 	Patronymic   string
 	PhoneNumber  string
-	BirthDate    time.Time
+	BirthDate    time.Time `gorm:"column:birhdate"`
 	Gender       string
 	Role         RoleType
 	Activated    bool `gorm:"default:false"`

@@ -17,7 +17,7 @@ import (
 
 type UserRepository interface {
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (user.User, error)
-	GetByListId(ctx context.Context, orm orm.ORM, ids []*uuid.UUID) ([]user.User, error)
+	GetByListId(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]user.User, error)
 
 	Update(ctx context.Context, orm orm.ORM, userModel *user.User) error
 	Delete(ctx context.Context, orm orm.ORM, id uuid.UUID) error
@@ -107,14 +107,14 @@ func (s *UserService) GetByListId(ctx context.Context, ids []*string) ([]user_dt
 		slog.String("op", op),
 	)
 
-	uids := make([]*uuid.UUID, 0, len(ids))
+	uids := make([]uuid.UUID, 0, len(ids))
 	for _, id := range ids {
 		uid, err := uuid.Parse(*id)
 		if err != nil {
 			log.Error("failed to parse id:", liblogger.Err(err))
 			return nil, fmt.Errorf("%s", errMsg)
 		}
-		uids = append(uids, &uid)
+		uids = append(uids, uid)
 	}
 
 	usersResult, err := s.userRepository.GetByListId(ctx, s.db, uids)

@@ -1,5 +1,4 @@
 -- +goose Up
-CREATE TYPE role_type AS ENUM ('judge', 'participant', 'admin', 'organizer');
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
@@ -8,26 +7,34 @@ CREATE TABLE users (
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     firstname VARCHAR(128) NOT NULL,
-    sirname VARCHAR(128) NOT NULL,
+    surname VARCHAR(128) NOT NULL,
     patronymic VARCHAR(128) NOT NULL,
     phone_number VARCHAR(20),
-    birth_date DATE NOT NULL,
+    birthdate DATE NOT NULL,
     gender VARCHAR(10),
-    role role_type NOT NULL,
+    role int NOT NULL,
     activated BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMPTZ DEFAULT now()
 );
+
+CREATE TABLE schools (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(128) NOT NULL,
+    region VARCHAR(128) NOT NULL
+);
+
 
 CREATE TABLE participants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
     ovz INTEGER NOT NULL,
-    school_name VARCHAR(255) NOT NULL,
+    school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE ON UPDATE CASCADE,
     city VARCHAR(128) NOT NULL,
     reason TEXT,
     citizenship VARCHAR(64),
     class_number INTEGER NOT NULL
 );
+
 
 CREATE INDEX idx_participants_user_id ON participants(user_id);
 
@@ -35,4 +42,3 @@ CREATE INDEX idx_participants_user_id ON participants(user_id);
 -- +goose Down
 DROP TABLE IF EXISTS participants;
 DROP TABLE IF EXISTS users;
-DROP TYPE IF EXISTS role_type;

@@ -14,9 +14,9 @@ type UserResponseDTO struct {
 	Surname     string `json:"surname"`
 	Patronymic  string `json:"patronymic"`
 	PhoneNumber string `json:"phone_number"`
-	BirthDate   string `json:"birth_date"`
+	BirthDate   string `json:"birthdate"`
 	Gender      string `json:"gender"`
-	Role        string `json:"role"`
+	Role        int    `json:"role"`
 	Activated   bool   `json:"activated"`
 }
 
@@ -26,6 +26,6 @@ type UpdateUserRequestDTO struct {
 	Surname     *string `json:"surname"`
 	Patronymic  *string `json:"patronymic"`
 	PhoneNumber *string `json:"phone_number"`
-	BirthDate   *string `json:"birth_date"`
+	BirthDate   *string `json:"birthdate"`
 	Gender      *string `json:"gender"`
 }

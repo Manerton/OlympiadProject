@@ -12,7 +12,7 @@ func ToDTO(participantModel participant.Participant) participant_dto.Participant
 	return participant_dto.ParticipantResponseDTO{
 		UserId:      participantModel.UserId.String(),
 		OVZ:         participantModel.OVZ,
-		SchoolName:  participantModel.SchoolName,
+		SchoolId:    participantModel.SchoolId.String(),
 		City:        participantModel.City,
 		Reason:      participantModel.Reason,
 		Citizenship: participantModel.Citizenship,
@@ -21,10 +21,15 @@ func ToDTO(participantModel participant.Participant) participant_dto.Participant
 }
 
 func FromRegisterToModel(registerDTO *register_dto.RegisterParticipantRequestDTO, userId uuid.UUID) participant.Participant {
+	schoolId, err := uuid.Parse(registerDTO.SchoolId)
+	if err != nil {
+
+	}
+
 	return participant.Participant{
 		UserId:      userId,
 		OVZ:         registerDTO.OVZ,
-		SchoolName:  registerDTO.SchoolName,
+		SchoolId:    schoolId,
 		City:        registerDTO.City,
 		Citizenship: registerDTO.Citizenship,
 		Reason:      registerDTO.Reason,

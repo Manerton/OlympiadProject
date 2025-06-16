@@ -4,7 +4,7 @@ type ParticipantResponseDTO struct {
 	// ID          string `json:"id"`
 	UserId      string `json:"user_id"`
 	OVZ         int    `json:"ovz"`
-	SchoolName  string `json:"school_name"`
+	SchoolId    string `json:"school_id"`
 	City        string `json:"city"`
 	Reason      string `json:"reason"`
 	Citizenship string `json:"citizenship"`
@@ -13,7 +13,7 @@ type ParticipantResponseDTO struct {
 
 type UpdateParticipantRequestDTO struct {
 	OVZ         *string `json:"ovz"`
-	SchoolName  *string `json:"school_name"`
+	SchoolId    *string `json:"school_id"`
 	City        *string `json:"city"`
 	Reason      *string `json:"reason"`
 	Citizenship *string `json:"citizenship"`

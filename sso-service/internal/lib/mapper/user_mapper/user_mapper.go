@@ -14,7 +14,7 @@ func ToDTO(user user.User) user_dto.UserResponseDTO {
 		Surname:     user.Surname,
 		Patronymic:  user.Patronymic,
 		Gender:      user.Gender,
-		Role:        string(user.Role),
+		Role:        int(user.Role),
 		PhoneNumber: user.PhoneNumber,
 		BirthDate:   user.BirthDate.String(),
 		Activated:   user.Activated,

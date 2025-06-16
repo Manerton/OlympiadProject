@@ -39,7 +39,7 @@ func (r *UserRepository) GetById(ctx context.Context, orm orm.ORM, id uuid.UUID)
 	return userResult, nil
 }
 
-func (r *UserRepository) GetByListId(ctx context.Context, orm orm.ORM, ids []*uuid.UUID) ([]user.User, error) {
+func (r *UserRepository) GetByListId(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]user.User, error) {
 	const op = "repositories.UserRepository.GetByListId"
 	userResult := []user.User{}
 	err := orm.Find(ctx, user.User{}, nil, nil, nil, nil, &userResult, ids)

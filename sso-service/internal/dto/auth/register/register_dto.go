@@ -9,11 +9,11 @@ type RegisterParticipantRequestDTO struct {
 	Surname     string    `json:"surname"`
 	Patronymic  string    `json:"patronymic"`
 	PhoneNumber string    `json:"phone_number"`
-	BirthDate   time.Time `json:"birth_date"`
+	BirthDate   time.Time `json:"birthdate"`
 	Gender      string    `json:"gender"`
 
 	OVZ         int    `json:"ovz"`
-	SchoolName  string `json:"school_name"`
+	SchoolId    string `json:"school_id"`
 	City        string `json:"city"`
 	Reason      string `json:"reason"`
 	Citizenship string `json:"citizenship"`
@@ -27,7 +27,7 @@ type RegusterUserRequestDTO struct {
 	Surname     string    `json:"surname"`
 	Patronymic  string    `json:"patronymic"`
 	PhoneNumber string    `json:"phone_number"`
-	BirthDate   time.Time `json:"birth_date"`
+	BirthDate   time.Time `json:"birthdate"`
 	Gender      string    `json:"gender"`
-	Role        string    `json:"role"`
+	Role        int       `json:"role"`
 }
