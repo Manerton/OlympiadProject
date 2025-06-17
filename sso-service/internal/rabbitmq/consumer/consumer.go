@@ -3,18 +3,22 @@ package consumer
 import (
 	"context"
 	"encoding/json"
-	"log"
+	"fmt"
 	"log/slog"
 	register_dto "main/internal/dto/auth/register"
+	participant_dto "main/internal/dto/participant"
 	rabbit_dto "main/internal/dto/rabbit"
+	school_dto "main/internal/dto/school"
 	user_dto "main/internal/dto/user"
 	"main/internal/lib/liblogger"
+	"main/internal/rabbitmq/producer"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 // command
 const (
+	GET    = ""
 	CREATE = "create"
 	UPDATE = "update"
 	DELETE = "delete"
@@ -24,11 +28,18 @@ const (
 const (
 	USER_TABLE        = "user"
 	PARTICIPANT_TABLE = "participant"
+	SCHOOL_TABLE      = "school"
 )
 
 type UserService interface {
-	Update(ctx context.Context, userDto *user_dto.UpdateUserRequestDTO) error
+	GetByFilter(ctx context.Context, userDTO user_dto.SearchAttributesUserDTO) (user_dto.UserResponseDTO, error)
+
+	Update(ctx context.Context, id string, userDto user_dto.UpdateUserRequestDTO) error
 	Delete(ctx context.Context, id string) error
+}
+
+type ParticipantService interface {
+	Update(ctx context.Context, id string, participantDTO participant_dto.UpdateParticipantRequestDTO) error
 }
 
 type AuthService interface {
@@ -36,15 +47,23 @@ type AuthService interface {
 	RegisterParticipant(ctx context.Context, registerRequst *register_dto.RegisterParticipantRequestDTO) error
 }
 
+type SchoolService interface {
+	Create(ctx context.Context, schoolDTO school_dto.CreateSchoolRequestDTO) error
+	Update(ctx context.Context, id string, schoolDTO school_dto.UpdateSchoolRequestDTO) error
+}
+
 type RabbitConsumer struct {
-	log          *slog.Logger
-	rabbitCannel *amqp.Channel
-	userService  UserService
-	authService  AuthService
+	log                *slog.Logger
+	rabbitCannel       *amqp.Channel
+	userService        UserService
+	participantService ParticipantService
+	authService        AuthService
+	schoolService      SchoolService
 }
 
 // construct
-func New(log *slog.Logger, channel *amqp.Channel, userService UserService, authService AuthService) *RabbitConsumer {
+func New(log *slog.Logger, channel *amqp.Channel,
+	userService UserService, participantService ParticipantService, authService AuthService, schoolService SchoolService) *RabbitConsumer {
 	const op = "RabbitMQ consumer"
 
 	clog := log.With(
@@ -52,10 +71,12 @@ func New(log *slog.Logger, channel *amqp.Channel, userService UserService, authS
 	)
 
 	return &RabbitConsumer{
-		log:          clog,
-		rabbitCannel: channel,
-		userService:  userService,
-		authService:  authService,
+		log:                clog,
+		rabbitCannel:       channel,
+		userService:        userService,
+		participantService: participantService,
+		authService:        authService,
+		schoolService:      schoolService,
 	}
 }
 
@@ -70,16 +91,16 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 		false,
 		nil,
 	)
-
 	if err != nil {
 		c.log.Error("Failed consume queue: %s, %w", queueName, liblogger.Err(err))
+		return
 	}
 
 	go func() {
 		for {
 			select {
 			case <-ctx.Done():
-				log.Println()
+				c.log.Info("init cancel consumer")
 				if err := c.rabbitCannel.Cancel("", false); err != nil {
 					c.log.Error("failed to cancel consumer: %w", liblogger.Err(err))
 				}
@@ -111,11 +132,41 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 }
 
 func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.RabbitDTO) error {
+	attributesDataJSON, err := json.Marshal(rabbitDTO.Data.Attributes)
+	if err != nil {
+		c.log.Error("failed convert Attributes from data to json: %w", liblogger.Err(err))
+	}
+
+	searchDataJSON, err := json.Marshal(rabbitDTO.Data.SearchAttributes)
+	if err != nil {
+		c.log.Error("failed convert SearchAttributes from data to json: %w", liblogger.Err(err))
+	}
+
 	switch rabbitDTO.Method {
+	case GET:
+		err = c.get(ctx, rabbitDTO.Data.Table, searchDataJSON)
+		if err != nil {
+			c.log.Error("failed get: %w", liblogger.Err(err))
+			return fmt.Errorf("failed get data")
+		}
 	case CREATE:
-		c.create(ctx, rabbitDTO.Data)
+		err := c.create(ctx, rabbitDTO.Data.Table, attributesDataJSON)
+		if err != nil {
+			c.log.Error("failed create: %w", liblogger.Err(err))
+			return fmt.Errorf("failed create data")
+		}
 	case UPDATE:
-		c.update()
+		id, ok := rabbitDTO.Data.SearchAttributes["id"].(string)
+		if !ok {
+			c.log.Error("filed %s - does not exist", slog.String("id", id))
+			return fmt.Errorf("failed update: ID does not exist")
+		}
+
+		err := c.update(ctx, rabbitDTO.Data.Table, attributesDataJSON, id)
+		if err != nil {
+			c.log.Error("failed update: %w", liblogger.Err(err))
+			return fmt.Errorf("failed update data")
+		}
 	case DELETE:
 		c.delete()
 	}
@@ -123,41 +174,108 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 	return nil
 }
 
-func (c *RabbitConsumer) create(ctx context.Context, rabbitData rabbit_dto.RabbitData) {
-	dataJSON, err := json.Marshal(rabbitData.Attributes)
-	if err != nil {
-		c.log.Error("failed convert from data to json: %w", liblogger.Err(err))
-	}
+func (c *RabbitConsumer) get(ctx context.Context, tableName string, dataJSON []byte) error {
+	switch tableName {
+	case USER_TABLE:
+		userDTO := user_dto.SearchAttributesUserDTO{}
+		if err := json.Unmarshal(dataJSON, &userDTO); err != nil {
+			return fmt.Errorf("failed parse from json: %w", err)
+		}
 
-	switch rabbitData.Table {
+		userResult, err := c.userService.GetByFilter(ctx, userDTO)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+
+		jsonResult, err := json.Marshal(userResult)
+		if err != nil {
+			return fmt.Errorf("failed convert data to json: %w", err)
+		}
+		// TODO!! set queue name
+		producer.SendToQueue(c.rabbitCannel, "", jsonResult)
+	case PARTICIPANT_TABLE:
+		// TODO!! realise another tables
+	default:
+		return fmt.Errorf("unexpected table: %s", tableName)
+	}
+	return nil
+}
+
+func (c *RabbitConsumer) create(ctx context.Context, tableName string, dataJSON []byte) error {
+	switch tableName {
 	case USER_TABLE:
 		userDTO := register_dto.RegusterUserRequestDTO{}
 		if err := json.Unmarshal(dataJSON, &userDTO); err != nil {
-			c.log.Error("failed parse from json: %w", liblogger.Err(err))
+			return fmt.Errorf("failed parse json: %w", err)
 		}
 
-		err = c.authService.RegisterUser(ctx, &userDTO)
+		err := c.authService.RegisterUser(ctx, &userDTO)
 		if err != nil {
-			c.log.Error("failed register user: %w", liblogger.Err(err))
+			return fmt.Errorf("%w", err)
 		}
 	case PARTICIPANT_TABLE:
 		participantDTO := register_dto.RegisterParticipantRequestDTO{}
 		if err := json.Unmarshal(dataJSON, &participantDTO); err != nil {
-			c.log.Error("failed parse from json: %w", liblogger.Err(err))
+			return fmt.Errorf("failed parse json: %w", err)
 		}
 
-		err = c.authService.RegisterParticipant(ctx, &participantDTO)
+		err := c.authService.RegisterParticipant(ctx, &participantDTO)
 		if err != nil {
-			c.log.Error("failed register user: %w", liblogger.Err(err))
+			return fmt.Errorf("%w", err)
+		}
+	case SCHOOL_TABLE:
+		schoolDTO := school_dto.CreateSchoolRequestDTO{}
+		if err := json.Unmarshal(dataJSON, &schoolDTO); err != nil {
+			return fmt.Errorf("failed parse json: %w", err)
+		}
+
+		err := c.schoolService.Create(ctx, schoolDTO)
+		if err != nil {
+			return fmt.Errorf("%w", err)
 		}
 	default:
-		c.log.Error("unexpected table: %s", slog.String("table", rabbitData.Table))
+		return fmt.Errorf("unexpected table: %s", tableName)
 	}
-
+	return nil
 }
 
-func (c *RabbitConsumer) update() {
+func (c *RabbitConsumer) update(ctx context.Context, tableName string, dataJSON []byte, id string) error {
+	switch tableName {
+	case USER_TABLE:
+		userDTO := user_dto.UpdateUserRequestDTO{}
+		err := json.Unmarshal(dataJSON, &userDTO)
+		if err != nil {
+			return fmt.Errorf("failed parse json: %w", err)
+		}
 
+		err = c.userService.Update(ctx, id, userDTO)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+	case PARTICIPANT_TABLE:
+		participantDTO := participant_dto.UpdateParticipantRequestDTO{}
+		err := json.Unmarshal(dataJSON, &participantDTO)
+		if err != nil {
+			return fmt.Errorf("failed parse json: %w", err)
+		}
+
+		err = c.participantService.Update(ctx, id, participantDTO)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+	case SCHOOL_TABLE:
+		schoolDTO := school_dto.UpdateSchoolRequestDTO{}
+		err := json.Unmarshal(dataJSON, &schoolDTO)
+		if err != nil {
+			return fmt.Errorf("failed parse json: %w", err)
+		}
+
+		err = c.schoolService.Update(ctx, id, schoolDTO)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+	}
+	return nil
 }
 
 func (c *RabbitConsumer) delete() {
