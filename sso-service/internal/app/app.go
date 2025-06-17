@@ -13,8 +13,11 @@ import (
 	"main/internal/rabbitmq"
 	"main/internal/rabbitmq/consumer"
 	"main/internal/repositories/participant_repository"
+	"main/internal/repositories/school_repository"
 	"main/internal/repositories/user_repository"
 	"main/internal/services/auth_service"
+	"main/internal/services/participant_service"
+	"main/internal/services/school_service"
 	"main/internal/services/user_service"
 	"main/internal/storage/orm"
 	"main/internal/storage/postgresql"
@@ -45,10 +48,13 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	// init repositories
 	userRepository := &user_repository.UserRepository{}
 	participantRepository := &participant_repository.ParticipantRepository{}
+	schoolRepository := &school_repository.SchoolRepository{}
 
 	// init services
 	authService := auth_service.New(log, gormORM, jwtManager, userRepository, participantRepository)
 	userService := user_service.New(log, gormORM, userRepository, participantRepository)
+	schoolService := school_service.New(log, gormORM, schoolRepository)
+	participantService := participant_service.New(log, gormORM, participantRepository)
 	// init handlers
 	userHandler := user_handler.New(userService)
 	authHandler := auth_handler.New(authService)
@@ -59,7 +65,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	if err != nil {
 		log.Error("failed create channel for RabbitMQ")
 	}
-	rabbitConsumer := consumer.New(log, rabbitChannel, userService, authService)
+	rabbitConsumer := consumer.New(log, rabbitChannel, userService, participantService, authService, schoolService)
 	rabbitConsumer.Start(context.Background(), cfg.QueueName)
 	log.Info("rabbit started")
 
