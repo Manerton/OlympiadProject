@@ -20,11 +20,25 @@ type UserResponseDTO struct {
 	Activated   bool   `json:"activated"`
 }
 
-type UpdateUserRequestDTO struct {
+type SearchAttributesUserDTO struct {
+	ID          *string `json:"id"`
 	Email       *string `json:"email"`
-	FirstName   *string `json:"firstname"`
+	Firstname   *string `json:"firstname"`
 	Surname     *string `json:"surname"`
 	Patronymic  *string `json:"patronymic"`
+	PhoneNumber *string `json:"phone_number"`
+	BirthDate   *string `json:"birthdate"`
+	Gender      *int    `json:"gender"`
+	Role        *int    `json:"role"`
+	Activated   *bool   `json:"activated"`
+}
+
+type UpdateUserRequestDTO struct {
+	Email       *string `json:"email"`
+	Firstname   *string `json:"firstname"`
+	Surname     *string `json:"surname"`
+	Patronymic  *string `json:"patronymic"`
+	Password    *string `json:"password"`
 	PhoneNumber *string `json:"phone_number"`
 	BirthDate   *string `json:"birthdate"`
 	Gender      *int    `json:"gender"`

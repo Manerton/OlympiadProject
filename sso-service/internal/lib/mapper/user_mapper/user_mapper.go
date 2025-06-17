@@ -5,6 +5,8 @@ import (
 	user_dto "main/internal/dto/user"
 	"main/internal/models/user"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func ToDTO(user user.User) user_dto.UserResponseDTO {
@@ -54,12 +56,37 @@ func FromRegisterUserToModel(regiterDTO *register_dto.RegusterUserRequestDTO) us
 	}
 }
 
-func FromUpdateToModel(updateDTO *user_dto.UpdateUserRequestDTO) user.User {
+func FromUpdateToModel(updateDTO user_dto.UpdateUserRequestDTO, uid uuid.UUID) user.User {
 	return user.User{
+		ID:          uid,
 		Email:       *updateDTO.Email,
-		Firstname:   *updateDTO.FirstName,
+		Firstname:   *updateDTO.Firstname,
 		Surname:     *updateDTO.Surname,
 		Patronymic:  *updateDTO.Patronymic,
 		PhoneNumber: *updateDTO.PhoneNumber,
+	}
+}
+
+func FromSearchToModel(search user_dto.SearchAttributesUserDTO) user.User {
+	id := uuid.Nil
+	if search.ID != nil {
+		id, _ = uuid.Parse(*search.ID)
+	}
+	birthDate := time.Time{}
+	if search.BirthDate != nil {
+		birthDate, _ = time.Parse("2006-01-02", *search.BirthDate)
+	}
+
+	return user.User{
+		ID:          id,
+		Email:       *search.Email,
+		Firstname:   *search.Firstname,
+		Surname:     *search.Surname,
+		Patronymic:  *search.Patronymic,
+		PhoneNumber: *search.PhoneNumber,
+		Gender:      *search.Gender,
+		Role:        user.RoleType(*search.Role),
+		Activated:   *search.Activated,
+		BirthDate:   birthDate,
 	}
 }

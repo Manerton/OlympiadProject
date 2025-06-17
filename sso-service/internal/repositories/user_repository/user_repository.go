@@ -13,6 +13,17 @@ import (
 
 type UserRepository struct{}
 
+func (r *UserRepository) GetByFilter(ctx context.Context, orm orm.ORM, userModel user.User) (user.User, error) {
+	const op = "repositories.UserRepository.GetByFilter"
+
+	userResult := user.User{}
+	err := orm.First(ctx, user.User{}, nil, &userResult, userModel)
+	if err != nil {
+		return user.User{}, fmt.Errorf("%s: %w", op, err)
+	}
+	return userResult, nil
+}
+
 func (r *UserRepository) GetByEmail(ctx context.Context, orm orm.ORM, email string) (*user.User, error) {
 	const op = "repositories.UserRepository.GetByEmail"
 
@@ -49,19 +60,19 @@ func (r *UserRepository) GetByListId(ctx context.Context, orm orm.ORM, ids []uui
 	return userResult, nil
 }
 
-func (r *UserRepository) Create(ctx context.Context, orm orm.ORM, user *user.User) (uuid.UUID, error) {
+func (r *UserRepository) Create(ctx context.Context, orm orm.ORM, user user.User) (uuid.UUID, error) {
 	const op = "repositories.UserRepository.Create"
 
-	err := orm.Create(ctx, user)
+	err := orm.Create(ctx, &user)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return user.ID, nil
 }
 
-func (r *UserRepository) Update(ctx context.Context, orm orm.ORM, user *user.User) error {
+func (r *UserRepository) Update(ctx context.Context, orm orm.ORM, user user.User) error {
 	const op = "repositories.use_repository.Update"
-	err := orm.Updates(ctx, user)
+	err := orm.Updates(ctx, &user)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

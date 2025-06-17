@@ -16,10 +16,11 @@ import (
 )
 
 type UserRepository interface {
+	GetByFilter(ctx context.Context, orm orm.ORM, user user.User) (user.User, error)
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (user.User, error)
 	GetByListId(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]user.User, error)
 
-	Update(ctx context.Context, orm orm.ORM, userModel *user.User) error
+	Update(ctx context.Context, orm orm.ORM, userModel user.User) error
 	Delete(ctx context.Context, orm orm.ORM, id uuid.UUID) error
 }
 
@@ -41,6 +42,24 @@ func New(log *slog.Logger, orm orm.ORM, userRepository UserRepository, participa
 		db:                    orm,
 		log:                   log,
 	}
+}
+
+func (s *UserService) GetByFilter(ctx context.Context, userDTO user_dto.SearchAttributesUserDTO) (user_dto.UserResponseDTO, error) {
+	const op = "services.user_services.GetByFilter"
+	const errMsg = "failed to find user"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	userModel := user_mapper.FromSearchToModel(userDTO)
+	userResult, err := s.userRepository.GetByFilter(ctx, s.db, userModel)
+	if err != nil {
+		log.Error("failed get user: %v", liblogger.Err(err))
+		return user_dto.UserResponseDTO{}, fmt.Errorf("%s", errMsg)
+	}
+
+	return user_mapper.ToDTO(userResult), nil
 }
 
 func (s *UserService) GetById(ctx context.Context, id string) (user_dto.UserResponseDTO, error) {
@@ -130,7 +149,7 @@ func (s *UserService) GetByListId(ctx context.Context, ids []*string) ([]user_dt
 	return usersDTO, nil
 }
 
-func (s *UserService) Update(ctx context.Context, userDto *user_dto.UpdateUserRequestDTO) error {
+func (s *UserService) Update(ctx context.Context, id string, userDto user_dto.UpdateUserRequestDTO) error {
 	const op = "services.user_sevice.Update"
 	const errMsg = "failed update user"
 
@@ -138,8 +157,14 @@ func (s *UserService) Update(ctx context.Context, userDto *user_dto.UpdateUserRe
 		slog.String("op", op),
 	)
 
-	userModel := user_mapper.FromUpdateToModel(userDto)
-	err := s.userRepository.Update(ctx, s.db, &userModel)
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error("failed parse id: %w", liblogger.Err(err))
+		return fmt.Errorf("failed parse id")
+	}
+
+	userModel := user_mapper.FromUpdateToModel(userDto, uid)
+	err = s.userRepository.Update(ctx, s.db, userModel)
 	if err != nil {
 		log.Error("failed update user", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)

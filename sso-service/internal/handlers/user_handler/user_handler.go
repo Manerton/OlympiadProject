@@ -11,11 +11,12 @@ import (
 )
 
 type UserService interface {
+	GetByFilter(ctx context.Context, searchUser user_dto.SearchAttributesUserDTO) (user_dto.UserResponseDTO, error)
 	GetById(ctx context.Context, id string) (user_dto.UserResponseDTO, error)
 	GetParticipantUserById(ctx context.Context, id string) (user_dto.ParticipantUserResponseDTO, error)
 	GetByListId(ctx context.Context, ids []*string) ([]user_dto.UserResponseDTO, error)
 
-	Update(ctx context.Context, userDto *user_dto.UpdateUserRequestDTO) error
+	Update(ctx context.Context, id string, userDto user_dto.UpdateUserRequestDTO) error
 	Delete(ctx context.Context, id string) error
 }
 
@@ -27,6 +28,33 @@ func New(userService UserService) *UserHandler {
 	return &UserHandler{
 		UserService: userService,
 	}
+}
+
+func (h *UserHandler) GetUserByFilter(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	searchDTO := user_dto.SearchAttributesUserDTO{}
+	err := render.DecodeJSON(r.Body, &searchDTO)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed decode json"))
+		return
+	}
+
+	userResponse, err := h.UserService.GetByFilter(ctx, searchDTO)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed find user"))
+		return
+	}
+
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: 200,
+		Data:       userResponse,
+	})
+
 }
 
 func (h *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
@@ -98,15 +126,16 @@ func (h *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	userDto := &user_dto.UpdateUserRequestDTO{}
+	id := chi.URLParam(r, "id")
+	userDto := user_dto.UpdateUserRequestDTO{}
 
-	err := render.DecodeJSON(r.Body, userDto)
+	err := render.DecodeJSON(r.Body, &userDto)
 	if err != nil {
 		render.JSON(w, r, response.ErrorResponse("failed decode json"))
 		return
 	}
 
-	err = h.UserService.Update(ctx, userDto)
+	err = h.UserService.Update(ctx, id, userDto)
 	if err != nil {
 		render.JSON(w, r, response.ErrorResponse("failed update user"))
 		return
