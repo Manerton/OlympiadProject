@@ -3,7 +3,7 @@ package participant_dto
 type ParticipantResponseDTO struct {
 	// ID          string `json:"id"`
 	UserId      string `json:"user_id"`
-	OVZ         int    `json:"ovz"`
+	Disability  int    `json:"disability"`
 	SchoolId    string `json:"school_id"`
 	City        string `json:"city"`
 	Reason      string `json:"reason"`
@@ -12,7 +12,7 @@ type ParticipantResponseDTO struct {
 }
 
 type UpdateParticipantRequestDTO struct {
-	OVZ         *string `json:"ovz"`
+	Disability  *int    `json:"disability"`
 	SchoolId    *string `json:"school_id"`
 	City        *string `json:"city"`
 	Reason      *string `json:"reason"`

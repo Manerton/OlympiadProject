@@ -22,24 +22,24 @@ func (r *ParticipantRepository) GetByUserId(ctx context.Context, orm orm.ORM, us
 	return participantRes, nil
 }
 
-func (r *ParticipantRepository) Create(ctx context.Context, orm orm.ORM, participant *participant.Participant) (uuid.UUID, error) {
+func (r *ParticipantRepository) Create(ctx context.Context, orm orm.ORM, participant participant.Participant) (uuid.UUID, error) {
 	const op = "repositories.participant_repository.Create"
 
-	err := orm.Create(ctx, participant)
+	err := orm.Create(ctx, &participant)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 
 	return participant.ID, nil
 }
-func (r *ParticipantRepository) Update(ctx context.Context, orm orm.ORM, participant *participant.Participant) (uuid.UUID, error) {
+func (r *ParticipantRepository) Update(ctx context.Context, orm orm.ORM, participant participant.Participant) error {
 	const op = "repositories.participant_repository.Update"
 
-	err := orm.Updates(ctx, participant)
+	err := orm.Updates(ctx, &participant)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s: %w", op, err)
 	}
-	return participant.ID, nil
+	return nil
 }
 
 func (r *ParticipantRepository) Delete(ctx context.Context, orm orm.ORM, id uuid.UUID) error {

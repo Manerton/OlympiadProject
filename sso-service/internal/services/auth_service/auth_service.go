@@ -22,12 +22,12 @@ import (
 
 type UserRepository interface {
 	GetByEmail(ctx context.Context, orm orm.ORM, email string) (*user.User, error)
-	Create(ctx context.Context, orm orm.ORM, user *user.User) (uuid.UUID, error)
-	Update(ctx context.Context, orm orm.ORM, user *user.User) error
+	Create(ctx context.Context, orm orm.ORM, user user.User) (uuid.UUID, error)
+	Update(ctx context.Context, orm orm.ORM, user user.User) error
 }
 
 type ParticipantRepository interface {
-	Create(ctx context.Context, orm orm.ORM, participant *participant.Participant) (uuid.UUID, error)
+	Create(ctx context.Context, orm orm.ORM, participant participant.Participant) (uuid.UUID, error)
 }
 
 type AuthService struct {
@@ -116,7 +116,7 @@ func (s *AuthService) RegisterUser(ctx context.Context, registerUser *register_d
 	}
 
 	userModel := user_mapper.FromRegisterUserToModel(registerUser)
-	_, err = s.userRepository.Create(ctx, s.db, &userModel)
+	_, err = s.userRepository.Create(ctx, s.db, userModel)
 	if err != nil {
 		log.Error("failed when create user", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
@@ -157,14 +157,14 @@ func (s *AuthService) RegisterParticipant(ctx context.Context, registerRequst *r
 		return fmt.Errorf("%s", errMsg)
 	}
 
-	userId, err := s.userRepository.Create(ctx, transaction, &userModel)
+	userId, err := s.userRepository.Create(ctx, transaction, userModel)
 	if err != nil {
 		transaction.TransactionRollback()
 		log.Error("failed when create user", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
 	participantModel := paricipant_mapper.FromRegisterToModel(registerRequst, userId)
-	_, err = s.participantRepository.Create(ctx, transaction, &participantModel)
+	_, err = s.participantRepository.Create(ctx, transaction, participantModel)
 	if err != nil {
 		transaction.TransactionRollback()
 		log.Error("failed when create participant", liblogger.Err(err))
@@ -208,7 +208,7 @@ func (s *AuthService) ActivateAccount(ctx context.Context, email string, userCod
 	}
 	// activate account
 	userModel.Activated = true
-	err = s.userRepository.Update(ctx, s.db, userModel)
+	err = s.userRepository.Update(ctx, s.db, *userModel)
 	if err != nil {
 		log.Error("failed update user activate status: %w", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)

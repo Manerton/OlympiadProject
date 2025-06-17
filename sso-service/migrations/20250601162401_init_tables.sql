@@ -27,7 +27,7 @@ CREATE TABLE schools (
 CREATE TABLE participants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    ovz INTEGER NOT NULL,
+    disability INTEGER NOT NULL,
     school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE ON UPDATE CASCADE,
     city VARCHAR(128) NOT NULL,
     reason TEXT,

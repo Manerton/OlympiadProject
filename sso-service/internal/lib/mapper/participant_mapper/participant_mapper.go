@@ -1,4 +1,4 @@
-package paricipant_mapper
+package participant_mapper
 
 import (
 	register_dto "main/internal/dto/auth/register"
@@ -11,7 +11,7 @@ import (
 func ToDTO(participantModel participant.Participant) participant_dto.ParticipantResponseDTO {
 	return participant_dto.ParticipantResponseDTO{
 		UserId:      participantModel.UserId.String(),
-		OVZ:         participantModel.OVZ,
+		Disability:  participantModel.Disability,
 		SchoolId:    participantModel.SchoolId.String(),
 		City:        participantModel.City,
 		Reason:      participantModel.Reason,
@@ -28,11 +28,22 @@ func FromRegisterToModel(registerDTO *register_dto.RegisterParticipantRequestDTO
 
 	return participant.Participant{
 		UserId:      userId,
-		OVZ:         registerDTO.OVZ,
+		Disability:  registerDTO.Disability,
 		SchoolId:    schoolId,
 		City:        registerDTO.City,
 		Citizenship: registerDTO.Citizenship,
 		Reason:      registerDTO.Reason,
 		ClassNumber: registerDTO.ClassNumber,
+	}
+}
+
+func FromUpdateToModel(updateDTO participant_dto.UpdateParticipantRequestDTO, uid uuid.UUID) participant.Participant {
+	return participant.Participant{
+		ID:          uid,
+		Disability:  *updateDTO.Disability,
+		City:        *updateDTO.City,
+		Reason:      *updateDTO.Reason,
+		Citizenship: *updateDTO.Citizenship,
+		ClassNumber: *updateDTO.ClassNumber,
 	}
 }

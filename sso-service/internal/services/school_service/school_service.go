@@ -17,8 +17,8 @@ type SchoolRepository interface {
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (school.School, error)
 	GetAll(ctx context.Context, orm orm.ORM) ([]school.School, error)
 
-	Create(ctx context.Context, orm orm.ORM, school *school.School) (uuid.UUID, error)
-	Update(ctx context.Context, orm orm.ORM, school *school.School) error
+	Create(ctx context.Context, orm orm.ORM, school school.School) (uuid.UUID, error)
+	Update(ctx context.Context, orm orm.ORM, school school.School) error
 	Delete(ctx context.Context, orm orm.ORM, id uuid.UUID) error
 }
 
@@ -28,9 +28,10 @@ type SchoolService struct {
 	schoolRepository SchoolRepository
 }
 
-func New(log *slog.Logger, schoolRepository SchoolRepository) *SchoolService {
+func New(log *slog.Logger, orm orm.ORM, schoolRepository SchoolRepository) *SchoolService {
 	return &SchoolService{
 		log:              log,
+		db:               orm,
 		schoolRepository: schoolRepository,
 	}
 }
@@ -89,7 +90,7 @@ func (s *SchoolService) Create(ctx context.Context, schoolDTO school_dto.CreateS
 	)
 
 	schoolModel := school_mapper.FromCreateDTOToModel(schoolDTO)
-	_, err := s.schoolRepository.Create(ctx, s.db, &schoolModel)
+	_, err := s.schoolRepository.Create(ctx, s.db, schoolModel)
 	if err != nil {
 		log.Error("failed create school: %w", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
@@ -98,7 +99,7 @@ func (s *SchoolService) Create(ctx context.Context, schoolDTO school_dto.CreateS
 	return nil
 }
 
-func (s *SchoolService) Update(ctx context.Context, schoolDTO school_dto.UpdateSchoolRequestDTO) error {
+func (s *SchoolService) Update(ctx context.Context, id string, schoolDTO school_dto.UpdateSchoolRequestDTO) error {
 	const op = "services.school_service.Update"
 	const errMsg = "failed update school"
 
@@ -106,8 +107,14 @@ func (s *SchoolService) Update(ctx context.Context, schoolDTO school_dto.UpdateS
 		slog.String("op", op),
 	)
 
-	schoolModel := school_mapper.FromUpdateDTOToModel(schoolDTO)
-	err := s.schoolRepository.Update(ctx, s.db, &schoolModel)
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error("failed parse id: %w", liblogger.Err(err))
+		return fmt.Errorf("failed parse id")
+	}
+
+	schoolModel := school_mapper.FromUpdateDTOToModel(schoolDTO, uid)
+	err = s.schoolRepository.Update(ctx, s.db, schoolModel)
 	if err != nil {
 		log.Error("failed update school: %w", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
