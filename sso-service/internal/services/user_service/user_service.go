@@ -16,6 +16,7 @@ import (
 )
 
 type UserRepository interface {
+	GetAll(ctx context.Context, orm orm.ORM, offset *int, limit *int) ([]user.User, error)
 	GetByFilter(ctx context.Context, orm orm.ORM, user user.User) (user.User, error)
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (user.User, error)
 	GetByListId(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]user.User, error)
@@ -42,6 +43,33 @@ func New(log *slog.Logger, orm orm.ORM, userRepository UserRepository, participa
 		db:                    orm,
 		log:                   log,
 	}
+}
+
+func (s *UserService) GetAll(ctx context.Context, page *int, limit *int) ([]user_dto.UserResponseDTO, error) {
+	const op = "services.user_services.GetAll"
+	const errMsg = "failed to find users"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	offset := new(int)
+	if page != nil && limit != nil {
+		*offset = (*page - 1) * (*limit)
+	}
+
+	usersResult, err := s.userRepository.GetAll(ctx, s.db, offset, limit)
+	if err != nil {
+		log.Error("failed find users %w", liblogger.Err(err))
+		return nil, fmt.Errorf("%s", errMsg)
+	}
+
+	usersDTO := make([]user_dto.UserResponseDTO, 0, len(usersResult))
+	for _, userResult := range usersResult {
+		usersDTO = append(usersDTO, user_mapper.ToDTO(userResult))
+	}
+
+	return usersDTO, nil
 }
 
 func (s *UserService) GetByFilter(ctx context.Context, userDTO user_dto.SearchAttributesUserDTO) (user_dto.UserResponseDTO, error) {

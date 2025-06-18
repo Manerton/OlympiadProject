@@ -3,6 +3,7 @@ package user_handler
 import (
 	"context"
 	user_dto "main/internal/dto/user"
+	"main/internal/lib/parser"
 	"main/internal/lib/response"
 	"net/http"
 
@@ -11,6 +12,7 @@ import (
 )
 
 type UserService interface {
+	GetAll(ctx context.Context, page *int, limit *int) ([]user_dto.UserResponseDTO, error)
 	GetByFilter(ctx context.Context, searchUser user_dto.SearchAttributesUserDTO) (user_dto.UserResponseDTO, error)
 	GetById(ctx context.Context, id string) (user_dto.UserResponseDTO, error)
 	GetParticipantUserById(ctx context.Context, id string) (user_dto.ParticipantUserResponseDTO, error)
@@ -28,6 +30,30 @@ func New(userService UserService) *UserHandler {
 	return &UserHandler{
 		UserService: userService,
 	}
+}
+
+func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+
+	page, limit := parser.ParsePageLimit(pageStr, limitStr)
+
+	usersResponse, err := h.UserService.GetAll(ctx, page, limit)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed find users"))
+		return
+	}
+
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: 200,
+		Data:       usersResponse,
+	})
+
 }
 
 func (h *UserHandler) GetUserByFilter(w http.ResponseWriter, r *http.Request) {

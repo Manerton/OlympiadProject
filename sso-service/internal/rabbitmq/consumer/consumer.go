@@ -50,6 +50,7 @@ type AuthService interface {
 type SchoolService interface {
 	Create(ctx context.Context, schoolDTO school_dto.CreateSchoolRequestDTO) error
 	Update(ctx context.Context, id string, schoolDTO school_dto.UpdateSchoolRequestDTO) error
+	Delete(ctx context.Context, id string) error
 }
 
 type RabbitConsumer struct {
@@ -142,13 +143,23 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 		c.log.Error("failed convert SearchAttributes from data to json: %w", liblogger.Err(err))
 	}
 
+	id := ""
+	if rabbitDTO.Method == UPDATE || rabbitDTO.Method == DELETE {
+		id, ok := rabbitDTO.Data.SearchAttributes["id"].(string)
+		if !ok {
+			c.log.Error("filed %s - does not exist", slog.String("id", id))
+			return fmt.Errorf("failed update: ID does not exist")
+		}
+	}
+
 	switch rabbitDTO.Method {
 	case GET:
-		err = c.get(ctx, rabbitDTO.Data.Table, searchDataJSON)
+		result, err := c.get(ctx, rabbitDTO.Data.Table, searchDataJSON)
 		if err != nil {
 			c.log.Error("failed get: %w", liblogger.Err(err))
 			return fmt.Errorf("failed get data")
 		}
+		producer.SendToQueue(c.rabbitCannel, rabbitDTO.AppName, result)
 	case CREATE:
 		err := c.create(ctx, rabbitDTO.Data.Table, attributesDataJSON)
 		if err != nil {
@@ -156,49 +167,46 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 			return fmt.Errorf("failed create data")
 		}
 	case UPDATE:
-		id, ok := rabbitDTO.Data.SearchAttributes["id"].(string)
-		if !ok {
-			c.log.Error("filed %s - does not exist", slog.String("id", id))
-			return fmt.Errorf("failed update: ID does not exist")
-		}
-
 		err := c.update(ctx, rabbitDTO.Data.Table, attributesDataJSON, id)
 		if err != nil {
 			c.log.Error("failed update: %w", liblogger.Err(err))
 			return fmt.Errorf("failed update data")
 		}
 	case DELETE:
-		c.delete()
+		err := c.delete(ctx, rabbitDTO.Data.Table, id)
+		if err != nil {
+			c.log.Error("failed delete: %w", liblogger.Err(err))
+			return fmt.Errorf("failed delete data")
+		}
 	}
 
 	return nil
 }
 
-func (c *RabbitConsumer) get(ctx context.Context, tableName string, dataJSON []byte) error {
+func (c *RabbitConsumer) get(ctx context.Context, tableName string, dataJSON []byte) ([]byte, error) {
+	jsonResult := []byte{}
 	switch tableName {
 	case USER_TABLE:
 		userDTO := user_dto.SearchAttributesUserDTO{}
 		if err := json.Unmarshal(dataJSON, &userDTO); err != nil {
-			return fmt.Errorf("failed parse from json: %w", err)
+			return nil, fmt.Errorf("failed parse from json: %w", err)
 		}
 
 		userResult, err := c.userService.GetByFilter(ctx, userDTO)
 		if err != nil {
-			return fmt.Errorf("%w", err)
+			return nil, fmt.Errorf("%w", err)
 		}
 
-		jsonResult, err := json.Marshal(userResult)
+		jsonResult, err = json.Marshal(userResult)
 		if err != nil {
-			return fmt.Errorf("failed convert data to json: %w", err)
+			return nil, fmt.Errorf("failed convert data to json: %w", err)
 		}
-		// TODO!! set queue name
-		producer.SendToQueue(c.rabbitCannel, "", jsonResult)
 	case PARTICIPANT_TABLE:
 		// TODO!! realise another tables
 	default:
-		return fmt.Errorf("unexpected table: %s", tableName)
+		return nil, fmt.Errorf("unexpected table: %s", tableName)
 	}
-	return nil
+	return jsonResult, nil
 }
 
 func (c *RabbitConsumer) create(ctx context.Context, tableName string, dataJSON []byte) error {
@@ -274,10 +282,26 @@ func (c *RabbitConsumer) update(ctx context.Context, tableName string, dataJSON 
 		if err != nil {
 			return fmt.Errorf("%w", err)
 		}
+	default:
+		return fmt.Errorf("unexpected table: %s", tableName)
 	}
 	return nil
 }
 
-func (c *RabbitConsumer) delete() {
-
+func (c *RabbitConsumer) delete(ctx context.Context, tableName string, id string) error {
+	switch tableName {
+	case USER_TABLE:
+		err := c.userService.Delete(ctx, id)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+	case SCHOOL_TABLE:
+		err := c.schoolService.Delete(ctx, id)
+		if err != nil {
+			return fmt.Errorf("%w", err)
+		}
+	default:
+		return fmt.Errorf("unexpected table: %s", tableName)
+	}
+	return nil
 }

@@ -13,6 +13,17 @@ import (
 
 type UserRepository struct{}
 
+func (r *UserRepository) GetAll(ctx context.Context, orm orm.ORM, offset *int, limit *int) ([]user.User, error) {
+	const op = "repositories.UserRepository.GetAll"
+
+	userResult := []user.User{}
+	err := orm.Find(ctx, user.User{}, nil, offset, limit, nil, &userResult)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return userResult, nil
+}
+
 func (r *UserRepository) GetByFilter(ctx context.Context, orm orm.ORM, userModel user.User) (user.User, error) {
 	const op = "repositories.UserRepository.GetByFilter"
 
