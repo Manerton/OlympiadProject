@@ -41,14 +41,14 @@ func (s *ParticipantService) Update(ctx context.Context, id string, participantD
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id: %w", liblogger.Err(err))
+		log.Error("failed parse id", liblogger.Err(err))
 		return fmt.Errorf("failed parse id")
 	}
 
 	participantModel := participant_mapper.FromUpdateToModel(participantDTO, uid)
 	err = s.participantRepository.Update(ctx, s.db, participantModel)
 	if err != nil {
-		log.Error("failed update participant: %w", liblogger.Err(err))
+		log.Error("failed update participant", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
 	return nil

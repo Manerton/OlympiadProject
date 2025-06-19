@@ -60,7 +60,7 @@ func (s *UserService) GetAll(ctx context.Context, page *int, limit *int) ([]user
 
 	usersResult, err := s.userRepository.GetAll(ctx, s.db, offset, limit)
 	if err != nil {
-		log.Error("failed find users %w", liblogger.Err(err))
+		log.Error("failed find users", liblogger.Err(err))
 		return nil, fmt.Errorf("%s", errMsg)
 	}
 
@@ -83,7 +83,7 @@ func (s *UserService) GetByFilter(ctx context.Context, userDTO user_dto.SearchAt
 	userModel := user_mapper.FromSearchToModel(userDTO)
 	userResult, err := s.userRepository.GetByFilter(ctx, s.db, userModel)
 	if err != nil {
-		log.Error("failed get user: %v", liblogger.Err(err))
+		log.Error("failed get user", liblogger.Err(err))
 		return user_dto.UserResponseDTO{}, fmt.Errorf("%s", errMsg)
 	}
 
@@ -158,7 +158,7 @@ func (s *UserService) GetByListId(ctx context.Context, ids []*string) ([]user_dt
 	for _, id := range ids {
 		uid, err := uuid.Parse(*id)
 		if err != nil {
-			log.Error("failed to parse id:", liblogger.Err(err))
+			log.Error("failed to parse id", liblogger.Err(err))
 			return nil, fmt.Errorf("%s", errMsg)
 		}
 		uids = append(uids, uid)
@@ -187,7 +187,7 @@ func (s *UserService) Update(ctx context.Context, id string, userDto user_dto.Up
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id: %w", liblogger.Err(err))
+		log.Error("failed parse id", liblogger.Err(err))
 		return fmt.Errorf("failed parse id")
 	}
 
@@ -211,13 +211,13 @@ func (s *UserService) Delete(ctx context.Context, id string) error {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id: %s - %w", id, liblogger.Err(err))
+		log.Error("failed parse id", id, liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
 
 	err = s.userRepository.Delete(ctx, s.db, uid)
 	if err != nil {
-		log.Error("failed delete user: %w", liblogger.Err(err))
+		log.Error("failed delete user", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
 

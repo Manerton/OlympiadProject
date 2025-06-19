@@ -46,13 +46,13 @@ func (s *SchoolService) GetById(ctx context.Context, id string) (school_dto.Scho
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id: %w", liblogger.Err(err))
+		log.Error("failed parse id", liblogger.Err(err))
 		return school_dto.SchoolResponeDTO{}, fmt.Errorf("%s", errMsg)
 	}
 
 	schoolModel, err := s.schoolRepository.GetById(ctx, s.db, uid)
 	if err != nil {
-		log.Error("failed get school: %w", liblogger.Err(err))
+		log.Error("failed get school", liblogger.Err(err))
 		return school_dto.SchoolResponeDTO{}, fmt.Errorf("%s", errMsg)
 	}
 
@@ -69,7 +69,7 @@ func (s *SchoolService) GetAll(ctx context.Context) ([]school_dto.SchoolResponeD
 
 	schoolsResult, err := s.schoolRepository.GetAll(ctx, s.db)
 	if err != nil {
-		log.Error("failed get all schools: %w", liblogger.Err(err))
+		log.Error("failed get all schools", liblogger.Err(err))
 		return nil, fmt.Errorf("%s", errMsg)
 	}
 
@@ -92,7 +92,7 @@ func (s *SchoolService) Create(ctx context.Context, schoolDTO school_dto.CreateS
 	schoolModel := school_mapper.FromCreateDTOToModel(schoolDTO)
 	_, err := s.schoolRepository.Create(ctx, s.db, schoolModel)
 	if err != nil {
-		log.Error("failed create school: %w", liblogger.Err(err))
+		log.Error("failed create school", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
 
@@ -109,14 +109,14 @@ func (s *SchoolService) Update(ctx context.Context, id string, schoolDTO school_
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id: %w", liblogger.Err(err))
+		log.Error("failed parse id", liblogger.Err(err))
 		return fmt.Errorf("failed parse id")
 	}
 
 	schoolModel := school_mapper.FromUpdateDTOToModel(schoolDTO, uid)
 	err = s.schoolRepository.Update(ctx, s.db, schoolModel)
 	if err != nil {
-		log.Error("failed update school: %w", liblogger.Err(err))
+		log.Error("failed update school", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
 
@@ -133,13 +133,13 @@ func (s *SchoolService) Delete(ctx context.Context, id string) error {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id: %w", liblogger.Err(err))
+		log.Error("failed parse id", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
 
 	err = s.schoolRepository.Delete(ctx, s.db, uid)
 	if err != nil {
-		log.Error("failed delete school: %w", liblogger.Err(err))
+		log.Error("failed delete school", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
 

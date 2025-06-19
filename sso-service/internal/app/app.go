@@ -9,6 +9,7 @@ import (
 	"main/internal/handlers/user_handler"
 	"main/internal/lib/jwttoken"
 	"main/internal/lib/liblogger"
+	"main/internal/middleware/base_access"
 	"main/internal/middleware/midlogger"
 	"main/internal/rabbitmq"
 	"main/internal/rabbitmq/consumer"
@@ -80,11 +81,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	router.Use(middleware.URLFormat)
 
 	// init routes
-	router.Post("/users/login", authHandler.Login)
-	router.Post("/users/register", authHandler.Register)
-	router.Get("/users/{id}", userHandler.GetUserById)
-	router.Get("/users/all-info/{id}", userHandler.GetParticipantUserById)
-	router.Get("/users/list", userHandler.GetUsersByListId)
+	app.initRoutes(router, authHandler, userHandler)
 
 	// init server
 	app.server = &http.Server{
@@ -93,6 +90,21 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	}
 
 	return app
+}
+
+func (a *App) initRoutes(router *chi.Mux,
+	authHandler *auth_handler.AuthHandler,
+	userHandler *user_handler.UserHandler) {
+
+	router.Post("/byadmin/register", authHandler.AdminRegister)
+	router.Post("/users/login", authHandler.Login)
+	router.Post("/users/register", authHandler.Register)
+
+	router.With(base_access.BaseAccess()).Group(func(r chi.Router) {
+		r.Get("/users/{id}", userHandler.GetUserById)
+		r.Get("/users/all-info/{id}", userHandler.GetParticipantUserById)
+		r.Get("/users/list", userHandler.GetUsersByListId)
+	})
 }
 
 func (a *App) initCors(router *chi.Mux, cfg config.AdditionalAddressesConfig) {

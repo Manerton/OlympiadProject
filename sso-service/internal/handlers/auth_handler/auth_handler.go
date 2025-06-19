@@ -14,7 +14,7 @@ import (
 type AuthService interface {
 	Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO) (*login_dto.AuthResultDTO, error)
 	RegisterParticipant(ctx context.Context, registerRequest *register_dto.RegisterParticipantRequestDTO) error
-	RegisterUser(ctx context.Context, userRequest *register_dto.RegusterUserRequestDTO) error
+	RegisterUser(ctx context.Context, userRequest *register_dto.RegisterUserRequestDTO) error
 }
 
 type AuthHandler struct {
@@ -96,7 +96,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 func (h *AuthHandler) AdminRegister(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	registerRequest := &register_dto.RegusterUserRequestDTO{}
+	registerRequest := &register_dto.RegisterUserRequestDTO{}
 
 	err := render.DecodeJSON(r.Body, registerRequest)
 	if err != nil {

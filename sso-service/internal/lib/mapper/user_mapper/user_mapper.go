@@ -16,7 +16,7 @@ func ToDTO(user user.User) user_dto.UserResponseDTO {
 		FirstName:   user.Firstname,
 		Surname:     user.Surname,
 		Patronymic:  user.Patronymic,
-		Gender:      user.Gender,
+		Gender:      int(user.Gender),
 		Role:        int(user.Role),
 		PhoneNumber: user.PhoneNumber,
 		BirthDate:   user.BirthDate.String(),
@@ -34,13 +34,13 @@ func FromRegisterToModel(regiterDTO *register_dto.RegisterParticipantRequestDTO)
 		Patronymic:  regiterDTO.Patronymic,
 		PhoneNumber: regiterDTO.PhoneNumber,
 		BirthDate:   birhDate,
-		Gender:      regiterDTO.Gender,
+		Gender:      user.GenderType(regiterDTO.Gender),
 		Role:        user.PARTICIPANT,
 		Activated:   false,
 	}
 }
 
-func FromRegisterUserToModel(regiterDTO *register_dto.RegusterUserRequestDTO) user.User {
+func FromRegisterUserToModel(regiterDTO *register_dto.RegisterUserRequestDTO) user.User {
 	birthDate, _ := time.Parse("2006-01-02", regiterDTO.BirthDate)
 
 	return user.User{
@@ -49,7 +49,7 @@ func FromRegisterUserToModel(regiterDTO *register_dto.RegusterUserRequestDTO) us
 		Surname:     regiterDTO.Surname,
 		Patronymic:  regiterDTO.Patronymic,
 		PhoneNumber: regiterDTO.PhoneNumber,
-		Gender:      regiterDTO.Gender,
+		Gender:      user.GenderType(regiterDTO.Gender),
 		Role:        user.RoleType(regiterDTO.Role),
 		BirthDate:   birthDate,
 		Activated:   true,
@@ -84,7 +84,7 @@ func FromSearchToModel(search user_dto.SearchAttributesUserDTO) user.User {
 		Surname:     *search.Surname,
 		Patronymic:  *search.Patronymic,
 		PhoneNumber: *search.PhoneNumber,
-		Gender:      *search.Gender,
+		Gender:      user.GenderType(*search.Gender),
 		Role:        user.RoleType(*search.Role),
 		Activated:   *search.Activated,
 		BirthDate:   birthDate,

@@ -38,7 +38,11 @@ func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
 
-	page, limit := parser.ParsePageLimit(pageStr, limitStr)
+	page, limit, err := parser.ParsePageLimit(pageStr, limitStr)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed parse page/limit"))
+	}
 
 	usersResponse, err := h.UserService.GetAll(ctx, page, limit)
 	if err != nil {

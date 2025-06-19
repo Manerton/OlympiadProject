@@ -7,12 +7,18 @@ import (
 )
 
 type RoleType int
+type GenderType int
 
 const (
-	ADMIN       = 0
-	PARTICIPANT = 1
-	JUDGE       = 2
-	ORGANIZER   = 3
+	ADMIN       = 1
+	PARTICIPANT = 2
+	JUDGE       = 3
+	ORGANIZER   = 4
+)
+
+const (
+	MALE   = 1
+	FEMALE = 2
 )
 
 type User struct {
@@ -24,7 +30,7 @@ type User struct {
 	Patronymic   string
 	PhoneNumber  string
 	BirthDate    time.Time `gorm:"column:birthdate"`
-	Gender       int
+	Gender       GenderType
 	Role         RoleType
 	Activated    bool `gorm:"default:false"`
 	CreatedAt    time.Time

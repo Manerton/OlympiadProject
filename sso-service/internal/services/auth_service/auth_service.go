@@ -59,7 +59,7 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 
 	userResult, err := s.userRepository.GetByEmail(ctx, s.db, loginRequest.Email)
 	if err != nil {
-		log.Error("failed to get user by email: %s", loginRequest.Email, liblogger.Err(err))
+		log.Error("failed to get user by email", loginRequest.Email, liblogger.Err(err))
 		return nil, fmt.Errorf("%s", errMsg)
 	}
 
@@ -77,7 +77,7 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 	// create token
 	token, err := s.jwtManager.CreateToken(*userResult)
 	if err != nil {
-		log.Error("failed when create token:", liblogger.Err(err))
+		log.Error("failed when create token", liblogger.Err(err))
 		return nil, fmt.Errorf("%s", errMsg)
 	}
 
@@ -96,7 +96,7 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 	}, err
 }
 
-func (s *AuthService) RegisterUser(ctx context.Context, registerUser *register_dto.RegusterUserRequestDTO) error {
+func (s *AuthService) RegisterUser(ctx context.Context, registerUser *register_dto.RegisterUserRequestDTO) error {
 	const op = "services.auth_service.RegisterUser"
 	const errMsg = "failed register user"
 
@@ -111,11 +111,17 @@ func (s *AuthService) RegisterUser(ctx context.Context, registerUser *register_d
 	}
 
 	if userFind != nil {
-		log.Error("failed user exist")
+		log.Error("failed user exist", slog.Any("user", userFind))
 		return fmt.Errorf("%s: %s", errMsg, "user already exist")
 	}
 
 	userModel := user_mapper.FromRegisterUserToModel(registerUser)
+	userModel.PasswordHash, err = crypt.HashPassword(registerUser.Password)
+	if err != nil {
+		log.Error("failed when hash password", liblogger.Err(err))
+		return fmt.Errorf("%s", errMsg)
+	}
+
 	_, err = s.userRepository.Create(ctx, s.db, userModel)
 	if err != nil {
 		log.Error("failed when create user", liblogger.Err(err))
@@ -192,7 +198,7 @@ func (s *AuthService) ActivateAccount(ctx context.Context, email string, userCod
 
 	trustCode, err := redisdb.GetActivationCode(email)
 	if err != nil {
-		log.Error("failed get trust code: %w", liblogger.Err(err))
+		log.Error("failed get trust code", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
 
@@ -203,14 +209,14 @@ func (s *AuthService) ActivateAccount(ctx context.Context, email string, userCod
 
 	userModel, err := s.userRepository.GetByEmail(ctx, s.db, email)
 	if err != nil {
-		log.Error("failed to find user by email: %s", email, liblogger.Err(err))
+		log.Error("failed to find user by email", email, liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
 	// activate account
 	userModel.Activated = true
 	err = s.userRepository.Update(ctx, s.db, *userModel)
 	if err != nil {
-		log.Error("failed update user activate status: %w", liblogger.Err(err))
+		log.Error("failed update user activate status", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)
 	}
 

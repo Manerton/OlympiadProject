@@ -43,7 +43,7 @@ type ParticipantService interface {
 }
 
 type AuthService interface {
-	RegisterUser(ctx context.Context, registerUser *register_dto.RegusterUserRequestDTO) error
+	RegisterUser(ctx context.Context, registerUser *register_dto.RegisterUserRequestDTO) error
 	RegisterParticipant(ctx context.Context, registerRequst *register_dto.RegisterParticipantRequestDTO) error
 }
 
@@ -93,7 +93,7 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 		nil,
 	)
 	if err != nil {
-		c.log.Error("Failed consume queue: %s, %w", queueName, liblogger.Err(err))
+		c.log.Error("Failed consume queue", slog.String("queue name", queueName), liblogger.Err(err))
 		return
 	}
 
@@ -103,7 +103,7 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 			case <-ctx.Done():
 				c.log.Info("init cancel consumer")
 				if err := c.rabbitCannel.Cancel("", false); err != nil {
-					c.log.Error("failed to cancel consumer: %w", liblogger.Err(err))
+					c.log.Error("failed to cancel consumer", liblogger.Err(err))
 				}
 				return
 			case msg, ok := <-msgs:
@@ -114,14 +114,14 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 
 				rabbitDTO := rabbit_dto.RabbitDTO{}
 				if err := json.Unmarshal(msg.Body, &rabbitDTO); err != nil {
-					c.log.Error("invalid message format: %w", liblogger.Err(err))
+					c.log.Error("invalid message format", liblogger.Err(err))
 					msg.Nack(false, false)
 					continue
 				}
 
 				err = c.handler(ctx, rabbitDTO)
 				if err != nil {
-					c.log.Error("task failed: %w", liblogger.Err(err))
+					c.log.Error("task failed", liblogger.Err(err))
 					msg.Nack(false, false)
 					continue
 				}
@@ -135,19 +135,19 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.RabbitDTO) error {
 	attributesDataJSON, err := json.Marshal(rabbitDTO.Data.Attributes)
 	if err != nil {
-		c.log.Error("failed convert Attributes from data to json: %w", liblogger.Err(err))
+		c.log.Error("failed convert Attributes from data to json", liblogger.Err(err))
 	}
 
 	searchDataJSON, err := json.Marshal(rabbitDTO.Data.SearchAttributes)
 	if err != nil {
-		c.log.Error("failed convert SearchAttributes from data to json: %w", liblogger.Err(err))
+		c.log.Error("failed convert SearchAttributes from data to json", liblogger.Err(err))
 	}
 
 	id := ""
 	if rabbitDTO.Method == UPDATE || rabbitDTO.Method == DELETE {
 		id, ok := rabbitDTO.Data.SearchAttributes["id"].(string)
 		if !ok {
-			c.log.Error("filed %s - does not exist", slog.String("id", id))
+			c.log.Error("failed id does not exist", slog.String("id", id))
 			return fmt.Errorf("failed update: ID does not exist")
 		}
 	}
@@ -156,26 +156,27 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 	case GET:
 		result, err := c.get(ctx, rabbitDTO.Data.Table, searchDataJSON)
 		if err != nil {
-			c.log.Error("failed get: %w", liblogger.Err(err))
+			c.log.Error("failed get", liblogger.Err(err))
 			return fmt.Errorf("failed get data")
 		}
 		producer.SendToQueue(c.rabbitCannel, rabbitDTO.AppName, result)
 	case CREATE:
 		err := c.create(ctx, rabbitDTO.Data.Table, attributesDataJSON)
 		if err != nil {
-			c.log.Error("failed create: %w", liblogger.Err(err))
+			c.log.Error("failed create", liblogger.Err(err))
+			c.log.Debug("dataJSON", slog.Any("data", rabbitDTO.Data.Attributes))
 			return fmt.Errorf("failed create data")
 		}
 	case UPDATE:
 		err := c.update(ctx, rabbitDTO.Data.Table, attributesDataJSON, id)
 		if err != nil {
-			c.log.Error("failed update: %w", liblogger.Err(err))
+			c.log.Error("failed update", liblogger.Err(err))
 			return fmt.Errorf("failed update data")
 		}
 	case DELETE:
 		err := c.delete(ctx, rabbitDTO.Data.Table, id)
 		if err != nil {
-			c.log.Error("failed delete: %w", liblogger.Err(err))
+			c.log.Error("failed delete", liblogger.Err(err))
 			return fmt.Errorf("failed delete data")
 		}
 	}
@@ -212,8 +213,8 @@ func (c *RabbitConsumer) get(ctx context.Context, tableName string, dataJSON []b
 func (c *RabbitConsumer) create(ctx context.Context, tableName string, dataJSON []byte) error {
 	switch tableName {
 	case USER_TABLE:
-		userDTO := register_dto.RegusterUserRequestDTO{}
-		if err := json.Unmarshal(dataJSON, &userDTO); err != nil {
+		userDTO := register_dto.RegisterUserRequestDTO{}
+		if err := userDTO.UnmarshalJSON(dataJSON); err != nil {
 			return fmt.Errorf("failed parse json: %w", err)
 		}
 
