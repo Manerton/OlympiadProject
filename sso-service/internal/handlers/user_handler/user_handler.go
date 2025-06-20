@@ -15,7 +15,7 @@ type UserService interface {
 	GetAll(ctx context.Context, page *int, limit *int) ([]user_dto.UserResponseDTO, error)
 	GetByFilter(ctx context.Context, searchUser user_dto.SearchAttributesUserDTO) (user_dto.UserResponseDTO, error)
 	GetById(ctx context.Context, id string) (user_dto.UserResponseDTO, error)
-	GetParticipantUserById(ctx context.Context, id string) (user_dto.ParticipantUserResponseDTO, error)
+	GetUserParticipantById(ctx context.Context, id string) (user_dto.UserParticipantResponseDTO, error)
 	GetByListId(ctx context.Context, ids []*string) ([]user_dto.UserResponseDTO, error)
 
 	Update(ctx context.Context, id string, userDto user_dto.UpdateUserRequestDTO) error
@@ -106,12 +106,12 @@ func (h *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *UserHandler) GetParticipantUserById(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GetUserParticipantById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var id string = chi.URLParam(r, "id")
 
-	participantUserResponse, err := h.UserService.GetParticipantUserById(ctx, id)
+	participantUserResponse, err := h.UserService.GetUserParticipantById(ctx, id)
 	if err != nil {
 		render.JSON(w, r, response.ErrorResponse("failed to find user"))
 		return

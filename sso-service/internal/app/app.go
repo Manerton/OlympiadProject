@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"main/internal/config"
 	"main/internal/handlers/auth_handler"
+	"main/internal/handlers/participant_handler"
 	"main/internal/handlers/user_handler"
 	"main/internal/lib/jwttoken"
 	"main/internal/lib/liblogger"
@@ -59,6 +60,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	// init handlers
 	userHandler := user_handler.New(userService)
 	authHandler := auth_handler.New(authService)
+	participantHandler := participant_handler.New(participantService)
 
 	// init rabbitMQ
 	rabbitConnect := rabbitmq.MustConnect(cfg.AddressRabbitPath)
@@ -81,7 +83,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	router.Use(middleware.URLFormat)
 
 	// init routes
-	app.initRoutes(router, authHandler, userHandler)
+	app.initRoutes(router, authHandler, userHandler, participantHandler)
 
 	// init server
 	app.server = &http.Server{
@@ -94,7 +96,8 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 
 func (a *App) initRoutes(router *chi.Mux,
 	authHandler *auth_handler.AuthHandler,
-	userHandler *user_handler.UserHandler) {
+	userHandler *user_handler.UserHandler,
+	participantHandler *participant_handler.ParticipantHandler) {
 
 	router.Post("/byadmin/register", authHandler.AdminRegister)
 	router.Post("/users/login", authHandler.Login)
@@ -102,8 +105,15 @@ func (a *App) initRoutes(router *chi.Mux,
 
 	router.With(base_access.BaseAccess()).Group(func(r chi.Router) {
 		r.Get("/users/{id}", userHandler.GetUserById)
-		r.Get("/users/all-info/{id}", userHandler.GetParticipantUserById)
+		r.Get("/users/all-info/{id}", userHandler.GetUserParticipantById)
 		r.Get("/users/list", userHandler.GetUsersByListId)
+
+		r.Put("/users/{id}", userHandler.Update)
+		r.Put("/participant/{id}", participantHandler.Update)
+
+		// r.Put("/schools/{id}", sch)
+
+		r.Delete("/users/{id}", userHandler.Delete)
 	})
 }
 

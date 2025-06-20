@@ -113,8 +113,8 @@ func (s *UserService) GetById(ctx context.Context, id string) (user_dto.UserResp
 	return user_mapper.ToDTO(userResult), nil
 }
 
-func (s *UserService) GetParticipantUserById(ctx context.Context, id string) (user_dto.ParticipantUserResponseDTO, error) {
-	const op = "services.user_services.GetParticipantUserById"
+func (s *UserService) GetUserParticipantById(ctx context.Context, id string) (user_dto.UserParticipantResponseDTO, error) {
+	const op = "services.user_services.GetUserParticipantById"
 	const errMsg = "failed to find all info user"
 
 	log := s.log.With(
@@ -124,22 +124,22 @@ func (s *UserService) GetParticipantUserById(ctx context.Context, id string) (us
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		log.Error("failed to parse id from string to uuid", liblogger.Err(err))
-		return user_dto.ParticipantUserResponseDTO{}, fmt.Errorf("%s", errMsg)
+		return user_dto.UserParticipantResponseDTO{}, fmt.Errorf("%s", errMsg)
 	}
 
 	userResult, err := s.userRepository.GetById(ctx, s.db, uid)
 	if err != nil {
 		log.Error("failed to get user", liblogger.Err(err))
-		return user_dto.ParticipantUserResponseDTO{}, fmt.Errorf("%s", errMsg)
+		return user_dto.UserParticipantResponseDTO{}, fmt.Errorf("%s", errMsg)
 	}
 
 	participantResult, err := s.participantRepository.GetByUserId(ctx, s.db, userResult.ID)
 	if err != nil {
 		log.Error("failed to get participant", liblogger.Err(err))
-		return user_dto.ParticipantUserResponseDTO{}, fmt.Errorf("%s", errMsg)
+		return user_dto.UserParticipantResponseDTO{}, fmt.Errorf("%s", errMsg)
 	}
 
-	return user_dto.ParticipantUserResponseDTO{
+	return user_dto.UserParticipantResponseDTO{
 		UserResponseDTO:        user_mapper.ToDTO(userResult),
 		ParticipantResponseDTO: paricipant_mapper.ToDTO(participantResult),
 	}, nil

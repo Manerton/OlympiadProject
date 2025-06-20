@@ -2,7 +2,7 @@ package user_dto
 
 import participant_dto "main/internal/dto/participant"
 
-type ParticipantUserResponseDTO struct {
+type UserParticipantResponseDTO struct {
 	UserResponseDTO
 	participant_dto.ParticipantResponseDTO
 }
