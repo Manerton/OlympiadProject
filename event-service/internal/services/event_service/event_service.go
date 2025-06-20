@@ -65,19 +65,25 @@ func (s *EventService) GetAllEvents(ctx context.Context, offset, limit *int) ([]
 }
 
 // Get event by id
-func (s *EventService) GetEventByID(ctx context.Context, id uuid.UUID) (event_dto.EventDTO, error) {
+func (s *EventService) GetEventByID(ctx context.Context, id string) (event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventByID"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
-	if id == uuid.Nil {
-		log.Error("failed with id", slog.Any("invalid id:", id))
-		return event_dto.EventDTO{}, fmt.Errorf("%s: invalid ID %d", op, id)
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error("failed with id", liblogger.Err(err))
+		return event_dto.EventDTO{}, fmt.Errorf("failed to parse id")
 	}
 
-	event, err := s.repository.GetEventByID(ctx, s.db, id)
+	if uid == uuid.Nil {
+		log.Error("failed with id", slog.Any("invalid id:", uid))
+		return event_dto.EventDTO{}, fmt.Errorf("%s: invalid ID %d", op, uid)
+	}
+
+	event, err := s.repository.GetEventByID(ctx, s.db, uid)
 	if err != nil {
 		log.Error("failed to get event by ID", liblogger.Err(err))
 		return event_dto.EventDTO{}, fmt.Errorf("%s: %w", op, err)
@@ -159,14 +165,20 @@ func (s *EventService) GetCountEventsByType(ctx context.Context, eventType event
 }
 
 // Get count events by previous id (for pagination)
-func (s *EventService) GetCountEventsByPreviousID(ctx context.Context, id uuid.UUID) (int64, error) {
+func (s *EventService) GetCountEventsByPreviousID(ctx context.Context, id string) (int64, error) {
 	const op = "services.event_service.GetCountEvents"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
-	count, err := s.repository.GetCountEventsByPreviousID(ctx, s.db, id)
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error("failed parse id", liblogger.Err(err))
+		return 0, fmt.Errorf("%s: %v", op, err)
+	}
+
+	count, err := s.repository.GetCountEventsByPreviousID(ctx, s.db, uid)
 	if err != nil {
 		log.Error("failed to get count events by PreviousID",
 			slog.Any("id", id),
@@ -251,14 +263,23 @@ func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id uu
 }
 
 // Get list events by PreviousID
-func (s *EventService) GetEventsByPreviousID(ctx context.Context, previousId uuid.UUID, offset, limit *int, order *string) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetEventsByPreviousID(ctx context.Context, previousId string, offset, limit *int, order *string) ([]event_dto.EventDTO, error) {
 	const op = "services.event_service.GetEventsByPreviousID"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
-	events, err := s.repository.GetEventsByPreviousID(ctx, s.db, previousId, offset, limit, order)
+	uid, err := uuid.Parse(previousId)
+	if err != nil {
+		log.Error("failed to parse PreviousID",
+			slog.Any("id", previousId),
+			liblogger.Err(err),
+		)
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	events, err := s.repository.GetEventsByPreviousID(ctx, s.db, uid, offset, limit, order)
 	if err != nil {
 		log.Error("failed to get events by PreviousID",
 			slog.Any("id", previousId),
@@ -664,12 +685,19 @@ func (s *EventService) UpdateEvent(ctx context.Context, event_dto event_dto.Even
 }
 
 // Delete event
-func (s *EventService) DeleteEvent(ctx context.Context, id uuid.UUID) error {
+func (s *EventService) DeleteEvent(ctx context.Context, id string) error {
 	const op = "services.event_service.DeleteEvent"
 	log := s.log.With(
 		slog.String("op", op),
 	)
-	err := s.repository.DeleteEvent(ctx, s.db, id)
+
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error("failed to parse id", liblogger.Err(err))
+		return fmt.Errorf("failed parse id %s: %w", op, err)
+	}
+
+	err = s.repository.DeleteEvent(ctx, s.db, uid)
 	if err != nil {
 		log.Error("failed to delete event", liblogger.Err(err))
 		return fmt.Errorf("%s: %w", op, err)
