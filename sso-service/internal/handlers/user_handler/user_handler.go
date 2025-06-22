@@ -12,7 +12,7 @@ import (
 )
 
 type UserService interface {
-	GetAll(ctx context.Context, page *int, limit *int) ([]user_dto.UserResponseDTO, error)
+	GetAll(ctx context.Context, page, limit *int) ([]user_dto.UserResponseDTO, error)
 	GetByFilter(ctx context.Context, searchUser user_dto.SearchAttributesUserDTO) (user_dto.UserResponseDTO, error)
 	GetById(ctx context.Context, id string) (user_dto.UserResponseDTO, error)
 	GetUserParticipantById(ctx context.Context, id string) (user_dto.UserParticipantResponseDTO, error)
@@ -42,6 +42,7 @@ func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
 		render.JSON(w, r, response.ErrorResponse("failed parse page/limit"))
+		return
 	}
 
 	usersResponse, err := h.UserService.GetAll(ctx, page, limit)
