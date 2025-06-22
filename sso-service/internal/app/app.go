@@ -83,7 +83,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	router.Use(middleware.URLFormat)
 
 	// init routes
-	app.initRoutes(router, authHandler, userHandler, participantHandler)
+	app.initRoutes(router, jwtManager, authHandler, userHandler, participantHandler)
 
 	// init server
 	app.server = &http.Server{
@@ -95,6 +95,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 }
 
 func (a *App) initRoutes(router *chi.Mux,
+	jwtManager *jwttoken.JWTManager,
 	authHandler *auth_handler.AuthHandler,
 	userHandler *user_handler.UserHandler,
 	participantHandler *participant_handler.ParticipantHandler) {
@@ -103,7 +104,7 @@ func (a *App) initRoutes(router *chi.Mux,
 	router.Post("/users/login", authHandler.Login)
 	router.Post("/users/register", authHandler.Register)
 
-	router.With(base_access.BaseAccess()).Group(func(r chi.Router) {
+	router.With(base_access.BaseAccess(jwtManager)).Group(func(r chi.Router) {
 		r.Get("/users/{id}", userHandler.GetUserById)
 		r.Get("/users/all-info/{id}", userHandler.GetUserParticipantById)
 		r.Get("/users/list", userHandler.GetUsersByListId)
