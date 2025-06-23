@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"log/slog"
 	register_dto "main/internal/dto/auth/register"
 	participant_dto "main/internal/dto/participant"
@@ -113,6 +114,7 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 				}
 
 				rabbitDTO := rabbit_dto.RabbitDTO{}
+
 				if err := json.Unmarshal(msg.Body, &rabbitDTO); err != nil {
 					c.log.Error("invalid message format", liblogger.Err(err))
 					msg.Nack(false, false)
@@ -143,14 +145,15 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 		c.log.Error("failed convert SearchAttributes from data to json", liblogger.Err(err))
 	}
 
-	id := ""
-	if rabbitDTO.Method == UPDATE || rabbitDTO.Method == DELETE {
-		id, ok := rabbitDTO.Data.SearchAttributes["id"].(string)
-		if !ok {
-			c.log.Error("failed id does not exist", slog.String("id", id))
-			return fmt.Errorf("failed update: ID does not exist")
-		}
-	}
+	// id := ""
+	// if rabbitDTO.Method == UPDATE || rabbitDTO.Method == DELETE {
+	// 	id, ok := rabbitDTO.Data.SearchAttributes["id"].(string)
+	// 	if !ok {
+	// 		c.log.Error("failed id does not exist", slog.String("id", id))
+	// 		return fmt.Errorf("failed update: ID does not exist")
+	// 	}
+	// 	c.log.Debug("id", slog.String("id", id))
+	// }
 
 	switch rabbitDTO.Method {
 	case GET:
@@ -168,12 +171,26 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 			return fmt.Errorf("failed create data")
 		}
 	case UPDATE:
+		id, ok := rabbitDTO.Data.SearchAttributes["id"].(string)
+		if !ok {
+			c.log.Error("failed id does not exist", slog.String("id", id))
+			return fmt.Errorf("failed update: ID does not exist")
+		}
+		c.log.Debug("id", slog.String("id", id))
+
 		err := c.update(ctx, rabbitDTO.Data.Table, attributesDataJSON, id)
 		if err != nil {
 			c.log.Error("failed update", liblogger.Err(err))
 			return fmt.Errorf("failed update data")
 		}
 	case DELETE:
+		id, ok := rabbitDTO.Data.SearchAttributes["id"].(string)
+		if !ok {
+			c.log.Error("failed id does not exist", slog.String("id", id))
+			return fmt.Errorf("failed update: ID does not exist")
+		}
+		c.log.Debug("id", slog.String("id", id))
+
 		err := c.delete(ctx, rabbitDTO.Data.Table, id)
 		if err != nil {
 			c.log.Error("failed delete", liblogger.Err(err))
@@ -256,6 +273,8 @@ func (c *RabbitConsumer) update(ctx context.Context, tableName string, dataJSON 
 		if err != nil {
 			return fmt.Errorf("failed parse json: %w", err)
 		}
+
+		log.Println("id", id)
 
 		err = c.userService.Update(ctx, id, userDTO)
 		if err != nil {

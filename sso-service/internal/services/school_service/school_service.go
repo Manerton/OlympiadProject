@@ -15,7 +15,7 @@ import (
 
 type SchoolRepository interface {
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (school.School, error)
-	GetAll(ctx context.Context, orm orm.ORM) ([]school.School, error)
+	GetAll(ctx context.Context, orm orm.ORM, offset, limit *int) ([]school.School, error)
 
 	Create(ctx context.Context, orm orm.ORM, school school.School) (uuid.UUID, error)
 	Update(ctx context.Context, orm orm.ORM, school school.School) error
@@ -59,7 +59,7 @@ func (s *SchoolService) GetById(ctx context.Context, id string) (school_dto.Scho
 	return school_mapper.FromModelToDTO(schoolModel), nil
 }
 
-func (s *SchoolService) GetAll(ctx context.Context) ([]school_dto.SchoolResponeDTO, error) {
+func (s *SchoolService) GetAll(ctx context.Context, page, limit *int) ([]school_dto.SchoolResponeDTO, error) {
 	const op = "services.school_service.GetAll"
 	const errMsg = "failed get all schools"
 
@@ -67,7 +67,12 @@ func (s *SchoolService) GetAll(ctx context.Context) ([]school_dto.SchoolResponeD
 		slog.String("op", op),
 	)
 
-	schoolsResult, err := s.schoolRepository.GetAll(ctx, s.db)
+	offset := new(int)
+	if page != nil && limit != nil {
+		*offset = (*page - 1) * (*limit)
+	}
+
+	schoolsResult, err := s.schoolRepository.GetAll(ctx, s.db, offset, limit)
 	if err != nil {
 		log.Error("failed get all schools", liblogger.Err(err))
 		return nil, fmt.Errorf("%s", errMsg)

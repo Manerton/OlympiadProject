@@ -57,6 +57,8 @@ func FromRegisterUserToModel(regiterDTO *register_dto.RegisterUserRequestDTO) us
 }
 
 func FromUpdateToModel(updateDTO user_dto.UpdateUserRequestDTO, uid uuid.UUID) user.User {
+	gender, _ := updateDTO.Gender.Int64()
+
 	return user.User{
 		ID:          uid,
 		Email:       *updateDTO.Email,
@@ -64,6 +66,7 @@ func FromUpdateToModel(updateDTO user_dto.UpdateUserRequestDTO, uid uuid.UUID) u
 		Surname:     *updateDTO.Surname,
 		Patronymic:  *updateDTO.Patronymic,
 		PhoneNumber: *updateDTO.PhoneNumber,
+		Gender:      user.GenderType(gender),
 	}
 }
 

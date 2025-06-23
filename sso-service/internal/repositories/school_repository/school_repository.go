@@ -22,11 +22,11 @@ func (r *SchoolRepository) GetById(ctx context.Context, orm orm.ORM, id uuid.UUI
 	return schoolResult, nil
 }
 
-func (r *SchoolRepository) GetAll(ctx context.Context, orm orm.ORM) ([]school.School, error) {
+func (r *SchoolRepository) GetAll(ctx context.Context, orm orm.ORM, offset, limit *int) ([]school.School, error) {
 	const op = "repositories.school_repository.GetAll"
 
 	schoolsResult := []school.School{}
-	err := orm.Find(ctx, school.School{}, nil, nil, nil, nil, &schoolsResult, nil)
+	err := orm.Find(ctx, school.School{}, nil, offset, limit, nil, &schoolsResult, nil)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
