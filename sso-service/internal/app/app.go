@@ -7,6 +7,7 @@ import (
 	"main/internal/config"
 	"main/internal/handlers/auth_handler"
 	"main/internal/handlers/participant_handler"
+	"main/internal/handlers/school_handler"
 	"main/internal/handlers/user_handler"
 	"main/internal/lib/jwttoken"
 	"main/internal/lib/liblogger"
@@ -61,6 +62,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	userHandler := user_handler.New(userService)
 	authHandler := auth_handler.New(authService)
 	participantHandler := participant_handler.New(participantService)
+	schoolHandler := school_handler.New(schoolService)
 
 	// init rabbitMQ
 	rabbitConnect := rabbitmq.MustConnect(cfg.AddressRabbitPath)
@@ -83,7 +85,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	router.Use(middleware.URLFormat)
 
 	// init routes
-	app.initRoutes(router, jwtManager, authHandler, userHandler, participantHandler)
+	app.initRoutes(router, jwtManager, authHandler, userHandler, schoolHandler, participantHandler)
 
 	// init server
 	app.server = &http.Server{
@@ -98,23 +100,28 @@ func (a *App) initRoutes(router *chi.Mux,
 	jwtManager *jwttoken.JWTManager,
 	authHandler *auth_handler.AuthHandler,
 	userHandler *user_handler.UserHandler,
+	schoolHandler *school_handler.SchoolHandler,
 	participantHandler *participant_handler.ParticipantHandler) {
 
-	router.Post("/byadmin/register", authHandler.AdminRegister)
-	router.Post("/users/login", authHandler.Login)
-	router.Post("/users/register", authHandler.Register)
+	router.Post("/api/byadmin/register", authHandler.AdminRegister)
+	router.Post("/api/users/login", authHandler.Login)
+	router.Post("/api/users/register", authHandler.Register)
 
 	router.With(base_access.BaseAccess(jwtManager)).Group(func(r chi.Router) {
-		r.Get("/users/{id}", userHandler.GetUserById)
-		r.Get("/users/all-info/{id}", userHandler.GetUserParticipantById)
-		r.Get("/users/list", userHandler.GetUsersByListId)
+		r.Get("/api/users", userHandler.GetAll)
+		r.Get("/api/users/{id}", userHandler.GetUserById)
+		r.Get("/api/users/all-info/{id}", userHandler.GetUserParticipantById)
+		r.Get("/api/users/list", userHandler.GetUsersByListId)
+		r.Get("/api/schools/", schoolHandler.GetAll)
+		r.Get("/api/schools/{id}", schoolHandler.GetById)
 
-		r.Put("/users/{id}", userHandler.Update)
-		r.Put("/participant/{id}", participantHandler.Update)
+		r.Put("/api/users/{id}", userHandler.Update)
+		r.Put("/api/participant/{id}", participantHandler.Update)
+		r.Put("/api/schools/{id}", schoolHandler.Update)
 
 		// r.Put("/schools/{id}", sch)
 
-		r.Delete("/users/{id}", userHandler.Delete)
+		r.Delete("/api/users/{id}", userHandler.Delete)
 	})
 }
 

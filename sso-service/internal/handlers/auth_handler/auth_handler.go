@@ -15,6 +15,8 @@ type AuthService interface {
 	Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO) (*login_dto.AuthResultDTO, error)
 	RegisterParticipant(ctx context.Context, registerRequest *register_dto.RegisterParticipantRequestDTO) error
 	RegisterUser(ctx context.Context, userRequest *register_dto.RegisterUserRequestDTO) error
+
+	Refresh(ctx context.Context, refershToken string) (*login_dto.AuthResultDTO, error)
 }
 
 type AuthHandler struct {
@@ -49,7 +51,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	// Set the JWT token in a cookie
 	http.SetCookie(w, &http.Cookie{
-		Name:     "token",
+		Name:     "refresh_token",
 		Value:    authResult.RefreshToken,
 		HttpOnly: true,
 		Secure:   false,
@@ -114,4 +116,43 @@ func (h *AuthHandler) AdminRegister(w http.ResponseWriter, r *http.Request) {
 
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, response.SuccessResponse("register success"))
+}
+
+func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	refreshToken, err := r.Cookie("refresh_token")
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("refresh token not found"))
+		return
+	}
+
+	loginDTO, err := h.authService.Refresh(ctx, refreshToken.Value)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    loginDTO.RefreshToken,
+		HttpOnly: true,
+		Secure:   false,
+		// Domain:   "172.16.1.39",
+		SameSite: http.SameSiteStrictMode,
+		Path:     "/users/refresh",
+		Expires:  time.Now().Add(time.Duration(loginDTO.ExpiresInRefresh) * time.Second), // Match the token expiration
+	})
+
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, response.ApiResponse{
+		Status:     "SUCCESS",
+		StatusCode: http.StatusOK,
+		Data: login_dto.LoginResponseDTO{
+			AccessToken: loginDTO.AccessToken,
+			ExpiresIn:   loginDTO.ExpiresInAccess,
+		},
+	})
 }

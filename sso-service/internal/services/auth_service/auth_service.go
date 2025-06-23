@@ -222,3 +222,28 @@ func (s *AuthService) ActivateAccount(ctx context.Context, email string, userCod
 
 	return nil
 }
+
+func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_dto.AuthResultDTO, error) {
+	const op = "services.auth_service.Refresh"
+	const errMsg = "failed to refresh tokens"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	ok, err := s.jwtManager.VerifyToken(refreshToken)
+	if err != nil {
+		log.Error("faild verify token", liblogger.Err(err))
+		return nil, fmt.Errorf("%s", errMsg)
+	}
+
+	if !ok {
+		log.Error("token is expired")
+		return nil, fmt.Errorf("%s", errMsg)
+	}
+
+	// newRefreshToken :=
+
+	return nil, nil
+
+}
