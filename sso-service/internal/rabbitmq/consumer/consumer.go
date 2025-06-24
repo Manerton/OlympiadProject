@@ -14,6 +14,7 @@ import (
 	"main/internal/lib/liblogger"
 	"main/internal/rabbitmq/producer"
 
+	"github.com/mitchellh/mapstructure"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -135,62 +136,39 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 }
 
 func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.RabbitDTO) error {
-	attributesDataJSON, err := json.Marshal(rabbitDTO.Data.Attributes)
-	if err != nil {
-		c.log.Error("failed convert Attributes from data to json", liblogger.Err(err))
+	id := ""
+	if rabbitDTO.Method == UPDATE || rabbitDTO.Method == DELETE {
+		var ok bool
+		id, ok = rabbitDTO.Data.SearchAttributes["id"].(string)
+		if !ok {
+			c.log.Error("failed id does not exist", slog.String("id", id))
+			return fmt.Errorf("failed update: ID does not exist")
+		}
+		c.log.Debug("id", slog.String("id", id))
 	}
-
-	searchDataJSON, err := json.Marshal(rabbitDTO.Data.SearchAttributes)
-	if err != nil {
-		c.log.Error("failed convert SearchAttributes from data to json", liblogger.Err(err))
-	}
-
-	// id := ""
-	// if rabbitDTO.Method == UPDATE || rabbitDTO.Method == DELETE {
-	// 	id, ok := rabbitDTO.Data.SearchAttributes["id"].(string)
-	// 	if !ok {
-	// 		c.log.Error("failed id does not exist", slog.String("id", id))
-	// 		return fmt.Errorf("failed update: ID does not exist")
-	// 	}
-	// 	c.log.Debug("id", slog.String("id", id))
-	// }
 
 	switch rabbitDTO.Method {
 	case GET:
-		result, err := c.get(ctx, rabbitDTO.Data.Table, searchDataJSON)
+		result, err := c.get(ctx, rabbitDTO.Data.Table, rabbitDTO.Data.SearchAttributes)
 		if err != nil {
 			c.log.Error("failed get", liblogger.Err(err))
 			return fmt.Errorf("failed get data")
 		}
 		producer.SendToQueue(c.rabbitCannel, rabbitDTO.AppName, result)
 	case CREATE:
-		err := c.create(ctx, rabbitDTO.Data.Table, attributesDataJSON)
+		err := c.create(ctx, rabbitDTO.Data.Table, rabbitDTO.Data.Attributes)
 		if err != nil {
 			c.log.Error("failed create", liblogger.Err(err))
 			c.log.Debug("dataJSON", slog.Any("data", rabbitDTO.Data.Attributes))
 			return fmt.Errorf("failed create data")
 		}
 	case UPDATE:
-		id, ok := rabbitDTO.Data.SearchAttributes["id"].(string)
-		if !ok {
-			c.log.Error("failed id does not exist", slog.String("id", id))
-			return fmt.Errorf("failed update: ID does not exist")
-		}
-		c.log.Debug("id", slog.String("id", id))
-
-		err := c.update(ctx, rabbitDTO.Data.Table, attributesDataJSON, id)
+		err := c.update(ctx, rabbitDTO.Data.Table, rabbitDTO.Data.Attributes, id)
 		if err != nil {
 			c.log.Error("failed update", liblogger.Err(err))
 			return fmt.Errorf("failed update data")
 		}
 	case DELETE:
-		id, ok := rabbitDTO.Data.SearchAttributes["id"].(string)
-		if !ok {
-			c.log.Error("failed id does not exist", slog.String("id", id))
-			return fmt.Errorf("failed update: ID does not exist")
-		}
-		c.log.Debug("id", slog.String("id", id))
-
 		err := c.delete(ctx, rabbitDTO.Data.Table, id)
 		if err != nil {
 			c.log.Error("failed delete", liblogger.Err(err))
@@ -201,12 +179,12 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 	return nil
 }
 
-func (c *RabbitConsumer) get(ctx context.Context, tableName string, dataJSON []byte) ([]byte, error) {
+func (c *RabbitConsumer) get(ctx context.Context, tableName string, data map[string]any) ([]byte, error) {
 	jsonResult := []byte{}
 	switch tableName {
 	case USER_TABLE:
 		userDTO := user_dto.SearchAttributesUserDTO{}
-		if err := json.Unmarshal(dataJSON, &userDTO); err != nil {
+		if err := mapstructure.Decode(data, &userDTO); err != nil {
 			return nil, fmt.Errorf("failed parse from json: %w", err)
 		}
 
@@ -227,11 +205,11 @@ func (c *RabbitConsumer) get(ctx context.Context, tableName string, dataJSON []b
 	return jsonResult, nil
 }
 
-func (c *RabbitConsumer) create(ctx context.Context, tableName string, dataJSON []byte) error {
+func (c *RabbitConsumer) create(ctx context.Context, tableName string, data map[string]any) error {
 	switch tableName {
 	case USER_TABLE:
 		userDTO := register_dto.RegisterUserRequestDTO{}
-		if err := userDTO.UnmarshalJSON(dataJSON); err != nil {
+		if err := mapstructure.Decode(data, &userDTO); err != nil {
 			return fmt.Errorf("failed parse json: %w", err)
 		}
 
@@ -241,7 +219,7 @@ func (c *RabbitConsumer) create(ctx context.Context, tableName string, dataJSON 
 		}
 	case PARTICIPANT_TABLE:
 		participantDTO := register_dto.RegisterParticipantRequestDTO{}
-		if err := json.Unmarshal(dataJSON, &participantDTO); err != nil {
+		if err := mapstructure.Decode(data, &participantDTO); err != nil {
 			return fmt.Errorf("failed parse json: %w", err)
 		}
 
@@ -251,7 +229,7 @@ func (c *RabbitConsumer) create(ctx context.Context, tableName string, dataJSON 
 		}
 	case SCHOOL_TABLE:
 		schoolDTO := school_dto.CreateSchoolRequestDTO{}
-		if err := json.Unmarshal(dataJSON, &schoolDTO); err != nil {
+		if err := mapstructure.Decode(data, &schoolDTO); err != nil {
 			return fmt.Errorf("failed parse json: %w", err)
 		}
 
@@ -265,40 +243,37 @@ func (c *RabbitConsumer) create(ctx context.Context, tableName string, dataJSON 
 	return nil
 }
 
-func (c *RabbitConsumer) update(ctx context.Context, tableName string, dataJSON []byte, id string) error {
+func (c *RabbitConsumer) update(ctx context.Context, tableName string, data map[string]any, id string) error {
 	switch tableName {
 	case USER_TABLE:
 		userDTO := user_dto.UpdateUserRequestDTO{}
-		err := json.Unmarshal(dataJSON, &userDTO)
-		if err != nil {
+		if err := mapstructure.Decode(data, &userDTO); err != nil {
 			return fmt.Errorf("failed parse json: %w", err)
 		}
 
 		log.Println("id", id)
 
-		err = c.userService.Update(ctx, id, userDTO)
+		err := c.userService.Update(ctx, id, userDTO)
 		if err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	case PARTICIPANT_TABLE:
 		participantDTO := participant_dto.UpdateParticipantRequestDTO{}
-		err := json.Unmarshal(dataJSON, &participantDTO)
-		if err != nil {
+		if err := mapstructure.Decode(data, &participantDTO); err != nil {
 			return fmt.Errorf("failed parse json: %w", err)
 		}
 
-		err = c.participantService.Update(ctx, id, participantDTO)
+		err := c.participantService.Update(ctx, id, participantDTO)
 		if err != nil {
 			return fmt.Errorf("%w", err)
 		}
 	case SCHOOL_TABLE:
 		schoolDTO := school_dto.UpdateSchoolRequestDTO{}
-		err := json.Unmarshal(dataJSON, &schoolDTO)
-		if err != nil {
+		if err := mapstructure.Decode(data, &schoolDTO); err != nil {
 			return fmt.Errorf("failed parse json: %w", err)
 		}
 
-		err = c.schoolService.Update(ctx, id, schoolDTO)
+		err := c.schoolService.Update(ctx, id, schoolDTO)
 		if err != nil {
 			return fmt.Errorf("%w", err)
 		}
