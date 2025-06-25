@@ -16,6 +16,7 @@ import (
 	"main/internal/rabbitmq"
 	"main/internal/rabbitmq/consumer"
 	"main/internal/repositories/participant_repository"
+	"main/internal/repositories/refresh_repository"
 	"main/internal/repositories/school_repository"
 	"main/internal/repositories/user_repository"
 	"main/internal/services/auth_service"
@@ -52,9 +53,10 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	userRepository := &user_repository.UserRepository{}
 	participantRepository := &participant_repository.ParticipantRepository{}
 	schoolRepository := &school_repository.SchoolRepository{}
+	refreshRepository := &refresh_repository.RefreshRepository{}
 
 	// init services
-	authService := auth_service.New(log, gormORM, jwtManager, userRepository, participantRepository)
+	authService := auth_service.New(log, gormORM, jwtManager, userRepository, participantRepository, refreshRepository)
 	userService := user_service.New(log, gormORM, userRepository, participantRepository)
 	schoolService := school_service.New(log, gormORM, schoolRepository)
 	participantService := participant_service.New(log, gormORM, participantRepository)

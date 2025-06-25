@@ -12,15 +12,18 @@ import (
 	paricipant_mapper "main/internal/lib/mapper/participant_mapper"
 	"main/internal/lib/mapper/user_mapper"
 	"main/internal/models/participant"
+	"main/internal/models/refresh_token"
 	"main/internal/models/user"
 	"main/internal/services/another_service"
 	"main/internal/storage/orm"
 	redisdb "main/internal/storage/redis"
+	"time"
 
 	"github.com/google/uuid"
 )
 
 type UserRepository interface {
+	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (user.User, error)
 	GetByEmail(ctx context.Context, orm orm.ORM, email string) (*user.User, error)
 	Create(ctx context.Context, orm orm.ORM, user user.User) (uuid.UUID, error)
 	Update(ctx context.Context, orm orm.ORM, user user.User) error
@@ -30,22 +33,29 @@ type ParticipantRepository interface {
 	Create(ctx context.Context, orm orm.ORM, participant participant.Participant) (uuid.UUID, error)
 }
 
+type RefreshRepository interface {
+	Create(ctx context.Context, orm orm.ORM, refreshToken refresh_token.RefreshToken) (uuid.UUID, error)
+	Delete(ctx context.Context, orm orm.ORM, id uuid.UUID) error
+}
+
 type AuthService struct {
 	log                   *slog.Logger
 	jwtManager            *jwttoken.JWTManager
 	db                    orm.ORM
 	userRepository        UserRepository
 	participantRepository ParticipantRepository
+	refreshRepository     RefreshRepository
 }
 
 func New(log *slog.Logger, orm orm.ORM, jwtManager *jwttoken.JWTManager,
-	userRepository UserRepository, participantRepository ParticipantRepository) *AuthService {
+	userRepository UserRepository, participantRepository ParticipantRepository, refreshRepository RefreshRepository) *AuthService {
 	return &AuthService{
 		log:                   log,
 		db:                    orm,
 		jwtManager:            jwtManager,
 		userRepository:        userRepository,
 		participantRepository: participantRepository,
+		refreshRepository:     refreshRepository,
 	}
 }
 
@@ -82,7 +92,7 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 	}
 
 	// create refresh token
-	refreshToken, err := s.jwtManager.CreateRefreshToken(*userResult)
+	refreshToken, err := s.preparationRefreshToken(ctx, *userResult)
 	if err != nil {
 		log.Error("failed when create refresh token", liblogger.Err(err))
 		return nil, fmt.Errorf("%s", errMsg)
@@ -94,6 +104,34 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 		ExpiresInAccess:  int64(s.jwtManager.GetAccessDuration().Seconds()),
 		ExpiresInRefresh: int64(s.jwtManager.GetRefreshDuration().Seconds()),
 	}, err
+}
+
+func (s *AuthService) preparationRefreshToken(ctx context.Context, userResult user.User) (string, error) {
+	// create refresh token
+	refreshToken, err := s.jwtManager.CreateRefreshToken(userResult)
+	if err != nil {
+		return "", fmt.Errorf("failed when create refresh token: %w", err)
+	}
+
+	// hash token
+	hashToken, err := crypt.HashPassword(refreshToken)
+	if err != nil {
+		return "", fmt.Errorf("failed hash token: %w", err)
+	}
+
+	refreshTokenModel := refresh_token.RefreshToken{
+		UserID:    userResult.ID,
+		TokenHash: hashToken,
+		ExpiresAt: time.Now().Add(s.jwtManager.GetRefreshDuration()),
+	}
+
+	// save refresh token
+	_, err = s.refreshRepository.Create(ctx, s.db, refreshTokenModel)
+	if err != nil {
+		return "", fmt.Errorf("failed save refresh token: %w", err)
+	}
+
+	return refreshToken, nil
 }
 
 func (s *AuthService) RegisterUser(ctx context.Context, registerUser *register_dto.RegisterUserRequestDTO) error {
@@ -231,19 +269,43 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 		slog.String("op", op),
 	)
 
-	ok, err := s.jwtManager.VerifyToken(refreshToken)
+	nowToken, err := s.jwtManager.VerifyToken(refreshToken)
 	if err != nil {
-		log.Error("faild verify token", liblogger.Err(err))
+		log.Error("failed verify token", liblogger.Err(err))
 		return nil, fmt.Errorf("%s", errMsg)
 	}
 
-	if !ok {
-		log.Error("token is expired")
+	tokenClaims, err := s.jwtManager.GetRefreshClaims(nowToken)
+	if err != nil {
+		log.Error("failed get refresh token claims", liblogger.Err(err))
 		return nil, fmt.Errorf("%s", errMsg)
 	}
 
-	// newRefreshToken :=
+	userFind, err := s.userRepository.GetById(ctx, s.db, tokenClaims.UserId)
+	if err != nil {
+		log.Error("failed get user", liblogger.Err(err))
+		return nil, fmt.Errorf("%s", errMsg)
+	}
 
-	return nil, nil
+	// create token
+	token, err := s.jwtManager.CreateToken(userFind)
+	if err != nil {
+		log.Error("failed when create token", liblogger.Err(err))
+		return nil, fmt.Errorf("%s", errMsg)
+	}
+
+	// create refresh token
+	newRefreshToken, err := s.preparationRefreshToken(ctx, userFind)
+	if err != nil {
+		log.Error("failed when create refresh token", liblogger.Err(err))
+		return nil, fmt.Errorf("%s", errMsg)
+	}
+
+	return &login_dto.AuthResultDTO{
+		AccessToken:      token,
+		RefreshToken:     newRefreshToken,
+		ExpiresInAccess:  int64(s.jwtManager.GetAccessDuration().Seconds()),
+		ExpiresInRefresh: int64(s.jwtManager.GetRefreshDuration().Seconds()),
+	}, err
 
 }
