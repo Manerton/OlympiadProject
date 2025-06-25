@@ -1,4 +1,4 @@
-package refresh_reptository
+package refresh_repository
 
 import (
 	"context"
