@@ -22,7 +22,7 @@ type ORM interface {
 
 	Count(ctx context.Context, model interface{}, count *int64, query interface{}, args ...interface{}) error
 	Create(ctx context.Context, dest interface{}) error
-	Updates(ctx context.Context, dest interface{}) error
+	Updates(ctx context.Context, conditions interface{}, updates interface{}) error
 	Delete(ctx context.Context, dest interface{}, conds ...interface{}) error
 	TransactionBegin() (ORM, error)
 	TransactionCommit() error
@@ -54,9 +54,9 @@ func (g *Gorm) Create(ctx context.Context, dest interface{}) error {
 	return nil
 }
 
-func (g *Gorm) Updates(ctx context.Context, dest interface{}) error {
+func (g *Gorm) Updates(ctx context.Context, conditions interface{}, updates interface{}) error {
 	const op = "storage.orm.Update"
-	result := g.DB.WithContext(ctx).Updates(dest)
+	result := g.DB.WithContext(ctx).Where(conditions).Updates(updates)
 	if err := result.Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

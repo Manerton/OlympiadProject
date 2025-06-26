@@ -32,10 +32,11 @@ func (r *ParticipantRepository) Create(ctx context.Context, orm orm.ORM, partici
 
 	return participant.ID, nil
 }
+
 func (r *ParticipantRepository) Update(ctx context.Context, orm orm.ORM, participant participant.Participant) error {
 	const op = "repositories.participant_repository.Update"
 
-	err := orm.Updates(ctx, &participant)
+	err := orm.Updates(ctx, nil, &participant)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

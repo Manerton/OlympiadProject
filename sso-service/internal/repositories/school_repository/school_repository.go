@@ -46,7 +46,7 @@ func (r *SchoolRepository) Create(ctx context.Context, orm orm.ORM, school schoo
 func (r *SchoolRepository) Update(ctx context.Context, orm orm.ORM, school school.School) error {
 	const op = "repositories.school_repository.Update"
 
-	err := orm.Updates(ctx, &school)
+	err := orm.Updates(ctx, nil, &school)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

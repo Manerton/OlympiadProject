@@ -83,7 +83,7 @@ func (r *UserRepository) Create(ctx context.Context, orm orm.ORM, user user.User
 
 func (r *UserRepository) Update(ctx context.Context, orm orm.ORM, user user.User) error {
 	const op = "repositories.use_repository.Update"
-	err := orm.Updates(ctx, &user)
+	err := orm.Updates(ctx, nil, &user)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

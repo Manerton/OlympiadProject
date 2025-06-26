@@ -12,7 +12,7 @@ import (
 type RefreshRepository struct{}
 
 func (r *RefreshRepository) GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (refresh_token.RefreshToken, error) {
-	const op = "repository.refresh_reposiotry.GetById"
+	const op = "repository.refresh_repository.GetById"
 
 	resultToken := refresh_token.RefreshToken{}
 	err := orm.First(ctx, refresh_token.RefreshToken{}, nil, &resultToken)
@@ -24,7 +24,7 @@ func (r *RefreshRepository) GetById(ctx context.Context, orm orm.ORM, id uuid.UU
 }
 
 func (r *RefreshRepository) GetByUserId(ctx context.Context, orm orm.ORM, userId uuid.UUID) ([]refresh_token.RefreshToken, error) {
-	const op = "repository.refresh_reposiotry.GetByUserId"
+	const op = "repository.refresh_repository.GetByUserId"
 
 	resultsToken := []refresh_token.RefreshToken{}
 	err := orm.Find(ctx, refresh_token.RefreshToken{}, nil, nil, nil, nil, &resultsToken)
@@ -36,7 +36,7 @@ func (r *RefreshRepository) GetByUserId(ctx context.Context, orm orm.ORM, userId
 }
 
 func (r *RefreshRepository) Create(ctx context.Context, orm orm.ORM, token refresh_token.RefreshToken) (uuid.UUID, error) {
-	const op = "repository.refresh_reposiotry.Create"
+	const op = "repository.refresh_repository.Create"
 
 	err := orm.Create(ctx, &token)
 	if err != nil {
@@ -46,10 +46,10 @@ func (r *RefreshRepository) Create(ctx context.Context, orm orm.ORM, token refre
 	return token.ID, nil
 }
 
-func (r *RefreshRepository) Update(ctx context.Context, orm orm.ORM, token refresh_token.RefreshToken) error {
-	const op = "repository.refresh_reposiotry.Update"
+func (r *RefreshRepository) Update(ctx context.Context, orm orm.ORM, conditions *refresh_token.RefreshToken, token refresh_token.RefreshToken) error {
+	const op = "repository.refresh_repository.Update"
 
-	err := orm.Updates(ctx, &token)
+	err := orm.Updates(ctx, conditions, &token)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -57,7 +57,7 @@ func (r *RefreshRepository) Update(ctx context.Context, orm orm.ORM, token refre
 }
 
 func (r *RefreshRepository) Delete(ctx context.Context, orm orm.ORM, id uuid.UUID) error {
-	const op = "repository.refresh_reposiotry.Update"
+	const op = "repository.refresh_reposiotry.Delete"
 
 	modelDel := refresh_token.RefreshToken{ID: id}
 	err := orm.Delete(ctx, modelDel)
