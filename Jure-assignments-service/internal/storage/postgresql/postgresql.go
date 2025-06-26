@@ -2,7 +2,7 @@ package postgresql
 
 import (
 	"fmt"
-	"main/internal/models/juryassignments"
+	"main/internal/models/jury_assignments"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -18,7 +18,7 @@ func NewPosgreSQL(connectStr string) (*gorm.DB, error) {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	err = db.AutoMigrate(&juryassignments.JuryAssignments{})
+	err = db.AutoMigrate(&jury_assignments.JuryAssignments{})
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

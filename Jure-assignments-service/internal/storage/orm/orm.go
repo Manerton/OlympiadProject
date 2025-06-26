@@ -1,18 +1,29 @@
 package orm
 
 import (
+	"context"
 	"fmt"
 
 	"gorm.io/gorm"
 )
 
 type ORM interface {
-	Create(interface{}) error
-	Updates(interface{}) error
-	Delete(interface{}, ...interface{}) error
-	Find(interface{}, ...interface{}) error
-	FindWithSelect([]string, interface{}, ...interface{}) error
-	First(interface{}, ...interface{}) error
+	// Find by parametrs
+	//
+	// model - your db model
+	//
+	// fields - []string filelds model for select
+	//
+	// offset, limit - just ofset and limit)
+	//
+	// order - ORDER BY
+	Find(ctx context.Context, model interface{}, fields *[]string, offset, limit *int, order *string, dest interface{}, conds ...interface{}) error
+	First(ctx context.Context, model interface{}, fields *[]string, dest interface{}, conds ...interface{}) error
+
+	Count(ctx context.Context, model interface{}, count *int64, query interface{}, args ...interface{}) error
+	Create(ctx context.Context, dest interface{}) error
+	Updates(ctx context.Context, conditions interface{}, updates interface{}) error
+	Delete(ctx context.Context, dest interface{}, conds ...interface{}) error
 	TransactionBegin() (ORM, error)
 	TransactionCommit() error
 	TransactionRollback() error
@@ -26,49 +37,75 @@ func NewGormORM(db *gorm.DB) ORM {
 	return &Gorm{DB: db}
 }
 
-func (g *Gorm) Create(dest interface{}) error {
+func (g *Gorm) Count(ctx context.Context, model interface{}, count *int64, query interface{}, args ...interface{}) error {
+	const op = "storage.orm.Count"
+	err := g.DB.WithContext(ctx).Model(model).Where(query, args).Count(count).Error
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (g *Gorm) Create(ctx context.Context, dest interface{}) error {
 	const op = "storage.orm.Create"
-	if err := g.DB.Create(dest).Error; err != nil {
+	if err := g.DB.WithContext(ctx).Create(dest).Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
 }
 
-func (g *Gorm) Updates(dest interface{}) error {
+func (g *Gorm) Updates(ctx context.Context, conditions interface{}, updates interface{}) error {
 	const op = "storage.orm.Update"
-	if err := g.DB.Updates(dest).Error; err != nil {
+	result := g.DB.WithContext(ctx).Where(conditions).Updates(updates)
+	if err := result.Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("record not found for update")
 	}
 	return nil
 }
 
-func (g *Gorm) Delete(dest interface{}, conds ...interface{}) error {
+func (g *Gorm) Delete(ctx context.Context, dest interface{}, conds ...interface{}) error {
 	const op = "storage.orm.Delete"
-	if err := g.DB.Delete(dest, conds...).Error; err != nil {
+	if err := g.DB.WithContext(ctx).Delete(dest, conds...).Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
 }
 
-func (g *Gorm) Find(dest interface{}, conds ...interface{}) error {
-	const op = "storage.orm.Find"
-	if err := g.DB.Find(dest, conds...).Error; err != nil {
-		return fmt.Errorf("%s: %w", op, err)
-	}
-	return nil
-}
-
-func (g *Gorm) FindWithSelect(fields []string, dest interface{}, conds ...interface{}) error {
-	const op = "storage.orm.Find"
-	if err := g.DB.Select(fields).Find(dest, conds...).Error; err != nil {
-		return fmt.Errorf("%s: %w", op, err)
-	}
-	return nil
-}
-
-func (g *Gorm) First(dest interface{}, conds ...interface{}) error {
+func (g *Gorm) First(ctx context.Context, model interface{}, fields *[]string, dest interface{}, conds ...interface{}) error {
 	const op = "storage.orm.First"
-	if err := g.DB.First(dest, conds...).Error; err != nil {
+	query := g.DB.WithContext(ctx).Model(model)
+	if fields != nil {
+		query.Select(*fields)
+	}
+
+	if err := query.First(dest, conds...).Error; err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+// Find by parametrs
+func (g *Gorm) Find(ctx context.Context, model interface{}, fields *[]string, offset, limit *int, order *string, dest interface{}, conds ...interface{}) error {
+	const op = "storage.orm.Find"
+	query := g.DB.WithContext(ctx).Model(model)
+	if order != nil && *order != "" {
+		query.Order(*order)
+	}
+	if fields != nil && len(*fields) != 0 {
+		query.Select(*fields)
+	}
+	if offset != nil && *offset > 0 {
+		query = query.Offset(*offset)
+	}
+	if limit != nil && *limit > 0 {
+		query = query.Limit(*limit)
+	}
+
+	if err := query.Find(dest, conds...).Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
