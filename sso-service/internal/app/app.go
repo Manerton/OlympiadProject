@@ -108,6 +108,7 @@ func (a *App) initRoutes(router *chi.Mux,
 	router.Post("/api/byadmin/register", authHandler.AdminRegister)
 	router.Post("/api/users/login", authHandler.Login)
 	router.Post("/api/users/register", authHandler.Register)
+	router.Post("/api/users/refresh", authHandler.Refresh)
 
 	router.With(base_access.BaseAccess(jwtManager)).Group(func(r chi.Router) {
 		r.Get("/api/users", userHandler.GetAll)
@@ -120,6 +121,9 @@ func (a *App) initRoutes(router *chi.Mux,
 		r.Put("/api/users/{id}", userHandler.Update)
 		r.Put("/api/participant/{id}", participantHandler.Update)
 		r.Put("/api/schools/{id}", schoolHandler.Update)
+
+		r.Put("/api/users/revoke/{id}", authHandler.RevokeToken)
+		r.Put("/api/users/revoke/{user_id}", authHandler.RevokeAllUserTokens)
 
 		// r.Put("/schools/{id}", sch)
 

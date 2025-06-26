@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 )
 
@@ -17,6 +18,8 @@ type AuthService interface {
 	RegisterUser(ctx context.Context, userRequest *register_dto.RegisterUserRequestDTO) error
 
 	Refresh(ctx context.Context, refershToken string) (*login_dto.AuthResultDTO, error)
+	RevokeAllUserTokens(ctx context.Context, userId string) error
+	RevokeToken(ctx context.Context, id string) error
 }
 
 type AuthHandler struct {
@@ -54,10 +57,10 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Name:     "refresh_token",
 		Value:    authResult.RefreshToken,
 		HttpOnly: true,
-		Secure:   false,
+		Secure:   true,
 		// Domain:   "172.16.1.39",
 		SameSite: http.SameSiteStrictMode,
-		Path:     "/users/refresh",
+		Path:     "api/users/refresh",
 		Expires:  time.Now().Add(time.Duration(authResult.ExpiresInRefresh) * time.Second), // Match the token expiration
 	})
 
@@ -139,10 +142,10 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 		Name:     "refresh_token",
 		Value:    loginDTO.RefreshToken,
 		HttpOnly: true,
-		Secure:   false,
+		Secure:   true,
 		// Domain:   "172.16.1.39",
 		SameSite: http.SameSiteStrictMode,
-		Path:     "/users/refresh",
+		Path:     "api/users/refresh",
 		Expires:  time.Now().Add(time.Duration(loginDTO.ExpiresInRefresh) * time.Second), // Match the token expiration
 	})
 
@@ -155,4 +158,35 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 			ExpiresIn:   loginDTO.ExpiresInAccess,
 		},
 	})
+}
+
+func (h *AuthHandler) RevokeToken(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	id := chi.URLParam(r, "id")
+
+	err := h.authService.RevokeToken(ctx, id)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		return
+	}
+
+	render.JSON(w, r, response.SuccessResponse("success token revoked"))
+}
+
+func (h *AuthHandler) RevokeAllUserTokens(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	userID := chi.URLParam(r, "user_id")
+
+	err := h.authService.RevokeAllUserTokens(ctx, userID)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		return
+	}
+
+	render.JSON(w, r, response.SuccessResponse("success tokens revoked"))
+
 }
