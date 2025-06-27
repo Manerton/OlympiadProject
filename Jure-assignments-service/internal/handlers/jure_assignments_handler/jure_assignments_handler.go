@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 	"main/internal/dto/juryAssignmentsDto"
-	"main/internal/lib/liblogger"
 	"main/internal/lib/response"
 	"net/http"
-	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -18,10 +16,11 @@ import (
 
 type JuryAssignmentsServiceInterface interface {
 	GetAllJuryAssignments(context.Context) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
+	GetJuryAssignmentsByID(ctx context.Context, id string) (juryAssignmentsDto.JuryAssignmentsDTO, error)
 	GetAllJuryAssignmentsByFilter(context.Context, juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
 	GetPartOfAllJuryAssignmentsByFilter(context.Context, []string, juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
 	GetJuryAssignmentsByFilter(context.Context, juryAssignmentsDto.JuryAssignmentsDTO) (juryAssignmentsDto.JuryAssignmentsDTO, error)
-	CreateManyAssignmentsByOneJury(context.Context, juryAssignmentsDto.OneJuryManyAssignments) ([]uint, error)
+	CreateManyAssignmentsByOneJury(context.Context, juryAssignmentsDto.OneJuryManyAssignments) ([]uuid.UUID, error)
 	CreateJuryAssignments(context.Context, juryAssignmentsDto.JuryAssignmentsDTO) (uuid.UUID, error)
 	UpdateJuryAssignments(context.Context, string, juryAssignmentsDto.JuryAssignmentsDTO) error
 	DeleteJuryAssignments(context.Context, string) error
@@ -52,20 +51,16 @@ func (h *JureAssignmentHandler) GetAllJuryAssignments(w http.ResponseWriter, r *
 }
 
 func (h *JureAssignmentHandler) GetJuryAssignmentsByID(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.jureAssignmentHandler.GetJuryAssignmentsByID"
-	log := h.log.With(
-		slog.String("op", op),
-	)
+	ctx := r.Context()
+
 	receivedID := chi.URLParam(r, "id")
 
-	filter := juryAssignmentsDto.JuryAssignmentsDTO{ID: uint(searchedID)}
-	dto, err := h.service.GetJuryAssignmentsByFilter(filter)
+	dto, err := h.service.GetJuryAssignmentsByID(ctx, receivedID)
 	if err != nil {
-		log.Error("failed to get jury assignments", liblogger.Err(err))
+		render.Status(r, http.StatusBadRequest)
 		render.JSON(w, r, response.Error("failed to get jury assignments"))
 		return
 	}
-	log.Info("jury assignments getted", slog.Any("juryAssignments", dto))
 
 	render.JSON(w, r, response.ApiResponse{
 		Status: response.StatusOK,
@@ -74,26 +69,23 @@ func (h *JureAssignmentHandler) GetJuryAssignmentsByID(w http.ResponseWriter, r 
 }
 
 func (h *JureAssignmentHandler) GetAllJuryIDByEventID(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.jureAssignmentHandler.GetAllJuryIDByEventID"
-	log := h.log.With(
-		slog.String("op", op),
-	)
+	ctx := r.Context()
+
 	receivedID := chi.URLParam(r, "event_id")
-	searchedID, err := strconv.ParseUint(receivedID, 10, 32)
+	searchedID, err := uuid.Parse(receivedID)
 	if err != nil {
-		log.Error("failed to parse id to uint", slog.String("received id", receivedID), liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to parse id"))
 		return
 	}
-	log.Info("id on request body decoded", slog.Any("event_id", searchedID))
-	filter := juryAssignmentsDto.JuryAssignmentsDTO{EventID: uint(searchedID)}
+
+	filter := juryAssignmentsDto.JuryAssignmentsDTO{EventID: searchedID}
 	fields := []string{"jury_id"}
-	dto, err := h.service.GetPartOfAllJuryAssignmentsByFilter(fields, filter)
+	dto, err := h.service.GetPartOfAllJuryAssignmentsByFilter(ctx, fields, filter)
 	if err != nil {
-		log.Error("failed to get jury_id by event_id", slog.Any("jury_id", fields), slog.Any("event_id", searchedID), liblogger.Err(err))
-		render.JSON(w, r, response.Error("failed to get jury_id"))
+		render.JSON(w, r, response.Error(err.Error()))
 		return
 	}
+
 	render.JSON(w, r, response.ApiResponse{
 		Status: response.StatusOK,
 		Data:   dto,
@@ -101,52 +93,43 @@ func (h *JureAssignmentHandler) GetAllJuryIDByEventID(w http.ResponseWriter, r *
 }
 
 func (h *JureAssignmentHandler) CreateJuryAssignments(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.jureAssignmentHandler.CreateJuryAssignments"
-	log := h.log.With(
-		slog.String("op", op),
-	)
+	ctx := r.Context()
+
 	dto := juryAssignmentsDto.JuryAssignmentsDTO{}
 	err := render.DecodeJSON(r.Body, &dto)
 	if err != nil {
-		log.Error("failed to decode request body", liblogger.Err(err))
 		render.JSON(w, r, response.Error("failed to decode request"))
 		return
 	}
-	log.Info("request body decoded", slog.Any("request", dto))
+
 	err = validator.New().Struct(dto)
 	if err != nil {
 		validateErr := err.(validator.ValidationErrors)
-		log.Error("invalid request", liblogger.Err(err))
 		render.JSON(w, r, response.Error(fmt.Sprintf("err %v", validateErr)))
 		return
 	}
-	id, err := h.service.CreateJuryAssignments(dto)
+
+	_, err = h.service.CreateJuryAssignments(ctx, dto)
 	if err != nil {
-		log.Error("failed to create JuryAssignments body", liblogger.Err(err))
-		render.JSON(w, r, response.Error("failed to create JuryAssignments"))
+		render.JSON(w, r, response.Error(err.Error()))
 		return
 	}
-	render.JSON(w, r, response.Success(fmt.Sprintf("id = %d", id)))
+	render.JSON(w, r, response.Success(""))
 }
 
 func (h *JureAssignmentHandler) CreateManyAssignmentsByOneJury(w http.ResponseWriter, r *http.Request) {
-	const op = "handlers.jureAssignmentHandler.CreateManyAssignmentsByOneJury"
-	log := h.log.With(
-		slog.String("op", op),
-	)
+	ctx := r.Context()
 
 	dto := juryAssignmentsDto.OneJuryManyAssignments{}
 	err := render.DecodeJSON(r.Body, &dto)
 	if err != nil {
-		log.Error("failed to decode request body")
 		render.JSON(w, r, response.Error("failed to decode request"))
 		return
 	}
 
-	ids, err := h.service.CreateManyAssignmentsByOneJury(dto)
+	ids, err := h.service.CreateManyAssignmentsByOneJury(ctx, dto)
 	if err != nil {
-		log.Error("failde to create many Assignments,", liblogger.Err(err))
-		render.JSON(w, r, response.Error("failed to create many Assignments"))
+		render.JSON(w, r, response.Error(err.Error()))
 		return
 	}
 

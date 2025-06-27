@@ -17,7 +17,7 @@ import (
 
 type juryAssignmentsRepositoryInterface interface {
 	GetJuryAssignmentsByFilter(context.Context, orm.ORM, jury_assignments.JuryAssignments) (jury_assignments.JuryAssignments, error)
-	GetAllJuryAssignments(context.Context, orm.ORM, ...interface{}) ([]jury_assignments.JuryAssignments, error)
+	GetAllJuryAssignments(context.Context, orm.ORM) ([]jury_assignments.JuryAssignments, error)
 	GetAllJuryAssignmentsByFilter(context.Context, orm.ORM, jury_assignments.JuryAssignments) ([]jury_assignments.JuryAssignments, error)
 	GetPartOfAllJuryAssignmentsByFilter(context.Context,
 		orm.ORM, []string, jury_assignments.JuryAssignments) ([]jury_assignments.JuryAssignments, error)
@@ -58,12 +58,43 @@ func (s *JuryAssignmentsService) GetAllJuryAssignments(ctx context.Context) ([]j
 	return dtoConverter.ConvertManyJuryAssignmentsToDTO(results), nil
 }
 
+func (s *JuryAssignmentsService) GetJuryAssignmentsByID(ctx context.Context, id string) (juryAssignmentsDto.JuryAssignmentsDTO, error) {
+	const op = "services.juryAssignmentsService.GetJuryAssignmentsByID"
+	const errMsg = "failed get jury assignments by id"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error("failed parse id to uuid", liblogger.Err(err))
+		return juryAssignmentsDto.JuryAssignmentsDTO{}, fmt.Errorf(errMsg)
+	}
+
+	filter := jury_assignments.JuryAssignments{ID: uid}
+
+	juryResult, err := s.repository.GetJuryAssignmentsByFilter(ctx, s.orm, filter)
+	if err != nil {
+		log.Error("failed get jury by id", liblogger.Err(err))
+		return juryAssignmentsDto.JuryAssignmentsDTO{}, fmt.Errorf(errMsg)
+	}
+
+	return dtoConverter.ConvertJuryAssignmentsToDTO(juryResult), nil
+}
+
 func (s *JuryAssignmentsService) GetAllJuryAssignmentsByFilter(ctx context.Context,
 	filter juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error) {
 	const op = "services.juryAssignmentsService.GetAllEventsByFilter"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
 	modelFilter := dtoConverter.ConvertDTOtoJuryAssignments(filter)
 	results, err := s.repository.GetAllJuryAssignmentsByFilter(ctx, s.orm, modelFilter)
 	if err != nil {
+		log.Error("failed get all jury", liblogger.Err(err))
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return dtoConverter.ConvertManyJuryAssignmentsToDTO(results), nil
@@ -72,9 +103,15 @@ func (s *JuryAssignmentsService) GetAllJuryAssignmentsByFilter(ctx context.Conte
 func (s *JuryAssignmentsService) GetPartOfAllJuryAssignmentsByFilter(ctx context.Context,
 	fields []string, filter juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error) {
 	const op = "services.juryAssignmentsService.GetPartOfAllJuryAssignmentsByFilter"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
 	modelFilter := dtoConverter.ConvertDTOtoJuryAssignments(filter)
 	result, err := s.repository.GetPartOfAllJuryAssignmentsByFilter(ctx, s.orm, fields, modelFilter)
 	if err != nil {
+		log.Error("failed get part of all jury", liblogger.Err(err))
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return dtoConverter.ConvertManyJuryAssignmentsToDTO(result), nil
