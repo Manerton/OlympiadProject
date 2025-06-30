@@ -26,20 +26,6 @@ func (r *JuryAssignmentsRepository) GetJuryAssignmentsByFilter(ctx context.Conte
 	return result, nil
 }
 
-func (r *JuryAssignmentsRepository) GetPartOfAllJuryAssignmentsByFilter(ctx context.Context,
-	myOrm orm.ORM, fields []string, filter jury_assignments.JuryAssignments) ([]jury_assignments.JuryAssignments, error) {
-	const op = "repositories.juryAssignmentsRepository.GetPartOfAllJuryAssignmentsByFilter"
-	partOfJuryAssignmentsRes := []jury_assignments.JuryAssignments{}
-	if err := myOrm.Find(ctx, jury_assignments.JuryAssignments{},
-		&fields,
-		nil, nil, nil,
-		&partOfJuryAssignmentsRes,
-		filter); err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-	return partOfJuryAssignmentsRes, nil
-}
-
 func (r *JuryAssignmentsRepository) GetAllJuryAssignments(ctx context.Context, myOrm orm.ORM) ([]jury_assignments.JuryAssignments, error) {
 	const op = "repositories.juryAssignmentsRepository.GetAllJuryAssignments"
 

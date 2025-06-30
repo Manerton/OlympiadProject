@@ -3,12 +3,17 @@ package juryAssignmentsDto
 import "github.com/google/uuid"
 
 type JuryAssignmentsDTO struct {
-	ID      uuid.UUID `json:"ID"`
-	JuryID  uuid.UUID `json:"juryID" validate:"required"`
-	EventID uuid.UUID `json:"eventID" validate:"required"`
+	ID      uuid.UUID `json:"id"`
+	JuryID  uuid.UUID `json:"jury_id" validate:"required"`
+	EventID uuid.UUID `json:"evemt_id" validate:"required"`
 }
 
 type OneJuryManyAssignments struct {
-	JuryID   uuid.UUID   `json:"juryID" validate:"required"`
-	EventsID []uuid.UUID `json:"eventsID" validate:"required"`
+	JuryID   uuid.UUID   `json:"jury_id" validate:"required"`
+	EventIDs []uuid.UUID `json:"event_ids" validate:"required"`
+}
+
+type OneAssigmentsManyJury struct {
+	EventID uuid.UUID   `json:"event_id"`
+	JuryIDs []uuid.UUID `json:"jury_ids"`
 }

@@ -19,8 +19,6 @@ type juryAssignmentsRepositoryInterface interface {
 	GetJuryAssignmentsByFilter(context.Context, orm.ORM, jury_assignments.JuryAssignments) (jury_assignments.JuryAssignments, error)
 	GetAllJuryAssignments(context.Context, orm.ORM) ([]jury_assignments.JuryAssignments, error)
 	GetAllJuryAssignmentsByFilter(context.Context, orm.ORM, jury_assignments.JuryAssignments) ([]jury_assignments.JuryAssignments, error)
-	GetPartOfAllJuryAssignmentsByFilter(context.Context,
-		orm.ORM, []string, jury_assignments.JuryAssignments) ([]jury_assignments.JuryAssignments, error)
 	CreateJuryAssignments(context.Context,
 		orm.ORM, jury_assignments.JuryAssignments) (uuid.UUID, error)
 	UpdateJuryAssignments(context.Context,
@@ -69,7 +67,7 @@ func (s *JuryAssignmentsService) GetJuryAssignmentsByID(ctx context.Context, id 
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		log.Error("failed parse id to uuid", liblogger.Err(err))
-		return juryAssignmentsDto.JuryAssignmentsDTO{}, fmt.Errorf(errMsg)
+		return juryAssignmentsDto.JuryAssignmentsDTO{}, fmt.Errorf("%s", errMsg)
 	}
 
 	filter := jury_assignments.JuryAssignments{ID: uid}
@@ -77,10 +75,58 @@ func (s *JuryAssignmentsService) GetJuryAssignmentsByID(ctx context.Context, id 
 	juryResult, err := s.repository.GetJuryAssignmentsByFilter(ctx, s.orm, filter)
 	if err != nil {
 		log.Error("failed get jury by id", liblogger.Err(err))
-		return juryAssignmentsDto.JuryAssignmentsDTO{}, fmt.Errorf(errMsg)
+		return juryAssignmentsDto.JuryAssignmentsDTO{}, fmt.Errorf("%s", errMsg)
 	}
 
 	return dtoConverter.ConvertJuryAssignmentsToDTO(juryResult), nil
+}
+
+func (s *JuryAssignmentsService) GetAllByEventId(ctx context.Context, eventId string) ([]juryAssignmentsDto.JuryAssignmentsDTO, error) {
+	const op = "services.juryAssignmentsService.GetAllByEventId"
+	const errMsg = "failed get all by event id"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	uid, err := uuid.Parse(eventId)
+	if err != nil {
+		log.Error("failed parse id to uuid", liblogger.Err(err))
+		return nil, fmt.Errorf("%s", errMsg)
+	}
+
+	model := jury_assignments.JuryAssignments{EventID: uid}
+	result, err := s.repository.GetAllJuryAssignmentsByFilter(ctx, s.orm, model)
+	if err != nil {
+		log.Error("failed get all jury by event id", liblogger.Err(err))
+		return nil, fmt.Errorf("%s", errMsg)
+	}
+
+	return dtoConverter.ConvertManyJuryAssignmentsToDTO(result), nil
+}
+
+func (s *JuryAssignmentsService) GetAllByJuryId(ctx context.Context, juryId string) ([]juryAssignmentsDto.JuryAssignmentsDTO, error) {
+	const op = "services.juryAssignmentsService.GetAllByJuryId"
+	const errMsg = "failed get all by jury id"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	uid, err := uuid.Parse(juryId)
+	if err != nil {
+		log.Error("failed parse id to uuid", liblogger.Err(err))
+		return nil, fmt.Errorf("%s", errMsg)
+	}
+
+	model := jury_assignments.JuryAssignments{JuryID: uid}
+	result, err := s.repository.GetAllJuryAssignmentsByFilter(ctx, s.orm, model)
+	if err != nil {
+		log.Error("failed get all by jury id", liblogger.Err(err))
+		return nil, fmt.Errorf("%s", errMsg)
+	}
+
+	return dtoConverter.ConvertManyJuryAssignmentsToDTO(result), nil
 }
 
 func (s *JuryAssignmentsService) GetAllJuryAssignmentsByFilter(ctx context.Context,
@@ -100,58 +146,12 @@ func (s *JuryAssignmentsService) GetAllJuryAssignmentsByFilter(ctx context.Conte
 	return dtoConverter.ConvertManyJuryAssignmentsToDTO(results), nil
 }
 
-func (s *JuryAssignmentsService) GetPartOfAllJuryAssignmentsByFilter(ctx context.Context,
-	fields []string, filter juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error) {
-	const op = "services.juryAssignmentsService.GetPartOfAllJuryAssignmentsByFilter"
-
-	log := s.log.With(
-		slog.String("op", op),
-	)
-
-	modelFilter := dtoConverter.ConvertDTOtoJuryAssignments(filter)
-	result, err := s.repository.GetPartOfAllJuryAssignmentsByFilter(ctx, s.orm, fields, modelFilter)
-	if err != nil {
-		log.Error("failed get part of all jury", liblogger.Err(err))
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-	return dtoConverter.ConvertManyJuryAssignmentsToDTO(result), nil
-}
-
-func (s *JuryAssignmentsService) GetJuryAssignmentsByFilter(ctx context.Context, filter juryAssignmentsDto.JuryAssignmentsDTO) (juryAssignmentsDto.JuryAssignmentsDTO, error) {
-	const op = "services.juryAssignmentsService.GetJuryAssignmentsByFilter"
-
-	modelFilter := dtoConverter.ConvertDTOtoJuryAssignments(filter)
-	result, err := s.repository.GetJuryAssignmentsByFilter(ctx, s.orm, modelFilter)
-	if err != nil {
-		return juryAssignmentsDto.JuryAssignmentsDTO{}, fmt.Errorf("%s: %w", op, err)
-	}
-	return dtoConverter.ConvertJuryAssignmentsToDTO(result), nil
-}
-
-func isExistingUserID(id uuid.UUID) (bool, error) {
-	return true, nil
+func isExistingID(id uuid.UUID, service string) (bool, error) {
 	if id == uuid.Nil {
 		return false, fmt.Errorf("id is nil: %v", id)
 	}
 	path := ""
-	response, err := supportRequest.SupportRequest("GET", path)
-	if err != nil {
-		return false, err
-	}
-	if response.Data == nil {
-		return false, fmt.Errorf("data is nil")
-	}
-	return true, nil
-}
-
-func isExistingEventID(id uuid.UUID) (bool, error) {
-	return true, nil
-
-	if id == uuid.Nil {
-		return false, fmt.Errorf("id is nil: %v", id)
-	}
-	path := ""
-	response, err := supportRequest.SupportRequest("GET", path)
+	response, err := supportRequest.SendRequest("GET", path)
 	if err != nil {
 		return false, err
 	}
@@ -166,9 +166,9 @@ func (s *JuryAssignmentsService) CreateManyAssignmentsByOneJury(ctx context.Cont
 
 	errGroup := errgroup.Group{}
 
-	ids := make(chan uuid.UUID, len(dto.EventsID))
+	ids := make(chan uuid.UUID, len(dto.EventIDs))
 
-	for _, eventID := range dto.EventsID {
+	for _, eventID := range dto.EventIDs {
 		tempDto := juryAssignmentsDto.JuryAssignmentsDTO{JuryID: dto.JuryID, EventID: eventID}
 		errGroup.Go(func() error {
 			id, err := s.CreateJuryAssignments(ctx, tempDto)
@@ -213,26 +213,29 @@ func (s *JuryAssignmentsService) CreateManyAssignmentsByOneJury(ctx context.Cont
 
 func (s *JuryAssignmentsService) CreateJuryAssignments(ctx context.Context, dto juryAssignmentsDto.JuryAssignmentsDTO) (uuid.UUID, error) {
 	const op = "services.juryAssignmentsService.CreateJuryAssignments"
+	const errMsg = "failed create"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
-	ok, err := isExistingUserID(dto.JuryID)
+	ok, err := isExistingID(dto.JuryID, supportRequest.EventService)
 	if err != nil {
-
+		log.Error("failed existing jury by id", liblogger.Err(err))
+		return uuid.Nil, fmt.Errorf("%s: failed exist jury by", errMsg)
 	}
 	if !ok {
-		log.Error("failed find user by id")
-		return uuid.Nil, fmt.Errorf("Jury is not exist")
+		log.Error("failed find jury by id")
+		return uuid.Nil, fmt.Errorf("%s: Jury is not exist", errMsg)
 	}
-	ok, err = isExistingEventID(dto.EventID)
+	ok, err = isExistingID(dto.EventID, supportRequest.UserService)
 	if err != nil {
-
+		log.Error("failed existing event by id", liblogger.Err(err))
+		return uuid.Nil, fmt.Errorf("%s: failed exist event by", errMsg)
 	}
 	if ok {
 		log.Error("failed find jury by id")
-		return uuid.Nil, fmt.Errorf("Event is not exist")
+		return uuid.Nil, fmt.Errorf("%s: Event is not exist", errMsg)
 	}
 
 	model := dtoConverter.ConvertDTOtoJuryAssignments(dto)
@@ -245,6 +248,7 @@ func (s *JuryAssignmentsService) CreateJuryAssignments(ctx context.Context, dto 
 
 func (s *JuryAssignmentsService) UpdateJuryAssignments(ctx context.Context, id string, dto juryAssignmentsDto.JuryAssignmentsDTO) error {
 	const op = "services.juryAssignmentsService.CreateJuryAssignments"
+	const errMsg = "failed update"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -252,21 +256,22 @@ func (s *JuryAssignmentsService) UpdateJuryAssignments(ctx context.Context, id s
 
 	// TODO!! ГДЕ проверять все uuid, validator? mapper?
 
-	ok, err := isExistingUserID(dto.JuryID)
+	ok, err := isExistingID(dto.JuryID, supportRequest.UserService)
 	if err != nil {
-
+		log.Error("failed existing jury by id", liblogger.Err(err))
+		return fmt.Errorf("%s: Failed existing jury by id", errMsg)
 	}
 	if !ok {
 		log.Error("failed find user by id")
-		return fmt.Errorf("Jury is not exist")
+		return fmt.Errorf("%s: Jury is not exist", errMsg)
 	}
-	ok, err = isExistingEventID(dto.EventID)
+	ok, err = isExistingID(dto.EventID, supportRequest.EventService)
 	if err != nil {
 
 	}
 	if ok {
 		log.Error("failed find jury by id")
-		return fmt.Errorf("Event is not exist")
+		return fmt.Errorf("%s: Event is not exist", errMsg)
 	}
 
 	model := dtoConverter.ConvertDTOtoJuryAssignments(dto)

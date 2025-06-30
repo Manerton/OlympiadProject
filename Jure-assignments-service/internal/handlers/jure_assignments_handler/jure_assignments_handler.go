@@ -17,40 +17,41 @@ import (
 type JuryAssignmentsServiceInterface interface {
 	GetAllJuryAssignments(context.Context) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
 	GetJuryAssignmentsByID(ctx context.Context, id string) (juryAssignmentsDto.JuryAssignmentsDTO, error)
-	GetAllJuryAssignmentsByFilter(context.Context, juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
-	GetPartOfAllJuryAssignmentsByFilter(context.Context, []string, juryAssignmentsDto.JuryAssignmentsDTO) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
-	GetJuryAssignmentsByFilter(context.Context, juryAssignmentsDto.JuryAssignmentsDTO) (juryAssignmentsDto.JuryAssignmentsDTO, error)
+
+	GetAllByEventId(ctx context.Context, id string) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
+	GetAllByJuryId(ctx context.Context, id string) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
+
 	CreateManyAssignmentsByOneJury(context.Context, juryAssignmentsDto.OneJuryManyAssignments) ([]uuid.UUID, error)
 	CreateJuryAssignments(context.Context, juryAssignmentsDto.JuryAssignmentsDTO) (uuid.UUID, error)
 	UpdateJuryAssignments(context.Context, string, juryAssignmentsDto.JuryAssignmentsDTO) error
 	DeleteJuryAssignments(context.Context, string) error
 }
 
-type JureAssignmentHandler struct {
+type JuryAssignmentHandler struct {
 	service JuryAssignmentsServiceInterface
 }
 
-func NewJureAssignmentHandler(js JuryAssignmentsServiceInterface, log *slog.Logger) *JureAssignmentHandler {
-	return &JureAssignmentHandler{service: js}
+func NewJureAssignmentHandler(js JuryAssignmentsServiceInterface, log *slog.Logger) *JuryAssignmentHandler {
+	return &JuryAssignmentHandler{service: js}
 }
 
-func (h *JureAssignmentHandler) GetAllJuryAssignments(w http.ResponseWriter, r *http.Request) {
+func (h *JuryAssignmentHandler) GetAllJuryAssignments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	dtos, err := h.service.GetAllJuryAssignments(ctx)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.Error("failed to get all jury assignments"))
+		render.JSON(w, r, response.ErrorResponse("failed to get all jury assignments"))
 		return
 	}
 
 	render.JSON(w, r, response.ApiResponse{
-		Status: response.StatusOK,
+		Status: response.SUCCESS,
 		Data:   dtos,
 	})
 }
 
-func (h *JureAssignmentHandler) GetJuryAssignmentsByID(w http.ResponseWriter, r *http.Request) {
+func (h *JuryAssignmentHandler) GetJuryAssignmentsByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	receivedID := chi.URLParam(r, "id")
@@ -58,89 +59,103 @@ func (h *JureAssignmentHandler) GetJuryAssignmentsByID(w http.ResponseWriter, r 
 	dto, err := h.service.GetJuryAssignmentsByID(ctx, receivedID)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.Error("failed to get jury assignments"))
+		render.JSON(w, r, response.ErrorResponse("failed to get jury assignments"))
 		return
 	}
 
 	render.JSON(w, r, response.ApiResponse{
-		Status: response.StatusOK,
+		Status: response.SUCCESS,
 		Data:   dto,
 	})
 }
 
-func (h *JureAssignmentHandler) GetAllJuryIDByEventID(w http.ResponseWriter, r *http.Request) {
+func (h *JuryAssignmentHandler) GetAllByEventId(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	receivedID := chi.URLParam(r, "event_id")
-	searchedID, err := uuid.Parse(receivedID)
-	if err != nil {
-		render.JSON(w, r, response.Error("failed to parse id"))
-		return
-	}
+	eventIdS := chi.URLParam(r, "id")
 
-	filter := juryAssignmentsDto.JuryAssignmentsDTO{EventID: searchedID}
-	fields := []string{"jury_id"}
-	dto, err := h.service.GetPartOfAllJuryAssignmentsByFilter(ctx, fields, filter)
+	result, err := h.service.GetAllByEventId(ctx, eventIdS)
 	if err != nil {
-		render.JSON(w, r, response.Error(err.Error()))
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse(err.Error()))
 		return
 	}
 
 	render.JSON(w, r, response.ApiResponse{
-		Status: response.StatusOK,
-		Data:   dto,
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       result,
 	})
 }
 
-func (h *JureAssignmentHandler) CreateJuryAssignments(w http.ResponseWriter, r *http.Request) {
+func (h *JuryAssignmentHandler) GetAllByJuryId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	juryId := chi.URLParam(r, "id")
+
+	result, err := h.service.GetAllByJuryId(ctx, juryId)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       result,
+	})
+}
+
+func (h *JuryAssignmentHandler) CreateJuryAssignments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	dto := juryAssignmentsDto.JuryAssignmentsDTO{}
 	err := render.DecodeJSON(r.Body, &dto)
 	if err != nil {
-		render.JSON(w, r, response.Error("failed to decode request"))
+		render.JSON(w, r, response.ErrorResponse("failed to decode request"))
 		return
 	}
 
 	err = validator.New().Struct(dto)
 	if err != nil {
 		validateErr := err.(validator.ValidationErrors)
-		render.JSON(w, r, response.Error(fmt.Sprintf("err %v", validateErr)))
+		render.JSON(w, r, response.ErrorResponse(fmt.Sprintf("err %v", validateErr)))
 		return
 	}
 
 	_, err = h.service.CreateJuryAssignments(ctx, dto)
 	if err != nil {
-		render.JSON(w, r, response.Error(err.Error()))
+		render.JSON(w, r, response.ErrorResponse(err.Error()))
 		return
 	}
-	render.JSON(w, r, response.Success(""))
+	render.JSON(w, r, response.SuccessResponse(""))
 }
 
-func (h *JureAssignmentHandler) CreateManyAssignmentsByOneJury(w http.ResponseWriter, r *http.Request) {
+func (h *JuryAssignmentHandler) CreateManyAssignmentsByOneJury(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	dto := juryAssignmentsDto.OneJuryManyAssignments{}
 	err := render.DecodeJSON(r.Body, &dto)
 	if err != nil {
-		render.JSON(w, r, response.Error("failed to decode request"))
+		render.JSON(w, r, response.ErrorResponse("failed to decode request"))
 		return
 	}
 
 	ids, err := h.service.CreateManyAssignmentsByOneJury(ctx, dto)
 	if err != nil {
-		render.JSON(w, r, response.Error(err.Error()))
+		render.JSON(w, r, response.ErrorResponse(err.Error()))
 		return
 	}
 
 	render.JSON(w, r, response.ApiResponse{
-		Status: response.StatusOK,
+		Status: response.SUCCESS,
 		Data:   ids,
 	})
 
 }
 
-func (h *JureAssignmentHandler) UpdateJuryAssignments(w http.ResponseWriter, r *http.Request) {
+func (h *JuryAssignmentHandler) UpdateJuryAssignments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	id := chi.URLParam(r, "id")
@@ -148,19 +163,19 @@ func (h *JureAssignmentHandler) UpdateJuryAssignments(w http.ResponseWriter, r *
 	dto := juryAssignmentsDto.JuryAssignmentsDTO{}
 	err := render.DecodeJSON(r.Body, &dto)
 	if err != nil {
-		render.JSON(w, r, response.Error("failed to decode request"))
+		render.JSON(w, r, response.ErrorResponse("failed to decode request"))
 		return
 	}
 
 	err = h.service.UpdateJuryAssignments(ctx, id, dto)
 	if err != nil {
-		render.JSON(w, r, response.Error("failed to update JuryAssignments"))
+		render.JSON(w, r, response.ErrorResponse("failed to update JuryAssignments"))
 		return
 	}
-	render.JSON(w, r, response.Success("success updated"))
+	render.JSON(w, r, response.SuccessResponse("success updated"))
 }
 
-func (h *JureAssignmentHandler) DeleteJuryAssignments(w http.ResponseWriter, r *http.Request) {
+func (h *JuryAssignmentHandler) DeleteJuryAssignments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	receivedID := chi.URLParam(r, "id")
@@ -168,8 +183,8 @@ func (h *JureAssignmentHandler) DeleteJuryAssignments(w http.ResponseWriter, r *
 	err := h.service.DeleteJuryAssignments(ctx, receivedID)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.Error(err.Error()))
+		render.JSON(w, r, response.ErrorResponse(err.Error()))
 		return
 	}
-	render.JSON(w, r, response.Success("object deleted"))
+	render.JSON(w, r, response.SuccessResponse("object deleted"))
 }

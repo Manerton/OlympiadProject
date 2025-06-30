@@ -13,7 +13,7 @@ type Config struct {
 	DatabaseConfig            `yaml:"DB_INFO"`
 	HTTPServerConfig          `yaml:"HTTP_SERVER_INFO"`
 	AdditionalAddressesConfig `yaml:"ADDITIONAL_ADDRESSES"`
-	JwtTemp                   `yaml:"JWT_TEMP_INFO"`
+	JWTConfig                 `yaml:"JWT_TEMP_INFO"`
 }
 
 type DatabaseConfig struct {
@@ -29,16 +29,19 @@ type HTTPServerConfig struct {
 	Host string `yaml:"host"`
 }
 
-type JwtTemp struct {
+type JWTConfig struct {
 	Key string `yaml:"key"`
 }
 
 type AdditionalAddressesConfig struct {
-	ReactVision string `yaml:"react"`
+	ReactVision  string `yaml:"react"`
+	EventService string `yaml:"event"`
+	JuryService  string `yaml:"jury"`
 }
 
 func (cfg *Config) GetDataSourceName() string {
 	// dsn := "host=localhost user=user dbname=db password=password sslmode=disable"
+
 	return fmt.Sprintf(
 		"host=%s user=%s dbname=%s password=%s sslmode=%s",
 		cfg.DatabaseConfig.Host,
