@@ -150,14 +150,13 @@ func isExistingID(id uuid.UUID, service string) (bool, error) {
 	if id == uuid.Nil {
 		return false, fmt.Errorf("id is nil: %v", id)
 	}
-	path := ""
-	response, err := supportRequest.SendRequest("GET", path)
-	if err != nil {
-		return false, err
-	}
-	if response.Data == nil {
-		return false, fmt.Errorf("data is nil")
-	}
+	// response, err := supportRequest.SupportRequest(id, service)
+	// if err != nil {
+	// 	return false, err
+	// }
+	// if response.Data == nil {
+	// 	return false, fmt.Errorf("data is nil")
+	// }
 	return true, nil
 }
 
