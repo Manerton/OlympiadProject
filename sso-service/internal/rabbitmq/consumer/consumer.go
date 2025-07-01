@@ -57,7 +57,7 @@ type SchoolService interface {
 
 type RabbitConsumer struct {
 	log                *slog.Logger
-	rabbitCannel       *amqp.Channel
+	rabbitChannel      *amqp.Channel
 	userService        UserService
 	participantService ParticipantService
 	authService        AuthService
@@ -75,7 +75,7 @@ func New(log *slog.Logger, channel *amqp.Channel,
 
 	return &RabbitConsumer{
 		log:                clog,
-		rabbitCannel:       channel,
+		rabbitChannel:      channel,
 		userService:        userService,
 		participantService: participantService,
 		authService:        authService,
@@ -85,7 +85,7 @@ func New(log *slog.Logger, channel *amqp.Channel,
 
 func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 
-	msgs, err := c.rabbitCannel.Consume(
+	msgs, err := c.rabbitChannel.Consume(
 		queueName,
 		"",
 		false,
@@ -104,7 +104,7 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 			select {
 			case <-ctx.Done():
 				c.log.Info("init cancel consumer")
-				if err := c.rabbitCannel.Cancel("", false); err != nil {
+				if err := c.rabbitChannel.Cancel("", false); err != nil {
 					c.log.Error("failed to cancel consumer", liblogger.Err(err))
 				}
 				return
@@ -154,7 +154,7 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 			c.log.Error("failed get", liblogger.Err(err))
 			return fmt.Errorf("failed get data")
 		}
-		producer.SendToQueue(c.rabbitCannel, rabbitDTO.AppName, result)
+		producer.SendToQueue(c.rabbitChannel, rabbitDTO.AppName, result)
 	case CREATE:
 		err := c.create(ctx, rabbitDTO.Data.Table, rabbitDTO.Data.Attributes)
 		if err != nil {
