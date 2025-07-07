@@ -21,6 +21,8 @@ type UserRepository interface {
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (user.User, error)
 	GetByListId(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]user.User, error)
 
+	GetCount(ctx context.Context, orm orm.ORM) (int64, error)
+
 	Update(ctx context.Context, orm orm.ORM, userModel user.User) error
 	Delete(ctx context.Context, orm orm.ORM, id uuid.UUID) error
 }
@@ -43,6 +45,23 @@ func New(log *slog.Logger, orm orm.ORM, userRepository UserRepository, participa
 		db:                    orm,
 		log:                   log,
 	}
+}
+
+func (s *UserService) GetCount(ctx context.Context) (int64, error) {
+	const op = "services.user_services.GetCount"
+	const errMsg = "failed to get count users"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	userCount, err := s.userRepository.GetCount(ctx, s.db)
+	if err != nil {
+		log.Error("failed get count users", liblogger.Err(err))
+		return 0, fmt.Errorf("%s", errMsg)
+	}
+
+	return userCount, nil
 }
 
 func (s *UserService) GetAll(ctx context.Context, page *int, limit *int) ([]user_dto.UserResponseDTO, error) {

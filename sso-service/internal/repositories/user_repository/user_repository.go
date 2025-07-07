@@ -13,6 +13,18 @@ import (
 
 type UserRepository struct{}
 
+func (r *UserRepository) GetCount(ctx context.Context, orm orm.ORM) (int64, error) {
+	const op = "repositories.UserRepository.GetCount"
+
+	var countResult int64 = 0
+	err := orm.Count(ctx, user.User{}, &countResult, nil)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return countResult, nil
+}
+
 func (r *UserRepository) GetAll(ctx context.Context, orm orm.ORM, offset *int, limit *int) ([]user.User, error) {
 	const op = "repositories.UserRepository.GetAll"
 

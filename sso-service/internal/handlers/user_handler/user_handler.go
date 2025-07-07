@@ -18,6 +18,8 @@ type UserService interface {
 	GetUserParticipantById(ctx context.Context, id string) (user_dto.UserParticipantResponseDTO, error)
 	GetByListId(ctx context.Context, ids []*string) ([]user_dto.UserResponseDTO, error)
 
+	GetCount(ctx context.Context) (int64, error)
+
 	Update(ctx context.Context, id string, userDto user_dto.UpdateUserRequestDTO) error
 	Delete(ctx context.Context, id string) error
 }
@@ -30,6 +32,24 @@ func New(userService UserService) *UserHandler {
 	return &UserHandler{
 		UserService: userService,
 	}
+}
+
+func (h *UserHandler) GetCountUsers(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	userCount, err := h.UserService.GetCount(ctx)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed get count users"))
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       userCount,
+	})
+
 }
 
 func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
