@@ -19,19 +19,20 @@ import (
 )
 
 type EventServiceInterface interface {
-	GetAllEvents(ctx context.Context, offset, limit *int) ([]event_dto.EventDTO, error)
+	GetAllEvents(ctx context.Context, offset, limit *int) ([]event_dto.EventDTOResponse, error)
 	GetEventByID(ctx context.Context, id string) (event_dto.EventDTO, error)
+
 	GetEventByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string) (event_dto.DetailsEvent, error)
 	GetEventsByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string, offset, limit *int, order *string) ([]event_dto.DetailsEvent, error)
 	GetCountEventsByType(ctx context.Context, eventType event.EventType) (int64, error)
 	GetCountEventsByPreviousID(ctx context.Context, previousID string) (int64, error)
-	GetEventsByType(ctx context.Context, eventType event.EventType, offset, limit *int, order *string) ([]event_dto.EventDTO, error)
-	GetEventsTypeStageAndHisChilds(ctx context.Context, id uuid.UUID) ([]event_dto.EventDTO, error)
-	GetEventsByPreviousID(ctx context.Context, previousID string, offset, limit *int, order *string) ([]event_dto.EventDTO, error)
-	GetEventsByListID(ctx context.Context, ids []uuid.UUID) ([]event_dto.EventDTO, error)
-	CreateEventsByJSON(ctx context.Context, eventDTO event_dto.EventDTO) error
-	CreateEvent(ctx context.Context, eventDTO event_dto.EventDTO) (uuid.UUID, error)
-	UpdateEvent(ctx context.Context, eventDTO event_dto.EventDTO) (uuid.UUID, error)
+	GetEventsByType(ctx context.Context, eventType event.EventType, offset, limit *int, order *string) ([]event_dto.EventDTOResponse, error)
+	GetEventsTypeStageAndHisChilds(ctx context.Context, id uuid.UUID) ([]event_dto.EventDTOResponse, error)
+	GetEventsByPreviousID(ctx context.Context, previousID string, offset, limit *int, order *string) ([]event_dto.EventDTOResponse, error)
+	GetEventsByListID(ctx context.Context, ids []uuid.UUID) ([]event_dto.EventDTOResponse, error)
+
+	CreateEvent(ctx context.Context, eventDTO event_dto.CreateEventDTORequest) (uuid.UUID, error)
+	UpdateEvent(ctx context.Context, id string, eventDTO event_dto.UpdateEventDTORequest) (uuid.UUID, error)
 	DeleteEvent(ctx context.Context, id string) error
 }
 
@@ -274,34 +275,11 @@ func (h *EventHandler) GetEventsByListID(w http.ResponseWriter, r *http.Request)
 	})
 }
 
-func (h *EventHandler) CreateEventsByJSON(w http.ResponseWriter, r *http.Request) {
-
-	ctx := r.Context()
-
-	var eventsJSON event_dto.EventDTO
-	err := render.DecodeJSON(r.Body, &eventsJSON)
-	if errors.Is(err, io.EOF) {
-		render.JSON(w, r, response.Error("empty request"))
-		return
-	}
-
-	if err != nil {
-		render.JSON(w, r, response.Error("failed to decode request"))
-		return
-	}
-
-	err = h.service.CreateEventsByJSON(ctx, eventsJSON)
-	if err != nil {
-		// TODO! Complite creating events by json
-	}
-
-}
-
 func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	var eventDTO event_dto.EventDTO
+	var eventDTO event_dto.CreateEventDTORequest
 	err := render.DecodeJSON(r.Body, &eventDTO)
 	if errors.Is(err, io.EOF) {
 		render.JSON(w, r, response.Error("empty request"))
@@ -331,15 +309,10 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	var eventDTO event_dto.EventDTO
+	var eventDTO event_dto.UpdateEventDTORequest
 	receivedID := chi.URLParam(r, "id")
-	updatedID, err := uuid.Parse(receivedID)
-	if err != nil {
-		render.JSON(w, r, response.Error("failed to parse id"))
-	}
-	eventDTO.ID = updatedID
 
-	err = render.DecodeJSON(r.Body, &eventDTO)
+	err := render.DecodeJSON(r.Body, &eventDTO)
 	if errors.Is(err, io.EOF) {
 		render.JSON(w, r, response.Error("empty request"))
 		return
@@ -349,7 +322,7 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := h.service.UpdateEvent(ctx, eventDTO)
+	id, err := h.service.UpdateEvent(ctx, receivedID, eventDTO)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to update event"))
 		return

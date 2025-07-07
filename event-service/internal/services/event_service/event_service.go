@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"main/internal/dto/event_dto"
 	"main/internal/lib/liblogger"
+	"main/internal/lib/mapper/event_mapper"
 	"main/internal/models/event"
 	"main/internal/models/subject"
 	"main/internal/storage/orm"
@@ -14,7 +15,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"golang.org/x/sync/errgroup"
 )
 
 type EventRepositoryInterface interface {
@@ -49,7 +49,7 @@ func NewEventService(orm orm.ORM, er EventRepositoryInterface, log *slog.Logger)
 }
 
 // Get all events
-func (s *EventService) GetAllEvents(ctx context.Context, offset, limit *int) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetAllEvents(ctx context.Context, offset, limit *int) ([]event_dto.EventDTOResponse, error) {
 	const op = "services.event_service.GetAllEvents"
 
 	log := s.log.With(
@@ -61,7 +61,8 @@ func (s *EventService) GetAllEvents(ctx context.Context, offset, limit *int) ([]
 		log.Error("failed to get all events: %v", liblogger.Err(err))
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return ConvertManyEventsToDTO(events), nil
+
+	return event_mapper.ManyToDTO(events), nil
 }
 
 // Get event by id
@@ -190,7 +191,7 @@ func (s *EventService) GetCountEventsByPreviousID(ctx context.Context, id string
 }
 
 // Get list events by type
-func (s *EventService) GetEventsByType(ctx context.Context, eventType event.EventType, offset, limit *int, order *string) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetEventsByType(ctx context.Context, eventType event.EventType, offset, limit *int, order *string) ([]event_dto.EventDTOResponse, error) {
 	const op = "services.event_service.GetEventsByType"
 
 	log := s.log.With(
@@ -205,11 +206,12 @@ func (s *EventService) GetEventsByType(ctx context.Context, eventType event.Even
 		)
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return ConvertManyEventsToDTO(events), nil
+
+	return event_mapper.ManyToDTO(events), nil
 }
 
 // Get events where type=stage and his childs
-func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id uuid.UUID) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id uuid.UUID) ([]event_dto.EventDTOResponse, error) {
 	const op = "services.event_service.GetEventsTypeStageAndHisChilds"
 
 	log := s.log.With(
@@ -226,7 +228,7 @@ func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id uu
 		)
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	eventsDto := ConvertManyEventsToDTO(events)
+	eventsDto := event_mapper.ManyToDTO(events)
 
 	wg := sync.WaitGroup{}
 	mx := sync.Mutex{}
@@ -245,7 +247,7 @@ func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id uu
 				errors <- err
 			}
 			mx.Lock()
-			*eventsDto[i].Events = ConvertManyEventsToDTO(childs)
+			*eventsDto[i].Events = event_mapper.ManyToDTO(childs)
 			mx.Unlock()
 		}()
 	}
@@ -263,7 +265,7 @@ func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id uu
 }
 
 // Get list events by PreviousID
-func (s *EventService) GetEventsByPreviousID(ctx context.Context, previousId string, offset, limit *int, order *string) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetEventsByPreviousID(ctx context.Context, previousId string, offset, limit *int, order *string) ([]event_dto.EventDTOResponse, error) {
 	const op = "services.event_service.GetEventsByPreviousID"
 
 	log := s.log.With(
@@ -287,11 +289,11 @@ func (s *EventService) GetEventsByPreviousID(ctx context.Context, previousId str
 		)
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return ConvertManyEventsToDTO(events), nil
+	return event_mapper.ManyToDTO(events), nil
 }
 
 // Get list events by list id
-func (s *EventService) GetEventsByListID(ctx context.Context, ids []uuid.UUID) ([]event_dto.EventDTO, error) {
+func (s *EventService) GetEventsByListID(ctx context.Context, ids []uuid.UUID) ([]event_dto.EventDTOResponse, error) {
 	const op = "services.event_service.GetEventsByListID"
 
 	log := s.log.With(
@@ -308,7 +310,7 @@ func (s *EventService) GetEventsByListID(ctx context.Context, ids []uuid.UUID) (
 	}
 	log.Info("events getted", slog.Any("events", events))
 
-	return ConvertManyEventsToDTO(events), nil
+	return event_mapper.ManyToDTO(events), nil
 }
 
 // Find olympiad who is parent for stage
@@ -325,7 +327,7 @@ func (s *EventService) getOlympiad(ctx context.Context, id uuid.UUID) (event.Eve
 	}
 }
 
-func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventDTO *event_dto.EventDTO, isUpdate bool) error {
+func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventDTO *event.Event, isUpdate bool) error {
 	const op = "services.event_service.checkCorrectEventDTO"
 
 	// Check date
@@ -411,79 +413,6 @@ func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventDTO *event
 	return nil
 }
 
-func (s *EventService) CreateEventsByJSON(ctx context.Context, eventDTO event_dto.EventDTO) error {
-	const op = "services.event_service.CreateEventsByJSON"
-
-	log := s.log.With(
-		slog.String("op", op),
-	)
-
-	err := s.checkCorrectEventDTO(ctx, &eventDTO, false)
-	if err != nil {
-		log.Error("failed check correct event", liblogger.Err(err))
-		return fmt.Errorf("%s: %w", op, err)
-	}
-	eventModel := ConvertDTOtoEvent(eventDTO)
-	_, err = s.repository.CreateEvent(ctx, s.db, eventModel)
-	if err != nil {
-		log.Error("failed create main event", liblogger.Err(err))
-		return fmt.Errorf("%s: %w", op, err)
-	}
-
-	err = s.createEventRecursion(ctx, eventDTO, nil)
-	if err != nil {
-		log.Error("failed create child events", liblogger.Err(err))
-		return fmt.Errorf("%s: %w", op, err)
-	}
-	log.Info("events by json success created")
-
-	return nil
-}
-
-func (s *EventService) createEvents(ctx context.Context, eventDTO event_dto.EventDTO, id *uuid.UUID) error {
-	const op = "service.event_service.createEvents"
-
-	// Additional support struct
-	type StackEvent struct {
-		event event_dto.EventDTO
-		id    *uuid.UUID
-	}
-
-	stackEvents := []StackEvent{
-		{
-			event: eventDTO,
-			id:    id,
-		},
-	}
-
-	for len(stackEvents) > 0 {
-		current := stackEvents[0]
-		stackEvents = stackEvents[1:]
-
-		current.event.PreviousEventID = current.id
-
-		err := s.checkCorrectEventDTO(ctx, &current.event, false)
-		if err != nil {
-			return fmt.Errorf("%s: %w", op, err)
-		}
-		eventModel := ConvertDTOtoEvent(eventDTO)
-		newId, err := s.repository.CreateEvent(ctx, s.db, eventModel)
-		if err != nil {
-			return fmt.Errorf("%s: %w", op, err)
-		}
-		if current.event.Events != nil {
-			for _, event := range *current.event.Events {
-				stackEvents = append(stackEvents, StackEvent{
-					event: event,
-					id:    &newId,
-				})
-			}
-		}
-	}
-
-	return nil
-}
-
 // func (s *EventService) multipleCreateEvents(ctx context.Context, eventDTO event_dto.EventDTO, id *uuid.UUID) error {
 // 	const op = "service.event_service.multipleCreateEvents"
 
@@ -531,54 +460,21 @@ func (s *EventService) createEvents(ctx context.Context, eventDTO event_dto.Even
 // 	return nil
 // }
 
-func (s *EventService) createEventRecursion(ctx context.Context, eventDTO event_dto.EventDTO, id *uuid.UUID) error {
-	const op = "services.event_service.createEventRecursion"
-	if id != nil {
-		eventDTO.PreviousEventID = id
-	}
-	err := s.checkCorrectEventDTO(ctx, &eventDTO, false)
-	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
-	}
-	eventModel := ConvertDTOtoEvent(eventDTO)
-	newId, err := s.repository.CreateEvent(ctx, s.db, eventModel)
-	if err != nil {
-		return fmt.Errorf("%s: %w", op, err)
-	}
-	if eventDTO.Events == nil {
-		return nil
-	}
-
-	errgroup := errgroup.Group{}
-
-	for _, event := range *eventDTO.Events {
-		errgroup.Go(func() error {
-			err = s.createEventRecursion(ctx, event, &newId)
-			if err != nil {
-				return err
-			}
-			return nil
-		})
-	}
-	if err = errgroup.Wait(); err != nil {
-		return fmt.Errorf("%s: %w", op, err)
-	}
-	return nil
-}
-
 // Create event
-func (s *EventService) CreateEvent(ctx context.Context, eventDTO event_dto.EventDTO) (uuid.UUID, error) {
+func (s *EventService) CreateEvent(ctx context.Context, eventDTO event_dto.CreateEventDTORequest) (uuid.UUID, error) {
 	const op = "services.event_service.CreateEvent"
+	const errMsg = "failed create event"
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
-	err := s.checkCorrectEventDTO(ctx, &eventDTO, false)
+	eventModel := event_mapper.FromCreateToModel(eventDTO)
+
+	err := s.checkCorrectEventDTO(ctx, &eventModel, false)
 	if err != nil {
 		log.Error("failed check correct event", liblogger.Err(err))
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
-	eventModel := ConvertDTOtoEvent(eventDTO)
 	// Auto create events for all subject
 	if eventModel.EventType == event.RegionalStage {
 		id, err := s.createEventsBySubjects(ctx, eventModel)
@@ -629,59 +525,62 @@ func (s *EventService) createEventsBySubjects(ctx context.Context, eventModel ev
 	return id, nil
 }
 
-func (s *EventService) updateEventDTO(ctx context.Context, updatedEventDTO event_dto.EventDTO) (event_dto.EventDTO, error) {
-	serchedID := updatedEventDTO.ID
+// func (s *EventService) updateEventDTO(ctx context.Context, updatedEventDTO event_dto.UpdateEventDTORequest) (event_dto.EventDTO, error) {
+// 	serchedID := updatedEventDTO.ID
 
-	event, err := s.repository.GetEventByID(ctx, s.db, serchedID)
-	newEventDTO := ConvertEventToDTO(event)
-	if err != nil {
-		return event_dto.EventDTO{}, nil
-	}
-	if updatedEventDTO.Name != "" {
-		newEventDTO.Name = updatedEventDTO.Name
-	}
-	if !updatedEventDTO.StartDate.IsZero() {
-		newEventDTO.StartDate = updatedEventDTO.StartDate
-	}
-	if !updatedEventDTO.EndDate.IsZero() {
-		newEventDTO.EndDate = updatedEventDTO.EndDate
-	}
-	if updatedEventDTO.Subject != "" {
-		newEventDTO.Subject = updatedEventDTO.Subject
-	}
-	if updatedEventDTO.AdditionalInfo != "" {
-		newEventDTO.AdditionalInfo = updatedEventDTO.AdditionalInfo
-	}
+// 	event, err := s.repository.GetEventByID(ctx, s.db, serchedID)
+// 	newEventDTO := ConvertEventToDTO(event)
+// 	if err != nil {
+// 		return event_dto.EventDTO{}, nil
+// 	}
+// 	if updatedEventDTO.Name != nil {
+// 		newEventDTO.Name = *updatedEventDTO.Name
+// 	}
+// 	if !updatedEventDTO.StartDate.IsZero() {
+// 		newEventDTO.StartDate = updatedEventDTO.StartDate
+// 	}
+// 	if !updatedEventDTO.EndDate.IsZero() {
+// 		newEventDTO.EndDate = updatedEventDTO.EndDate
+// 	}
+// 	if updatedEventDTO.Subject != "" {
+// 		newEventDTO.Subject = updatedEventDTO.Subject
+// 	}
+// 	if updatedEventDTO.AdditionalInfo != "" {
+// 		newEventDTO.AdditionalInfo = updatedEventDTO.AdditionalInfo
+// 	}
 
-	return newEventDTO, nil
-}
+// 	return newEventDTO, nil
+// }
 
 // Update event
-func (s *EventService) UpdateEvent(ctx context.Context, event_dto event_dto.EventDTO) (uuid.UUID, error) {
+func (s *EventService) UpdateEvent(ctx context.Context, id string, eventDTO event_dto.UpdateEventDTORequest) (uuid.UUID, error) {
 	const op = "services.event_service.UpdateEvent"
+	const errMsg = "failed update event"
 	log := s.log.With(
 		slog.String("op", op),
 	)
-	event_dto, err := s.updateEventDTO(ctx, event_dto)
+
+	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed update EventDTO", liblogger.Err(err))
-		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
+		log.Error("failed parse id to uuid", liblogger.Err(err))
+		return uuid.Nil, fmt.Errorf("%s", errMsg)
 	}
 
-	err = s.checkCorrectEventDTO(ctx, &event_dto, true)
+	event := event_mapper.FromUpdateToModel(eventDTO, uid)
+
+	err = s.checkCorrectEventDTO(ctx, &event, true)
 	if err != nil {
 		log.Error("failed check correct event", liblogger.Err(err))
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	event := ConvertDTOtoEvent(event_dto)
-	id, err := s.repository.UpdateEvent(ctx, s.db, event)
+	updatedId, err := s.repository.UpdateEvent(ctx, s.db, event)
 	if err != nil {
 		log.Error("failed update event", liblogger.Err(err))
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 	log.Info("event success updated")
-	return id, nil
+	return updatedId, nil
 }
 
 // Delete event
@@ -753,14 +652,6 @@ func ConvertEventToDetails(event event.Event) event_dto.DetailsEvent {
 		AdditionalInfo:  event.AdditionalInfo,
 		EventType:       event.EventType,
 	}
-}
-
-func ConvertManyEventsToDTO(events []event.Event) []event_dto.EventDTO {
-	var eventsDTO []event_dto.EventDTO
-	for _, event := range events {
-		eventsDTO = append(eventsDTO, ConvertEventToDTO(event))
-	}
-	return eventsDTO
 }
 
 func ConvertManyEventsToDetails(events []event.Event) []event_dto.DetailsEvent {

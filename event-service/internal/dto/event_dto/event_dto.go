@@ -7,6 +7,18 @@ import (
 	"github.com/google/uuid"
 )
 
+type EventDTOResponse struct {
+	ID              uuid.UUID
+	Name            string    `validate:"required"`
+	StartDate       time.Time `validate:"required"`
+	EndDate         time.Time `validate:"required"`
+	EventType       event.EventType
+	PreviousEventID *uuid.UUID
+	Subject         string
+	AdditionalInfo  string
+	Events          *[]EventDTOResponse
+}
+
 type EventDTO struct {
 	ID              uuid.UUID
 	Name            string    `validate:"required"`
@@ -28,4 +40,21 @@ type DetailsEvent struct {
 	PreviousEventID *uuid.UUID      `json:"previous_event_id,omitempty"`
 	Subject         string          `json:"subject,omitempty"`
 	AdditionalInfo  string          `json:"additional_info,omitempty"`
+}
+
+type CreateEventDTORequest struct {
+	Name            string
+	StartDate       time.Time  `validate:"required"`
+	EndDate         time.Time  `validate:"required"`
+	PreviousEventID *uuid.UUID `json:"previous_event_id,omitempty"`
+	Subject         string     `json:"subject,omitempty"`
+	AdditionalInfo  string     `json:"additional_info,omitempty"`
+}
+
+type UpdateEventDTORequest struct {
+	Name           *string
+	StartDate      *time.Time
+	EndDate        *time.Time
+	Subject        *string
+	AdditionalInfo *string
 }
