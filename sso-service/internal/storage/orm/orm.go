@@ -39,7 +39,14 @@ func NewGormORM(db *gorm.DB) ORM {
 
 func (g *Gorm) Count(ctx context.Context, model interface{}, count *int64, query interface{}, args ...interface{}) error {
 	const op = "storage.orm.Count"
-	err := g.DB.WithContext(ctx).Model(model).Where(query, args).Count(count).Error
+
+	db := g.DB.WithContext(ctx).Model(model)
+
+	if query != nil {
+		db = db.Where(query, args...)
+	}
+
+	err := db.Count(count).Error
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

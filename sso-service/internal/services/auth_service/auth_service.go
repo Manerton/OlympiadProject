@@ -117,14 +117,10 @@ func (s *AuthService) preparationRefreshToken(ctx context.Context, userResult us
 	}
 
 	// hash token
-	hashToken, err := crypt.HashPassword(refreshToken)
-	if err != nil {
-		return "", fmt.Errorf("failed hash token: %w", err)
-	}
 
 	refreshTokenModel := refresh_token.RefreshToken{
 		UserID:    userResult.ID,
-		TokenHash: hashToken,
+		TokenHash: refreshToken,
 		ExpiresAt: time.Now().Add(s.jwtManager.GetRefreshDuration()),
 	}
 

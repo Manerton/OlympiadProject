@@ -38,7 +38,7 @@ func (dto *RegisterUserRequestDTO) UnmarshalJSON(data []byte) error {
 	// Временная структура с полями-строками
 	type Alias struct {
 		Email       string      `json:"email"`
-		Password    string      `json:"password_hash"`
+		Password    string      `json:"password"`
 		FirstName   string      `json:"firstname"`
 		Surname     string      `json:"surname"`
 		Patronymic  string      `json:"patronymic"`
@@ -68,22 +68,6 @@ func (dto *RegisterUserRequestDTO) UnmarshalJSON(data []byte) error {
 
 	dto.Gender = int(gender)
 	dto.Role = int(role)
-
-	// if temp.Gender != "" {
-	// 	gender, err := strconv.Atoi(temp.Gender)
-	// 	if err != nil {
-	// 		return fmt.Errorf("invalid gender: %w", err)
-	// 	}
-	// 	dto.Gender = gender
-	// }
-
-	// if temp.Role != "" {
-	// 	role, err := strconv.Atoi(temp.Role)
-	// 	if err != nil {
-	// 		return fmt.Errorf("invalid role: %w", err)
-	// 	}
-	// 	dto.Role = role
-	// }
 
 	return nil
 }
