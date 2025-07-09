@@ -11,6 +11,18 @@ import (
 
 type SchoolRepository struct{}
 
+func (r *SchoolRepository) GetCount(ctx context.Context, orm orm.ORM) (int64, error) {
+	const op = "repositories.SchoolRepository.GetCount"
+
+	var countResult int64 = 0
+	err := orm.Count(ctx, school.School{}, &countResult, nil)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return countResult, nil
+}
+
 func (r *SchoolRepository) GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (school.School, error) {
 	const op = "repositories.school_repository.GetById"
 

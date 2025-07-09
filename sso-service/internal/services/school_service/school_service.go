@@ -17,6 +17,8 @@ type SchoolRepository interface {
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (school.School, error)
 	GetAll(ctx context.Context, orm orm.ORM, offset, limit *int) ([]school.School, error)
 
+	GetCount(ctx context.Context, orm orm.ORM) (int64, error)
+
 	Create(ctx context.Context, orm orm.ORM, school school.School) (uuid.UUID, error)
 	Update(ctx context.Context, orm orm.ORM, school school.School) error
 	Delete(ctx context.Context, orm orm.ORM, id uuid.UUID) error
@@ -34,6 +36,23 @@ func New(log *slog.Logger, orm orm.ORM, schoolRepository SchoolRepository) *Scho
 		db:               orm,
 		schoolRepository: schoolRepository,
 	}
+}
+
+func (s *SchoolService) GetCount(ctx context.Context) (int64, error) {
+	const op = "services.school_service.GetCount"
+	const errMsg = "failed get count school"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	schoolCount, err := s.schoolRepository.GetCount(ctx, s.db)
+	if err != nil {
+		log.Error("failed get count schools", liblogger.Err(err))
+		return 0, fmt.Errorf("%s", errMsg)
+	}
+
+	return schoolCount, nil
 }
 
 func (s *SchoolService) GetById(ctx context.Context, id string) (school_dto.SchoolResponeDTO, error) {
@@ -86,7 +105,7 @@ func (s *SchoolService) GetAll(ctx context.Context, page, limit *int) ([]school_
 
 }
 
-func (s *SchoolService) Create(ctx context.Context, schoolDTO school_dto.CreateSchoolRequestDTO) error {
+func (s *SchoolService) Create(ctx context.Context, schoolDTO school_dto.CreateSchoolRequestDTO) (uuid.UUID, error) {
 	const op = "services.school_service.Create"
 	const errMsg = "failed create school"
 
@@ -95,13 +114,13 @@ func (s *SchoolService) Create(ctx context.Context, schoolDTO school_dto.CreateS
 	)
 
 	schoolModel := school_mapper.FromCreateDTOToModel(schoolDTO)
-	_, err := s.schoolRepository.Create(ctx, s.db, schoolModel)
+	uid, err := s.schoolRepository.Create(ctx, s.db, schoolModel)
 	if err != nil {
 		log.Error("failed create school", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		return uuid.Nil, fmt.Errorf("%s", errMsg)
 	}
 
-	return nil
+	return uid, nil
 }
 
 func (s *SchoolService) Update(ctx context.Context, id string, schoolDTO school_dto.UpdateSchoolRequestDTO) error {
