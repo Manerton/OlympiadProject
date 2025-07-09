@@ -14,6 +14,7 @@ import (
 	"main/internal/lib/liblogger"
 	"main/internal/rabbitmq/producer"
 
+	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -50,7 +51,7 @@ type AuthService interface {
 }
 
 type SchoolService interface {
-	Create(ctx context.Context, schoolDTO school_dto.CreateSchoolRequestDTO) error
+	Create(ctx context.Context, schoolDTO school_dto.CreateSchoolRequestDTO) (uuid.UUID, error)
 	Update(ctx context.Context, id string, schoolDTO school_dto.UpdateSchoolRequestDTO) error
 	Delete(ctx context.Context, id string) error
 }
@@ -233,7 +234,7 @@ func (c *RabbitConsumer) create(ctx context.Context, tableName string, data map[
 			return fmt.Errorf("failed parse json: %w", err)
 		}
 
-		err := c.schoolService.Create(ctx, schoolDTO)
+		_, err := c.schoolService.Create(ctx, schoolDTO)
 		if err != nil {
 			return fmt.Errorf("%w", err)
 		}

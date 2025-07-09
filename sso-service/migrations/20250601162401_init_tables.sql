@@ -20,7 +20,7 @@ CREATE TABLE users (
 CREATE TABLE schools (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(128) NOT NULL,
-    region VARCHAR(128) NOT NULL
+    region INTEGER NOT NULL
 );
 
 
@@ -29,9 +29,7 @@ CREATE TABLE participants (
     user_id UUID NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
     disability INTEGER NOT NULL,
     school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    city VARCHAR(128) NOT NULL,
-    reason TEXT,
-    citizenship VARCHAR(64),
+    citizenship INTEGER NOT NULL,
     class_number INTEGER NOT NULL
 );
 

@@ -10,11 +10,11 @@ import (
 
 func ToDTO(participantModel participant.Participant) participant_dto.ParticipantResponseDTO {
 	return participant_dto.ParticipantResponseDTO{
-		UserId:      participantModel.UserId.String(),
-		Disability:  participantModel.Disability,
-		SchoolId:    participantModel.SchoolId.String(),
-		City:        participantModel.City,
-		Reason:      participantModel.Reason,
+		ID:         participantModel.ID.String(),
+		UserId:     participantModel.UserId.String(),
+		Disability: participantModel.Disability,
+		SchoolId:   participantModel.SchoolId.String(),
+
 		Citizenship: participantModel.Citizenship,
 		ClassNumber: participantModel.ClassNumber,
 	}
@@ -30,9 +30,7 @@ func FromRegisterToModel(registerDTO *register_dto.RegisterParticipantRequestDTO
 		UserId:      userId,
 		Disability:  registerDTO.Disability,
 		SchoolId:    schoolId,
-		City:        registerDTO.City,
 		Citizenship: registerDTO.Citizenship,
-		Reason:      registerDTO.Reason,
 		ClassNumber: registerDTO.ClassNumber,
 	}
 }
@@ -41,8 +39,6 @@ func FromUpdateToModel(updateDTO participant_dto.UpdateParticipantRequestDTO, ui
 	return participant.Participant{
 		ID:          uid,
 		Disability:  *updateDTO.Disability,
-		City:        *updateDTO.City,
-		Reason:      *updateDTO.Reason,
 		Citizenship: *updateDTO.Citizenship,
 		ClassNumber: *updateDTO.ClassNumber,
 	}

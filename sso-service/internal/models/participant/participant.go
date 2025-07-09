@@ -14,8 +14,6 @@ type Participant struct {
 	Disability  int
 	SchoolId    uuid.UUID
 	School      school.School
-	City        string
-	Reason      string
-	Citizenship string
+	Citizenship int
 	ClassNumber int
 }

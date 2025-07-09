@@ -16,9 +16,7 @@ type RegisterParticipantRequestDTO struct {
 
 	Disability  int    `json:"disability"`
 	SchoolId    string `json:"school_id"`
-	City        string `json:"city"`
-	Reason      string `json:"reason"`
-	Citizenship string `json:"citizenship"`
+	Citizenship int    `json:"citizenship"`
 	ClassNumber int    `json:"class_number"`
 }
 
