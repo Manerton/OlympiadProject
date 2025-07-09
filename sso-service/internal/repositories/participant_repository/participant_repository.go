@@ -11,6 +11,40 @@ import (
 
 type ParticipantRepository struct{}
 
+func (r *ParticipantRepository) GetCount(ctx context.Context, orm orm.ORM) (int64, error) {
+	const op = "repositories.ParticipantRepository.GetCount"
+
+	var countResult int64 = 0
+	err := orm.Count(ctx, participant.Participant{}, &countResult, nil)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return countResult, nil
+}
+
+func (r *ParticipantRepository) GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (participant.Participant, error) {
+	const op = "repositories.participant_repository.GetById"
+
+	participantRes := participant.Participant{ID: id}
+	err := orm.First(ctx, participant.Participant{}, nil, &participantRes)
+	if err != nil {
+		return participant.Participant{}, fmt.Errorf("%s: %w", op, err)
+	}
+	return participantRes, nil
+}
+
+func (r *ParticipantRepository) GetAll(ctx context.Context, orm orm.ORM, offset, limit *int) ([]participant.Participant, error) {
+	const op = "repositories.participant_repository.GetAll"
+
+	participantRes := []participant.Participant{}
+	err := orm.Find(ctx, participant.Participant{}, nil, offset, limit, nil, &participantRes)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return participantRes, nil
+}
+
 func (r *ParticipantRepository) GetByUserId(ctx context.Context, orm orm.ORM, userId uuid.UUID) (participant.Participant, error) {
 	const op = "repositories.participant_repository.GetByUserId"
 
