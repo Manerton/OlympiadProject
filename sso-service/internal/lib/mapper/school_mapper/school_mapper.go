@@ -3,6 +3,7 @@ package school_mapper
 import (
 	school_dto "main/internal/dto/school"
 	"main/internal/models/school"
+	"strconv"
 
 	"github.com/google/uuid"
 )
@@ -15,17 +16,32 @@ func FromModelToDTO(school school.School) school_dto.SchoolResponeDTO {
 	}
 }
 
-func FromCreateDTOToModel(schoolDto school_dto.CreateSchoolRequestDTO) school.School {
+func FromCreateDTOToModel(schoolDto school_dto.CreateSchoolRequestDTO) (school.School, error) {
+
+	regionNum, err := strconv.Atoi(schoolDto.Region)
+	if err != nil {
+		return school.School{}, nil
+	}
+
 	return school.School{
 		Name:   schoolDto.Name,
-		Region: schoolDto.Region,
-	}
+		Region: regionNum,
+	}, nil
 }
 
-func FromUpdateDTOToModel(schoolDto school_dto.UpdateSchoolRequestDTO, uid uuid.UUID) school.School {
+func FromUpdateDTOToModel(schoolDto school_dto.UpdateSchoolRequestDTO, uid uuid.UUID) (school.School, error) {
+	if schoolDto.Region == nil {
+		return school.School{}, nil
+	}
+
+	regionNum, err := strconv.Atoi(*schoolDto.Region)
+	if err != nil {
+		return school.School{}, nil
+	}
+
 	return school.School{
 		ID:     uid,
 		Name:   *schoolDto.Name,
-		Region: *schoolDto.Region,
-	}
+		Region: regionNum,
+	}, nil
 }

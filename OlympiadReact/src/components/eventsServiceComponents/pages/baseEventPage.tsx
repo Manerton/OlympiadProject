@@ -17,13 +17,14 @@ interface BaseEventPageProps {
   selectedEventId?: string
   pageName: string
   showSubjectField?: boolean
+  showClassNumber?: boolean
   EventType: string
 }
 
 const limit = 10
 
 
-function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField = false }: BaseEventPageProps) {
+function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField = false, showClassNumber = false }: BaseEventPageProps) {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showModal, setShowModal] = useState(false);
@@ -36,6 +37,8 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
   
 
   const memoizedShowSubjectField = useMemo(() => showSubjectField, [showSubjectField]);
+  const memoizedShowClassNumberField = useMemo(() => showClassNumber, [showClassNumber]);
+
 
 
   const eventsResponse = async (offset: number) => {
@@ -106,6 +109,9 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
             EndDate: new Date(result.data.EndDate),
           };
           setEvent(eventWithDates);
+
+          console.log(eventWithDates)
+
         }
       } catch (error) {
         console.error("Ошибка при загрузке региональных этапов:", error);
@@ -238,7 +244,7 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
         </Modal.Header>
         <Modal.Body>
           {/* Форма создания */}
-          <EventModalForm onSuccess={OnUpdateListEvent} event={event} showSubjectField={memoizedShowSubjectField} ></EventModalForm>
+          <EventModalForm onSuccess={OnUpdateListEvent} event={event} showSubjectField={memoizedShowSubjectField} showClassNumber={memoizedShowClassNumberField} ></EventModalForm>
         </Modal.Body>
       </Modal>
     </div>

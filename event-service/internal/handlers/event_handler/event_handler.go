@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"main/internal/dto/event_dto"
 	"main/internal/lib/parsing"
 	"main/internal/lib/request"
@@ -281,6 +282,8 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	var eventDTO event_dto.CreateEventDTORequest
 	err := render.DecodeJSON(r.Body, &eventDTO)
+	log.Print(eventDTO)
+
 	if errors.Is(err, io.EOF) {
 		render.JSON(w, r, response.Error("empty request"))
 		return

@@ -1,6 +1,6 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TYPE event_type AS ENUM ('REGIONAL_STAGE', 'OLYMPIAD', 'STAGE', 'VIEW_WORKS', 'APPEAL');
+CREATE TYPE event_type AS ENUM ('REGIONAL_STAGE', 'OLYMPIAD', 'CLASS', 'STAGE', 'VIEW_WORKS', 'APPEAL');
 
 CREATE TABLE events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

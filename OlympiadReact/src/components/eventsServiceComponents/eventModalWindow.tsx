@@ -6,15 +6,19 @@ import formatDateForInput from "../../support/support.ts";
 
 export interface EventModalFormProps {
   showSubjectField?: boolean;
+  showClassNumber?: boolean;
   event?: MyEvent;
   onSuccess?: () => void;
 }
 
-function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormProps) {
+function EventModalForm({ event, showSubjectField, showClassNumber, onSuccess }: EventModalFormProps) {
   const [eventName, setEventName] = useState("");
   const [subjectList, setSubjectList] = useState<string[]>([]);
   const [subject, setSubject] = useState("");
+  const [classNumber, setClassNumber] = useState<number>(event?.ClassNumber || 0)
+
   const [startDate, setStartDate] = useState<string>(
+
     event?.StartDate ? formatDateForInput(new Date(event.StartDate).toISOString()) : ""
   );
   const [endDate, setEndDate] = useState<string>(
@@ -70,10 +74,13 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
       Name: eventName,
       StartDate: new Date(startDate),
       EndDate: new Date(endDate),
+      ClassNumber: classNumber,
       EventType: event?.EventType || "",
       Subject: subject,
       AdditionalInfo: additionalInfo,
     };
+
+    console.log(eventData)
 
     try {
       const response = await fetch(`${API_CONFIG.EVENTS}`, {
@@ -128,6 +135,19 @@ function EventModalForm({ event, showSubjectField, onSuccess }: EventModalFormPr
               </option>
             ))}
           </Form.Select>
+        </Form.Group>
+      )}
+
+      {showClassNumber && (
+        <Form.Group controlId="eventClassNumber" className="mb-3">
+          <Form.Label>Класс: {classNumber}</Form.Label>
+            <Form.Range
+              min={1}
+              max={11}
+              step={1}
+              value={classNumber}
+              onChange={(e) => setClassNumber(Number(e.target.value))}
+            />
         </Form.Group>
       )}
 

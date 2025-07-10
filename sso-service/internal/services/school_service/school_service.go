@@ -113,7 +113,11 @@ func (s *SchoolService) Create(ctx context.Context, schoolDTO school_dto.CreateS
 		slog.String("op", op),
 	)
 
-	schoolModel := school_mapper.FromCreateDTOToModel(schoolDTO)
+	schoolModel, err := school_mapper.FromCreateDTOToModel(schoolDTO)
+	if err != nil {
+		log.Error("failed convert dto to model", liblogger.Err(err))
+		return uuid.Nil, fmt.Errorf("%s", errMsg)
+	}
 	uid, err := s.schoolRepository.Create(ctx, s.db, schoolModel)
 	if err != nil {
 		log.Error("failed create school", liblogger.Err(err))
@@ -137,7 +141,12 @@ func (s *SchoolService) Update(ctx context.Context, id string, schoolDTO school_
 		return fmt.Errorf("failed parse id")
 	}
 
-	schoolModel := school_mapper.FromUpdateDTOToModel(schoolDTO, uid)
+	schoolModel, err := school_mapper.FromUpdateDTOToModel(schoolDTO, uid)
+	if err != nil {
+		log.Error("failed convert dto to model", liblogger.Err(err))
+		return fmt.Errorf("%s", errMsg)
+	}
+
 	err = s.schoolRepository.Update(ctx, s.db, schoolModel)
 	if err != nil {
 		log.Error("failed update school", liblogger.Err(err))

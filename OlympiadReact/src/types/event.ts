@@ -6,6 +6,7 @@ export interface MyEvent {
     PreviousEventID?: number
     EventType: string;
     Subject?: string;
+    ClassNumber?: number;
     AdditionalInfo?: string;
     Events?: [MyEvent]
 }
@@ -15,4 +16,6 @@ export const OLYMPIAD = "OLYMPIAD"
 export const STAGE = "STAGE"
 export const VIEW_WORKS = "VIEW_WORKS"
 export const APPEAL = "APPEAL"
+export const CLASS = "CLASS"
+
 

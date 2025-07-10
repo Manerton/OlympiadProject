@@ -1,4 +1,4 @@
-import { Button, Form } from "react-bootstrap"
+import { Button, Form, FormGroup } from "react-bootstrap"
 import API_CONFIG from "../../config/apiConfig";
 import { useEffect, useState } from "react";
 import formatDateForInput from "../../support/support";
@@ -14,6 +14,8 @@ function EventInfo({ event }: EventInfoProps) {
   const [eventName, setEventName] = useState<string>(event.Name || "");
   const [subjectList, setSubjectList] = useState<string[]>([]);
   const [subject, setSubject] = useState<string>(event.Subject || "");
+  const [classNumber, setClassNumber] = useState<number>(event.ClassNumber || 0);
+
   const [startDate, setStartDate] = useState<string>(
     event?.StartDate ? formatDateForInput(new Date(event.StartDate).toISOString()) : ""
   );
@@ -72,6 +74,7 @@ function EventInfo({ event }: EventInfoProps) {
       Name: eventName,
       StartDate: new Date(startDate),
       EndDate: new Date(endDate),
+      ClassNumber: event.ClassNumber || 0,
       EventType: event.EventType || "",
       Subject: subject,
       AdditionalInfo: additionalInfo,
@@ -166,6 +169,20 @@ function EventInfo({ event }: EventInfoProps) {
                 </ul>
               </div>
             </Form.Group>
+          )}
+
+          {classNumber && (
+            <FormGroup className="mb-3">
+              <Form.Label>Класс</Form.Label>
+              <Form.Range
+                min={1}
+                max={11}
+                step={1}
+                value={classNumber}
+                onChange={(e) => setClassNumber(Number(e.target.value))}
+                disabled={role !== UserRoles.Organaizer}
+              />
+            </FormGroup>
           )}
 
           {/* Дополнительная информация */}

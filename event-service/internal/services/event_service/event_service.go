@@ -241,12 +241,10 @@ func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id uu
 			defer wg.Done()
 			mx.Lock()
 			id := eventsDto[i].ID
-			mx.Unlock()
 			childs, err := s.repository.GetEventsByPreviousID(ctx, s.db, id, nil, nil, nil)
 			if err != nil {
 				errors <- err
 			}
-			mx.Lock()
 			*eventsDto[i].Events = event_mapper.ManyToDTO(childs)
 			mx.Unlock()
 		}()
@@ -353,6 +351,8 @@ func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventDTO *event
 				}
 				eventDTO.EventType = event.Olympiad
 			case event.Olympiad:
+				eventDTO.EventType = event.Class
+			case event.Class:
 				eventDTO.EventType = event.Stage
 			case event.Stage:
 				// check stage cannot have more than one ViewWorks
@@ -470,17 +470,19 @@ func (s *EventService) CreateEvent(ctx context.Context, eventDTO event_dto.Creat
 
 	eventModel := event_mapper.FromCreateToModel(eventDTO)
 
+	log.Debug("test", eventDTO)
+
 	err := s.checkCorrectEventDTO(ctx, &eventModel, false)
 	if err != nil {
 		log.Error("failed check correct event", liblogger.Err(err))
-		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
+		return uuid.Nil, fmt.Errorf("%s", errMsg)
 	}
 	// Auto create events for all subject
 	if eventModel.EventType == event.RegionalStage {
 		id, err := s.createEventsBySubjects(ctx, eventModel)
 		if err != nil {
 			log.Error("failed create event by subjects", liblogger.Err(err))
-			return uuid.Nil, fmt.Errorf("%s: %w", op, err)
+			return uuid.Nil, fmt.Errorf("%s", errMsg)
 		}
 		log.Info("events success created (with all subjects)", slog.Any("eventID", id))
 		return id, nil
@@ -488,7 +490,7 @@ func (s *EventService) CreateEvent(ctx context.Context, eventDTO event_dto.Creat
 	id, err := s.repository.CreateEvent(ctx, s.db, eventModel)
 	if err != nil {
 		log.Error("failed to create event", liblogger.Err(err))
-		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
+		return uuid.Nil, fmt.Errorf("%s", errMsg)
 	}
 	log.Info("event success created (only one)", slog.Any("eventID", id))
 	return id, nil

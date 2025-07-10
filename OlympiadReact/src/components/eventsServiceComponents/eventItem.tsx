@@ -1,4 +1,4 @@
-import { MyEvent, REGIONAL_STAGE, STAGE, OLYMPIAD, APPEAL, VIEW_WORKS } from "../../types/event";
+import { MyEvent, REGIONAL_STAGE, STAGE, OLYMPIAD, APPEAL, VIEW_WORKS, CLASS } from "../../types/event";
 import { Button, Card } from "react-bootstrap";
 import { useNavigate, Link } from "react-router-dom";
 import { useRole } from "../RoleContext";
@@ -20,7 +20,9 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
     if (event.EventType === REGIONAL_STAGE) {
       navigate(`/olympiads/${event.ID}`);
     } else if (event.EventType === OLYMPIAD) {
-      navigate(`/olympiad-stages/${event.ID}`);
+      navigate(`/olympiad-class/${event.ID}`);
+    } else if (event.EventType === CLASS) {
+      navigate(`/olympiad-stages/${event.ID}`)
     } else if (event.EventType === STAGE) {
       navigate(`/sub-stage/${event.ID}`)
     }

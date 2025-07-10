@@ -11,6 +11,7 @@ type EventType string
 const (
 	RegionalStage EventType = "REGIONAL_STAGE"
 	Olympiad      EventType = "OLYMPIAD"
+	Class         EventType = "CLASS"
 	Stage         EventType = "STAGE"
 	ViewWorks     EventType = "VIEW_WORKS"
 	Appeal        EventType = "APPEAL"

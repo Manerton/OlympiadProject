@@ -43,12 +43,14 @@ type DetailsEvent struct {
 }
 
 type CreateEventDTORequest struct {
-	Name            string
-	StartDate       time.Time  `validate:"required"`
-	EndDate         time.Time  `validate:"required"`
+	Name            string     `json:"name" validate:"required"`
+	StartDate       time.Time  `json:"start_date" validate:"required"`
+	EndDate         time.Time  `json:"end_date" validate:"required"`
 	PreviousEventID *uuid.UUID `json:"previous_event_id,omitempty"`
 	Subject         string     `json:"subject,omitempty"`
 	AdditionalInfo  string     `json:"additional_info,omitempty"`
+	ClassNumber     int        `json:"class_number,omitempty"` // <- добавить
+	EventType       string     `json:"event_type,omitempty"`   // <- добавить
 }
 
 type UpdateEventDTORequest struct {
