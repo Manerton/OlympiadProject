@@ -1,6 +1,6 @@
 import EventList from "../eventList"
 
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button, Modal } from "react-bootstrap";
 import EventModalForm from "../eventModalWindow";
 import { CLASS, MyEvent, OLYMPIAD, REGIONAL_STAGE, STAGE } from "../../../types/event";
@@ -8,9 +8,7 @@ import { useRole } from "../../RoleContext";
 import API_CONFIG from "../../../config/apiConfig"
 import EventInfo from "../eventInfo";
 import UserRoles from "../../../types/user";
-import { Type } from "react-bootstrap-icons";
 import Pagination from "../pagination";
-import { number } from "yup";
 // import { useUser } from "../contexts/UserContext";
 
 interface BaseEventPageProps {

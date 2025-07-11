@@ -1,4 +1,4 @@
-import { Button, Form, FormGroup } from "react-bootstrap"
+import { Button, Form } from "react-bootstrap"
 import API_CONFIG from "../../config/apiConfig";
 import { useEffect, useState } from "react";
 import formatDateForInput from "../../support/support";
@@ -14,7 +14,7 @@ function EventInfo({ event }: EventInfoProps) {
   const [eventName, setEventName] = useState<string>(event.name || "");
   const [subjectList, setSubjectList] = useState<string[]>([]);
   const [subject, setSubject] = useState<string>(event.subject || "");
-  const [classNumber, setClassNumber] = useState<number>(event.class_number || 0);
+  const [classNumber, setClassNumber] = useState<number>(event.class_number || 1);
 
   const [startDate, setStartDate] = useState<string>(
     event?.start_date ? formatDateForInput(new Date(event.start_date).toISOString()) : ""
@@ -172,18 +172,23 @@ function EventInfo({ event }: EventInfoProps) {
           )}
 
           {classNumber && (
-            <FormGroup className="mb-3">
+            <Form.Group className="mb-3">
               <Form.Label>Класс</Form.Label>
-              <Form.Range
-                min={1}
-                max={11}
-                step={1}
+              <Form.Select
                 value={classNumber}
                 onChange={(e) => setClassNumber(Number(e.target.value))}
                 disabled={role !== UserRoles.Organaizer}
-              />
-            </FormGroup>
+              >
+                <option value="">Выберите класс</option>
+                {[...Array(11)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {i + 1}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
           )}
+
 
           {/* Дополнительная информация */}
           {event.additional_info && (

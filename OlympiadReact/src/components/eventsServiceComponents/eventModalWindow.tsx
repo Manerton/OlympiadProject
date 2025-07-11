@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { MyEvent, OLYMPIAD, REGIONAL_STAGE, STAGE } from "../../types/event.ts";
+import { MyEvent} from "../../types/event.ts";
 import API_CONFIG from "../../config/apiConfig.ts";
 import formatDateForInput from "../../support/support.ts";
 
@@ -137,16 +137,20 @@ function EventModalForm({ event, showSubjectField, showClassNumber, onSuccess }:
       )}
 
       {showClassNumber && (
-        <Form.Group controlId="eventClassNumber" className="mb-3">
-          <Form.Label>Класс: {classNumber}</Form.Label>
-            <Form.Range
-              min={1}
-              max={11}
-              step={1}
-              value={classNumber}
-              onChange={(e) => setClassNumber(Number(e.target.value))}
-            />
-        </Form.Group>
+        <Form.Group className="mb-3">
+              <Form.Label>Класс</Form.Label>
+              <Form.Select
+                value={classNumber}
+                onChange={(e) => setClassNumber(Number(e.target.value))}
+              >
+                <option value="">Выберите класс</option>
+                {[...Array(11)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {i + 1}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
       )}
 
       <Form.Group className="mb-3">

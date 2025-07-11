@@ -470,8 +470,6 @@ func (s *EventService) CreateEvent(ctx context.Context, eventDTO event_dto.Creat
 
 	eventModel := event_mapper.FromCreateToModel(eventDTO)
 
-	log.Debug("test", eventDTO)
-
 	err := s.checkCorrectEventDTO(ctx, &eventModel, false)
 	if err != nil {
 		log.Error("failed check correct event", liblogger.Err(err))
