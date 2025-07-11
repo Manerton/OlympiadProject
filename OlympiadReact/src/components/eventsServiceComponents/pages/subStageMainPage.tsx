@@ -151,9 +151,9 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
     return (
         <div className="container">
             <div className="row">
-                <h1>{event?.Name || "Неизвестный этап"}</h1>
+                <h1>{event?.name || "Неизвестный этап"}</h1>
                 <div className="col-3">
-                    <h3>Информация о {event?.Name}</h3>
+                    <h3>Информация о {event?.name}</h3>
                     {event && (
                         <EventInfo event={event}></EventInfo>
                     )}

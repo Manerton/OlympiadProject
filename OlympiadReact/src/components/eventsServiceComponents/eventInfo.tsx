@@ -11,23 +11,23 @@ interface EventInfoProps {
 }
 
 function EventInfo({ event }: EventInfoProps) {
-  const [eventName, setEventName] = useState<string>(event.Name || "");
+  const [eventName, setEventName] = useState<string>(event.name || "");
   const [subjectList, setSubjectList] = useState<string[]>([]);
-  const [subject, setSubject] = useState<string>(event.Subject || "");
-  const [classNumber, setClassNumber] = useState<number>(event.ClassNumber || 0);
+  const [subject, setSubject] = useState<string>(event.subject || "");
+  const [classNumber, setClassNumber] = useState<number>(event.class_number || 0);
 
   const [startDate, setStartDate] = useState<string>(
-    event?.StartDate ? formatDateForInput(new Date(event.StartDate).toISOString()) : ""
+    event?.start_date ? formatDateForInput(new Date(event.start_date).toISOString()) : ""
   );
   const [endDate, setEndDate] = useState<string>(
-    event?.EndDate ? formatDateForInput(new Date(event.EndDate).toISOString()) : ""
+    event?.end_date ? formatDateForInput(new Date(event.end_date).toISOString()) : ""
   );
-  const [additionalInfo, setAdditionalInfo] = useState<string>(event.AdditionalInfo || "");
+  const [additionalInfo, setAdditionalInfo] = useState<string>(event.additional_info || "");
 
   const { role } = useRole();
 
   useEffect(() => {
-    if (event.Subject) {
+    if (event.subject) {
       const getSubjects = async () => {
         try {
           const response = await fetch(`${API_CONFIG.EVENTS}/subjects`, {
@@ -52,7 +52,7 @@ function EventInfo({ event }: EventInfoProps) {
       };
       getSubjects();
     }
-  }, [event.Subject]);
+  }, [event.subject]);
 
 
   const UpdateEvent = async (e: React.FormEvent) => {
@@ -63,21 +63,21 @@ function EventInfo({ event }: EventInfoProps) {
       return;
     }
 
-    if (event.Subject && !subject) {
+    if (event.subject && !subject) {
       alert("Заполните поле предмет")
       return
     }
 
     const eventData: MyEvent = {
       ID: event.ID,
-      PreviousEventID: event.PreviousEventID,
-      Name: eventName,
-      StartDate: new Date(startDate),
-      EndDate: new Date(endDate),
-      ClassNumber: event.ClassNumber || 0,
-      EventType: event.EventType || "",
-      Subject: subject,
-      AdditionalInfo: additionalInfo,
+      previous_event_id: event.previous_event_id,
+      name: eventName,
+      start_date: new Date(startDate),
+      end_date: new Date(endDate),
+      class_number: event.class_number || 0,
+      event_type: event.event_type || "",
+      subject: subject,
+      additional_info: additionalInfo,
     };
 
     try {
@@ -186,7 +186,7 @@ function EventInfo({ event }: EventInfoProps) {
           )}
 
           {/* Дополнительная информация */}
-          {event.AdditionalInfo && (
+          {event.additional_info && (
           <Form.Group className="mb-3">
             <Form.Label>Дополнительная информация</Form.Label>
             <Form.Control

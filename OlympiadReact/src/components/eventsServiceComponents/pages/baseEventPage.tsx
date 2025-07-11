@@ -3,7 +3,7 @@ import EventList from "../eventList"
 import React, { useState, useEffect, useMemo } from "react";
 import { Button, Modal } from "react-bootstrap";
 import EventModalForm from "../eventModalWindow";
-import { MyEvent, OLYMPIAD, REGIONAL_STAGE, STAGE } from "../../../types/event";
+import { CLASS, MyEvent, OLYMPIAD, REGIONAL_STAGE, STAGE } from "../../../types/event";
 import { useRole } from "../../RoleContext";
 import API_CONFIG from "../../../config/apiConfig"
 import EventInfo from "../eventInfo";
@@ -50,6 +50,9 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
       case OLYMPIAD:
         endPointEvents = `${API_CONFIG.EVENTS}/child/${selectedEventId}?offset=${offset}&limit=${limit}`;
         break
+      case CLASS:
+        endPointEvents = `${API_CONFIG.EVENTS}/child/${selectedEventId}?offset=${offset}&limit=${limit}`;
+        break
       case STAGE:
         endPointEvents = `${API_CONFIG.EVENTS}/stages/${selectedEventId}`;
     }
@@ -67,16 +70,16 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
       if (EventType === STAGE && result.data) {
         const eventsWithDates = result.data.map((event: MyEvent) => ({
           ...event,
-          StartDate: new Date(event.StartDate),
-          EndDate: new Date(event.EndDate),
+          StartDate: new Date(event.start_date),
+          EndDate: new Date(event.end_date),
         }));
         setEvents(eventsWithDates);
         setTotalPages(0)
       } else {
         const eventsWithDates = result.data.events.map((event: MyEvent) => ({
           ...event,
-          StartDate: new Date(event.StartDate),
-          EndDate: new Date(event.EndDate),
+          StartDate: new Date(event.start_date),
+          EndDate: new Date(event.end_date),
         }));
         setEvents(eventsWithDates);
         const totalCount = result.data.totalCount
@@ -164,8 +167,8 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
   const sortEvents = (order: "asc" | "desc") => {
     setEvents((prevEvents) =>
       [...prevEvents].sort((a, b) => {
-        const dateA = a.StartDate.getTime();
-        const dateB = b.StartDate.getTime();
+        const dateA = a.start_date.getTime();
+        const dateB = b.start_date.getTime();
         return order === "asc" ? dateA - dateB : dateB - dateA;
       })
     );
@@ -175,7 +178,7 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
     <div className="row d-flex justify-content-center">
       {event && (
         <div className="col-3">
-          <h3>Информация о {event.Name}</h3>
+          <h3>Информация о {event.name}</h3>
           <EventInfo event={event}></EventInfo>
         </div>
       )}

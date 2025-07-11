@@ -39,6 +39,7 @@ func ToDTO(eventModel event.Event) event_dto.EventDTOResponse {
 		AdditionalInfo:  eventModel.AdditionalInfo,
 		PreviousEventID: eventModel.PreviousEventID,
 		EventType:       eventModel.EventType,
+		Events:          new([]event_dto.EventDTOResponse),
 	}
 }
 

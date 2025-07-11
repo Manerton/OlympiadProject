@@ -9,14 +9,14 @@ import (
 
 type EventDTOResponse struct {
 	ID              uuid.UUID
-	Name            string    `validate:"required"`
-	StartDate       time.Time `validate:"required"`
-	EndDate         time.Time `validate:"required"`
-	EventType       event.EventType
-	PreviousEventID *uuid.UUID
-	Subject         string
-	AdditionalInfo  string
-	Events          *[]EventDTOResponse
+	Name            string              `json:"name" validate:"required"`
+	StartDate       time.Time           `json:"start_date" validate:"required"`
+	EndDate         time.Time           `json:"end_date" validate:"required"`
+	EventType       event.EventType     `json:"event_type"`
+	PreviousEventID *uuid.UUID          `json:"previous_event_id"`
+	Subject         string              `json:"subject"`
+	AdditionalInfo  string              `json:"additional_info"`
+	Events          *[]EventDTOResponse `json:"events"`
 }
 
 type EventDTO struct {

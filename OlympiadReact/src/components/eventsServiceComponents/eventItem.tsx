@@ -17,13 +17,13 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
   const { role, id } = useRole();
 
   const handleClick = () => {
-    if (event.EventType === REGIONAL_STAGE) {
+    if (event.event_type === REGIONAL_STAGE) {
       navigate(`/olympiads/${event.ID}`);
-    } else if (event.EventType === OLYMPIAD) {
+    } else if (event.event_type === OLYMPIAD) {
       navigate(`/olympiad-class/${event.ID}`);
-    } else if (event.EventType === CLASS) {
+    } else if (event.event_type === CLASS) {
       navigate(`/olympiad-stages/${event.ID}`)
-    } else if (event.EventType === STAGE) {
+    } else if (event.event_type === STAGE) {
       navigate(`/sub-stage/${event.ID}`)
     }
   }
@@ -80,28 +80,28 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
         {/* Левая часть: текст названия и даты */}
         <div onClick={handleClick} style={{ cursor: "pointer", textAlign: "left" }}>
           <Card.Title className="fw-bold mb-2" style={{ fontSize: "1.2rem" }}>
-            {event.Name}
+            {event.name}
           </Card.Title>
-          {(event.EventType === APPEAL || event.EventType === VIEW_WORKS) && (
+          {(event.event_type === APPEAL || event.event_type === VIEW_WORKS) && (
             <Card.Title className="fw-bold mb-2" style={{ fontSize: "1.2rem" }}>
-              {event.EventType === APPEAL ? ("Апелляция") : ("Просмотр работ")}
+              {event.event_type === APPEAL ? ("Апелляция") : ("Просмотр работ")}
             </Card.Title>
           )}
 
           <Card.Text className="text-muted mb-1">
-            <strong>Дата начала:</strong> {new Date(event.StartDate).toLocaleString()}
+            <strong>Дата начала:</strong> {new Date(event.start_date).toLocaleString()}
           </Card.Text>
           <Card.Text className="text-muted mb-1">
-            <strong>Дата конца:</strong> {new Date(event.EndDate).toLocaleString()}
+            <strong>Дата конца:</strong> {new Date(event.end_date).toLocaleString()}
           </Card.Text>
-          {event.Subject && (
+          {event.subject && (
             <Card.Text className="text-muted mb-1">
-              <strong>Предмет:</strong> {event.Subject}
+              <strong>Предмет:</strong> {event.subject}
             </Card.Text>
           )}
-          {event.AdditionalInfo && (
+          {event.additional_info && (
             <Card.Text className="mt-3">
-              <strong>Дополнительно:</strong> {event.AdditionalInfo}
+              <strong>Дополнительно:</strong> {event.additional_info}
             </Card.Text>
           )}
         </div>
@@ -144,7 +144,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
 
         </div>
       </Card.Body>
-      {event.Events && event.Events.length > 0 && (
+      {event.events && event.events.length > 0 && (
         <Card.Footer>
           <div>
             <button
@@ -159,16 +159,16 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
             </button>
             <div className="collapse" id={`collapse-${event.ID}`}>
               <div className="d-flex">
-                {event.Events.map((childEvent) => (
+                {event.events.map((childEvent) => (
                   <Card key={childEvent.ID} className="col m-1 mb-3">
                     <Card.Body>
-                      <Card.Title>{childEvent.Name}</Card.Title>
+                      <Card.Title>{childEvent.name}</Card.Title>
                       <Card.Text>
-                        {new Date(childEvent.StartDate).toLocaleString()} -  {new Date(childEvent.EndDate).toLocaleString()}
+                        {new Date(childEvent.start_date).toLocaleString()} -  {new Date(childEvent.end_date).toLocaleString()}
                       </Card.Text>
-                      {childEvent.AdditionalInfo && (
+                      {childEvent.additional_info && (
                         <Card.Text>
-                          Дополнительная информация: {childEvent.AdditionalInfo}
+                          Дополнительная информация: {childEvent.additional_info}
                         </Card.Text>
                       )}
                     </Card.Body>

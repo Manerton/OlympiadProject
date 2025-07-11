@@ -15,14 +15,14 @@ function EventModalForm({ event, showSubjectField, showClassNumber, onSuccess }:
   const [eventName, setEventName] = useState("");
   const [subjectList, setSubjectList] = useState<string[]>([]);
   const [subject, setSubject] = useState("");
-  const [classNumber, setClassNumber] = useState<number>(event?.ClassNumber || 0)
+  const [classNumber, setClassNumber] = useState<number>(event?.class_number || 0)
 
   const [startDate, setStartDate] = useState<string>(
 
-    event?.StartDate ? formatDateForInput(new Date(event.StartDate).toISOString()) : ""
+    event?.start_date ? formatDateForInput(new Date(event.start_date).toISOString()) : ""
   );
   const [endDate, setEndDate] = useState<string>(
-    event?.EndDate ? formatDateForInput(new Date(event.EndDate).toISOString()) : ""
+    event?.end_date ? formatDateForInput(new Date(event.end_date).toISOString()) : ""
   );
   const [additionalInfo, setAdditionalInfo] = useState("");
 
@@ -70,17 +70,15 @@ function EventModalForm({ event, showSubjectField, showClassNumber, onSuccess }:
     }
 
     const eventData: MyEvent = {
-      PreviousEventID: event?.ID,
-      Name: eventName,
-      StartDate: new Date(startDate),
-      EndDate: new Date(endDate),
-      ClassNumber: classNumber,
-      EventType: event?.EventType || "",
-      Subject: subject,
-      AdditionalInfo: additionalInfo,
+      previous_event_id: event?.ID,
+      name: eventName,
+      start_date: new Date(startDate),
+      end_date: new Date(endDate),
+      class_number: classNumber,
+      event_type: event?.event_type || "",
+      subject: subject,
+      additional_info: additionalInfo,
     };
-
-    console.log(eventData)
 
     try {
       const response = await fetch(`${API_CONFIG.EVENTS}`, {

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"main/internal/dto/event_dto"
 	"main/internal/lib/parsing"
 	"main/internal/lib/request"
@@ -21,7 +20,7 @@ import (
 
 type EventServiceInterface interface {
 	GetAllEvents(ctx context.Context, offset, limit *int) ([]event_dto.EventDTOResponse, error)
-	GetEventByID(ctx context.Context, id string) (event_dto.EventDTO, error)
+	GetEventByID(ctx context.Context, id string) (event_dto.EventDTOResponse, error)
 
 	GetEventByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string) (event_dto.DetailsEvent, error)
 	GetEventsByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string, offset, limit *int, order *string) ([]event_dto.DetailsEvent, error)
@@ -281,9 +280,8 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var eventDTO event_dto.CreateEventDTORequest
-	err := render.DecodeJSON(r.Body, &eventDTO)
-	log.Print(eventDTO)
 
+	err := render.DecodeJSON(r.Body, &eventDTO)
 	if errors.Is(err, io.EOF) {
 		render.JSON(w, r, response.Error("empty request"))
 		return

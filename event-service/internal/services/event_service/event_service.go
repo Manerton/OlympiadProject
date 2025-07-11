@@ -66,7 +66,7 @@ func (s *EventService) GetAllEvents(ctx context.Context, offset, limit *int) ([]
 }
 
 // Get event by id
-func (s *EventService) GetEventByID(ctx context.Context, id string) (event_dto.EventDTO, error) {
+func (s *EventService) GetEventByID(ctx context.Context, id string) (event_dto.EventDTOResponse, error) {
 	const op = "services.event_service.GetEventByID"
 
 	log := s.log.With(
@@ -76,20 +76,20 @@ func (s *EventService) GetEventByID(ctx context.Context, id string) (event_dto.E
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		log.Error("failed with id", liblogger.Err(err))
-		return event_dto.EventDTO{}, fmt.Errorf("failed to parse id")
+		return event_dto.EventDTOResponse{}, fmt.Errorf("failed to parse id")
 	}
 
 	if uid == uuid.Nil {
 		log.Error("failed with id", slog.Any("invalid id:", uid))
-		return event_dto.EventDTO{}, fmt.Errorf("%s: invalid ID %d", op, uid)
+		return event_dto.EventDTOResponse{}, fmt.Errorf("%s: invalid ID %d", op, uid)
 	}
 
 	event, err := s.repository.GetEventByID(ctx, s.db, uid)
 	if err != nil {
 		log.Error("failed to get event by ID", liblogger.Err(err))
-		return event_dto.EventDTO{}, fmt.Errorf("%s: %w", op, err)
+		return event_dto.EventDTOResponse{}, fmt.Errorf("%s: %w", op, err)
 	}
-	return ConvertEventToDTO(event), nil
+	return event_mapper.ToDTO(event), nil
 }
 
 // Get one event by filter and fileds.
@@ -392,7 +392,7 @@ func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventDTO *event
 		}
 
 		// check correct date border
-		if eventDTO.EventType == event.Stage || eventDTO.EventType == event.Olympiad {
+		if eventDTO.EventType == event.Stage || eventDTO.EventType == event.Olympiad || eventDTO.EventType == event.Class {
 			if previousEvent.StartDate.After(eventDTO.StartDate) || previousEvent.EndDate.Before(eventDTO.EndDate) {
 				return fmt.Errorf("%s: %v", op, errors.New("incorrect date limits"))
 			}
