@@ -12,7 +12,8 @@ import (
 	school_dto "main/internal/dto/school"
 	user_dto "main/internal/dto/user"
 	"main/internal/lib/liblogger"
-	"main/internal/rabbitmq/producer"
+	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
@@ -58,15 +59,18 @@ type SchoolService interface {
 
 type RabbitConsumer struct {
 	log                *slog.Logger
-	rabbitChannel      *amqp.Channel
+	rabbitConnect      *amqp.Connection
 	userService        UserService
 	participantService ParticipantService
 	authService        AuthService
 	schoolService      SchoolService
+
+	connectionAddress string
+	mutex             sync.Mutex
 }
 
 // construct
-func New(log *slog.Logger, channel *amqp.Channel,
+func New(log *slog.Logger, address string,
 	userService UserService, participantService ParticipantService, authService AuthService, schoolService SchoolService) *RabbitConsumer {
 	const op = "RabbitMQ consumer"
 
@@ -76,17 +80,69 @@ func New(log *slog.Logger, channel *amqp.Channel,
 
 	return &RabbitConsumer{
 		log:                clog,
-		rabbitChannel:      channel,
 		userService:        userService,
 		participantService: participantService,
 		authService:        authService,
 		schoolService:      schoolService,
+		connectionAddress:  address,
 	}
 }
 
 func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				c.log.Info("consumer stopped by context")
+				return
+			default:
+				err := c.ensureConnection()
+				if err != nil {
+					c.log.Error("failed to connect to RabbitMQ", liblogger.Err(err))
+					time.Sleep(5 * time.Second)
+					continue
+				}
 
-	msgs, err := c.rabbitChannel.Consume(
+				if err := c.consumeLoop(ctx, queueName); err != nil {
+					c.log.Error("consume loop error", liblogger.Err(err))
+					time.Sleep(5 * time.Second) // задержка перед переподключением
+				}
+			}
+		}
+	}()
+
+}
+
+func (c *RabbitConsumer) ensureConnection() error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	if c.rabbitConnect != nil && !c.rabbitConnect.IsClosed() {
+		return nil // всё ок
+	}
+
+	conn, err := amqp.Dial(c.connectionAddress)
+	if err != nil {
+		return fmt.Errorf("amqp dial failed: %w", err)
+	}
+	c.rabbitConnect = conn
+
+	c.log.Info("reconnected to RabbitMQ")
+	return nil
+}
+
+func (c *RabbitConsumer) consumeLoop(ctx context.Context, queueName string) error {
+	rabbitChannel, err := c.rabbitConnect.Channel()
+	if err != nil {
+		c.log.Error("failed create channel for RabbitMQ")
+		return err
+	}
+
+	// Обработка закрытия канала
+	closeErrChan := make(chan *amqp.Error)
+	rabbitChannel.NotifyClose(closeErrChan)
+
+	msgs, err := rabbitChannel.Consume(
 		queueName,
 		"",
 		false,
@@ -97,43 +153,43 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 	)
 	if err != nil {
 		c.log.Error("Failed consume queue", slog.String("queue name", queueName), liblogger.Err(err))
-		return
+		return err
 	}
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				c.log.Info("init cancel consumer")
-				if err := c.rabbitChannel.Cancel("", false); err != nil {
-					c.log.Error("failed to cancel consumer", liblogger.Err(err))
-				}
-				return
-			case msg, ok := <-msgs:
-				if !ok {
-					c.log.Info("message channel closed")
-					return
-				}
-
-				rabbitDTO := rabbit_dto.RabbitDTO{}
-
-				if err := json.Unmarshal(msg.Body, &rabbitDTO); err != nil {
-					c.log.Error("invalid message format", liblogger.Err(err))
-					msg.Nack(false, false)
-					continue
-				}
-
-				err = c.handler(ctx, rabbitDTO)
-				if err != nil {
-					c.log.Error("task failed", liblogger.Err(err))
-					msg.Nack(false, false)
-					continue
-				}
-
-				msg.Ack(false)
+	for {
+		select {
+		case <-ctx.Done():
+			_ = rabbitChannel.Cancel("", false)
+			return nil
+		case err := <-closeErrChan:
+			if err != nil {
+				c.log.Error("rabbit channel closed", liblogger.Err(err))
+				return fmt.Errorf("channel closed: %w", err)
 			}
+			return nil
+		case msg, ok := <-msgs:
+			if !ok {
+				return fmt.Errorf("messages channel closed: %v", ok)
+			}
+
+			rabbitDTO := rabbit_dto.RabbitDTO{}
+
+			if err := json.Unmarshal(msg.Body, &rabbitDTO); err != nil {
+				c.log.Error("invalid message format", liblogger.Err(err))
+				msg.Nack(false, false)
+				continue
+			}
+
+			err = c.handler(ctx, rabbitDTO)
+			if err != nil {
+				c.log.Error("task failed", liblogger.Err(err))
+				msg.Nack(false, false)
+				continue
+			}
+
+			msg.Ack(false)
 		}
-	}()
+	}
 }
 
 func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.RabbitDTO) error {
@@ -149,13 +205,6 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 	}
 
 	switch rabbitDTO.Method {
-	case GET:
-		result, err := c.get(ctx, rabbitDTO.Data.Table, rabbitDTO.Data.SearchAttributes)
-		if err != nil {
-			c.log.Error("failed get", liblogger.Err(err))
-			return fmt.Errorf("failed get data")
-		}
-		producer.SendToQueue(c.rabbitChannel, rabbitDTO.AppName, result)
 	case CREATE:
 		err := c.create(ctx, rabbitDTO.Data.Table, rabbitDTO.Data.Attributes)
 		if err != nil {
@@ -180,31 +229,31 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 	return nil
 }
 
-func (c *RabbitConsumer) get(ctx context.Context, tableName string, data map[string]any) ([]byte, error) {
-	jsonResult := []byte{}
-	switch tableName {
-	case USER_TABLE:
-		userDTO := user_dto.SearchAttributesUserDTO{}
-		if err := mapstructure.Decode(data, &userDTO); err != nil {
-			return nil, fmt.Errorf("failed parse from json: %w", err)
-		}
+// func (c *RabbitConsumer) get(ctx context.Context, tableName string, data map[string]any) ([]byte, error) {
+// 	jsonResult := []byte{}
+// 	switch tableName {
+// 	case USER_TABLE:
+// 		userDTO := user_dto.SearchAttributesUserDTO{}
+// 		if err := mapstructure.Decode(data, &userDTO); err != nil {
+// 			return nil, fmt.Errorf("failed parse from json: %w", err)
+// 		}
 
-		userResult, err := c.userService.GetByFilter(ctx, userDTO)
-		if err != nil {
-			return nil, fmt.Errorf("%w", err)
-		}
+// 		userResult, err := c.userService.GetByFilter(ctx, userDTO)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("%w", err)
+// 		}
 
-		jsonResult, err = json.Marshal(userResult)
-		if err != nil {
-			return nil, fmt.Errorf("failed convert data to json: %w", err)
-		}
-	case PARTICIPANT_TABLE:
-		// TODO!! realise another tables
-	default:
-		return nil, fmt.Errorf("unexpected table: %s", tableName)
-	}
-	return jsonResult, nil
-}
+// 		jsonResult, err = json.Marshal(userResult)
+// 		if err != nil {
+// 			return nil, fmt.Errorf("failed convert data to json: %w", err)
+// 		}
+// 	case PARTICIPANT_TABLE:
+// 		// TODO!! realise another tables
+// 	default:
+// 		return nil, fmt.Errorf("unexpected table: %s", tableName)
+// 	}
+// 	return jsonResult, nil
+// }
 
 func (c *RabbitConsumer) create(ctx context.Context, tableName string, data map[string]any) error {
 	switch tableName {

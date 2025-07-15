@@ -22,8 +22,9 @@ func InitRedis(addressPath string) {
 	_, err := RDB.Ping(CTX).Result()
 	if err != nil {
 		log.Println("Redis connection failed: %w", err)
+	} else {
+		log.Println("Redis connection success")
 	}
-	log.Println("Redis connection success")
 }
 
 func GetActivationCode(email string) (string, error) {

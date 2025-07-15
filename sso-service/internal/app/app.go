@@ -13,7 +13,6 @@ import (
 	"main/internal/lib/liblogger"
 	"main/internal/middleware/base_access"
 	"main/internal/middleware/midlogger"
-	"main/internal/rabbitmq"
 	"main/internal/rabbitmq/consumer"
 	"main/internal/repositories/participant_repository"
 	"main/internal/repositories/refresh_repository"
@@ -67,12 +66,9 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	schoolHandler := school_handler.New(schoolService)
 
 	// init rabbitMQ
-	rabbitConnect := rabbitmq.MustConnect(cfg.AddressRabbitPath)
-	rabbitChannel, err := rabbitConnect.Channel()
-	if err != nil {
-		log.Error("failed create channel for RabbitMQ")
-	}
-	rabbitConsumer := consumer.New(log, rabbitChannel, userService, participantService, authService, schoolService)
+	// rabbitConnect := rabbitmq.MustConnect(cfg.AddressRabbitPath)
+
+	rabbitConsumer := consumer.New(log, cfg.AddressRabbitPath, userService, participantService, authService, schoolService)
 	rabbitConsumer.Start(context.Background(), cfg.QueueName)
 	log.Info("rabbit started")
 
