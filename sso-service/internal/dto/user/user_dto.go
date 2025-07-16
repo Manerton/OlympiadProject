@@ -1,7 +1,6 @@
 package user_dto
 
 import (
-	"encoding/json"
 	participant_dto "main/internal/dto/participant"
 )
 
@@ -37,12 +36,12 @@ type SearchAttributesUserDTO struct {
 }
 
 type UpdateUserRequestDTO struct {
-	Email       *string      `json:"email"`
-	Firstname   *string      `json:"firstname"`
-	Surname     *string      `json:"surname"`
-	Patronymic  *string      `json:"patronymic"`
-	Password    *string      `json:"password"`
-	PhoneNumber *string      `json:"phone_number"`
-	BirthDate   *string      `json:"birthdate"`
-	Gender      *json.Number `json:"gender"`
+	Email       *string `json:"email"`
+	Firstname   *string `json:"firstname"`
+	Surname     *string `json:"surname"`
+	Patronymic  *string `json:"patronymic"`
+	Password    *string `json:"password"`
+	PhoneNumber *string `json:"phone_number"`
+	BirthDate   *string `json:"birthdate"`
+	Gender      *string `json:"gender"`
 }

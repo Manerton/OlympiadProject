@@ -4,6 +4,7 @@ import (
 	register_dto "main/internal/dto/auth/register"
 	user_dto "main/internal/dto/user"
 	"main/internal/models/user"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -27,6 +28,11 @@ func ToDTO(user user.User) user_dto.UserResponseDTO {
 func FromRegisterToModel(regiterDTO *register_dto.RegisterParticipantRequestDTO) user.User {
 	birhDate, _ := time.Parse("2006-01-02", regiterDTO.BirthDate)
 
+	gender, err := strconv.Atoi(regiterDTO.Gender)
+	if err != nil {
+
+	}
+
 	return user.User{
 		Email:       regiterDTO.Email,
 		Firstname:   regiterDTO.FirstName,
@@ -34,7 +40,7 @@ func FromRegisterToModel(regiterDTO *register_dto.RegisterParticipantRequestDTO)
 		Patronymic:  regiterDTO.Patronymic,
 		PhoneNumber: regiterDTO.PhoneNumber,
 		BirthDate:   birhDate,
-		Gender:      user.GenderType(regiterDTO.Gender),
+		Gender:      user.GenderType(gender),
 		Role:        user.PARTICIPANT,
 		Activated:   false,
 	}
@@ -43,21 +49,31 @@ func FromRegisterToModel(regiterDTO *register_dto.RegisterParticipantRequestDTO)
 func FromRegisterUserToModel(regiterDTO *register_dto.RegisterUserRequestDTO) user.User {
 	birthDate, _ := time.Parse("2006-01-02", regiterDTO.BirthDate)
 
+	gender, err := strconv.Atoi(regiterDTO.Gender)
+	if err != nil {
+	}
+
+	role, err := strconv.Atoi(regiterDTO.Role)
+	if err != nil {
+	}
+
+	print(regiterDTO.PhoneNumber)
+
 	return user.User{
 		Email:       regiterDTO.Email,
 		Firstname:   regiterDTO.FirstName,
 		Surname:     regiterDTO.Surname,
 		Patronymic:  regiterDTO.Patronymic,
 		PhoneNumber: regiterDTO.PhoneNumber,
-		Gender:      user.GenderType(regiterDTO.Gender),
-		Role:        user.RoleType(regiterDTO.Role),
+		Gender:      user.GenderType(gender),
+		Role:        user.RoleType(role),
 		BirthDate:   birthDate,
 		Activated:   true,
 	}
 }
 
 func FromUpdateToModel(updateDTO user_dto.UpdateUserRequestDTO, uid uuid.UUID) user.User {
-	gender, _ := updateDTO.Gender.Int64()
+	gender, _ := strconv.Atoi(*updateDTO.Gender)
 
 	return user.User{
 		ID:          uid,
