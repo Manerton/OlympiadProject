@@ -117,7 +117,12 @@ func (s *ParticipantService) Update(ctx context.Context, id string, participantD
 		return fmt.Errorf("failed parse id")
 	}
 
-	participantModel := participant_mapper.FromUpdateToModel(participantDTO, uid)
+	participantModel, err := participant_mapper.FromUpdateToModel(participantDTO, uid)
+	if err != nil {
+		log.Error("failed convert update dto to model", liblogger.Err(err))
+		return fmt.Errorf("%s", errMsg)
+	}
+
 	err = s.participantRepository.Update(ctx, s.db, participantModel)
 	if err != nil {
 		log.Error("failed update participant", liblogger.Err(err))
