@@ -6,15 +6,17 @@ import (
 )
 
 // Returns offset, limit, error
-func ParseOffsetLimit(offsetStr, limitStr string) (*int, *int, error) {
-	var offsetRes *int = nil
+func ParsePageLimitToOffsetLimit(pageStr, limitStr string) (*int, *int, error) {
+	offsetRes := new(int)
 	var limitRes *int = nil
-	if offsetStr != "" {
-		tempOffset, err := strconv.Atoi(offsetStr)
+	var pageRes *int = nil
+
+	if pageStr != "" {
+		tempPage, err := strconv.Atoi(pageStr)
 		if err != nil {
 			return nil, nil, fmt.Errorf("failed to parse offset: %w", err)
 		}
-		offsetRes = &tempOffset
+		pageRes = &tempPage
 	}
 
 	if limitStr != "" {
@@ -24,5 +26,10 @@ func ParseOffsetLimit(offsetStr, limitStr string) (*int, *int, error) {
 		}
 		limitRes = &tempLimit
 	}
+
+	if pageRes != nil && limitRes != nil {
+		*offsetRes = (*pageRes - 1) * (*limitRes)
+	}
+
 	return offsetRes, limitRes, nil
 }

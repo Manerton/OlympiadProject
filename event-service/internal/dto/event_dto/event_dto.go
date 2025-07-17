@@ -8,11 +8,12 @@ import (
 )
 
 type EventDTOResponse struct {
-	ID              uuid.UUID
+	ID              uuid.UUID           `json:"id"`
 	Name            string              `json:"name" validate:"required"`
 	StartDate       time.Time           `json:"start_date" validate:"required"`
 	EndDate         time.Time           `json:"end_date" validate:"required"`
 	EventType       event.EventType     `json:"event_type"`
+	ClassNumber     int                 `json:"class_number"`
 	PreviousEventID *uuid.UUID          `json:"previous_event_id"`
 	Subject         string              `json:"subject"`
 	AdditionalInfo  string              `json:"additional_info"`
@@ -20,12 +21,13 @@ type EventDTOResponse struct {
 }
 
 type EventDTO struct {
-	ID              uuid.UUID
+	ID              uuid.UUID `json:"id"`
 	Name            string    `validate:"required"`
 	StartDate       time.Time `validate:"required"`
 	EndDate         time.Time `validate:"required"`
 	EventType       event.EventType
 	PreviousEventID *uuid.UUID
+	ClassNumber     int `json:"class_number"`
 	Subject         string
 	AdditionalInfo  string
 	Events          *[]EventDTO
@@ -38,6 +40,7 @@ type DetailsEvent struct {
 	EndDate         *time.Time      `json:"end_date,omitempty"`   // указатель для учета нулевых значений
 	EventType       event.EventType `json:"event_type,omitempty"`
 	PreviousEventID *uuid.UUID      `json:"previous_event_id,omitempty"`
+	ClassNumber     int             `json:"class_number"`
 	Subject         string          `json:"subject,omitempty"`
 	AdditionalInfo  string          `json:"additional_info,omitempty"`
 }
@@ -54,9 +57,10 @@ type CreateEventDTORequest struct {
 }
 
 type UpdateEventDTORequest struct {
-	Name           *string
-	StartDate      *time.Time
-	EndDate        *time.Time
-	Subject        *string
-	AdditionalInfo *string
+	Name           *string    `json:"name"`
+	StartDate      *time.Time `json:"start_date"`
+	EndDate        *time.Time `json:"end_date"`
+	Subject        *string    `json:"subject"`
+	ClassNumber    *int       `json:"class_number"`
+	AdditionalInfo *string    `json:"additional_info"`
 }

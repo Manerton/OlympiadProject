@@ -1,5 +1,5 @@
 const API_CONFIG = {
-    EVENTS: "http://172.16.1.39:8080/events",
+    EVENTS: "http://172.16.1.39:8080/api/events",
     AUTH: "http://172.16.1.39:8081",
     JUREASSIGNMENTS: "http://172.16.1.39:8090/jury-assignments",
     APPLICATION: "http://172.16.1.39:8082/applications",

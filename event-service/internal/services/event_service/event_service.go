@@ -352,6 +352,7 @@ func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventDTO *event
 				eventDTO.EventType = event.Olympiad
 			case event.Olympiad:
 				eventDTO.EventType = event.Class
+				eventDTO.Subject = previousEvent.Subject
 			case event.Class:
 				eventDTO.EventType = event.Stage
 			case event.Stage:

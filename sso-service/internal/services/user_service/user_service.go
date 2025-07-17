@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	user_dto "main/internal/dto/user"
+	"main/internal/lib/crypt"
 	"main/internal/lib/liblogger"
 	paricipant_mapper "main/internal/lib/mapper/participant_mapper"
 	"main/internal/lib/mapper/user_mapper"
@@ -211,6 +212,15 @@ func (s *UserService) Update(ctx context.Context, id string, userDto user_dto.Up
 	}
 
 	userModel := user_mapper.FromUpdateToModel(userDto, uid)
+
+	if userDto.Password != nil {
+		userModel.PasswordHash, err = crypt.HashPassword(*userDto.Password)
+		if err != nil {
+			log.Error("failed hash password", liblogger.Err(err))
+			return fmt.Errorf("%s", errMsg)
+		}
+	}
+
 	err = s.userRepository.Update(ctx, s.db, userModel)
 	if err != nil {
 		log.Error("failed update user", liblogger.Err(err))

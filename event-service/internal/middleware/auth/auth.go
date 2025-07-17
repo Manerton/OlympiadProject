@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -12,8 +13,8 @@ import (
 type UserInfoKey struct{}
 
 type UserInfo struct {
-	id   float64
-	role string
+	id   string
+	role int
 }
 
 // Function to verify JWT tokens
@@ -41,16 +42,30 @@ func verifyToken(tokenString string, secretKey []byte) (*jwt.Token, error) {
 func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		// Retrieve the token from the cookie
-		cookie, err := r.Cookie("token")
-		if err != nil {
-			log.Println("Token missing in cookie")
-			http.Error(w, "Invalid token claims", http.StatusUnauthorized)
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			http.Error(w, "Missing Authorization header", http.StatusUnauthorized)
 			return
 		}
 
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+			http.Error(w, "Invalid Authorization header format", http.StatusUnauthorized)
+			return
+		}
+
+		tokenString := parts[1]
+
+		// // Retrieve the token from the cookie
+		// cookie, err := r.Cookie("token")
+		// if err != nil {
+		// 	log.Println("Token missing in cookie")
+		// 	http.Error(w, "Invalid token claims", http.StatusUnauthorized)
+		// 	return
+		// }
+
 		// Verify the token
-		token, err := verifyToken(cookie.Value, []byte(key))
+		token, err := verifyToken(tokenString, []byte(key))
 		if err != nil {
 			log.Printf("Token verification failed: %v\n", err)
 			http.Error(w, "Invalid token claims", http.StatusUnauthorized)
@@ -68,7 +83,7 @@ func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 		}
 
 		// Get role
-		role, ok := claims["role"].(string)
+		role, ok := claims["role"].(float64)
 		if !ok {
 			log.Println("Role missing in JWT")
 			http.Error(w, "Role missing in JWT", http.StatusForbidden)
@@ -76,7 +91,7 @@ func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 		}
 
 		// Get id
-		id, ok := claims["id"].(float64)
+		id, ok := claims["id"].(string)
 		if !ok {
 			log.Println("Id missing in JWT")
 			http.Error(w, "Id missing in JWT", http.StatusForbidden)
@@ -84,7 +99,7 @@ func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 		}
 
 		// Init struct
-		userInfo := UserInfo{id: id, role: role}
+		userInfo := UserInfo{id: id, role: int(role)}
 		// Add struct in context
 		r = r.WithContext(context.WithValue(r.Context(), UserInfoKey{}, userInfo))
 
@@ -94,10 +109,9 @@ func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 }
 
 // Check role for access
-func RoleBasedAccess(requiredRole string) func(next http.Handler) http.Handler {
+func RoleBasedAccess(requiredRole int) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			log.Println("Start rolebaseAccess")
 			user := r.Context().Value(UserInfoKey{}).(UserInfo)
 
 			if user.role != requiredRole {

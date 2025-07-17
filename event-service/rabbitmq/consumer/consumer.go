@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"main/internal/dto/event_dto"
 	"main/internal/dto/rabbit_dto"
 	"main/internal/lib/liblogger"
+	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -25,13 +28,17 @@ const (
 )
 
 type EventService interface {
-	Create(ctx context.Context) (uuid.UUID, error)
+	CreateEvent(ctx context.Context, eventDTO event_dto.CreateEventDTORequest) (uuid.UUID, error)
 }
 
 type RabbitConsumer struct {
 	log           *slog.Logger
 	rabbitChannel *amqp.Channel
+	rabbitConnect *amqp.Connection
 	eventService  EventService
+
+	mutex             sync.Mutex
+	connectionAddress string
 }
 
 func New(log *slog.Logger, channel *amqp.Channel, eventService EventService) *RabbitConsumer {
@@ -43,8 +50,60 @@ func New(log *slog.Logger, channel *amqp.Channel, eventService EventService) *Ra
 }
 
 func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				c.log.Info("consumer stopped by context")
+				return
+			default:
+				err := c.ensureConnection()
+				if err != nil {
+					c.log.Error("failed to connect to RabbitMQ", liblogger.Err(err))
+					time.Sleep(5 * time.Second)
+					continue
+				}
 
-	msgs, err := c.rabbitChannel.Consume(
+				if err := c.consumeLoop(ctx, queueName); err != nil {
+					c.log.Error("consume loop error", liblogger.Err(err))
+					time.Sleep(5 * time.Second) // задержка перед переподключением
+				}
+			}
+		}
+	}()
+
+}
+
+func (c *RabbitConsumer) ensureConnection() error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
+	if c.rabbitConnect != nil && !c.rabbitConnect.IsClosed() {
+		return nil // всё ок
+	}
+
+	conn, err := amqp.Dial(c.connectionAddress)
+	if err != nil {
+		return fmt.Errorf("amqp dial failed: %w", err)
+	}
+	c.rabbitConnect = conn
+
+	c.log.Info("reconnected to RabbitMQ")
+	return nil
+}
+
+func (c *RabbitConsumer) consumeLoop(ctx context.Context, queueName string) error {
+	rabbitChannel, err := c.rabbitConnect.Channel()
+	if err != nil {
+		c.log.Error("failed create channel for RabbitMQ")
+		return err
+	}
+
+	// Обработка закрытия канала
+	closeErrChan := make(chan *amqp.Error)
+	rabbitChannel.NotifyClose(closeErrChan)
+
+	msgs, err := rabbitChannel.Consume(
 		queueName,
 		"",
 		false,
@@ -55,47 +114,46 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 	)
 	if err != nil {
 		c.log.Error("Failed consume queue", slog.String("queue name", queueName), liblogger.Err(err))
-		return
+		return err
 	}
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				c.log.Info("init cancel consumer")
-				if err := c.rabbitChannel.Cancel("", false); err != nil {
-					c.log.Error("failed to cancel consumer", liblogger.Err(err))
-				}
-				return
-			case msg, ok := <-msgs:
-				if !ok {
-					c.log.Info("message channel closed")
-					return
-				}
-
-				rabbitDTO := rabbit_dto.RabbitDTO{}
-
-				if err := json.Unmarshal(msg.Body, &rabbitDTO); err != nil {
-					c.log.Error("invalid message format", liblogger.Err(err))
-					msg.Nack(false, false)
-					continue
-				}
-
-				err = c.handler(ctx, rabbitDTO)
-				if err != nil {
-					c.log.Error("task failed", liblogger.Err(err))
-					msg.Nack(false, false)
-					continue
-				}
-
-				msg.Ack(false)
+	for {
+		select {
+		case <-ctx.Done():
+			_ = rabbitChannel.Cancel("", false)
+			return nil
+		case err := <-closeErrChan:
+			if err != nil {
+				c.log.Error("rabbit channel closed", liblogger.Err(err))
+				return fmt.Errorf("channel closed: %w", err)
 			}
+			return nil
+		case msg, ok := <-msgs:
+			if !ok {
+				return fmt.Errorf("messages channel closed: %v", ok)
+			}
+
+			rabbitDTO := rabbit_dto.RabbitDTO{}
+
+			if err := json.Unmarshal(msg.Body, &rabbitDTO); err != nil {
+				c.log.Error("invalid message format", liblogger.Err(err))
+				msg.Nack(false, false)
+				continue
+			}
+
+			err = c.handler(ctx, rabbitDTO)
+			if err != nil {
+				c.log.Error("task failed", liblogger.Err(err))
+				msg.Nack(false, false)
+				continue
+			}
+
+			msg.Ack(false)
 		}
-	}()
+	}
 }
 
 func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.RabbitDTO) error {
-
 	id := ""
 	if rabbitDTO.Method == UPDATE || rabbitDTO.Method == DELETE {
 		var ok bool
@@ -111,23 +169,40 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 	case CREATE:
 		err := c.create(ctx, rabbitDTO.Data.Table, rabbitDTO.Data.Attributes)
 		if err != nil {
-			c.log.Error("failed create data", liblogger.Err(err))
+			c.log.Error("failed create", liblogger.Err(err))
+			c.log.Debug("dataJSON", slog.Any("data", rabbitDTO.Data.Attributes))
 			return fmt.Errorf("failed create data")
 		}
+		c.log.Debug("success create", rabbitDTO.Data.Table, rabbitDTO.Data.Attributes)
 	case UPDATE:
 		err := c.update(ctx, rabbitDTO.Data.Table, rabbitDTO.Data.Attributes, id)
 		if err != nil {
-			c.log.Error("failed update data", liblogger.Err(err))
-			return fmt.Errorf("failed upadate data")
+			c.log.Error("failed update", liblogger.Err(err))
+			return fmt.Errorf("failed update data")
 		}
-
+		c.log.Debug("success update", rabbitDTO.Data.Table, rabbitDTO.Data.Attributes)
 	case DELETE:
 		err := c.delete(ctx, rabbitDTO.Data.Table, id)
 		if err != nil {
-			c.log.Error("failed delete data", liblogger.Err(err))
+			c.log.Error("failed delete", liblogger.Err(err))
 			return fmt.Errorf("failed delete data")
 		}
+		c.log.Debug("success delete", rabbitDTO.Data.Table, rabbitDTO.Data.Attributes)
 	}
+
+	return nil
+}
+
+func MapToStructViaJSON(data map[string]any, out any) error {
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("failed to marshal map to JSON: %w", err)
+	}
+
+	if err := json.Unmarshal(bytes, out); err != nil {
+		return fmt.Errorf("failed to unmarshal JSON to struct: %w", err)
+	}
+
 	return nil
 }
 
@@ -135,8 +210,12 @@ func (c *RabbitConsumer) create(ctx context.Context, tableName string, data map[
 
 	switch tableName {
 	case EVENT_TABLE:
+		eventDto := event_dto.CreateEventDTORequest{}
+		if err := MapToStructViaJSON(data, &eventDto); err != nil {
+			return fmt.Errorf("failed convert data to dto: %w", err)
+		}
 
-		_, err := c.eventService.Create(ctx)
+		_, err := c.eventService.CreateEvent(ctx, eventDto)
 		if err != nil {
 			return fmt.Errorf("failed create event: %w", err)
 		}

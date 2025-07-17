@@ -1,7 +1,8 @@
-package main
+package app
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"main/internal/config"
 	"main/internal/handlers/event_handler"
@@ -16,9 +17,6 @@ import (
 	"main/internal/storage/postgresql"
 	"main/support/userrole"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -26,27 +24,81 @@ import (
 	"github.com/go-chi/cors"
 )
 
-const LocalFilePath = "config-yaml/dev.yaml"
+type App struct {
+	server *http.Server
+	log    *slog.Logger
+}
 
-var DockerFilePath string = os.Getenv("CONFIG_PATH")
+func New(log *slog.Logger, cfg *config.Config) *App {
 
-func main() {
-	// Init config
-	cfg := config.GetConfig(LocalFilePath)
-
-	// Init logger
-	log := liblogger.SetupLogger(cfg.Env)
-	log.Info("start event-service", slog.String("env", cfg.Env))
-	log.Debug("debug messages are enabled")
-
-	// Init storage
+	// init storage
 	storage := postgresql.MustPosgreSQL(cfg.GetDataSourceName())
-
 	log.Info("storage are enabled")
 
-	// init chi router
+	// init router
 	router := chi.NewRouter()
-	// init  middlewares cors
+
+	app := App{log: log}
+	// init cors
+	app.initCors(router, cfg.AdditionalAddressesConfig)
+	// init middlewares
+	router.Use(midlogger.New(log))
+	router.Use(middleware.URLFormat)
+	// add Authentication with JWT token
+	router.Use(func(next http.Handler) http.Handler {
+		return auth.AuthenticateMiddleware(next, cfg.Key)
+	})
+
+	// init subject service and handler
+	subjectStorage := subject.NewSubjectsStorage()
+	subjectHandler := subject_handler.NewSubjectHandler(subjectStorage, log)
+	// init orm
+	gormORM := orm.NewGormORM(storage)
+
+	// init events service and handler
+	eventService := event_service.NewEventService(gormORM, &event_repository.EventRepository{}, log)
+	eventHandler := event_handler.NewEventHandler(eventService)
+
+	// init routes
+	app.initRoutes(router, eventHandler, subjectHandler)
+
+	// init server
+	app.server = &http.Server{
+		Addr:    cfg.GetAddress(),
+		Handler: router,
+	}
+
+	return &app
+}
+
+func (a *App) initRoutes(router *chi.Mux,
+	eventHandler *event_handler.EventHandler,
+	subjectHandler *subject_handler.SubjectHandler,
+
+) {
+
+	// init subjects route
+	router.Get("/api/events/subjects", subjectHandler.GetAllSubjects)
+
+	// init events route
+	router.With(auth.RoleBasedAccess(userrole.AdminRole)).Group(func(r chi.Router) {
+		r.Post("/api/events", eventHandler.CreateEvent)
+		r.Put("/api/events/{id}", eventHandler.UpdateEvent)
+		r.Delete("/api/events/{id}", eventHandler.DeleteEvent)
+	})
+
+	router.Post("/api/events/details/one", eventHandler.GetEventByFilterAndFields)
+	router.Post("/api/events/details", eventHandler.GetEventsByFilterAndFields)
+	router.Get("/api/events", eventHandler.GetAllEvents)
+	router.Get("/api/events/{id}", eventHandler.GetEventByID)
+	router.Get("/api/events/regional-stage", eventHandler.GetEventsTypeRegionalStage)
+	router.Get("/api/events/class", eventHandler.GetEventsByClassType)
+	router.Get("/api/events/stages/{id}", eventHandler.GetEventsTypeStageAndHisChilds)
+	router.Get("/api/events/child/{id}", eventHandler.GetEventsByPreviousID)
+	router.Post("/api/events/list", eventHandler.GetEventsByListID)
+}
+
+func (a *App) initCors(router *chi.Mux, cfg config.AdditionalAddressesConfig) {
 	corsOptions := cors.Options{
 		AllowedOrigins: []string{cfg.ReactVision, cfg.JureAssignmentsService},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
@@ -66,68 +118,33 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           300,
 	}
+
 	router.Use(cors.Handler(corsOptions))
-	// init middlewares
-	router.Use(midlogger.New(log))
-	router.Use(middleware.URLFormat)
-	// add Authentication with JWT token
-	router.Use(func(next http.Handler) http.Handler {
-		return auth.AuthenticateMiddleware(next, cfg.Key)
-	})
+}
 
-	// init subject service and handler
-	subjectStorage := subject.NewSubjectsStorage()
-	subjectHandler := subject_handler.NewSubjectHandler(subjectStorage, log)
-	// init orm
-	gormORM := orm.NewGormORM(storage)
-
-	// init events service and handler
-	eventService := event_service.NewEventService(gormORM, &event_repository.EventRepository{}, log)
-	eventHandler := event_handler.NewEventHandler(eventService)
-
-	// init subjects route
-	router.Get("/api/events/subjects", subjectHandler.GetAllSubjects)
-
-	// init events route
-	router.With(auth.RoleBasedAccess(userrole.AdminRole)).Group(func(r chi.Router) {
-		r.Post("/api/events", eventHandler.CreateEvent)
-		r.Put("/api/events/{id}", eventHandler.UpdateEvent)
-		r.Delete("/api/events/{id}", eventHandler.DeleteEvent)
-	})
-
-	// router.Post("/events/byjson", eventHandler.CreateEventsByJSON)
-	router.Post("/api/events/details/one", eventHandler.GetEventByFilterAndFields)
-	router.Post("/api/events/details", eventHandler.GetEventsByFilterAndFields)
-	router.Get("/api/events", eventHandler.GetAllEvents)
-	router.Get("/api/events/{id}", eventHandler.GetEventByID)
-	router.Get("/api/events/regional-stage", eventHandler.GetEventsTypeRegionalStage)
-	router.Get("/api/events/class", eventHandler.GetEventsByClassType)
-	router.Get("/api/events/stages/{id}", eventHandler.GetEventsTypeStageAndHisChilds)
-	router.Get("/api/events/child/{id}", eventHandler.GetEventsByPreviousID)
-	router.Post("/api/events/list", eventHandler.GetEventsByListID)
-
-	// init server
-	server := &http.Server{
-		Addr:    cfg.GetAddress(),
-		Handler: router,
+func (a *App) MustRun() {
+	if err := a.Run(); err != nil {
+		panic(err)
 	}
-	// init gorutine for start server
-	done := make(chan os.Signal, 1)
-	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		if err := server.ListenAndServe(); err != nil {
-			log.Error("failed to start server")
-		}
-	}()
-	log.Info("server started")
-	<-done
+}
 
+func (a *App) Run() error {
+	const op = "app.Run"
+
+	a.log.Info("server starting")
+	if err := a.server.ListenAndServe(); err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (a *App) Stop() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	if err := server.Shutdown(ctx); err != nil {
-		log.Error("failed to stop server", liblogger.Err(err))
+	if err := a.server.Shutdown(ctx); err != nil {
+		a.log.Error("failee to stop sever", liblogger.Err(err))
 		return
 	}
-	log.Info("server stopped")
+	a.log.Info("server stopped")
 }

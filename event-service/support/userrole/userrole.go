@@ -1,5 +1,6 @@
 package userrole
 
 const (
-	OrganizerRole = "organizer"
+	AdminRole     = 1
+	OrganizerRole = 2
 )

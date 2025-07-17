@@ -24,7 +24,7 @@ func New(log *slog.Logger) func(next http.Handler) http.Handler {
 			wrapw := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 
 			defer func() {
-				entry.Info("request competed",
+				entry.Info("request complited",
 					slog.Int("status", wrapw.Status()),
 				)
 			}()

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"main/internal/dto/event_dto"
 	"main/internal/lib/parsing"
 	"main/internal/lib/request"
@@ -96,10 +97,10 @@ func (h *EventHandler) GetAllEvents(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	offsetStr := r.URL.Query().Get("offset")
+	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
 
-	offset, limit, err := parsing.ParseOffsetLimit(offsetStr, limitStr)
+	offset, limit, err := parsing.ParsePageLimitToOffsetLimit(pageStr, limitStr)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to get events"))
 		return
@@ -138,11 +139,11 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 
 	ctx := r.Context()
 
-	offsetStr := r.URL.Query().Get("offset")
+	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
 	orderStr := r.URL.Query().Get("order")
 
-	offset, limit, err := parsing.ParseOffsetLimit(offsetStr, limitStr)
+	offset, limit, err := parsing.ParsePageLimitToOffsetLimit(pageStr, limitStr)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to get events"))
 		return
@@ -178,6 +179,48 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 
 }
 
+func (h *EventHandler) GetEventsByClassType(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+	orderStr := r.URL.Query().Get("order")
+
+	offset, limit, err := parsing.ParsePageLimitToOffsetLimit(pageStr, limitStr)
+	if err != nil {
+		render.JSON(w, r, response.Error("failed to get events"))
+		return
+	}
+
+	eventsDTO, err := h.service.GetEventsByType(ctx, event.Class, offset, limit, &orderStr)
+	if err != nil {
+		render.JSON(w, r, response.Error("failed to get events by type"))
+		return
+	}
+
+	if offset == nil && limit == nil {
+		render.JSON(w, r, response.ApiResponse{
+			Status: response.StatusOK,
+			Data:   eventsDTO,
+		})
+		return
+	}
+
+	count, err := h.service.GetCountEventsByType(ctx, event.Class)
+	if err != nil {
+		render.JSON(w, r, response.Error("failed to get count events by type"))
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status: response.StatusOK,
+		Data: response.PaginatedResponse{
+			Events:     eventsDTO,
+			TotalCount: int(count),
+		},
+	})
+}
+
 func (h *EventHandler) GetEventsTypeStageAndHisChilds(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
@@ -205,11 +248,11 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 
 	ctx := r.Context()
 
-	offsetStr := r.URL.Query().Get("offset")
+	pageStr := r.URL.Query().Get("page")
 	limitStr := r.URL.Query().Get("limit")
 	orderStr := r.URL.Query().Get("order")
 
-	offset, limit, err := parsing.ParseOffsetLimit(offsetStr, limitStr)
+	offset, limit, err := parsing.ParsePageLimitToOffsetLimit(pageStr, limitStr)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to pares offset/limit"))
 		return
@@ -303,7 +346,7 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, r, response.Error("failed to create event"))
 		return
 	}
-	render.JSON(w, r, response.Success(fmt.Sprintf("id = %d", id)))
+	render.JSON(w, r, response.Success(fmt.Sprintf("id = %v", id)))
 }
 
 func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
@@ -322,6 +365,8 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, r, "failed to decode event")
 		return
 	}
+
+	log.Println(eventDTO)
 
 	id, err := h.service.UpdateEvent(ctx, receivedID, eventDTO)
 	if err != nil {

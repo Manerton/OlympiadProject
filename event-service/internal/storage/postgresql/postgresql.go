@@ -1,14 +1,13 @@
 package postgresql
 
 import (
-	"fmt"
 	"log"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func NewPosgreSQL(connectStr string) (*gorm.DB, error) {
+func MustPosgreSQL(connectStr string) *gorm.DB {
 
 	const op = "storage.postgresql.NewPostreSQL"
 
@@ -16,7 +15,6 @@ func NewPosgreSQL(connectStr string) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(connectStr), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("%s: %v", op, err)
-		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
 	// // create enum (types Events)
@@ -41,5 +39,5 @@ func NewPosgreSQL(connectStr string) (*gorm.DB, error) {
 	// 	return nil, fmt.Errorf("%s: %w", op, err)
 	// }
 
-	return db, nil
+	return db
 }
