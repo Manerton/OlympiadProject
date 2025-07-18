@@ -30,7 +30,7 @@ type EventRepositoryInterface interface {
 	GetCountEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uuid.UUID) (int64, error)
 
 	CreateEvent(ctx context.Context, orm orm.ORM, event event.Event) (uuid.UUID, error)
-	UpdateEvent(ctx context.Context, orm orm.ORM, event event.Event) (uuid.UUID, error)
+	UpdateEvent(ctx context.Context, orm orm.ORM, event event.Event) error
 	DeleteEvent(ctx context.Context, orm orm.ORM, id uuid.UUID) error
 }
 
@@ -325,18 +325,18 @@ func (s *EventService) getOlympiad(ctx context.Context, id uuid.UUID) (event.Eve
 	}
 }
 
-func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventDTO *event.Event, isUpdate bool) error {
+func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventModel *event.Event, isUpdate bool) error {
 	const op = "services.event_service.checkCorrectEventDTO"
 
 	// Check date
-	if eventDTO.StartDate.IsZero() || eventDTO.EndDate.IsZero() {
+	if eventModel.StartDate.IsZero() || eventModel.EndDate.IsZero() {
 		return fmt.Errorf("%s: %v", op, errors.New("date does not exist"))
 	}
-	if !eventDTO.StartDate.Before(eventDTO.EndDate) {
+	if !eventModel.StartDate.Before(eventModel.EndDate) {
 		return fmt.Errorf("%s: %v", op, errors.New("start date should be before end date"))
 	}
 	// check have previousEvent
-	previousEventID := eventDTO.PreviousEventID
+	previousEventID := eventModel.PreviousEventID
 	if previousEventID != nil {
 		previousEvent, err := s.repository.GetEventByID(ctx, s.db, *previousEventID)
 		if err != nil {
@@ -346,15 +346,15 @@ func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventDTO *event
 			// set correct type
 			switch previousEvent.EventType {
 			case event.RegionalStage:
-				if eventDTO.Subject == "" {
+				if eventModel.Subject == "" {
 					return fmt.Errorf("%s: %v", op, errors.New("subject does not exist"))
 				}
-				eventDTO.EventType = event.Olympiad
+				eventModel.EventType = event.Olympiad
 			case event.Olympiad:
-				eventDTO.EventType = event.Class
-				eventDTO.Subject = previousEvent.Subject
+				eventModel.EventType = event.Class
+				eventModel.Subject = previousEvent.Subject
 			case event.Class:
-				eventDTO.EventType = event.Stage
+				eventModel.EventType = event.Stage
 			case event.Stage:
 				// check stage cannot have more than one ViewWorks
 				viewWorks, err := s.repository.GetEventsByPreviousID(ctx, s.db, *previousEventID, nil, nil, nil)
@@ -362,9 +362,9 @@ func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventDTO *event
 					return fmt.Errorf("%s: failed to get events when check stage: %v", op, err)
 				}
 				if len(viewWorks) == 0 {
-					eventDTO.EventType = event.ViewWorks
+					eventModel.EventType = event.ViewWorks
 				} else if len(viewWorks) == 1 {
-					eventDTO.EventType = event.Appeal
+					eventModel.EventType = event.Appeal
 				} else if len(viewWorks) > 2 {
 					return fmt.Errorf("%s: %v", op, errors.New("stage cannot have more than one view works"))
 				}
@@ -393,8 +393,8 @@ func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventDTO *event
 		}
 
 		// check correct date border
-		if eventDTO.EventType == event.Stage || eventDTO.EventType == event.Olympiad || eventDTO.EventType == event.Class {
-			if previousEvent.StartDate.After(eventDTO.StartDate) || previousEvent.EndDate.Before(eventDTO.EndDate) {
+		if eventModel.EventType == event.Stage || eventModel.EventType == event.Olympiad || eventModel.EventType == event.Class {
+			if previousEvent.StartDate.After(eventModel.StartDate) || previousEvent.EndDate.Before(eventModel.EndDate) {
 				return fmt.Errorf("%s: %v", op, errors.New("incorrect date limits"))
 			}
 		} else {
@@ -403,13 +403,13 @@ func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventDTO *event
 				return fmt.Errorf("%s, failed to find first Olympiad: %v", op, err)
 			}
 			// events type view works and appeal should be after endDate parrent, but before endDate Olympiad
-			if previousEvent.EndDate.After(eventDTO.StartDate) || tempPreviousEvent.EndDate.Before(eventDTO.EndDate) {
+			if previousEvent.EndDate.After(eventModel.StartDate) || tempPreviousEvent.EndDate.Before(eventModel.EndDate) {
 				return fmt.Errorf("%s: %v", op, errors.New("incorrect date limits"))
 			}
 		}
 
 	} else {
-		eventDTO.EventType = event.RegionalStage
+		eventModel.EventType = event.RegionalStage
 	}
 	return nil
 }
@@ -526,35 +526,35 @@ func (s *EventService) createEventsBySubjects(ctx context.Context, eventModel ev
 	return id, nil
 }
 
-// func (s *EventService) updateEventDTO(ctx context.Context, updatedEventDTO event_dto.UpdateEventDTORequest) (event_dto.EventDTO, error) {
-// 	serchedID := updatedEventDTO.ID
+func (s *EventService) updateEventDTO(ctx context.Context, updatedEvent event.Event, id uuid.UUID) (event.Event, error) {
+	oldEvent, err := s.repository.GetEventByID(ctx, s.db, id)
+	if err != nil {
+		return event.Event{}, nil
+	}
+	if updatedEvent.Name != "" {
+		oldEvent.Name = updatedEvent.Name
+	}
+	if !updatedEvent.StartDate.IsZero() {
+		oldEvent.StartDate = updatedEvent.StartDate
+	}
+	if !updatedEvent.EndDate.IsZero() {
+		oldEvent.EndDate = updatedEvent.EndDate
+	}
+	if updatedEvent.ClassNumber != 0 {
+		oldEvent.ClassNumber = updatedEvent.ClassNumber
+	}
+	if updatedEvent.Subject != "" {
+		oldEvent.Subject = updatedEvent.Subject
+	}
+	if updatedEvent.AdditionalInfo != "" {
+		oldEvent.AdditionalInfo = updatedEvent.AdditionalInfo
+	}
 
-// 	event, err := s.repository.GetEventByID(ctx, s.db, serchedID)
-// 	newEventDTO := ConvertEventToDTO(event)
-// 	if err != nil {
-// 		return event_dto.EventDTO{}, nil
-// 	}
-// 	if updatedEventDTO.Name != nil {
-// 		newEventDTO.Name = *updatedEventDTO.Name
-// 	}
-// 	if !updatedEventDTO.StartDate.IsZero() {
-// 		newEventDTO.StartDate = updatedEventDTO.StartDate
-// 	}
-// 	if !updatedEventDTO.EndDate.IsZero() {
-// 		newEventDTO.EndDate = updatedEventDTO.EndDate
-// 	}
-// 	if updatedEventDTO.Subject != "" {
-// 		newEventDTO.Subject = updatedEventDTO.Subject
-// 	}
-// 	if updatedEventDTO.AdditionalInfo != "" {
-// 		newEventDTO.AdditionalInfo = updatedEventDTO.AdditionalInfo
-// 	}
-
-// 	return newEventDTO, nil
-// }
+	return oldEvent, nil
+}
 
 // Update event
-func (s *EventService) UpdateEvent(ctx context.Context, id string, eventDTO event_dto.UpdateEventDTORequest) (uuid.UUID, error) {
+func (s *EventService) UpdateEvent(ctx context.Context, id string, eventDTO event_dto.UpdateEventDTORequest) error {
 	const op = "services.event_service.UpdateEvent"
 	const errMsg = "failed update event"
 	log := s.log.With(
@@ -564,24 +564,28 @@ func (s *EventService) UpdateEvent(ctx context.Context, id string, eventDTO even
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		log.Error("failed parse id to uuid", liblogger.Err(err))
-		return uuid.Nil, fmt.Errorf("%s", errMsg)
+		return fmt.Errorf("%s", errMsg)
 	}
 
 	event := event_mapper.FromUpdateToModel(eventDTO, uid)
+	event, err = s.updateEventDTO(ctx, event, uid)
+	if err != nil {
+		return err
+	}
 
 	err = s.checkCorrectEventDTO(ctx, &event, true)
 	if err != nil {
 		log.Error("failed check correct event", liblogger.Err(err))
-		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	updatedId, err := s.repository.UpdateEvent(ctx, s.db, event)
+	err = s.repository.UpdateEvent(ctx, s.db, event)
 	if err != nil {
 		log.Error("failed update event", liblogger.Err(err))
-		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s: %w", op, err)
 	}
 	log.Info("event success updated")
-	return updatedId, nil
+	return nil
 }
 
 // Delete event

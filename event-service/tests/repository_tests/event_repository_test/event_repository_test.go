@@ -799,7 +799,7 @@ func TestUpdateEvent(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			id, err := repo.UpdateEvent(context.Background(), db, tc.newEvent)
+			err := repo.UpdateEvent(context.Background(), db, tc.newEvent)
 			if tc.expectError {
 				assert.Error(t, err, "expected an error for case: %s", tc.name)
 				if err != nil {
@@ -807,7 +807,7 @@ func TestUpdateEvent(t *testing.T) {
 				}
 			} else {
 				assert.NoError(t, err, "")
-				updatedEvent, err := repo.GetEventByID(context.Background(), db, id)
+				updatedEvent, err := repo.GetEventByID(context.Background(), db, tc.newEvent.ID)
 				if err != nil {
 					t.Error("failed when get updated event")
 				}

@@ -33,7 +33,7 @@ type EventServiceInterface interface {
 	GetEventsByListID(ctx context.Context, ids []uuid.UUID) ([]event_dto.EventDTOResponse, error)
 
 	CreateEvent(ctx context.Context, eventDTO event_dto.CreateEventDTORequest) (uuid.UUID, error)
-	UpdateEvent(ctx context.Context, id string, eventDTO event_dto.UpdateEventDTORequest) (uuid.UUID, error)
+	UpdateEvent(ctx context.Context, id string, eventDTO event_dto.UpdateEventDTORequest) error
 	DeleteEvent(ctx context.Context, id string) error
 }
 
@@ -368,13 +368,13 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 
 	log.Println(eventDTO)
 
-	id, err := h.service.UpdateEvent(ctx, receivedID, eventDTO)
+	err = h.service.UpdateEvent(ctx, receivedID, eventDTO)
 	if err != nil {
 		render.JSON(w, r, response.Error("failed to update event"))
 		return
 	}
 
-	render.JSON(w, r, response.Success(fmt.Sprintf("id = %d", id)))
+	render.JSON(w, r, response.Success("success update"))
 }
 
 func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {

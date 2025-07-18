@@ -138,13 +138,13 @@ func (r *EventRepository) CreateEvent(ctx context.Context, orm orm.ORM, event ev
 }
 
 // Update event
-func (r *EventRepository) UpdateEvent(ctx context.Context, orm orm.ORM, event event.Event) (uuid.UUID, error) {
+func (r *EventRepository) UpdateEvent(ctx context.Context, orm orm.ORM, event event.Event) error {
 	const op = "repositories.event_repository.UpdateEvent"
 	if err := orm.Updates(ctx, &event); err != nil {
-		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
+		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	return event.ID, nil
+	return nil
 }
 
 // Delete event
