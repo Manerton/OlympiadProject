@@ -15,6 +15,7 @@ import (
 	"main/internal/services/event_service"
 	"main/internal/storage/orm"
 	"main/internal/storage/postgresql"
+	"main/rabbitmq/consumer"
 	"main/support/userrole"
 	"net/http"
 	"time"
@@ -59,6 +60,10 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	eventService := event_service.NewEventService(gormORM, &event_repository.EventRepository{}, log)
 	eventHandler := event_handler.NewEventHandler(eventService)
 
+	// init rabbit
+	rabbitConsumer := consumer.New(log, cfg.AddressRabbitPath, eventService)
+	rabbitConsumer.Start(context.Background(), cfg.QueueName)
+
 	// init routes
 	app.initRoutes(router, eventHandler, subjectHandler)
 
@@ -74,7 +79,6 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 func (a *App) initRoutes(router *chi.Mux,
 	eventHandler *event_handler.EventHandler,
 	subjectHandler *subject_handler.SubjectHandler,
-
 ) {
 
 	// init subjects route
@@ -89,13 +93,14 @@ func (a *App) initRoutes(router *chi.Mux,
 
 	router.Post("/api/events/details/one", eventHandler.GetEventByFilterAndFields)
 	router.Post("/api/events/details", eventHandler.GetEventsByFilterAndFields)
+	router.Post("/api/events/list", eventHandler.GetEventsByListID)
+
 	router.Get("/api/events", eventHandler.GetAllEvents)
 	router.Get("/api/events/{id}", eventHandler.GetEventByID)
 	router.Get("/api/events/regional-stage", eventHandler.GetEventsTypeRegionalStage)
 	router.Get("/api/events/class", eventHandler.GetEventsByClassType)
 	router.Get("/api/events/stages/{id}", eventHandler.GetEventsTypeStageAndHisChilds)
 	router.Get("/api/events/child/{id}", eventHandler.GetEventsByPreviousID)
-	router.Post("/api/events/list", eventHandler.GetEventsByListID)
 }
 
 func (a *App) initCors(router *chi.Mux, cfg config.AdditionalAddressesConfig) {
@@ -118,7 +123,6 @@ func (a *App) initCors(router *chi.Mux, cfg config.AdditionalAddressesConfig) {
 		AllowCredentials: true,
 		MaxAge:           300,
 	}
-
 	router.Use(cors.Handler(corsOptions))
 }
 

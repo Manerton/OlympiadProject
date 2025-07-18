@@ -29,11 +29,12 @@ const (
 
 type EventService interface {
 	CreateEvent(ctx context.Context, eventDTO event_dto.CreateEventDTORequest) (uuid.UUID, error)
+	UpdateEvent(ctx context.Context, id string, eventDTO event_dto.UpdateEventDTORequest) error
+	DeleteEvent(ctx context.Context, id string) error
 }
 
 type RabbitConsumer struct {
 	log           *slog.Logger
-	rabbitChannel *amqp.Channel
 	rabbitConnect *amqp.Connection
 	eventService  EventService
 
@@ -41,11 +42,11 @@ type RabbitConsumer struct {
 	connectionAddress string
 }
 
-func New(log *slog.Logger, channel *amqp.Channel, eventService EventService) *RabbitConsumer {
+func New(log *slog.Logger, address string, eventService EventService) *RabbitConsumer {
 	return &RabbitConsumer{
-		log:           log,
-		rabbitChannel: channel,
-		eventService:  eventService,
+		log:               log,
+		eventService:      eventService,
+		connectionAddress: address,
 	}
 }
 
@@ -214,7 +215,6 @@ func (c *RabbitConsumer) create(ctx context.Context, tableName string, data map[
 		if err := MapToStructViaJSON(data, &eventDto); err != nil {
 			return fmt.Errorf("failed convert data to dto: %w", err)
 		}
-
 		_, err := c.eventService.CreateEvent(ctx, eventDto)
 		if err != nil {
 			return fmt.Errorf("failed create event: %w", err)
@@ -229,6 +229,14 @@ func (c *RabbitConsumer) create(ctx context.Context, tableName string, data map[
 func (c *RabbitConsumer) update(ctx context.Context, tableName string, data map[string]any, id string) error {
 	switch tableName {
 	case EVENT_TABLE:
+		eventDTO := event_dto.UpdateEventDTORequest{}
+		if err := MapToStructViaJSON(data, eventDTO); err != nil {
+			return fmt.Errorf("failed convert data to dto")
+		}
+		err := c.eventService.UpdateEvent(ctx, id, eventDTO)
+		if err != nil {
+			return fmt.Errorf("falled update event: %w", err)
+		}
 
 	default:
 		return fmt.Errorf("unexpected table: %s", tableName)
@@ -240,7 +248,10 @@ func (c *RabbitConsumer) update(ctx context.Context, tableName string, data map[
 func (c *RabbitConsumer) delete(ctx context.Context, tableName string, id string) error {
 	switch tableName {
 	case EVENT_TABLE:
-
+		err := c.eventService.DeleteEvent(ctx, id)
+		if err != nil {
+			return fmt.Errorf("failed delete event: %w", err)
+		}
 	default:
 		return fmt.Errorf("unexpected table: %s", tableName)
 	}

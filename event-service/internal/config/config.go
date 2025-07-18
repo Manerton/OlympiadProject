@@ -13,7 +13,8 @@ type Config struct {
 	DatabaseConfig            `yaml:"DB_INFO"`
 	HTTPServerConfig          `yaml:"HTTP_SERVER_INFO"`
 	AdditionalAddressesConfig `yaml:"ADDITIONAL_ADDRESSES"`
-	JwtTemp                   `yaml:"JWT_TEMP_INFO"`
+	JwtConfig                 `yaml:"JWT_TEMP_INFO"`
+	RabbitConfig              `yaml:"RABBIT_INFO"`
 }
 
 type DatabaseConfig struct {
@@ -29,8 +30,13 @@ type HTTPServerConfig struct {
 	Host string `yaml:"host"`
 }
 
-type JwtTemp struct {
+type JwtConfig struct {
 	Key string `yaml:"key"`
+}
+
+type RabbitConfig struct {
+	AddressRabbitPath string `yaml:"address_path"`
+	QueueName         string `yaml:"queue_name"`
 }
 
 type AdditionalAddressesConfig struct {
