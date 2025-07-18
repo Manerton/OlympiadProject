@@ -13,7 +13,7 @@ type Config struct {
 	DatabaseConfig            `yaml:"DB_INFO"`
 	HTTPServerConfig          `yaml:"HTTP_SERVER_INFO"`
 	AdditionalAddressesConfig `yaml:"ADDITIONAL_ADDRESSES"`
-	JwtConfig                 `yaml:"JWT_TEMP_INFO"`
+	JwtConfig                 `yaml:"JWT_INFO"`
 	RabbitConfig              `yaml:"RABBIT_INFO"`
 }
 

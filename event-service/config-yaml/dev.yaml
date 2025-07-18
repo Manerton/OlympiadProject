@@ -12,8 +12,13 @@ HTTP_SERVER_INFO:
   host: "172.16.1.39"
   port: "8080"
 
-JWT_TEMP_INFO:
+JWT_INFO:
   key: "lololololololololololololololololololololololololololololol"
+
+RABBIT_INFO:
+  address_path: "amqp://event:test@172.16.0.94:5672/"
+  queue_name: "olymp_event"
+
 
 ADDITIONAL_ADDRESSES:
   react: "http://172.16.1.39:5173"
