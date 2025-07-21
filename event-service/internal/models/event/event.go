@@ -26,6 +26,6 @@ type Event struct {
 	EventType       EventType  `gorm:"type:event_type;not null"`
 	PreviousEventID *uuid.UUID `gorm:"index"`
 	PreviousEvent   *Event     `gorm:"foreignKey:PreviousEventID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
-	Subject         string     `gorm:"type:varchar(128)"`
+	Subject         int        `gorm:"type:int"`
 	AdditionalInfo  string     `gorm:"type:text"`
 }

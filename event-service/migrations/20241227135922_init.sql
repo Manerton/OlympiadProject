@@ -10,7 +10,7 @@ CREATE TABLE events (
     event_type event_type NOT NULL,
     class_number int,
     previous_event_id UUID,
-    subject VARCHAR(128),
+    subject int,
     additional_info TEXT,
     CONSTRAINT fk_previous_event 
         FOREIGN KEY (previous_event_id) 

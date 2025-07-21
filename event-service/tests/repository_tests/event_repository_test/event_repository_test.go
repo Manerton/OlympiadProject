@@ -6,6 +6,7 @@ import (
 	// "encoding/json"
 	// "fmt"
 	"main/internal/models/event"
+	"main/internal/models/subject"
 	"main/internal/repositories/event_repository"
 	"main/internal/storage/orm"
 	"testing"
@@ -53,7 +54,7 @@ func TestCreateEvent(t *testing.T) {
 	db := setupTestDB(t)
 	repo := event_repository.EventRepository{}
 
-	var Subject string = ""
+	var Subject int = 0
 
 	mainContext := context.Background()
 
@@ -556,7 +557,7 @@ func TestGetEventByFilterAndFields(t *testing.T) {
 			ID:        specId,
 			Name:      "Test3",
 			EventType: event.Olympiad,
-			Subject:   "math",
+			Subject:   subject.SubjectMath,
 		},
 	}
 
@@ -654,7 +655,7 @@ func TestGetEventsByFilterAndFields(t *testing.T) {
 			ID:              uuid.New(),
 			Name:            "Test2.2",
 			EventType:       event.Olympiad,
-			Subject:         "Math",
+			Subject:         subject.SubjectMath,
 			PreviousEventID: &mainEventId,
 		},
 		{
@@ -671,7 +672,7 @@ func TestGetEventsByFilterAndFields(t *testing.T) {
 			ID:        uuid.New(),
 			Name:      "Test3.2",
 			EventType: event.Olympiad,
-			Subject:   "Math",
+			Subject:   subject.SubjectMath,
 		},
 	}
 
@@ -702,7 +703,7 @@ func TestGetEventsByFilterAndFields(t *testing.T) {
 		{
 			name: "Search by subject with limit",
 			searchedFilter: event.Event{
-				Subject: "Math",
+				Subject: subject.SubjectMath,
 			},
 			searchedLimit: 1,
 			expectData:    []event.Event{testData[2]},
@@ -753,7 +754,7 @@ func TestUpdateEvent(t *testing.T) {
 			EventType: event.RegionalStage,
 			StartDate: mainOldStartDate,
 			EndDate:   mainEndDate,
-			Subject:   "Math",
+			Subject:   subject.SubjectMath,
 		},
 		{
 			ID:              uuid.New(),
@@ -823,7 +824,7 @@ func TestDeleteEvent(t *testing.T) {
 	db := setupTestDB(t)
 	repo := event_repository.EventRepository{}
 
-	var subject string = "Математика"
+	var subject int = subject.SubjectMath
 	var mainRegionalEventID uuid.UUID = uuid.New()
 	var childEventId uuid.UUID = uuid.New()
 	testData := []event.Event{

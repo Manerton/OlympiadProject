@@ -11,6 +11,7 @@ import (
 	"main/internal/models/event"
 	"main/internal/models/subject"
 	"main/internal/storage/orm"
+	"strconv"
 	"sync"
 	"time"
 
@@ -346,7 +347,7 @@ func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventModel *eve
 			// set correct type
 			switch previousEvent.EventType {
 			case event.RegionalStage:
-				if eventModel.Subject == "" {
+				if eventModel.Subject == 0 {
 					return fmt.Errorf("%s: %v", op, errors.New("subject does not exist"))
 				}
 				eventModel.EventType = event.Olympiad
@@ -507,14 +508,14 @@ func (s *EventService) createEventsBySubjects(ctx context.Context, eventModel ev
 		tx.TransactionRollback()
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
-	for _, subject := range subject.NewSubjectsStorage().GetAllSubject() {
+	for num, subject := range subject.NewSubjectsStorage().GetAllSubject() {
 		eventBySubject := event.Event{
 			Name:            fmt.Sprintf("Олимпиада по %s", subject),
 			PreviousEventID: &id,
 			StartDate:       eventModel.StartDate,
 			EndDate:         eventModel.EndDate,
 			EventType:       event.Olympiad,
-			Subject:         subject,
+			Subject:         num,
 		}
 		_, err := s.repository.CreateEvent(ctx, tx, eventBySubject)
 		if err != nil {
@@ -543,7 +544,7 @@ func (s *EventService) updateEventDTO(ctx context.Context, updatedEvent event.Ev
 	if updatedEvent.ClassNumber != 0 {
 		oldEvent.ClassNumber = updatedEvent.ClassNumber
 	}
-	if updatedEvent.Subject != "" {
+	if updatedEvent.Subject != 0 {
 		oldEvent.Subject = updatedEvent.Subject
 	}
 	if updatedEvent.AdditionalInfo != "" {
@@ -611,26 +612,35 @@ func (s *EventService) DeleteEvent(ctx context.Context, id string) error {
 }
 
 func ConvertDTOtoEvent(eventDTO event_dto.EventDTO) event.Event {
+
+	subjectInt, err := strconv.Atoi(eventDTO.Subject)
+	if err != nil {
+
+	}
+
 	return event.Event{
 		ID:              eventDTO.ID,
 		Name:            eventDTO.Name,
 		StartDate:       eventDTO.StartDate,
 		EndDate:         eventDTO.EndDate,
 		PreviousEventID: eventDTO.PreviousEventID,
-		Subject:         eventDTO.Subject,
+		Subject:         subjectInt,
 		AdditionalInfo:  eventDTO.AdditionalInfo,
 		EventType:       eventDTO.EventType,
 	}
 }
 
 func ConvertEventToDTO(event event.Event) event_dto.EventDTO {
+
+	subjectStr := strconv.Itoa(event.Subject)
+
 	return event_dto.EventDTO{
 		ID:              event.ID,
 		Name:            event.Name,
 		StartDate:       event.StartDate,
 		EndDate:         event.EndDate,
 		PreviousEventID: event.PreviousEventID,
-		Subject:         event.Subject,
+		Subject:         subjectStr,
 		AdditionalInfo:  event.AdditionalInfo,
 		EventType:       event.EventType,
 		Events:          &[]event_dto.EventDTO{},
@@ -647,13 +657,15 @@ func ConvertEventToDetails(event event.Event) event_dto.DetailsEvent {
 		endDate = &event.EndDate
 	}
 
+	subjectStr := strconv.Itoa(event.Subject)
+
 	return event_dto.DetailsEvent{
 		ID:              event.ID,
 		Name:            event.Name,
 		StartDate:       startDate,
 		EndDate:         endDate,
 		PreviousEventID: event.PreviousEventID,
-		Subject:         event.Subject,
+		Subject:         subjectStr,
 		AdditionalInfo:  event.AdditionalInfo,
 		EventType:       event.EventType,
 	}

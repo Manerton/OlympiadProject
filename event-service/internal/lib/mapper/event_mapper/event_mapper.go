@@ -3,16 +3,23 @@ package event_mapper
 import (
 	"main/internal/dto/event_dto"
 	"main/internal/models/event"
+	"strconv"
 
 	"github.com/google/uuid"
 )
 
 func FromCreateToModel(createDTO event_dto.CreateEventDTORequest) event.Event {
+
+	subjectInt, err := strconv.Atoi(createDTO.Subject)
+	if err != nil {
+
+	}
+
 	return event.Event{
 		Name:            createDTO.Name,
 		StartDate:       createDTO.StartDate,
 		EndDate:         createDTO.EndDate,
-		Subject:         createDTO.Subject,
+		Subject:         subjectInt,
 		ClassNumber:     createDTO.ClassNumber,
 		PreviousEventID: createDTO.PreviousEventID,
 		AdditionalInfo:  createDTO.AdditionalInfo,
@@ -33,7 +40,11 @@ func FromUpdateToModel(updateDTO event_dto.UpdateEventDTORequest, id uuid.UUID) 
 		model.EndDate = *updateDTO.EndDate
 	}
 	if updateDTO.Subject != nil {
-		model.Subject = *updateDTO.Subject
+		subjectInt, err := strconv.Atoi(*updateDTO.Subject)
+		if err != nil {
+
+		}
+		model.Subject = subjectInt
 	}
 	if updateDTO.ClassNumber != nil {
 		model.ClassNumber = *updateDTO.ClassNumber
@@ -46,12 +57,15 @@ func FromUpdateToModel(updateDTO event_dto.UpdateEventDTORequest, id uuid.UUID) 
 }
 
 func ToDTO(eventModel event.Event) event_dto.EventDTOResponse {
+
+	subjectStr := strconv.Itoa(eventModel.Subject)
+
 	return event_dto.EventDTOResponse{
 		ID:              eventModel.ID,
 		Name:            eventModel.Name,
 		StartDate:       eventModel.StartDate,
 		EndDate:         eventModel.EndDate,
-		Subject:         eventModel.Subject,
+		Subject:         subjectStr,
 		ClassNumber:     eventModel.ClassNumber,
 		AdditionalInfo:  eventModel.AdditionalInfo,
 		PreviousEventID: eventModel.PreviousEventID,
