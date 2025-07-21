@@ -1,12 +1,12 @@
 package ApplicationHandler
 
 import (
-	ApplicationDto "OlimpiadPortal/ApplicationService/internal/dto"
-	"OlimpiadPortal/ApplicationService/internal/lib/response"
-	application_service "OlimpiadPortal/ApplicationService/internal/services"
 	"fmt"
+	ApplicationDto "main/internal/dto/ApplicationDto"
+	"main/internal/lib/parser"
+	"main/internal/lib/response"
+	application_service "main/internal/services"
 	"net/http"
-	"strconv"
 
 	"log/slog"
 
@@ -25,10 +25,80 @@ func NewApplicationHandler(service *application_service.ApplicationService, logg
 	return &ApplicationHandler{service: service, logger: logger}
 }
 
+func (h *ApplicationHandler) GetCountApplications(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	AppCount, err := h.service.GetCount(ctx)
+	if err != nil {
+		h.logger.Error("Ошибка получения количества заявок", slog.Any("error", err))
+		http.Error(w, "Не удалось получить заявки", http.StatusInternalServerError)
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status: response.SUCCESS,
+		Data:   AppCount,
+	})
+
+}
+
+func (h *ApplicationHandler) GetByFilter(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+	//////////////////////////////////////
+	/////////////НАДО ПРОВЕРЯТЬ///////////
+	orderStr := r.URL.Query().Get("order")
+	//////////////////////////////////////
+	/////////////НАДО ПРОВЕРЯТЬ///////////
+	page, limit, err := parser.ParsePageLimit(pageStr, limitStr)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed parse page/limit"))
+		return
+	}
+
+	searchDTO := ApplicationDto.ApplicationResponseDTO{}
+	err = render.DecodeJSON(r.Body, &searchDTO)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed decode json"))
+		return
+	}
+
+	userResponse, err := h.service.GetAllByFilter(ctx, searchDTO, page, limit, orderStr)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed find user"))
+		return
+	}
+
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: 200,
+		Data:       userResponse,
+	})
+
+}
+
 // Получение всех заявок
 func (h *ApplicationHandler) GetAllApplications(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+
+	page, limit, err := parser.ParsePageLimit(pageStr, limitStr)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed parse page/limit"))
+		return
+	}
+
 	h.logger.Info("Получение всех заявок")
-	applications, err := h.service.GetAllApplications()
+	applications, err := h.service.GetAllApplications(ctx, page, limit)
 
 	if err != nil {
 		h.logger.Error("Ошибка получения всех заявок", slog.Any("error", err))
@@ -36,7 +106,7 @@ func (h *ApplicationHandler) GetAllApplications(w http.ResponseWriter, r *http.R
 		return
 	}
 	render.JSON(w, r, response.ApiResponse{
-		Status: response.StatusOK,
+		Status: response.SUCCESS,
 		Data:   applications,
 	})
 
@@ -44,15 +114,17 @@ func (h *ApplicationHandler) GetAllApplications(w http.ResponseWriter, r *http.R
 
 // Получение заявки по ID
 func (h *ApplicationHandler) GetApplicationByID(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 32)
-	if err != nil {
-		h.logger.Error("Некорректный ID", slog.Any("error", err))
-		http.Error(w, "Некорректный ID", http.StatusBadRequest)
-		return
-	}
+	ctx := r.Context()
+	idStr := chi.URLParam(r, "id")
+	// id, err := uuid.Parse(idStr)
+	// if err != nil {
+	// 	h.logger.Error("Некорректный UUID заявки", slog.Any("error", err))
+	// 	http.Error(w, "Некорректный UUID заявки", http.StatusBadRequest)
+	// 	return
+	// }
 
-	h.logger.Info("Получение заявки по ID", slog.Uint64("id", id))
-	application, err := h.service.GetApplicationByID(uint(id))
+	h.logger.Info("Получение заявки по ID", slog.Any("id", idStr))
+	application, err := h.service.GetApplicationByID(ctx, idStr)
 	if err != nil {
 		h.logger.Error("Ошибка получения заявки", slog.Any("error", err))
 		http.Error(w, "Заявка не найдена", http.StatusNotFound)
@@ -60,22 +132,34 @@ func (h *ApplicationHandler) GetApplicationByID(w http.ResponseWriter, r *http.R
 	}
 	//render.JSON(w, r, application)
 	render.JSON(w, r, response.ApiResponse{
-		Status: response.StatusOK,
+		Status: response.SUCCESS,
 		Data:   application,
 	})
 }
 
 // Получение заявок пользователя по ID
 func (h *ApplicationHandler) GetApplicationsByUserID(w http.ResponseWriter, r *http.Request) {
-	userID, err := strconv.ParseUint(chi.URLParam(r, "userID"), 10, 32)
+	ctx := r.Context()
+	idStr := chi.URLParam(r, "userID")
+	// userID, err := uuid.Parse(idStr)
+	// if err != nil {
+	// 	h.logger.Error("Некорректный userID", slog.Any("error", err))
+	// 	http.Error(w, "Некорректный userID", http.StatusBadRequest)
+	// 	return
+	// }
+
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+
+	page, limit, err := parser.ParsePageLimit(pageStr, limitStr)
 	if err != nil {
-		h.logger.Error("Некорректный userID", slog.Any("error", err))
-		http.Error(w, "Некорректный userID", http.StatusBadRequest)
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed parse page/limit"))
 		return
 	}
 
-	h.logger.Info("Получение заявок пользователя", slog.Uint64("userID", userID))
-	applications, err := h.service.GetApplicationsByUserID(uint(userID))
+	h.logger.Info("Получение заявок пользователя", slog.Any("userID", idStr))
+	applications, err := h.service.GetApplicationsByUserID(ctx, idStr, page, limit)
 	if err != nil {
 		h.logger.Error("Ошибка получения заявок пользователя", slog.Any("error", err))
 		http.Error(w, "Не удалось получить заявки", http.StatusInternalServerError)
@@ -83,22 +167,34 @@ func (h *ApplicationHandler) GetApplicationsByUserID(w http.ResponseWriter, r *h
 	}
 	//render.JSON(w, r, applications)
 	render.JSON(w, r, response.ApiResponse{
-		Status: response.StatusOK,
+		Status: response.SUCCESS,
 		Data:   applications,
 	})
 }
 
 // Получение заявок по ID события
 func (h *ApplicationHandler) GetApplicationsByEventID(w http.ResponseWriter, r *http.Request) {
-	eventID, err := strconv.ParseUint(chi.URLParam(r, "eventID"), 10, 32)
+	ctx := r.Context()
+	idStr := chi.URLParam(r, "eventID")
+	// eventID, err := uuid.Parse(idStr)
+	// if err != nil {
+	// 	h.logger.Error("Некорректный eventID", slog.Any("error", err))
+	// 	http.Error(w, "Некорректный eventID", http.StatusBadRequest)
+	// 	return
+	// }
+
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+
+	page, limit, err := parser.ParsePageLimit(pageStr, limitStr)
 	if err != nil {
-		h.logger.Error("Некорректный eventID", slog.Any("error", err))
-		http.Error(w, "Некорректный eventID", http.StatusBadRequest)
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed parse page/limit"))
 		return
 	}
 
-	h.logger.Info("Получение заявок по ID события", slog.Uint64("eventID", eventID))
-	applications, err := h.service.GetApplicationsByEventID(uint(eventID))
+	h.logger.Info("Получение заявок по ID события", slog.Any("eventID", idStr))
+	applications, err := h.service.GetApplicationsByEventID(ctx, idStr, page, limit)
 	if err != nil {
 		h.logger.Error("Ошибка получения заявок события", slog.Any("error", err))
 		http.Error(w, "Не удалось получить заявки", http.StatusInternalServerError)
@@ -106,13 +202,14 @@ func (h *ApplicationHandler) GetApplicationsByEventID(w http.ResponseWriter, r *
 	}
 	//render.JSON(w, r, applications)
 	render.JSON(w, r, response.ApiResponse{
-		Status: response.StatusOK,
+		Status: response.SUCCESS,
 		Data:   applications,
 	})
 }
 
 // Создание новой заявки
 func (h *ApplicationHandler) CreateApplication(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	var input ApplicationDto.CreateApplicationDTO
 	if err := render.DecodeJSON(r.Body, &input); err != nil {
 		h.logger.Error("Ошибка декодирования данных", slog.Any("error", err))
@@ -121,7 +218,7 @@ func (h *ApplicationHandler) CreateApplication(w http.ResponseWriter, r *http.Re
 	}
 
 	h.logger.Info("Создание новой заявки", slog.Any("user_id", input.UserID))
-	id, err := h.service.CreateApplication(input)
+	id, err := h.service.CreateApplication(ctx, input)
 	if err != nil {
 		h.logger.Error("Ошибка создания заявки", slog.Any("error", err))
 		http.Error(w, "Не удалось создать заявку", http.StatusInternalServerError)
@@ -132,48 +229,52 @@ func (h *ApplicationHandler) CreateApplication(w http.ResponseWriter, r *http.Re
 
 // Обновление статуса заявки
 func (h *ApplicationHandler) UpdateApplicationStatus(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 32)
-	if err != nil {
-		h.logger.Error("Некорректный ID", slog.Any("error", err))
-		http.Error(w, "Некорректный ID", http.StatusBadRequest)
-		return
-	}
+	ctx := r.Context()
+	idStr := chi.URLParam(r, "id")
+	// id, err := uuid.Parse(idStr)
+	// if err != nil {
+	// 	h.logger.Error("Некорректный UUID заявки", slog.Any("error", err))
+	// 	http.Error(w, "Некорректный UUID заявки", http.StatusBadRequest)
+	// 	return
+	// }
 
-	var input ApplicationDto.UpdateApplicationStatusDTO
+	var input ApplicationDto.UpdateApplicationDTO
 	if err := render.DecodeJSON(r.Body, &input); err != nil {
 		h.logger.Error("Ошибка декодирования данных", slog.Any("error", err))
 		http.Error(w, "Некорректные данные", http.StatusBadRequest)
 		return
 	}
 
-	h.logger.Info("Обновление статуса заявки", slog.Uint64("id", id), slog.Any("status", input.Status))
-	if err := h.service.UpdateApplicationStatus(uint(id), input); err != nil {
+	h.logger.Info("Обновление статуса заявки", slog.Any("id", idStr), slog.Any("status", input.Status))
+	if err := h.service.UpdateApplication(ctx, idStr, input); err != nil {
 		h.logger.Error("Ошибка обновления статуса заявки", slog.Any("error", err))
 		http.Error(w, "Не удалось обновить статус", http.StatusInternalServerError)
 		return
 	}
 	//render.JSON(w, r, map[string]interface{}{"message": "Статус заявки обновлен"})
-	render.JSON(w, r, response.Success(fmt.Sprintf("id = %d", id)))
+	render.JSON(w, r, response.SuccessResponse(fmt.Sprintf("id = %d", idStr)))
 }
 
 // Удаление заявки
 func (h *ApplicationHandler) DeleteApplication(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseUint(chi.URLParam(r, "id"), 10, 32)
-	if err != nil {
-		h.logger.Error("Некорректный ID", slog.Any("error", err))
-		http.Error(w, "Некорректный ID", http.StatusBadRequest)
-		return
-	}
+	ctx := r.Context()
+	idStr := chi.URLParam(r, "id")
+	// id, err := uuid.Parse(idStr)
+	// if err != nil {
+	// 	h.logger.Error("Некорректный UUID заявки", slog.Any("error", err))
+	// 	http.Error(w, "Некорректный UUID заявки", http.StatusBadRequest)
+	// 	return
+	// }
 
-	h.logger.Info("Удаление заявки", slog.Uint64("id", id))
-	if err := h.service.DeleteApplication(uint(id)); err != nil {
+	h.logger.Info("Удаление заявки", slog.Any("id", idStr))
+	if err := h.service.DeleteApplication(ctx, idStr); err != nil {
 		h.logger.Error("Ошибка удаления заявки", slog.Any("error", err))
 		http.Error(w, "Не удалось удалить заявку", http.StatusInternalServerError)
 		return
 	}
 
 	//render.JSON(w, r, map[string]interface{}{"message": "Заявка удалена"})
-	render.JSON(w, r, response.Success("Заявка удалена"))
+	render.JSON(w, r, response.SuccessResponse("Заявка удалена"))
 }
 
 /* // Пример: Получение информации о событии
@@ -184,7 +285,7 @@ type EventDetails struct {
 
 // Запрос в сервис событий (Event Service)
 func getEventDetails(eventID uint) (EventDetails, error) {
-	// Сделайте HTTP-запрос к Event Service
+	// HTTP-запрос к Event Service
 	resp, err := http.Get(fmt.Sprintf("http://event-service/events/%d", eventID))
 	if err != nil {
 		return EventDetails{}, err

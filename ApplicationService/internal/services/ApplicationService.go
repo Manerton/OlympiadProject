@@ -1,30 +1,79 @@
 package ApplicationService
 
 import (
-	ApplicationDto "OlimpiadPortal/ApplicationService/internal/dto"
-	"OlimpiadPortal/ApplicationService/internal/models"
-	application_repository "OlimpiadPortal/ApplicationService/internal/repositories"
+	"context"
 	"fmt"
+	ApplicationDto "main/internal/dto/ApplicationDto"
+	"main/internal/models"
+	"main/internal/storage/orm"
 
-	"gorm.io/gorm"
+	"github.com/google/uuid"
 )
 
-type ApplicationService struct {
-	db         *gorm.DB
-	repository *application_repository.ApplicationRepository
+type ApplicationRepository interface {
+	Create(ctx context.Context, orm orm.ORM, application models.Application) (uuid.UUID, error)
+	GetByID(ctx context.Context, orm orm.ORM, id uuid.UUID) (models.Application, error)
+	GetAllByFilter(ctx context.Context, orm orm.ORM, filter models.Application, offset, limit *int, order *string) ([]models.Application, error)
+	GetAllApplications(ctx context.Context, orm orm.ORM, offset *int, limit *int) ([]models.Application, error)
+	GetApplicationsByUserID(ctx context.Context, orm orm.ORM, userID uuid.UUID, offset *int, limit *int) ([]models.Application, error)
+	GetApplicationsByEventID(ctx context.Context, orm orm.ORM, eventID uuid.UUID, offset *int, limit *int) ([]models.Application, error)
+	UpdateApplication(ctx context.Context, orm orm.ORM, application models.Application) error
+	DeleteApplicationByID(ctx context.Context, orm orm.ORM, id uuid.UUID) error
+	GetCount(ctx context.Context, orm orm.ORM) (int64, error)
 }
 
-func NewApplicationService(db *gorm.DB, repo *application_repository.ApplicationRepository) *ApplicationService {
+type ApplicationService struct {
+	db         orm.ORM
+	repository ApplicationRepository
+}
+
+func NewApplicationService(db orm.ORM, repo ApplicationRepository) *ApplicationService {
 	return &ApplicationService{
 		db:         db,
 		repository: repo,
 	}
 }
 
-// Получение всех заявок
-func (s *ApplicationService) GetAllApplications() ([]ApplicationDto.ApplicationResponseDTO, error) {
+// Получение всех заявок по фильтру
+func (s *ApplicationService) GetAllByFilter(ctx context.Context, filterModel ApplicationDto.ApplicationResponseDTO, page *int, limit *int, order string) ([]ApplicationDto.ApplicationResponseDTO, error) {
 	const op = "services.application_service.GetAllApplications"
-	applications, err := s.repository.GetAllApplications(s.db)
+
+	offset := new(int)
+	if page != nil && limit != nil {
+		*offset = (*page - 1) * (*limit)
+	}
+
+	filter := ConvertFullDTOtoApplication(filterModel)
+
+	applications, err := s.repository.GetAllByFilter(ctx, s.db, filter, offset, limit, &order)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return ConvertManyApplicationsToDTO(applications), nil
+}
+
+// Получение всех заявок
+func (s *ApplicationService) GetCount(ctx context.Context) (int64, error) {
+	const op = "services.user_services.GetCount"
+
+	userCount, err := s.repository.GetCount(ctx, s.db)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return userCount, nil
+}
+
+// Получение всех заявок
+func (s *ApplicationService) GetAllApplications(ctx context.Context, page *int, limit *int) ([]ApplicationDto.ApplicationResponseDTO, error) {
+	const op = "services.application_service.GetAllApplications"
+
+	offset := new(int)
+	if page != nil && limit != nil {
+		*offset = (*page - 1) * (*limit)
+	}
+
+	applications, err := s.repository.GetAllApplications(ctx, s.db, offset, limit)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -32,9 +81,15 @@ func (s *ApplicationService) GetAllApplications() ([]ApplicationDto.ApplicationR
 }
 
 // Получение заявки по ID
-func (s *ApplicationService) GetApplicationByID(id uint) (ApplicationDto.ApplicationResponseDTO, error) {
+func (s *ApplicationService) GetApplicationByID(ctx context.Context, id string) (ApplicationDto.ApplicationResponseDTO, error) {
 	const op = "services.application_service.GetApplicationByID"
-	application, err := s.repository.GetApplicationByID(s.db, id)
+	const errMsg = "failed to find application"
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return ApplicationDto.ApplicationResponseDTO{}, fmt.Errorf("%s", errMsg)
+	}
+
+	application, err := s.repository.GetByID(ctx, s.db, uid)
 	if err != nil {
 		return ApplicationDto.ApplicationResponseDTO{}, fmt.Errorf("%s: %w", op, err)
 	}
@@ -42,14 +97,21 @@ func (s *ApplicationService) GetApplicationByID(id uint) (ApplicationDto.Applica
 }
 
 // Получение всех заявок пользователя
-func (s *ApplicationService) GetApplicationsByUserID(userID uint) ([]ApplicationDto.ApplicationResponseDTO, error) {
+func (s *ApplicationService) GetApplicationsByUserID(ctx context.Context, userid string, page *int, limit *int) ([]ApplicationDto.ApplicationResponseDTO, error) {
 	const op = "services.application_service.GetApplicationsByUserID"
-	if userID == 0 {
-		return nil, fmt.Errorf("%s: invalid UserID %d", op, userID)
+	const errMsg = "failed to find applications by userid"
+	uid, err := uuid.Parse(userid)
+	if err != nil {
+		return []ApplicationDto.ApplicationResponseDTO{}, fmt.Errorf("%s", errMsg)
+	}
+
+	offset := new(int)
+	if page != nil && limit != nil {
+		*offset = (*page - 1) * (*limit)
 	}
 
 	// Получаем заявки из репозитория
-	applications, err := s.repository.GetApplicationsByUserID(s.db, userID)
+	applications, err := s.repository.GetApplicationsByUserID(ctx, s.db, uid, offset, limit)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -59,14 +121,21 @@ func (s *ApplicationService) GetApplicationsByUserID(userID uint) ([]Application
 }
 
 // Получение всех заявок события
-func (s *ApplicationService) GetApplicationsByEventID(eventID uint) ([]ApplicationDto.ApplicationResponseDTO, error) {
+func (s *ApplicationService) GetApplicationsByEventID(ctx context.Context, eventID string, page *int, limit *int) ([]ApplicationDto.ApplicationResponseDTO, error) {
 	const op = "services.application_service.GetApplicationsByEventID"
-	if eventID == 0 {
-		return nil, fmt.Errorf("%s: invalid EventID %d", op, eventID)
+	const errMsg = "failed to find applications by EventId"
+	uid, err := uuid.Parse(eventID)
+	if err != nil {
+		return []ApplicationDto.ApplicationResponseDTO{}, fmt.Errorf("%s", errMsg)
+	}
+
+	offset := new(int)
+	if page != nil && limit != nil {
+		*offset = (*page - 1) * (*limit)
 	}
 
 	// Получаем заявки из репозитория
-	applications, err := s.repository.GetApplicationsByEventID(s.db, eventID)
+	applications, err := s.repository.GetApplicationsByEventID(ctx, s.db, uid, offset, limit)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -76,28 +145,41 @@ func (s *ApplicationService) GetApplicationsByEventID(eventID uint) ([]Applicati
 }
 
 // Создание новой заявки
-func (s *ApplicationService) CreateApplication(applicationDTO ApplicationDto.CreateApplicationDTO) (uint, error) {
+func (s *ApplicationService) CreateApplication(ctx context.Context, applicationDTO ApplicationDto.CreateApplicationDTO) (uuid.UUID, error) {
 	const op = "services.application_service.CreateApplication"
 	application := ConvertDTOtoApplication(applicationDTO)
-	if err := s.repository.CreateApplication(s.db, &application); err != nil {
-		return 0, fmt.Errorf("%s: %w", op, err)
+	uid, err := s.repository.Create(ctx, s.db, application)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
-	return application.ApplicationID, nil
+	return uid, nil
 }
 
 // Обновление статуса заявки
-func (s *ApplicationService) UpdateApplicationStatus(id uint, statusDTO ApplicationDto.UpdateApplicationStatusDTO) error {
+func (s *ApplicationService) UpdateApplication(ctx context.Context, id string, statusDTO ApplicationDto.UpdateApplicationDTO) error {
 	const op = "services.application_service.UpdateApplicationStatus"
-	if err := s.repository.UpdateApplicationStatus(s.db, id, statusDTO.Status); err != nil {
+
+	uid, err := uuid.Parse(string(id))
+	if err != nil {
+		return fmt.Errorf("%s", err)
+	}
+	statusApp := ConvertUpdateDTOtoApplication(uid, statusDTO)
+	if err := s.repository.UpdateApplication(ctx, s.db, statusApp); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
 }
 
 // Удаление заявки по ID
-func (s *ApplicationService) DeleteApplication(id uint) error {
+func (s *ApplicationService) DeleteApplication(ctx context.Context, id string) error {
 	const op = "services.application_service.DeleteApplication"
-	if err := s.repository.DeleteApplicationByID(s.db, id); err != nil {
+	const errMsg = "failed delete application"
+	uid, err := uuid.Parse(string(id))
+	if err != nil {
+		return fmt.Errorf("%s", errMsg)
+	}
+
+	if err := s.repository.DeleteApplicationByID(ctx, s.db, uid); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
@@ -112,15 +194,42 @@ func ConvertDTOtoApplication(dto ApplicationDto.CreateApplicationDTO) models.App
 	}
 }
 
+func ConvertFullDTOtoApplication(dto ApplicationDto.ApplicationResponseDTO) models.Application {
+	return models.Application{
+		ID:      dto.ID,
+		UserID:  dto.UserID,
+		EventID: dto.EventID,
+		//EventName:     application.EventName,
+		//EventLocation: application.EventLocation,
+		//EventDate:     application.EventDate,
+		Status:      dto.Status,
+		Reason:      dto.Reason,
+		Code:        dto.Code,
+		SubmittedAt: dto.SubmittedAt,
+		UpdatedAt:   dto.UpdatedAt,
+	}
+}
+
+func ConvertUpdateDTOtoApplication(id uuid.UUID, dto ApplicationDto.UpdateApplicationDTO) models.Application {
+	return models.Application{
+		ID:     id,
+		Status: dto.Status,
+		Reason: dto.Reason,
+		Code:   dto.Code,
+	}
+}
+
 func ConvertApplicationToDTO(application models.Application) ApplicationDto.ApplicationResponseDTO {
 	return ApplicationDto.ApplicationResponseDTO{
-		ApplicationID: application.ApplicationID,
-		UserID:        application.UserID,
-		EventID:       application.EventID,
+		ID:      application.ID,
+		UserID:  application.UserID,
+		EventID: application.EventID,
 		//EventName:     application.EventName,
 		//EventLocation: application.EventLocation,
 		//EventDate:     application.EventDate,
 		Status:      application.Status,
+		Reason:      application.Reason,
+		Code:        application.Code,
 		SubmittedAt: application.SubmittedAt,
 		UpdatedAt:   application.UpdatedAt,
 	}

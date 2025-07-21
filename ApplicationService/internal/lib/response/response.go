@@ -1,27 +1,31 @@
 package response
 
 const (
-	StatusOK    = "OK"
-	StatusError = "Error"
+	SUCCESS = "success"
+	ERROR   = "error"
 )
 
 type ApiResponse struct {
-	Status  string      `json:"status"`
-	Message string      `json:"message,omitempty"`
-	Data    interface{} `json:"data,omitempty"`
-	Error   string      `json:"error,omitempty"`
+	Status     string      `json:"status"`
+	StatusCode int         `json:"status_code"`
+	Data       interface{} `json:"data,omitempty"`
+	Error      string      `json:"error,omitempty"`
+	Message    string      `json:"message,omitempty"`
+	Metadata   interface{} `json:"metadata,omitempty"`
 }
 
-func Error(err string) ApiResponse {
+func ErrorResponse(msg string) ApiResponse {
 	return ApiResponse{
-		Status: StatusError,
-		Error:  err,
+		Status:     ERROR,
+		StatusCode: 400,
+		Message:    msg,
 	}
 }
 
-func Success(msg string) ApiResponse {
+func SuccessResponse(msg string) ApiResponse {
 	return ApiResponse{
-		Status:  StatusOK,
-		Message: msg,
+		Status:     SUCCESS,
+		StatusCode: 200,
+		Message:    msg,
 	}
 }

@@ -5,8 +5,9 @@ import (
 	"strings"
 	"time"
 
-	"OlimpiadPortal/ApplicationService/internal/models"
+	"main/internal/models"
 
+	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -64,64 +65,72 @@ func NewPostgreSQL(connectStr string) (*gorm.DB, error) {
 }
 
 func seedData(db *gorm.DB) error {
-	// Тестовые данные для заявок
-	applications := []models.Application{
-		{
-			UserID:  1,
-			EventID: 101,
-			// EventName:     "Олимпиада по информатике",     // ВРЕМЕННО
-			// EventLocation: "Школа №122",                   // ВРЕМЕННО
-			// EventDate:     time.Now().Add(48 * time.Hour), // ВРЕМЕННО
-			Status:      nil,
-			SubmittedAt: time.Now().Add(-48 * time.Hour), // 2 дня назад
-			UpdatedAt:   time.Now(),
-		},
-		{
-			UserID:  1,
-			EventID: 102,
-			// EventName:     "Олимпиада по математике",       // ВРЕМЕННО
-			// EventLocation: "Школа №123",                    // ВРЕМЕННО
-			// EventDate:     time.Now().Add(72 * time.Hour),  // ВРЕМЕННО
-			Status:      boolPtr(true),                   // Одобрено
-			SubmittedAt: time.Now().Add(-24 * time.Hour), // 1 день назад
-			UpdatedAt:   time.Now(),
-		},
-		{
-			UserID:  1,
-			EventID: 103,
-			// EventName:     "Олимпиада по Русскому языку",   // ВРЕМЕННО
-			// EventLocation: "Школа №64",                     // ВРЕМЕННО
-			// EventDate:     time.Now().Add(24 * time.Hour),  // ВРЕМЕННО
-			Status:      boolPtr(false),                  // Отклонено
-			SubmittedAt: time.Now().Add(-72 * time.Hour), // 3 дня назад
-			UpdatedAt:   time.Now(),
-		},
+	// Предопределенные UUID пользователей
+	userIDs := []string{
+		"a08957c4-7911-4289-bfed-42f0466d3e06",
+		"af3aa7a9-f824-44e2-a3f6-275f94b04104",
+		"e49898de-1cd8-462b-882f-d550904dda9e",
+		"d3b41646-4913-467b-860b-7290e52ef477",
+		"b90bc433-6210-4836-bafc-837c88a794ea",
+		"0aff1b45-5fb2-4abc-8f6f-3e9a79b7988b",
+		"1871cbfc-c50f-43aa-86a1-619ffb569b25",
+		"d5ec1598-6468-4cf4-ae07-64876019b93e",
+		"3d297cc8-91b2-4b88-83e2-dc08d6106750",
+		"ebe3ad07-69f1-41bb-b080-fc49a4dc16fa",
+		"6aec8f4c-9330-4afc-801b-4d4eaa6cf75d",
+		"a90b161b-6650-406a-9741-8d0636133073",
+		"d2c38359-5d05-4789-945d-3af037e27c99",
+		"106066d9-c4eb-4aea-bcb5-0f395b97f5eb",
+		"81ab90de-f856-4cb9-912b-0804072c3611",
+		"3686575f-2349-4a47-a7f7-cc2d68f6d943",
 	}
 
-	/*
-		for _, application := range applications {
-			if err := db.Create(&application).Error; err != nil {
-				return err
-			}
-		} */
+	// Предопределенные UUID олимпиад
+	eventIDs := []string{
+		"3ab8ab47-fc1f-4bae-8e2d-cc0784913f44",
+		"46e160c4-7fe4-4f14-9193-e06ec8b41c34",
+		"5a848c7f-4376-484a-8802-d0141ae21ccb",
+		"7e3324ea-71b6-44c6-a4a1-c3ef4fd6db5e",
+	}
 
-	// Создаем записи в базе данных
-	for _, application := range applications {
-		var existingApplication models.Application
-		err := db.Where("user_id = ? AND event_id = ?", application.UserID, application.EventID).First(&existingApplication).Error
-		if err != nil {
-			if err == gorm.ErrRecordNotFound {
-				// Record does not exist, create it
-				if err := db.Create(&application).Error; err != nil {
-					return err
-				}
-			} else {
-				// Some other error occurred
-				return err
+	// Тестовые данные для заявок
+	var applications []models.Application
+
+	// Для каждой олимпиады создаем 4 заявки
+	for i, eventID := range eventIDs {
+		// Получаем 4 уникальных пользователя для этой олимпиады
+		startIdx := i * 4
+		endIdx := startIdx + 4
+		eventUsers := userIDs[startIdx:endIdx]
+
+		// Создаем 4 заявки для текущей олимпиады
+		for j, userID := range eventUsers {
+			userUUID, _ := uuid.Parse(userID)
+			eventUUID, _ := uuid.Parse(eventID)
+
+			// Уникальные параметры для каждой заявки
+			status := j + 1 // 1, 2, 3
+			if status > 3 {
+				status = 3
 			}
-		} else {
-			fmt.Printf("Skipping duplicate application: UserID=%d, EventID=%d\n", application.UserID, application.EventID)
+			reason := j%2 + 1 // чередуем 1 и 2
+			code := fmt.Sprintf("%02d_%03d_%02d", 9+j, 100+j*5, 20+i+j)
+
+			applications = append(applications, models.Application{
+				UserID:      userUUID,
+				EventID:     eventUUID,
+				Status:      status,
+				Reason:      reason,
+				Code:        code,
+				SubmittedAt: time.Now().Add(-time.Duration(24*(i*4+j+1)) * time.Hour),
+				UpdatedAt:   time.Now(),
+			})
 		}
+	}
+
+	// Создаем заявки в базе данных
+	if err := db.Create(&applications).Error; err != nil {
+		return fmt.Errorf("failed to seed applications: %w", err)
 	}
 
 	return nil

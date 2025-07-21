@@ -14,6 +14,8 @@ type Config struct {
 	HTTPServerConfig          `yaml:"HTTP_SERVER_INFO"`
 	AdditionalAddressesConfig `yaml:"ADDITIONAL_ADDRESSES"`
 	JwtTemp                   `yaml:"JWT_TEMP_INFO"`
+	RedisConfig               `yaml:"REDIS_INFO"`
+	RabbitConfig              `yaml:"RABBIT_INFO"`
 }
 
 type DatabaseConfig struct {
@@ -36,6 +38,15 @@ type HTTPServerConfig struct {
 
 type JwtTemp struct {
 	Key string `yaml:"key"`
+}
+
+type RabbitConfig struct {
+	AddressRabbitPath string `yaml:"address_path"`
+	QueueName         string `yaml:"queue_name"`
+}
+
+type RedisConfig struct {
+	AddressRedisPath string `yaml:"address_path"`
 }
 
 func (cfg *Config) GetDataSourceName() string {

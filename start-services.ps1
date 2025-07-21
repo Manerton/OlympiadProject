@@ -1,56 +1,60 @@
-# Skript dlya zapuska mikroslervisov i frontenda vyborochno
+chcp 65001 | Out-Null
 $OutputEncoding = [System.Text.Encoding]::UTF8
-chcp 65001  # Ustanuvlyaem kodovuyu stranitsu UTF-8 dlya konsoli
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
-# Opredelenie putey k mikroslervisam
+# Пути к сервисам (проверьте, что event-service путь правильный!)
 $services = @(
-    @{ Name = "ApplicationService"; Path = "ApplicationService/cmd/server/main.go" },
-    @{ Name = "AuthMock"; Path = "AuthMock/cmd/server/main.go" },
-    @{ Name = "EventService"; Path = "event-service/cmd/server/main.go" },
-    @{ Name = "JuryAssignmentsService"; Path = "Jure-assignments-service/cmd/server/main.go" },
-    @{ Name = "OlympiadReact"; Path = "OlympiadReact" }
+    @{ Name = "ApplicationService"; Path = ".\ApplicationService\cmd\server\main.go" },
+    @{ Name = "AuthMock"; Path = ".\AuthMock\cmd\server\main.go" },
+    @{ Name = "EventService"; Path = ".\event-service\cmd\server\main.go" },
+    @{ Name = "JuryAssignmentsService"; Path = ".\Jure-assignments-service\cmd\server\main.go" },
+    @{ Name = "OlympiadReact"; Path = ".\OlympiadReact" }
 )
 
-# Funkciya zapuska mikroslervisa
 function Start-Service {
     param (
         [string]$Name,
         [string]$Path
     )
 
-    Write-Host "Zapusk servisa: $Name..." -ForegroundColor Green
+    Write-Host "Zapusk $Name..." -ForegroundColor Cyan
 
     if ($Name -eq "OlympiadReact") {
-        # Zapusk frontenda (React)
+        # Запуск фронта на Deno
         Push-Location $Path
-        Start-Process -FilePath "deno" -ArgumentList "run", "dev"
-        Pop-Location
-    } else {
-        # Zapusk Go-servisa
-        Push-Location (Split-Path $Path)
-        Start-Process -FilePath "go" -ArgumentList "run", (Split-Path $Path -Leaf)
+        Write-Host "Ispol'zuetsya Deno dlya zapuska React" -ForegroundColor Magenta
+        Start-Process -NoNewWindow -FilePath "deno" -ArgumentList "run", "-A", "dev.ts"  # или ваш файл запуска
         Pop-Location
     }
+    else {
+        # Запуск Go-сервиса с отладкой
+        $dir = Split-Path $Path -Parent
+        Push-Location $dir
 
-    Write-Host "Servis $Name zapushchen." -ForegroundColor Yellow
+        # Вариант 1: Запуск с видимым окном (если падает)
+        Start-Process -NoNewWindow -FilePath "cmd.exe" -ArgumentList "/k", "go", "run", (Split-Path $Path -Leaf)
+
+        Pop-Location
+    }
 }
 
-# Pechat dostupnyh servisov s nomerami
-Write-Host "Dostupnye servisy dlya zapuska:" -ForegroundColor Cyan
+# Вывод списка сервисов
+Write-Host "Spisok servisov:" -ForegroundColor Green
 for ($i = 0; $i -lt $services.Count; $i++) {
     Write-Host "$($i + 1). $($services[$i].Name)"
 }
 
-# Zapros vvoda u pol'zovatelya
-$selectedIndexes = Read-Host "Vvedite nomera servisov cherez probel (naprimer: 1 3 5)"
-$selectedIndexes = $selectedIndexes -split ' ' | ForEach-Object { [int]$_ - 1 }
-
-# Zapusk vybrannykh servisov
-foreach ($index in $selectedIndexes) {
+# Выбор сервисов
+$selected = Read-Host "Vvedite nomera servisov cherez probel (naprimer: 1 3 5)"
+$selected -split ' ' | ForEach-Object {
+    $index = [int]$_ - 1
     if ($index -ge 0 -and $index -lt $services.Count) {
         $service = $services[$index]
         Start-Service -Name $service.Name -Path $service.Path
-    } else {
-        Write-Host "Nevernyy nomer: $($index + 1)." -ForegroundColor Red
+    }
+    else {
+        Write-Host "Oshibka: nevernyy nomer $_" -ForegroundColor Red
     }
 }
+
+Write-Host "Zapusk zavershen." -ForegroundColor Green

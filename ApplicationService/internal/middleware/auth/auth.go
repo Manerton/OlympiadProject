@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -41,18 +42,30 @@ func verifyToken(tokenString string, secretKey []byte) (*jwt.Token, error) {
 
 func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		// Retrieve the token from the cookie
-		cookie, err := r.Cookie("token")
-		if err != nil {
-			log.Println("Token missing in cookie")
+		// Retrieve the token from the Authorization header
+		authHeader := r.Header.Get("Authorization")
+		if authHeader == "" {
+			log.Println("Authorization header missing")
+			http.Error(w, "Authorization header required", http.StatusUnauthorized)
 			return
 		}
 
+		// Check if the header has the Bearer scheme
+		const bearerPrefix = "Bearer "
+		if !strings.HasPrefix(authHeader, bearerPrefix) {
+			log.Println("Invalid authorization header format")
+			http.Error(w, "Authorization header must be in 'Bearer <token>' format", http.StatusUnauthorized)
+			return
+		}
+
+		// Extract the token
+		tokenString := strings.TrimPrefix(authHeader, bearerPrefix)
+
 		// Verify the token
-		token, err := verifyToken(cookie.Value, []byte(key))
+		token, err := verifyToken(tokenString, []byte(key))
 		if err != nil {
 			log.Printf("Token verification failed: %v\n", err)
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
 		}
 

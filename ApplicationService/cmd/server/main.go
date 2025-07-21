@@ -1,15 +1,19 @@
 package main
 
 import (
-	"OlimpiadPortal/ApplicationService/internal/config"
-	ApplicationHandler "OlimpiadPortal/ApplicationService/internal/handlers"
-	"OlimpiadPortal/ApplicationService/internal/lib/liblogger"
-	"OlimpiadPortal/ApplicationService/internal/middleware/auth"
-	"OlimpiadPortal/ApplicationService/internal/middleware/midlogger"
-	ApplicationRepository "OlimpiadPortal/ApplicationService/internal/repositories"
-	ApplicationService "OlimpiadPortal/ApplicationService/internal/services"
-	"OlimpiadPortal/ApplicationService/internal/storage/postgresql"
+	"context"
 	"log/slog"
+	"main/internal/config"
+	ApplicationHandler "main/internal/handlers"
+	"main/internal/lib/liblogger"
+	"main/internal/middleware/auth"
+	"main/internal/middleware/midlogger"
+	rabbit "main/internal/rabbitmq"
+	"main/internal/rabbitmq/consumer"
+	ApplicationRepository "main/internal/repositories"
+	ApplicationService "main/internal/services"
+	"main/internal/storage/orm"
+	"main/internal/storage/postgresql"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -17,9 +21,10 @@ import (
 	"github.com/go-chi/cors"
 )
 
-const LocalFilePath = "config-yaml/local.yaml"
+const LocalFilePath = "../../config-yaml/dev.yaml"
 
 func main() {
+
 	// Init config
 	cfg := config.GetConfig(LocalFilePath)
 
@@ -35,6 +40,9 @@ func main() {
 	} else {
 		log.Info("storage is enabled")
 	}
+
+	// init orm
+	gormORM := orm.NewGormORM(storage)
 
 	// init chi router
 	router := chi.NewRouter()
@@ -53,37 +61,63 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	// add Authentication with JWT token
-	router.Use(func(next http.Handler) http.Handler {
-		return auth.AuthenticateMiddleware(next, cfg.Key)
-	})
+	// router.Use(func(next http.Handler) http.Handler {
+	// 	return auth.AuthenticateMiddleware(next, cfg.Key)
+	// })
+
+	applicationsRepo := &ApplicationRepository.ApplicationRepository{}
 
 	// init application service and handler
-	applicationService := ApplicationService.NewApplicationService(storage, &ApplicationRepository.ApplicationRepository{})
+	applicationService := ApplicationService.NewApplicationService(gormORM, applicationsRepo)
 	applicationHandler := ApplicationHandler.NewApplicationHandler(applicationService, log)
 
 	router.Get("/applications/{id}", applicationHandler.GetApplicationByID) //wtf
 
+	router.Get("/applications", applicationHandler.GetAllApplications)
+
+	router.Get("/applicationsCount", applicationHandler.GetCountApplications)
+
+	router.Get("/applicationsByFilter", applicationHandler.GetByFilter)
+
+	router.Get("/applications/user/{userID}", applicationHandler.GetApplicationsByUserID)
+
+	router.Get("/applications/event/{eventID}", applicationHandler.GetApplicationsByEventID)
+
+	router.Post("/applications", applicationHandler.CreateApplication)
+
+	router.Put("/applications/{id}", applicationHandler.UpdateApplicationStatus)
+	router.Delete("/applications/{id}", applicationHandler.DeleteApplication)
+
 	// init applications route
 	router.With(auth.RoleBasedAccess("4")).Group(func(r chi.Router) {
-		router.Get("/applications", applicationHandler.GetAllApplications)
+
 	})
 
 	router.With(auth.RoleBasedAccess("2", "4")).Group(func(r chi.Router) {
-		router.Get("/applications/user/{userID}", applicationHandler.GetApplicationsByUserID)
+
 	})
 
 	router.With(auth.RoleBasedAccess("3")).Group(func(r chi.Router) {
-		router.Get("/applications/event/{eventID}", applicationHandler.GetApplicationsByEventID)
+
 	})
 
 	router.With(auth.RoleBasedAccess("2", "4")).Group(func(r chi.Router) {
-		router.Post("/applications", applicationHandler.CreateApplication)
+
 	})
 
 	router.With(auth.RoleBasedAccess("3", "4")).Group(func(r chi.Router) {
-		router.Put("/applications/{id}", applicationHandler.UpdateApplicationStatus)
-		router.Delete("/applications/{id}", applicationHandler.DeleteApplication)
+
 	})
+
+	// init rabbitMQ
+	rabbitConnect := rabbit.MustConnect(cfg.AddressRabbitPath)
+	rabbitChannel, err := rabbitConnect.Channel()
+	if err != nil {
+		log.Error("failed create channel for RabbitMQ")
+	}
+	rabbitConsumer := consumer.New(log, rabbitChannel, applicationService)
+	rabbitConsumer.Start(context.Background(), cfg.QueueName)
+	log.Info("rabbit started")
 
 	// init server
 	server := &http.Server{

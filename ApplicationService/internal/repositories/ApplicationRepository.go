@@ -1,98 +1,159 @@
 package ApplicationRepository
 
 import (
-	models "OlimpiadPortal/ApplicationService/internal/models"
+	"context"
 	"fmt"
+	models "main/internal/models"
 
-	"gorm.io/gorm"
+	"main/internal/storage/orm"
+
+	"github.com/google/uuid"
 )
 
 // Структура репозитория
 type ApplicationRepository struct{}
 
-// 1. Создание новой заявки
-func (r *ApplicationRepository) CreateApplication(db *gorm.DB, application *models.Application) error {
-	const op = "repositories.application_repository.CreateApplication"
-	if err := db.Create(application).Error; err != nil {
-		return fmt.Errorf("%s: %w", op, err)
+// -1. Получить заявки по фильтру
+func (r *ApplicationRepository) GetAllByFilter(ctx context.Context, orm orm.ORM, filter models.Application, offset, limit *int, order *string) ([]models.Application, error) {
+	const op = "repositories.UserRepository.GetByFilter"
+
+	AppResult := []models.Application{}
+
+	if err := orm.Find(ctx, models.Application{}, nil, offset, limit, order, &AppResult, filter); err != nil {
+		return []models.Application{}, fmt.Errorf("%s: %w", op, err)
 	}
-	return nil
+
+	return AppResult, nil
+}
+
+// 0. Получить количество всех заявок
+func (r *ApplicationRepository) GetCount(ctx context.Context, orm orm.ORM) (int64, error) {
+	const op = "repositories.UserRepository.GetCount"
+
+	var countResult int64 = 0
+	err := orm.Count(ctx, models.Application{}, &countResult, nil)
+	if err != nil {
+		return 0, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return countResult, nil
+}
+
+// 1. Создание новой заявки
+func (r *ApplicationRepository) Create(ctx context.Context, orm orm.ORM, application models.Application) (uuid.UUID, error) {
+	const op = "repositories.ApplicationRepository.CreateApplication"
+	err := orm.Create(ctx, &application)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return application.ID, nil
 }
 
 // 2. Получение заявки по ID
-func (r *ApplicationRepository) GetApplicationByID(db *gorm.DB, id uint) (models.Application, error) {
+func (r *ApplicationRepository) GetByID(ctx context.Context, orm orm.ORM, id uuid.UUID) (models.Application, error) {
 	const op = "repositories.application_repository.GetApplicationByID"
-	if id == 0 {
-		return models.Application{}, fmt.Errorf("%s: invalid ID %d", op, id)
-	}
-	var application models.Application
-	if err := db.First(&application, id).Error; err != nil {
+
+	application := models.Application{}
+	err := orm.First(ctx, models.Application{}, nil, &application, models.Application{ID: id})
+	if err != nil {
 		return models.Application{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return application, nil
 }
 
 // 3. Получение всех заявок
-func (r *ApplicationRepository) GetAllApplications(db *gorm.DB) ([]models.Application, error) {
+func (r *ApplicationRepository) GetAllApplications(ctx context.Context, orm orm.ORM, offset *int, limit *int) ([]models.Application, error) {
 	const op = "repositories.application_repository.GetAllApplications"
-	var applications []models.Application
-	if err := db.Find(&applications).Error; err != nil {
+
+	applications := []models.Application{}
+	err := orm.Find(
+		ctx,
+		models.Application{}, // Модель
+		nil,                  // Поля (nil - выбираем все)
+		offset,               // Offset (nil - без offset)
+		limit,                // Limit (nil - без лимита)
+		nil,                  // Order (nil - без сортировки)
+		&applications,        // Куда записать результат
+	)
+	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return applications, nil
 }
 
 // 4. Обновление статуса заявки
-func (r *ApplicationRepository) UpdateApplicationStatus(db *gorm.DB, id uint, status *bool) error {
+func (r *ApplicationRepository) UpdateApplication(ctx context.Context, orm orm.ORM, application models.Application) error {
 	const op = "repositories.application_repository.UpdateApplicationStatus"
-	if id == 0 {
-		return fmt.Errorf("%s: invalid ID %d", op, id)
-	}
-
-	// Обновление статуса заявки
-	if err := db.Model(&models.Application{}).Where("application_id = ?", id).Update("status", status).Error; err != nil {
+	err := orm.Updates(ctx, nil, &application)
+	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
+
 	return nil
 }
 
 // 5. Удаление заявки по ID
-func (r *ApplicationRepository) DeleteApplicationByID(db *gorm.DB, id uint) error {
+func (r *ApplicationRepository) DeleteApplicationByID(ctx context.Context, orm orm.ORM, id uuid.UUID) error {
 	const op = "repositories.application_repository.DeleteApplicationByID"
-	if id == 0 {
-		return fmt.Errorf("%s: invalid ID %d", op, id)
-	}
 
-	if err := db.Delete(&models.Application{}, id).Error; err != nil {
+	application := models.Application{}
+	err := orm.Delete(ctx, models.Application{}, nil, &application, models.Application{ID: id})
+	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil
 }
 
 // 6. Получение всех заявок по ID пользователя
-func (r *ApplicationRepository) GetApplicationsByUserID(db *gorm.DB, userID uint) ([]models.Application, error) {
+func (r *ApplicationRepository) GetApplicationsByUserID(ctx context.Context, orm orm.ORM, userID uuid.UUID, offset *int, limit *int) ([]models.Application, error) {
 	const op = "repositories.application_repository.GetApplicationsByUserID"
-	if userID == 0 {
-		return nil, fmt.Errorf("%s: invalid UserID %d", op, userID)
-	}
 
 	var applications []models.Application
-	if err := db.Where("user_id = ?", userID).Find(&applications).Error; err != nil {
+
+	// Условие для поиска (WHERE user_id = ?)
+	condition := models.Application{UserID: userID}
+
+	err := orm.Find(
+		ctx,
+		models.Application{}, // Модель
+		nil,                  // Поля (nil - выбираем все)
+		offset,               // Offset (nil - без offset)
+		limit,                // Limit (nil - без лимита)
+		nil,                  // Order (nil - без сортировки)
+		&applications,        // Куда записать результат
+		condition,            // Условия WHERE
+	)
+
+	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+
 	return applications, nil
 }
 
 // 7. Получение всех заявок по ID события
-func (r *ApplicationRepository) GetApplicationsByEventID(db *gorm.DB, eventID uint) ([]models.Application, error) {
+func (r *ApplicationRepository) GetApplicationsByEventID(ctx context.Context, orm orm.ORM, eventID uuid.UUID, offset *int, limit *int) ([]models.Application, error) {
 	const op = "repositories.application_repository.GetApplicationsByEventID"
-	if eventID == 0 {
-		return nil, fmt.Errorf("%s: invalid EventID %d", op, eventID)
-	}
 
 	var applications []models.Application
-	if err := db.Where("event_id = ?", eventID).Find(&applications).Error; err != nil {
+
+	// Условие для поиска (WHERE user_id = ?)
+	condition := models.Application{EventID: eventID}
+
+	err := orm.Find(
+		ctx,
+		models.Application{}, // Модель
+		nil,                  // Поля (nil - выбираем все)
+		offset,               // Offset (nil - без offset)
+		limit,                // Limit (nil - без лимита)
+		nil,                  // Order (nil - без сортировки)
+		&applications,        // Куда записать результат
+		condition,            // Условия WHERE
+	)
+
+	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+
 	return applications, nil
 }
