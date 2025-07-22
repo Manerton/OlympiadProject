@@ -1,0 +1,23 @@
+env: "dev"
+
+HTTP_SERVER_INFO:
+  routes:
+    - prefix: "/auth"
+      target: "http://172.16.0.196:8082/applications"
+      skip_auth: true
+    - prefix: "/api/users/"
+      target: "http://service-a:8080/"
+      skip_auth: false
+    - prefix: "/api/orders/"
+      target: "http://service-b:8081/"
+      skip_auth: false
+
+JWT_TEMP_INFO:
+  key: "lololololololololololololololololololololololololololololol"
+
+REDIS_INFO:
+  address_path: "redis:6379"
+
+RABBIT_INFO:
+  address_path: "amqp://app:test@172.16.0.94:5672/"
+  queue_name: "olymp_application" 
