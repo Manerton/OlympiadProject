@@ -31,7 +31,7 @@ function SubStagMainPage({ eventId }: BaseEventPageProps) {
     const { role, id } = useRole();
 
     const handleDeleteEvent = (id: number) => {
-        setEvents((events) => events.filter((event) => event.ID !== id));
+        setEvents((events) => events.filter((event) => event.id !== id));
     };
 
     const fetchData = async () => {

@@ -159,7 +159,7 @@ function BaseEventPage({ selectedEventId, pageName, EventType, showSubjectField 
   }
 
   const handleDeleteEvent = (id: number) => {
-    setEvents((events) => events.filter((event) => event.ID !== id));
+    setEvents((events) => events.filter((event) => event.id !== id));
   };
 
   const sortEvents = (order: "asc" | "desc") => {

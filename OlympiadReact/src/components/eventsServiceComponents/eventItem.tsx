@@ -18,19 +18,19 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
 
   const handleClick = () => {
     if (event.event_type === REGIONAL_STAGE) {
-      navigate(`/olympiads/${event.ID}`);
+      navigate(`/olympiads/${event.id}`);
     } else if (event.event_type === OLYMPIAD) {
-      navigate(`/olympiad-class/${event.ID}`);
+      navigate(`/olympiad-class/${event.id}`);
     } else if (event.event_type === CLASS) {
-      navigate(`/olympiad-stages/${event.ID}`)
+      navigate(`/olympiad-stages/${event.id}`)
     } else if (event.event_type === STAGE) {
-      navigate(`/sub-stage/${event.ID}`)
+      navigate(`/sub-stage/${event.id}`)
     }
   }
 
   const deleteEvent = async () => {
 
-    const endPointDeleteEvent = `${API_CONFIG.EVENTS}/${event.ID}`;
+    const endPointDeleteEvent = `${API_CONFIG.EVENTS}/${event.id}`;
     try {
 
       const response = await fetch(endPointDeleteEvent, {
@@ -45,7 +45,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
       if (result.status === "Error") {
         alert("Это событие связано с другими событиями, поэтому его нельзя удалить!");
       } else {
-        onDelete(event.ID || 0)
+        onDelete(event.id || 0)
       }
       console.log("Response from API:", result);
     } catch (error) {
@@ -60,7 +60,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
         method: "POST",
         credentials: "include", // Отправка cookie
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ "user_id": id, "event_id": event.ID }),
+        body: JSON.stringify({ "user_id": id, "event_id": event.id }),
       });
 
       if (!response.ok) {
@@ -75,7 +75,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
   }
 
   return (
-    <Card key={event.ID} className="mb-3">
+    <Card key={event.id} className="mb-3">
       <Card.Body className="d-flex justify-content-between align-items-start">
         {/* Левая часть: текст названия и даты */}
         <div onClick={handleClick} style={{ cursor: "pointer", textAlign: "left" }}>
@@ -131,7 +131,7 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
           )}
           {/* Кнопка для перехода на страницу заявок */}
           {role === UserRoles.Organaizer && isSubmitApplication && (
-            <Link to={`/applications/event/${event.ID}`}>
+            <Link to={`/applications/event/${event.id}`}>
               <Button
                 variant="outline-primary"
                 className="mb-2"
@@ -151,16 +151,16 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
               className="btn btn-primary"
               type="button"
               data-bs-toggle="collapse"
-              data-bs-target={`#collapse-${event.ID}`}
+              data-bs-target={`#collapse-${event.id}`}
               aria-expanded="false"
-              aria-controls={`collapse-${event.ID}`}
+              aria-controls={`collapse-${event.id}`}
             >
               Показать вложенные события
             </button>
-            <div className="collapse" id={`collapse-${event.ID}`}>
+            <div className="collapse" id={`collapse-${event.id}`}>
               <div className="d-flex">
                 {event.events.map((childEvent) => (
-                  <Card key={childEvent.ID} className="col m-1 mb-3">
+                  <Card key={childEvent.id} className="col m-1 mb-3">
                     <Card.Body>
                       <Card.Title>{childEvent.name}</Card.Title>
                       <Card.Text>

@@ -149,7 +149,7 @@ export default ApplicationsPage; */
           console.log("Events data:", events);
           // Шаг 3: Объединяем данные заявок и событий
           const mergedApplications = applicationsData.map((app: any) => {
-            const event: MyEvent = events.find((e: MyEvent) => e.ID === app.eventID);
+            const event: MyEvent = events.find((e: MyEvent) => e.id === app.eventID);
 
             console.log("Matched Event for App:", app.eventID, "->", event);
 

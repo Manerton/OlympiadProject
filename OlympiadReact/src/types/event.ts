@@ -1,11 +1,11 @@
 export interface MyEvent {
-    ID?: number 
+    id?: number 
     name: string;
     start_date: Date;
     end_date: Date;
     previous_event_id?: number
     event_type: string;
-    subject?: string;
+    subject?: number;
     class_number?: number;
     additional_info?: string;
     events?: [MyEvent]

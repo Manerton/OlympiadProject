@@ -19,7 +19,7 @@ function EventList({ events, onDelete, isSubmitItem}: EventListProps) {
   return (
     <div>
       {events.map((event: MyEvent) => (
-        <EventItem isSubmitApplication={isSubmitItem || false} key={event.ID} event={event} onDelete={onDelete} />
+        <EventItem isSubmitApplication={isSubmitItem || false} key={event.id} event={event} onDelete={onDelete} />
       ))}
     </div>
   )

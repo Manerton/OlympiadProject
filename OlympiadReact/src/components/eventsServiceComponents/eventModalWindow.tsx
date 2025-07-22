@@ -70,7 +70,7 @@ function EventModalForm({ event, showSubjectField, showClassNumber, onSuccess }:
     }
 
     const eventData: MyEvent = {
-      previous_event_id: event?.ID,
+      previous_event_id: event?.id,
       name: eventName,
       start_date: new Date(startDate),
       end_date: new Date(endDate),

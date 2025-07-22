@@ -12,8 +12,8 @@ interface EventInfoProps {
 
 function EventInfo({ event }: EventInfoProps) {
   const [eventName, setEventName] = useState<string>(event.name || "");
-  const [subjectList, setSubjectList] = useState<string[]>([]);
-  const [subject, setSubject] = useState<string>(event.subject || "");
+  const [subjectMap, setSubjectMap] = useState<Map<number, string>>(new Map());
+  const [subject, setSubject] = useState<number>(event.subject || 0);
   const [classNumber, setClassNumber] = useState<number>(event.class_number || 1);
 
   const [startDate, setStartDate] = useState<string>(
@@ -45,7 +45,7 @@ function EventInfo({ event }: EventInfoProps) {
 
           const result = await response.json();
           console.log("Предметы получены!", result);
-          setSubjectList(result.data);
+          setSubjectMap(new Map(result.data));
         } catch (error) {
           console.error("Ошибка при получении предметов:", error);
         }
@@ -69,7 +69,7 @@ function EventInfo({ event }: EventInfoProps) {
     }
 
     const eventData: MyEvent = {
-      ID: event.ID,
+      id: event.id,
       previous_event_id: event.previous_event_id,
       name: eventName,
       start_date: new Date(startDate),
@@ -81,7 +81,7 @@ function EventInfo({ event }: EventInfoProps) {
     };
 
     try {
-      const response = await fetch(`${API_CONFIG.EVENTS}/${event.ID}`, {
+      const response = await fetch(`${API_CONFIG.EVENTS}/${event.id}`, {
         method: "PUT",
         credentials: "include", // Для отправки cookie
         headers: {
@@ -141,7 +141,7 @@ function EventInfo({ event }: EventInfoProps) {
             />
           </Form.Group>
 
-          {subject && (
+            {subjectMap && (
             <Form.Group className="mb-3">
               <Form.Label>Предмет</Form.Label>
               <div className="dropdown">
@@ -152,17 +152,17 @@ function EventInfo({ event }: EventInfoProps) {
                   aria-expanded="false"
                   disabled={role !== UserRoles.Organaizer}
                 >
-                  {subject || "Выберите предмет"}
+                  {subjectMap.get(subject || 0) || "Выберите предмет"}
                 </button>
                 <ul className="dropdown-menu w-100">
-                  {subjectList.map((subject_str, index) => (
-                    <li key={index}>
+                  {[...subjectMap.entries()].map(([code, name]) => (
+                    <li key={code}>
                       <a
                         className="dropdown-item"
-                        onClick={() => setSubject(subject_str)}
+                        onClick={() => setSubject(code)}
                         style={{ cursor: "pointer" }}
                       >
-                        {subject_str}
+                        {name}
                       </a>
                     </li>
                   ))}
@@ -170,6 +170,7 @@ function EventInfo({ event }: EventInfoProps) {
               </div>
             </Form.Group>
           )}
+
 
           {classNumber && (
             <Form.Group className="mb-3">
