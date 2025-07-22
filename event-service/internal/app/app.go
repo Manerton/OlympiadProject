@@ -12,6 +12,7 @@ import (
 	"main/internal/middleware/midlogger"
 	"main/internal/models/subject"
 	"main/internal/repositories/event_repository"
+	"main/internal/repositories/outbox_repository"
 	"main/internal/services/event_service"
 	"main/internal/storage/orm"
 	"main/internal/storage/postgresql"
@@ -57,7 +58,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	gormORM := orm.NewGormORM(storage)
 
 	// init events service and handler
-	eventService := event_service.NewEventService(gormORM, &event_repository.EventRepository{}, log)
+	eventService := event_service.NewEventService(gormORM, cfg.Services, &event_repository.EventRepository{}, &outbox_repository.OutboxRepository{}, log)
 	eventHandler := event_handler.NewEventHandler(eventService)
 
 	// init rabbit

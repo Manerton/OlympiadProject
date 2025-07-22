@@ -15,6 +15,7 @@ type Config struct {
 	AdditionalAddressesConfig `yaml:"ADDITIONAL_ADDRESSES"`
 	JwtConfig                 `yaml:"JWT_INFO"`
 	RabbitConfig              `yaml:"RABBIT_INFO"`
+	KiznaiverConfig           `yaml:"KIZNAIVER_INFO"`
 }
 
 type DatabaseConfig struct {
@@ -42,6 +43,10 @@ type RabbitConfig struct {
 type AdditionalAddressesConfig struct {
 	ReactVision            string `yaml:"react"`
 	JureAssignmentsService string `yaml:"jure-assignments"`
+}
+
+type KiznaiverConfig struct {
+	Services map[string]string `yaml:"services"`
 }
 
 func (cfg *Config) GetDataSourceName() string {

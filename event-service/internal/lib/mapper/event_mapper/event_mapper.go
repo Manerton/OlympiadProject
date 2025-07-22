@@ -4,6 +4,7 @@ import (
 	"main/internal/dto/event_dto"
 	"main/internal/models/event"
 	"strconv"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -81,4 +82,72 @@ func ManyToDTO(events []event.Event) []event_dto.EventDTOResponse {
 	}
 
 	return eventsResult
+}
+
+func ConvertDTOtoEvent(eventDTO event_dto.EventDTO) event.Event {
+
+	subjectInt, err := strconv.Atoi(eventDTO.Subject)
+	if err != nil {
+
+	}
+
+	return event.Event{
+		ID:              eventDTO.ID,
+		Name:            eventDTO.Name,
+		StartDate:       eventDTO.StartDate,
+		EndDate:         eventDTO.EndDate,
+		PreviousEventID: eventDTO.PreviousEventID,
+		Subject:         subjectInt,
+		AdditionalInfo:  eventDTO.AdditionalInfo,
+		EventType:       eventDTO.EventType,
+	}
+}
+
+func ConvertEventToDTO(event event.Event) event_dto.EventDTO {
+
+	subjectStr := strconv.Itoa(event.Subject)
+
+	return event_dto.EventDTO{
+		ID:              event.ID,
+		Name:            event.Name,
+		StartDate:       event.StartDate,
+		EndDate:         event.EndDate,
+		PreviousEventID: event.PreviousEventID,
+		Subject:         subjectStr,
+		AdditionalInfo:  event.AdditionalInfo,
+		EventType:       event.EventType,
+		Events:          &[]event_dto.EventDTO{},
+	}
+}
+
+func ConvertEventToDetails(event event.Event) event_dto.DetailsEvent {
+	var startDate, endDate *time.Time
+
+	if !event.StartDate.IsZero() {
+		startDate = &event.StartDate
+	}
+	if !event.EndDate.IsZero() {
+		endDate = &event.EndDate
+	}
+
+	subjectStr := strconv.Itoa(event.Subject)
+
+	return event_dto.DetailsEvent{
+		ID:              event.ID,
+		Name:            event.Name,
+		StartDate:       startDate,
+		EndDate:         endDate,
+		PreviousEventID: event.PreviousEventID,
+		Subject:         subjectStr,
+		AdditionalInfo:  event.AdditionalInfo,
+		EventType:       event.EventType,
+	}
+}
+
+func ConvertManyEventsToDetails(events []event.Event) []event_dto.DetailsEvent {
+	var eventsDTO []event_dto.DetailsEvent
+	for _, event := range events {
+		eventsDTO = append(eventsDTO, ConvertEventToDetails(event))
+	}
+	return eventsDTO
 }
