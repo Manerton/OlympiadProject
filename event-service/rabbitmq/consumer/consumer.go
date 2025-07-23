@@ -8,7 +8,7 @@ import (
 	"main/internal/dto/event_dto"
 	"main/internal/dto/rabbit_dto"
 	"main/internal/lib/liblogger"
-	"sync"
+	"main/rabbitmq"
 	"time"
 
 	"github.com/google/uuid"
@@ -34,19 +34,17 @@ type EventService interface {
 }
 
 type RabbitConsumer struct {
-	log           *slog.Logger
-	rabbitConnect *amqp.Connection
-	eventService  EventService
+	log          *slog.Logger
+	eventService EventService
 
-	mutex             sync.Mutex
-	connectionAddress string
+	connectionManager *rabbitmq.ConnectionManager
 }
 
-func New(log *slog.Logger, address string, eventService EventService) *RabbitConsumer {
+func New(log *slog.Logger, mananger *rabbitmq.ConnectionManager, eventService EventService) *RabbitConsumer {
 	return &RabbitConsumer{
 		log:               log,
 		eventService:      eventService,
-		connectionAddress: address,
+		connectionManager: mananger,
 	}
 }
 
@@ -58,13 +56,6 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 				c.log.Info("consumer stopped by context")
 				return
 			default:
-				err := c.ensureConnection()
-				if err != nil {
-					c.log.Error("failed to connect to RabbitMQ", liblogger.Err(err))
-					time.Sleep(5 * time.Second)
-					continue
-				}
-
 				if err := c.consumeLoop(ctx, queueName); err != nil {
 					c.log.Error("consume loop error", liblogger.Err(err))
 					time.Sleep(5 * time.Second) // задержка перед переподключением
@@ -75,26 +66,13 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 
 }
 
-func (c *RabbitConsumer) ensureConnection() error {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-
-	if c.rabbitConnect != nil && !c.rabbitConnect.IsClosed() {
-		return nil // всё ок
-	}
-
-	conn, err := amqp.Dial(c.connectionAddress)
+func (c *RabbitConsumer) consumeLoop(ctx context.Context, queueName string) error {
+	rabbitConnect, err := c.connectionManager.GetConnection()
 	if err != nil {
 		return fmt.Errorf("amqp dial failed: %w", err)
 	}
-	c.rabbitConnect = conn
 
-	c.log.Info("reconnected to RabbitMQ")
-	return nil
-}
-
-func (c *RabbitConsumer) consumeLoop(ctx context.Context, queueName string) error {
-	rabbitChannel, err := c.rabbitConnect.Channel()
+	rabbitChannel, err := rabbitConnect.Channel()
 	if err != nil {
 		c.log.Error("failed create channel for RabbitMQ")
 		return err

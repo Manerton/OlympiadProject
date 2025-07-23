@@ -11,11 +11,11 @@ import (
 
 type OutboxRepository struct{}
 
-func (r *OutboxRepository) GetAllNotProcessed(ctx context.Context, orm orm.ORM) ([]outbox.Outbox, error) {
+func (r *OutboxRepository) GetAllNotProcessed(ctx context.Context, orm orm.ORM, limit *int) ([]outbox.Outbox, error) {
 	const op = "repository.OutboxRepository.GetAllNotProcessed"
 	outboxResult := []outbox.Outbox{}
 
-	err := orm.Find(ctx, outbox.Outbox{}, nil, nil, nil, nil, &outboxResult, outbox.Outbox{Processed: false})
+	err := orm.Find(ctx, outbox.Outbox{}, nil, nil, limit, nil, &outboxResult, outbox.Outbox{Processed: false})
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

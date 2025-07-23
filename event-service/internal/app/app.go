@@ -16,7 +16,6 @@ import (
 	"main/internal/services/event_service"
 	"main/internal/storage/orm"
 	"main/internal/storage/postgresql"
-	"main/rabbitmq/consumer"
 	"main/support/userrole"
 	"net/http"
 	"time"
@@ -61,9 +60,17 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	eventService := event_service.NewEventService(gormORM, cfg.Services, &event_repository.EventRepository{}, &outbox_repository.OutboxRepository{}, log)
 	eventHandler := event_handler.NewEventHandler(eventService)
 
-	// init rabbit
-	rabbitConsumer := consumer.New(log, cfg.AddressRabbitPath, eventService)
-	rabbitConsumer.Start(context.Background(), cfg.QueueName)
+	// // init connection manager for rabbit
+	// connectionManager := rabbitmq.New(cfg.AddressRabbitPath, log)
+	// connectionManager.Start(context.TODO())
+
+	// // init rabbit consumer
+	// rabbitConsumer := consumer.New(log, connectionManager, eventService)
+	// rabbitConsumer.Start(context.TODO(), cfg.QueueName)
+
+	// // init rabbit producer
+	// rabbitProducer := producer.New(log, connectionManager, gormORM, &outbox_repository.OutboxRepository{})
+	// rabbitProducer.Start(context.TODO())
 
 	// init routes
 	app.initRoutes(router, eventHandler, subjectHandler)
