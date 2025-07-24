@@ -110,6 +110,7 @@ func (a *App) initRoutes(router *chi.Mux,
 		r.Get("/api/participants", participantHandler.GetAllParticipants)
 		r.Get("/api/participants/count", participantHandler.GetCount)
 		r.Get("/api/participants/{id}", participantHandler.GetById)
+		r.Get("/api/participants/byuser/{id}", participantHandler.GetByUserId)
 
 		r.Get("/api/users", userHandler.GetAll)
 		r.Get("/api/users/count", userHandler.GetCountUsers)

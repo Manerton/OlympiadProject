@@ -14,6 +14,7 @@ import (
 type ParticipantService interface {
 	GetAll(ctx context.Context, page, limit *int) ([]participant_dto.ParticipantResponseDTO, error)
 	GetById(ctx context.Context, id string) (participant_dto.ParticipantResponseDTO, error)
+	GetByUserId(ctx context.Context, userId string) (participant_dto.ParticipantResponseDTO, error)
 
 	GetCount(ctx context.Context) (int64, error)
 
@@ -65,6 +66,25 @@ func (h *ParticipantHandler) GetById(w http.ResponseWriter, r *http.Request) {
 		StatusCode: http.StatusOK,
 		Data:       participantRes,
 	})
+}
+
+func (h *ParticipantHandler) GetByUserId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	id := chi.URLParam(r, "id")
+	participantRes, err := h.participantService.GetByUserId(ctx, id)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       participantRes,
+	})
+
 }
 
 func (h *ParticipantHandler) GetAllParticipants(w http.ResponseWriter, r *http.Request) {

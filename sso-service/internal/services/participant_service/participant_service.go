@@ -16,6 +16,7 @@ import (
 type ParticipantRepository interface {
 	GetAll(ctx context.Context, orm orm.ORM, offset, limit *int) ([]participant.Participant, error)
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (participant.Participant, error)
+	GetByUserId(ctx context.Context, orm orm.ORM, id uuid.UUID) (participant.Participant, error)
 
 	GetCount(ctx context.Context, orm orm.ORM) (int64, error)
 
@@ -74,6 +75,30 @@ func (s *ParticipantService) GetById(ctx context.Context, id string) (participan
 	}
 
 	return participant_mapper.ToDTO(participant), nil
+}
+
+func (s *ParticipantService) GetByUserId(ctx context.Context, id string) (participant_dto.ParticipantResponseDTO, error) {
+	const op = "services.participant_service.GetByUserID"
+	const errMsg = "failed get participant"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error("failed parse id to uid", liblogger.Err(err))
+		return participant_dto.ParticipantResponseDTO{}, fmt.Errorf("%s", errMsg)
+	}
+
+	participantModel, err := s.participantRepository.GetByUserId(ctx, s.db, uid)
+	if err != nil {
+		log.Error("failed get participant by user id", liblogger.Err(err))
+		return participant_dto.ParticipantResponseDTO{}, fmt.Errorf("%s", errMsg)
+	}
+
+	return participant_mapper.ToDTO(participantModel), nil
+
 }
 
 func (s *ParticipantService) GetAll(ctx context.Context, page, limit *int) ([]participant_dto.ParticipantResponseDTO, error) {
