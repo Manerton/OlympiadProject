@@ -15,7 +15,7 @@ func (r *OutboxRepository) GetAllNotProcessed(ctx context.Context, orm orm.ORM, 
 	const op = "repository.OutboxRepository.GetAllNotProcessed"
 	outboxResult := []outbox.Outbox{}
 
-	err := orm.Find(ctx, outbox.Outbox{}, nil, nil, limit, nil, &outboxResult, outbox.Outbox{Processed: false})
+	err := orm.Find(ctx, outbox.Outbox{}, nil, nil, limit, nil, &outboxResult, map[string]interface{}{"processed": false})
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

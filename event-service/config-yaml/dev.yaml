@@ -21,7 +21,7 @@ RABBIT_INFO:
 
 KIZNAIVER_INFO:
   services: 
-    "olymp_app": "applications"
+    "olymp_application": "applications"
     "olymp_jury": "jury_assigments"
   
 

@@ -93,10 +93,10 @@ func (g *Gorm) Find(ctx context.Context, model interface{}, fields *[]string, of
 	const op = "storage.orm.Find"
 	query := g.DB.WithContext(ctx).Model(model)
 	if order != nil && *order != "" {
-		query.Order(*order)
+		query = query.Order(*order)
 	}
 	if fields != nil && len(*fields) != 0 {
-		query.Select(*fields)
+		query = query.Select(*fields)
 	}
 	if offset != nil && *offset > 0 {
 		query = query.Offset(*offset)
@@ -108,6 +108,7 @@ func (g *Gorm) Find(ctx context.Context, model interface{}, fields *[]string, of
 	if err := query.Find(dest, conds...).Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
+
 	return nil
 }
 
