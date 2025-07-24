@@ -41,8 +41,12 @@ type RabbitConsumer struct {
 }
 
 func New(log *slog.Logger, mananger *rabbitmq.ConnectionManager, eventService EventService) *RabbitConsumer {
+	clog := log.With(
+		slog.String("op", "RabbitConsumer"),
+	)
+
 	return &RabbitConsumer{
-		log:               log,
+		log:               clog,
 		eventService:      eventService,
 		connectionManager: mananger,
 	}
@@ -71,12 +75,17 @@ func (c *RabbitConsumer) consumeLoop(ctx context.Context, queueName string) erro
 	if err != nil {
 		return fmt.Errorf("amqp dial failed: %w", err)
 	}
+	c.log.Info("RabbitMQ connected success")
+
+	closeConnectErrChan := make(chan *amqp.Error)
+	rabbitConnect.NotifyClose(closeConnectErrChan)
 
 	rabbitChannel, err := rabbitConnect.Channel()
 	if err != nil {
 		c.log.Error("failed create channel for RabbitMQ")
 		return err
 	}
+	c.log.Debug("TEST")
 
 	// Обработка закрытия канала
 	closeErrChan := make(chan *amqp.Error)
@@ -101,12 +110,12 @@ func (c *RabbitConsumer) consumeLoop(ctx context.Context, queueName string) erro
 		case <-ctx.Done():
 			_ = rabbitChannel.Cancel("", false)
 			return nil
-		case err := <-closeErrChan:
-			if err != nil {
-				c.log.Error("rabbit channel closed", liblogger.Err(err))
-				return fmt.Errorf("channel closed: %w", err)
-			}
-			return nil
+		case <-closeErrChan:
+			c.log.Error("rabbit channel closed")
+			return fmt.Errorf("channel closed")
+		case <-closeConnectErrChan:
+			c.log.Error("rabbit connection closed")
+			return fmt.Errorf("connection closed: %w", err)
 		case msg, ok := <-msgs:
 			if !ok {
 				return fmt.Errorf("messages channel closed: %v", ok)
@@ -139,7 +148,7 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 		id, ok = rabbitDTO.Data.SearchAttributes["id"].(string)
 		if !ok {
 			c.log.Error("failed id does not exist", slog.String("id", id))
-			return fmt.Errorf("failed update: ID does not exist")
+			return fmt.Errorf("failed search: ID does not exist")
 		}
 		c.log.Debug("id", slog.String("id", id))
 	}
@@ -149,7 +158,6 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 		err := c.create(ctx, rabbitDTO.Data.Table, rabbitDTO.Data.Attributes)
 		if err != nil {
 			c.log.Error("failed create", liblogger.Err(err))
-			c.log.Debug("dataJSON", slog.Any("data", rabbitDTO.Data.Attributes))
 			return fmt.Errorf("failed create data")
 		}
 		c.log.Debug("success create", rabbitDTO.Data.Table, rabbitDTO.Data.Attributes)

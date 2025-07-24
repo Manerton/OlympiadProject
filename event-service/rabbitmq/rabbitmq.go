@@ -20,9 +20,13 @@ type ConnectionManager struct {
 }
 
 func New(connection string, log *slog.Logger) *ConnectionManager {
+	mlog := log.With(
+		slog.String("op", "ConnectionManager"),
+	)
+
 	manager := &ConnectionManager{
 		connectionAddress: connection,
-		log:               log,
+		log:               mlog,
 	}
 	return manager
 }
@@ -59,7 +63,7 @@ func (m *ConnectionManager) ensureConnection() error {
 	m.connect.NotifyClose(notifyClose)
 
 	m.mu.Unlock()
-	m.log.Error("RabbitMQ connected")
+	m.log.Info("RabbitMQ connected")
 
 	// ожидаем закрытия соединения
 	err = <-notifyClose
