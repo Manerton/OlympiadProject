@@ -27,6 +27,6 @@ RABBIT_INFO:
 
 ADDITIONAL_ADDRESSES:
   react: "http://172.16.1.39:5173"
-  jure-assignments: "http://localhost:8090"
+  jure-assignments: "http://172.16.1.39:8090"
   olymp-result: "http://172.16.0.94:8080"
   event: "http://172.16.1.39:8080"

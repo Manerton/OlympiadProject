@@ -42,7 +42,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	// init router
 	router := chi.NewRouter()
 
-	app := App{log: log}
+	app := &App{log: log}
 	// init cors
 	app.initCors(router, cfg.AdditionalAddressesConfig)
 	// init middlewares
@@ -84,7 +84,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 		Handler: router,
 	}
 
-	return &app
+	return app
 }
 
 func (a *App) initRoutes(router *chi.Mux,
