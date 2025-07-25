@@ -13,7 +13,8 @@ type Config struct {
 	DatabaseConfig            `yaml:"DB_INFO"`
 	HTTPServerConfig          `yaml:"HTTP_SERVER_INFO"`
 	AdditionalAddressesConfig `yaml:"ADDITIONAL_ADDRESSES"`
-	JWTConfig                 `yaml:"JWT_TEMP_INFO"`
+	JWTConfig                 `yaml:"JWT_INFO"`
+	RabbitConfig              `yaml:"RABBIT_INFO"`
 }
 
 type DatabaseConfig struct {
@@ -37,6 +38,11 @@ type AdditionalAddressesConfig struct {
 	ReactVision  string `yaml:"react"`
 	EventService string `yaml:"event"`
 	JuryService  string `yaml:"jury"`
+}
+
+type RabbitConfig struct {
+	AddressRabbitPath string `yaml:"address_path"`
+	QueueName         string `yaml:"queue_name"`
 }
 
 func (cfg *Config) GetDataSourceName() string {
