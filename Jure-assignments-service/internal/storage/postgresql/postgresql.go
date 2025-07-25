@@ -1,27 +1,20 @@
 package postgresql
 
 import (
-	"fmt"
-	"main/internal/models/jury_assignments"
+	"log"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-func NewPosgreSQL(connectStr string) (*gorm.DB, error) {
-
+func MustPosgreSQL(connectStr string) *gorm.DB {
 	const op = "storage.postgresql.NewPostreSQL"
 
 	// try to connect posgresql
 	db, err := gorm.Open(postgres.Open(connectStr), &gorm.Config{})
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		log.Fatalf("%s: %w", op, err)
 	}
 
-	err = db.AutoMigrate(&jury_assignments.JuryAssignments{})
-	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
-	}
-
-	return db, nil
+	return db
 }
