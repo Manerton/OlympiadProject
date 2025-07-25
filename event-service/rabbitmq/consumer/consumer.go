@@ -85,12 +85,12 @@ func (c *RabbitConsumer) consumeLoop(ctx context.Context, queueName string) erro
 		c.log.Error("failed create channel for RabbitMQ")
 		return err
 	}
-	c.log.Debug("TEST")
 
 	// Обработка закрытия канала
 	closeErrChan := make(chan *amqp.Error)
 	rabbitChannel.NotifyClose(closeErrChan)
 
+	// Если очереди не существует то зависает тут
 	msgs, err := rabbitChannel.Consume(
 		queueName,
 		"",
