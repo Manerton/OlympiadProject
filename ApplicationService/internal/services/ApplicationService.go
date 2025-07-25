@@ -19,6 +19,7 @@ type ApplicationRepository interface {
 	GetApplicationsByEventID(ctx context.Context, orm orm.ORM, eventID uuid.UUID, offset *int, limit *int) ([]models.Application, error)
 	UpdateApplication(ctx context.Context, orm orm.ORM, application models.Application) error
 	DeleteApplicationByID(ctx context.Context, orm orm.ORM, id uuid.UUID) error
+	DeleteByFilter(ctx context.Context, orm orm.ORM, model models.Application) error
 	GetCount(ctx context.Context, orm orm.ORM) (int64, error)
 }
 
@@ -185,10 +186,29 @@ func (s *ApplicationService) DeleteApplication(ctx context.Context, id string) e
 	return nil
 }
 
+func (s *ApplicationService) DeleteByFilter(ctx context.Context, deleteDTO ApplicationDto.DeleteApplicationDTO) error {
+	const op = "services.application_service.DeleteByFilter"
+
+	model := ConvertDeleteDTOtoApplication(deleteDTO)
+	if err := s.repository.DeleteByFilter(ctx, s.db, model); err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+
+	return nil
+}
+
 // Функции для преобразования между DTO и моделью
 
 func ConvertDTOtoApplication(dto ApplicationDto.CreateApplicationDTO) models.Application {
 	return models.Application{
+		UserID:  dto.UserID,
+		EventID: dto.EventID,
+	}
+}
+
+func ConvertDeleteDTOtoApplication(dto ApplicationDto.DeleteApplicationDTO) models.Application {
+	return models.Application{
+		ID:      dto.ID,
 		UserID:  dto.UserID,
 		EventID: dto.EventID,
 	}

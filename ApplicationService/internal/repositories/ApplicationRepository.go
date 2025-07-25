@@ -104,6 +104,17 @@ func (r *ApplicationRepository) DeleteApplicationByID(ctx context.Context, orm o
 	return nil
 }
 
+// Удаление по условию
+func (r *ApplicationRepository) DeleteByFilter(ctx context.Context, orm orm.ORM, model models.Application) error {
+	const op = "repositories.application_repository.DeleteByFilter"
+
+	err := orm.Delete(ctx, models.Application{}, nil, nil, model)
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
 // 6. Получение всех заявок по ID пользователя
 func (r *ApplicationRepository) GetApplicationsByUserID(ctx context.Context, orm orm.ORM, userID uuid.UUID, offset *int, limit *int) ([]models.Application, error) {
 	const op = "repositories.application_repository.GetApplicationsByUserID"

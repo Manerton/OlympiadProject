@@ -19,6 +19,12 @@ type UpdateApplicationDTO struct {
 	Code   string `gorm:"default:null"` // 09_11_25
 }
 
+type DeleteApplicationDTO struct {
+	ID      uuid.UUID `json:"id"`
+	UserID  uuid.UUID `json:"userId"`
+	EventID uuid.UUID `json:"eventId"`
+}
+
 // DTO для возврата заявки
 type ApplicationResponseDTO struct {
 	ID      uuid.UUID `json:"id"`

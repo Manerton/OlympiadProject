@@ -32,6 +32,7 @@ type ApplicationService interface {
 	CreateApplication(ctx context.Context, applicationDTO ApplicationDto.CreateApplicationDTO) (uuid.UUID, error)
 	UpdateApplication(ctx context.Context, id string, statusDTO ApplicationDto.UpdateApplicationDTO) error
 	DeleteApplication(ctx context.Context, id string) error
+	DeleteByFilter(ctx context.Context, deleteDTO ApplicationDto.DeleteApplicationDTO) error
 }
 
 type RabbitConsumer struct {
@@ -41,8 +42,12 @@ type RabbitConsumer struct {
 }
 
 func New(log *slog.Logger, channel *amqp.Channel, applicationService ApplicationService) *RabbitConsumer {
+	clog := log.With(
+		slog.String("op", "RabbitConsumer"),
+	)
+
 	return &RabbitConsumer{
-		log:                log,
+		log:                clog,
 		rabbitChannel:      channel,
 		applicationService: applicationService,
 	}
@@ -102,17 +107,6 @@ func (c *RabbitConsumer) Start(ctx context.Context, queueName string) {
 
 func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO RabbitDto.RabbitDTO) error {
 
-	id := ""
-	if rabbitDTO.Method == UPDATE || rabbitDTO.Method == DELETE {
-		var ok bool
-		id, ok = rabbitDTO.Data.SearchAttributes["id"].(string)
-		if !ok {
-			c.log.Error("failed id does not exist", slog.String("id", id))
-			return fmt.Errorf("failed update: ID does not exist")
-		}
-		c.log.Debug("id", slog.String("id", id))
-	}
-
 	switch rabbitDTO.Method {
 	case CREATE:
 		err := c.create(ctx, rabbitDTO.Data.Table, rabbitDTO.Data.Attributes)
@@ -120,19 +114,29 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO RabbitDto.Rabbit
 			c.log.Error("failed create data", liblogger.Err(err))
 			return fmt.Errorf("failed create data")
 		}
+		c.log.Debug("success create")
 	case UPDATE:
+		id, ok := rabbitDTO.Data.SearchAttributes["id"].(string)
+		if !ok {
+			c.log.Error("failed id does not exist", slog.String("id", id))
+			return fmt.Errorf("failed update: ID does not exist")
+		}
+		c.log.Debug("id", slog.String("id", id))
+
 		err := c.update(ctx, rabbitDTO.Data.Table, rabbitDTO.Data.Attributes, id)
 		if err != nil {
 			c.log.Error("failed update data", liblogger.Err(err))
 			return fmt.Errorf("failed upadate data")
 		}
+		c.log.Debug("success update")
 
 	case DELETE:
-		err := c.delete(ctx, rabbitDTO.Data.Table, id)
+		err := c.delete(ctx, rabbitDTO.Data.Table, rabbitDTO.Data.SearchAttributes)
 		if err != nil {
 			c.log.Error("failed delete data", liblogger.Err(err))
 			return fmt.Errorf("failed delete data")
 		}
+		c.log.Debug("success delete")
 	}
 	return nil
 }
@@ -177,13 +181,15 @@ func (c *RabbitConsumer) update(ctx context.Context, tableName string, data map[
 	return nil
 }
 
-func (c *RabbitConsumer) delete(ctx context.Context, tableName string, id string) error {
+func (c *RabbitConsumer) delete(ctx context.Context, tableName string, data map[string]any) error {
 	switch tableName {
 	case APPLICATIONS_TABLE:
+		appDTO := ApplicationDto.DeleteApplicationDTO{}
+		if err := mapstructure.WeakDecode(data, &appDTO); err != nil {
+			return fmt.Errorf("failed parse to DTO: %w", err)
+		}
 
-		log.Println("id", id)
-
-		err := c.applicationService.DeleteApplication(ctx, id)
+		err := c.applicationService.DeleteByFilter(ctx, appDTO)
 		if err != nil {
 			return fmt.Errorf("%w", err)
 		}
