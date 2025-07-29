@@ -48,8 +48,9 @@ func (r *ParticipantRepository) GetAll(ctx context.Context, orm orm.ORM, offset,
 func (r *ParticipantRepository) GetByUserId(ctx context.Context, orm orm.ORM, userId uuid.UUID) (participant.Participant, error) {
 	const op = "repositories.participant_repository.GetByUserId"
 
-	participantRes := participant.Participant{UserId: userId}
-	err := orm.First(ctx, participant.Participant{}, nil, &participantRes)
+	participantRes := participant.Participant{}
+	err := orm.First(ctx, participant.Participant{}, nil, &participantRes, participant.Participant{UserId: userId})
+
 	if err != nil {
 		return participant.Participant{}, fmt.Errorf("%s: %w", op, err)
 	}

@@ -5,16 +5,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"main/internal/dto/juryAssignmentsDto"
 	rabbit_dto "main/internal/dto/rabbit"
 	"main/internal/lib/liblogger"
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 const (
-	EVENT_TABLE = "event"
+	JURY_ASSIGNMENTS = "jury_assignments"
 )
 
 // command
@@ -26,6 +28,9 @@ const (
 )
 
 type JureAssignmentsService interface {
+	Create(ctx context.Context, juryAssignment juryAssignmentsDto.CreateJuryAssignmentsDTO) (uuid.UUID, error)
+	Update(ctx context.Context, id string, juryAssignment juryAssignmentsDto.UpdateJuryAssignmentsDTO) error
+	DeleteByFields(ctx context.Context, juryAssignment juryAssignmentsDto.JuryAssignmentsResponseDTO) error
 }
 
 type RabbitConsumer struct {
@@ -158,16 +163,6 @@ func (c *RabbitConsumer) consumeLoop(ctx context.Context, queueName string) erro
 }
 
 func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.RabbitDTO) error {
-	id := ""
-	if rabbitDTO.Method == UPDATE || rabbitDTO.Method == DELETE {
-		var ok bool
-		id, ok = rabbitDTO.Data.SearchAttributes["id"].(string)
-		if !ok {
-			c.log.Error("failed id does not exist", slog.String("id", id))
-			return fmt.Errorf("failed search: ID does not exist")
-		}
-		c.log.Debug("id", slog.String("id", id))
-	}
 
 	switch rabbitDTO.Method {
 	case CREATE:
@@ -178,6 +173,13 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 		}
 		c.log.Debug("success create", rabbitDTO.Data.Table, rabbitDTO.Data.Attributes)
 	case UPDATE:
+		id, ok := rabbitDTO.Data.SearchAttributes["id"].(string)
+		if !ok {
+			c.log.Error("failed id does not exist", slog.String("id", id))
+			return fmt.Errorf("failed search: ID does not exist")
+		}
+		c.log.Debug("id", slog.String("id", id))
+
 		err := c.update(ctx, rabbitDTO.Data.Table, rabbitDTO.Data.Attributes, id)
 		if err != nil {
 			c.log.Error("failed update", liblogger.Err(err))
@@ -185,7 +187,7 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 		}
 		c.log.Debug("success update", rabbitDTO.Data.Table, rabbitDTO.Data.Attributes)
 	case DELETE:
-		err := c.delete(ctx, rabbitDTO.Data.Table, id)
+		err := c.delete(ctx, rabbitDTO.Data.Table, rabbitDTO.Data.SearchAttributes)
 		if err != nil {
 			c.log.Error("failed delete", liblogger.Err(err))
 			return fmt.Errorf("failed delete data")
@@ -212,8 +214,17 @@ func MapToStructViaJSON(data map[string]any, out any) error {
 func (c *RabbitConsumer) create(ctx context.Context, tableName string, data map[string]any) error {
 
 	switch tableName {
-	case EVENT_TABLE:
+	case JURY_ASSIGNMENTS:
+		juryAssigmentDTO := juryAssignmentsDto.CreateJuryAssignmentsDTO{}
+		err := MapToStructViaJSON(data, &juryAssigmentDTO)
+		if err != nil {
+			return fmt.Errorf("failed decode jury-assignment: %w", err)
+		}
 
+		_, err = c.juryService.Create(ctx, juryAssigmentDTO)
+		if err != nil {
+			return fmt.Errorf("failed create jury-assignment: %w", err)
+		}
 	default:
 		return fmt.Errorf("unexpected table: %s", tableName)
 	}
@@ -223,8 +234,17 @@ func (c *RabbitConsumer) create(ctx context.Context, tableName string, data map[
 
 func (c *RabbitConsumer) update(ctx context.Context, tableName string, data map[string]any, id string) error {
 	switch tableName {
-	case EVENT_TABLE:
+	case JURY_ASSIGNMENTS:
+		juryAssignmentsDto := juryAssignmentsDto.UpdateJuryAssignmentsDTO{}
+		err := MapToStructViaJSON(data, &juryAssignmentsDto)
+		if err != nil {
+			return fmt.Errorf("failed decode jury-assignment: %w", err)
+		}
 
+		err = c.juryService.Update(ctx, id, juryAssignmentsDto)
+		if err != nil {
+			return fmt.Errorf("failed update jury-assignment: %w", err)
+		}
 	default:
 		return fmt.Errorf("unexpected table: %s", tableName)
 	}
@@ -232,10 +252,19 @@ func (c *RabbitConsumer) update(ctx context.Context, tableName string, data map[
 	return nil
 }
 
-func (c *RabbitConsumer) delete(ctx context.Context, tableName string, id string) error {
+func (c *RabbitConsumer) delete(ctx context.Context, tableName string, data map[string]any) error {
 	switch tableName {
-	case EVENT_TABLE:
+	case JURY_ASSIGNMENTS:
+		juryAssignmentsDto := juryAssignmentsDto.JuryAssignmentsResponseDTO{}
+		err := MapToStructViaJSON(data, &juryAssignmentsDto)
+		if err != nil {
+			return fmt.Errorf("failed decode jury-assignment: %w", err)
+		}
 
+		err = c.juryService.DeleteByFields(ctx, juryAssignmentsDto)
+		if err != nil {
+			return fmt.Errorf("failed delete jury-assignment: %w", err)
+		}
 	default:
 		return fmt.Errorf("unexpected table: %s", tableName)
 	}

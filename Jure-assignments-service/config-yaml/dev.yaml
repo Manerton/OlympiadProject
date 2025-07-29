@@ -22,3 +22,4 @@ ADDITIONAL_ADDRESSES:
   react: "http://172.16.1.39:5173"
   olymp-result: "http://172.16.0.94:8080"
   event: "http://172.16.1.39:8080"
+  user: "http://172.16.1.39:8181"

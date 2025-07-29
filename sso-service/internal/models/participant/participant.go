@@ -7,6 +7,11 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	DISABILITY_OK     = 1
+	DISABILITY_NOT_OK = 2
+)
+
 type Participant struct {
 	ID          uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
 	UserId      uuid.UUID

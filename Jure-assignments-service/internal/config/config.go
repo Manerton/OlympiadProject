@@ -37,7 +37,7 @@ type JWTConfig struct {
 type AdditionalAddressesConfig struct {
 	ReactVision  string `yaml:"react"`
 	EventService string `yaml:"event"`
-	JuryService  string `yaml:"jury"`
+	UserService  string `yaml:"user"`
 }
 
 type RabbitConfig struct {

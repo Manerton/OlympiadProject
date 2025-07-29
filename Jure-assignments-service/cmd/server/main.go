@@ -11,9 +11,11 @@ import (
 
 const localConfigPath = "config-yaml/local.yaml"
 const DebugLocalFilePath = "C:/code_folder/OlympiadProject/Jure-assignments-service/config-yaml/local.yaml"
+const DebugDevlFilePath = "C:/Users/Admin/goProject/OlympiadProject/Jure-assignments-service/config-yaml/dev.yaml"
+const devConfigPath = "config-yaml/dev.yaml"
 
 func main() {
-	cfg := config.GetConfig(DebugLocalFilePath)
+	cfg := config.GetConfig(DebugDevlFilePath)
 
 	log := liblogger.SetupLogger(cfg.Env)
 	log.Info("start jure-assignments-service")

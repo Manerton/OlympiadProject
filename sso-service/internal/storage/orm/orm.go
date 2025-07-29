@@ -86,7 +86,7 @@ func (g *Gorm) First(ctx context.Context, model interface{}, fields *[]string, d
 	const op = "storage.orm.First"
 	query := g.DB.WithContext(ctx).Model(model)
 	if fields != nil {
-		query.Select(*fields)
+		query = query.Select(*fields)
 	}
 
 	if err := query.First(dest, conds...).Error; err != nil {

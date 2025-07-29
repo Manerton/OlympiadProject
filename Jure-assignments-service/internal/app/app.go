@@ -7,6 +7,7 @@ import (
 	"main/internal/config"
 	"main/internal/handlers/jure_assignments_handler"
 	"main/internal/lib/liblogger"
+	"main/internal/lib/supportRequest"
 	"main/internal/middleware/midlogger"
 	"main/internal/rabbitmq/consumer"
 	"main/internal/repositories/jury_assignments_repository"
@@ -43,12 +44,15 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	router.Use(midlogger.New(log))
 	router.Use(middleware.URLFormat)
 
+	// init support for request
+	supportReq := supportRequest.New(&cfg.AdditionalAddressesConfig)
+
 	// init orm
 	gormOrm := orm.NewGormORM(storage)
 	// init repository
 	repository := jury_assignments_repository.NewJuryAssignmentsRepository()
 	// init sevice
-	service := jury_assignments_service.NewJuryAssignmentsService(log, gormOrm, repository)
+	service := jury_assignments_service.NewJuryAssignmentsService(log, gormOrm, supportReq, repository)
 	// init handler
 	handler := jure_assignments_handler.NewJureAssignmentHandler(service, log)
 
@@ -86,7 +90,7 @@ func (a *App) initRoutes(router *chi.Mux, handler *jure_assignments_handler.Jury
 	router.Get("/api/jury-assignments/jury/{id}", handler.GetAllByJuryId)
 
 	router.Post("/api/jury-assignments", handler.CreateJuryAssignments)
-	router.Post("/api/jury-assignments/many", handler.CreateManyAssignmentsByOneJury)
+	// router.Post("/api/jury-assignments/many", handler.CreateManyAssignmentsByOneJury)
 
 	router.Put("/api/jure-assignments/{id}", handler.UpdateJuryAssignments)
 

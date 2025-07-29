@@ -15,16 +15,16 @@ import (
 )
 
 type JuryAssignmentsServiceInterface interface {
-	GetAllJuryAssignments(context.Context) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
-	GetJuryAssignmentsByID(ctx context.Context, id string) (juryAssignmentsDto.JuryAssignmentsDTO, error)
+	GetAllJuryAssignments(context.Context) ([]juryAssignmentsDto.JuryAssignmentsResponseDTO, error)
+	GetJuryAssignmentsByID(ctx context.Context, id string) (juryAssignmentsDto.JuryAssignmentsResponseDTO, error)
 
-	GetAllByEventId(ctx context.Context, id string) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
-	GetAllByJuryId(ctx context.Context, id string) ([]juryAssignmentsDto.JuryAssignmentsDTO, error)
+	GetAllByEventId(ctx context.Context, id string) ([]juryAssignmentsDto.JuryAssignmentsResponseDTO, error)
+	GetAllByJuryId(ctx context.Context, id string) ([]juryAssignmentsDto.JuryAssignmentsResponseDTO, error)
 
-	CreateManyAssignmentsByOneJury(context.Context, juryAssignmentsDto.OneJuryManyAssignments) ([]uuid.UUID, error)
-	CreateJuryAssignments(context.Context, juryAssignmentsDto.JuryAssignmentsDTO) (uuid.UUID, error)
-	UpdateJuryAssignments(context.Context, string, juryAssignmentsDto.JuryAssignmentsDTO) error
-	DeleteJuryAssignments(context.Context, string) error
+	// CreateManyAssignmentsByOneJury(context.Context, juryAssignmentsDto.OneJuryManyAssignments) ([]uuid.UUID, error)
+	Create(context.Context, juryAssignmentsDto.CreateJuryAssignmentsDTO) (uuid.UUID, error)
+	Update(context.Context, string, juryAssignmentsDto.UpdateJuryAssignmentsDTO) error
+	Delete(context.Context, string) error
 }
 
 type JuryAssignmentHandler struct {
@@ -110,7 +110,7 @@ func (h *JuryAssignmentHandler) GetAllByJuryId(w http.ResponseWriter, r *http.Re
 func (h *JuryAssignmentHandler) CreateJuryAssignments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	dto := juryAssignmentsDto.JuryAssignmentsDTO{}
+	dto := juryAssignmentsDto.CreateJuryAssignmentsDTO{}
 	err := render.DecodeJSON(r.Body, &dto)
 	if err != nil {
 		render.JSON(w, r, response.ErrorResponse("failed to decode request"))
@@ -124,7 +124,7 @@ func (h *JuryAssignmentHandler) CreateJuryAssignments(w http.ResponseWriter, r *
 		return
 	}
 
-	_, err = h.service.CreateJuryAssignments(ctx, dto)
+	_, err = h.service.Create(ctx, dto)
 	if err != nil {
 		render.JSON(w, r, response.ErrorResponse(err.Error()))
 		return
@@ -132,42 +132,42 @@ func (h *JuryAssignmentHandler) CreateJuryAssignments(w http.ResponseWriter, r *
 	render.JSON(w, r, response.SuccessResponse(""))
 }
 
-func (h *JuryAssignmentHandler) CreateManyAssignmentsByOneJury(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+// func (h *JuryAssignmentHandler) CreateManyAssignmentsByOneJury(w http.ResponseWriter, r *http.Request) {
+// 	ctx := r.Context()
 
-	dto := juryAssignmentsDto.OneJuryManyAssignments{}
-	err := render.DecodeJSON(r.Body, &dto)
-	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed to decode request"))
-		return
-	}
+// 	dto := juryAssignmentsDto.OneJuryManyAssignments{}
+// 	err := render.DecodeJSON(r.Body, &dto)
+// 	if err != nil {
+// 		render.JSON(w, r, response.ErrorResponse("failed to decode request"))
+// 		return
+// 	}
 
-	ids, err := h.service.CreateManyAssignmentsByOneJury(ctx, dto)
-	if err != nil {
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
-		return
-	}
+// 	ids, err := h.service.CreateManyAssignmentsByOneJury(ctx, dto)
+// 	if err != nil {
+// 		render.JSON(w, r, response.ErrorResponse(err.Error()))
+// 		return
+// 	}
 
-	render.JSON(w, r, response.ApiResponse{
-		Status: response.SUCCESS,
-		Data:   ids,
-	})
+// 	render.JSON(w, r, response.ApiResponse{
+// 		Status: response.SUCCESS,
+// 		Data:   ids,
+// 	})
 
-}
+// }
 
 func (h *JuryAssignmentHandler) UpdateJuryAssignments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	id := chi.URLParam(r, "id")
 
-	dto := juryAssignmentsDto.JuryAssignmentsDTO{}
+	dto := juryAssignmentsDto.UpdateJuryAssignmentsDTO{}
 	err := render.DecodeJSON(r.Body, &dto)
 	if err != nil {
 		render.JSON(w, r, response.ErrorResponse("failed to decode request"))
 		return
 	}
 
-	err = h.service.UpdateJuryAssignments(ctx, id, dto)
+	err = h.service.Update(ctx, id, dto)
 	if err != nil {
 		render.JSON(w, r, response.ErrorResponse("failed to update JuryAssignments"))
 		return
@@ -180,7 +180,7 @@ func (h *JuryAssignmentHandler) DeleteJuryAssignments(w http.ResponseWriter, r *
 
 	receivedID := chi.URLParam(r, "id")
 
-	err := h.service.DeleteJuryAssignments(ctx, receivedID)
+	err := h.service.Delete(ctx, receivedID)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
 		render.JSON(w, r, response.ErrorResponse(err.Error()))
