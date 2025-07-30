@@ -81,7 +81,7 @@ func (r *JuryAssignmentsRepository) DeleteJuryAssignments(ctx context.Context, m
 
 func (r *JuryAssignmentsRepository) DeleteByFields(ctx context.Context, orm orm.ORM, juryAssingment jury_assignments.JuryAssignments) error {
 	const op = "repositories.juryAssignmentsRepository.DeleteByFields"
-	if err := orm.Delete(ctx, &juryAssingment); err != nil {
+	if err := orm.Delete(ctx, jury_assignments.JuryAssignments{}, &juryAssingment); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil

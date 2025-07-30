@@ -220,8 +220,6 @@ func (s *JuryAssignmentsService) Create(ctx context.Context, dto juryAssignments
 		slog.String("op", op),
 	)
 
-	log.Debug("TEST DTO", dto)
-
 	model, err := dtoConverter.FromCreateDTOtoModel(dto)
 	if err != nil {
 		log.Error("failed convert dto to model", liblogger.Err(err))

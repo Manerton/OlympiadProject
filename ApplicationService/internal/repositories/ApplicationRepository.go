@@ -96,8 +96,7 @@ func (r *ApplicationRepository) UpdateApplication(ctx context.Context, orm orm.O
 func (r *ApplicationRepository) DeleteApplicationByID(ctx context.Context, orm orm.ORM, id uuid.UUID) error {
 	const op = "repositories.application_repository.DeleteApplicationByID"
 
-	application := models.Application{}
-	err := orm.Delete(ctx, models.Application{}, nil, &application, models.Application{ID: id})
+	err := orm.Delete(ctx, models.Application{}, models.Application{ID: id})
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -108,7 +107,7 @@ func (r *ApplicationRepository) DeleteApplicationByID(ctx context.Context, orm o
 func (r *ApplicationRepository) DeleteByFilter(ctx context.Context, orm orm.ORM, model models.Application) error {
 	const op = "repositories.application_repository.DeleteByFilter"
 
-	err := orm.Delete(ctx, models.Application{}, nil, nil, model)
+	err := orm.Delete(ctx, models.Application{}, model)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
