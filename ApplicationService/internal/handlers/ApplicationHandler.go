@@ -77,7 +77,7 @@ func (h *ApplicationHandler) GetByFilter(w http.ResponseWriter, r *http.Request)
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, response.ApiResponse{
 		Status:     response.SUCCESS,
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Data:       userResponse,
 	})
 
@@ -106,8 +106,9 @@ func (h *ApplicationHandler) GetAllApplications(w http.ResponseWriter, r *http.R
 		return
 	}
 	render.JSON(w, r, response.ApiResponse{
-		Status: response.SUCCESS,
-		Data:   applications,
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       applications,
 	})
 
 }
@@ -132,8 +133,9 @@ func (h *ApplicationHandler) GetApplicationByID(w http.ResponseWriter, r *http.R
 	}
 	//render.JSON(w, r, application)
 	render.JSON(w, r, response.ApiResponse{
-		Status: response.SUCCESS,
-		Data:   application,
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       application,
 	})
 }
 
@@ -167,8 +169,9 @@ func (h *ApplicationHandler) GetApplicationsByUserID(w http.ResponseWriter, r *h
 	}
 	//render.JSON(w, r, applications)
 	render.JSON(w, r, response.ApiResponse{
-		Status: response.SUCCESS,
-		Data:   applications,
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       applications,
 	})
 }
 
@@ -202,8 +205,9 @@ func (h *ApplicationHandler) GetApplicationsByEventID(w http.ResponseWriter, r *
 	}
 	//render.JSON(w, r, applications)
 	render.JSON(w, r, response.ApiResponse{
-		Status: response.SUCCESS,
-		Data:   applications,
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       applications,
 	})
 }
 
