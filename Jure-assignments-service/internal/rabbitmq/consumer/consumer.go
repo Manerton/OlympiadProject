@@ -193,6 +193,9 @@ func (c *RabbitConsumer) handler(ctx context.Context, rabbitDTO rabbit_dto.Rabbi
 			return fmt.Errorf("failed delete data")
 		}
 		c.log.Debug("success delete", rabbitDTO.Data.Table, rabbitDTO.Data.Attributes)
+	default:
+		c.log.Error("unexpected method", slog.String("method", rabbitDTO.Method))
+		return fmt.Errorf("unexpected method %s", rabbitDTO.Method)
 	}
 
 	return nil
