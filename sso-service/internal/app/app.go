@@ -30,6 +30,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type App struct {
@@ -100,6 +101,8 @@ func (a *App) initRoutes(router *chi.Mux,
 	userHandler *user_handler.UserHandler,
 	schoolHandler *school_handler.SchoolHandler,
 	participantHandler *participant_handler.ParticipantHandler) {
+
+	router.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	router.Post("/api/byadmin/register", authHandler.AdminRegister)
 	router.Post("/api/users/login", authHandler.Login)

@@ -49,9 +49,10 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	router.Use(midlogger.New(log))
 	router.Use(middleware.URLFormat)
 	// add Authentication with JWT token
-	router.Use(func(next http.Handler) http.Handler {
-		return auth.AuthenticateMiddleware(next, cfg.Key)
-	})
+
+	// router.Use(func(next http.Handler) http.Handler {
+	// 	return auth.AuthenticateMiddleware(next, cfg.Key)
+	// })
 
 	// init subject service and handler
 	subjectStorage := subject.NewSubjectsStorage()
@@ -116,7 +117,7 @@ func (a *App) initRoutes(router *chi.Mux,
 
 func (a *App) initCors(router *chi.Mux, cfg config.AdditionalAddressesConfig) {
 	corsOptions := cors.Options{
-		AllowedOrigins: []string{cfg.ReactVision, cfg.JureAssignmentsService},
+		AllowedOrigins: []string{cfg.ReactVision, cfg.JureAssignmentsService, cfg.ApiGateway},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowedHeaders: []string{
 			"Accept",

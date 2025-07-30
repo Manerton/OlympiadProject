@@ -29,3 +29,4 @@ ADDITIONAL_ADDRESSES:
   react: "http://172.16.1.39:5173"
   jure-assignments: "http://localhost:8090"
   olymp-result: "http://172.16.0.94:8080"
+  api-gateway: "http://172.16.0.196:6611"

@@ -1,0 +1,59 @@
+basePath: /
+definitions:
+  login_dto.LoginRequestDTO:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  response.ApiResponse:
+    properties:
+      data: {}
+      error:
+        type: string
+      message:
+        type: string
+      metadata: {}
+      status:
+        type: string
+      status_code:
+        type: integer
+    type: object
+host: 172.16.1.39:8181
+info:
+  contact: {}
+  description: Документация к микросервису авторизации
+  title: SSO Service API
+  version: "1.0"
+paths:
+  /api/users/login:
+    post:
+      consumes:
+      - application/json
+      description: Авторизация пользователя
+      parameters:
+      - description: Данные для входа
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/login_dto.LoginRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      summary: Login
+      tags:
+      - auth
+swagger: "2.0"

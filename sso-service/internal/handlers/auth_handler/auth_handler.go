@@ -32,6 +32,15 @@ func New(authService AuthService) *AuthHandler {
 	}
 }
 
+// @Summary Login
+// @Description Авторизация пользователя
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param credentials body login_dto.LoginRequestDTO true "Данные для входа"
+// @Success 200 {object} response.ApiResponse
+// @Failure 401 {object} response.ApiResponse
+// @Router /api/users/login [post]
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()

@@ -43,6 +43,7 @@ type RabbitConfig struct {
 type AdditionalAddressesConfig struct {
 	ReactVision            string `yaml:"react"`
 	JureAssignmentsService string `yaml:"jure-assignments"`
+	ApiGateway             string `yaml:"api-gateway"`
 }
 
 type KiznaiverConfig struct {

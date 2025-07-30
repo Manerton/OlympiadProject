@@ -9,10 +9,17 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	_ "main/docs"
 )
 
 const configPath = "config-yaml/dev.yaml"
 
+// @title SSO Service API
+// @version 1.0
+// @description Документация к микросервису авторизации
+// @host 172.16.1.39:8181
+// @BasePath /
 func main() {
 
 	cfg := config.MustConfig(configPath)

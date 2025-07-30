@@ -118,8 +118,9 @@ func (h *EventHandler) GetAllEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	render.JSON(w, r, response.ApiResponse{
-		Status: response.StatusOK,
-		Data:   eventsDTO,
+		Status:     response.StatusOK,
+		StatusCode: http.StatusOK,
+		Data:       eventsDTO,
 	})
 }
 
