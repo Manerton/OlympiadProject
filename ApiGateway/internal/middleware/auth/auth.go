@@ -8,13 +8,31 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type UserInfoKey struct{}
 
 type UserInfo struct {
-	ID   float64
-	Role string
+	ID   uuid.UUID
+	Role int
+}
+
+// Позволяет вручную проверять токен и получать UserInfo (например, в aggregateHandler)
+func VerifyAndExtractUser(tokenStr string, secret string) (UserInfo, error) {
+	token, err := verifyToken(tokenStr, []byte(secret))
+	if err != nil {
+		return UserInfo{}, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return UserInfo{}, fmt.Errorf("invalid token claims")
+	}
+
+	id, _ := claims["id"].(uuid.UUID)
+	role, _ := claims["role"].(int)
+	return UserInfo{ID: id, Role: role}, nil
 }
 
 func verifyToken(tokenString string, secret []byte) (*jwt.Token, error) {
@@ -52,15 +70,15 @@ func AuthenticateMiddleware(secret string, next http.Handler) http.Handler {
 			http.Error(w, "Invalid token claims", http.StatusUnauthorized)
 			return
 		}
-		id, _ := claims["id"].(float64)
-		role, _ := claims["role"].(string)
+		id, _ := claims["id"].(uuid.UUID)
+		role, _ := claims["role"].(int)
 		ctx := context.WithValue(r.Context(), UserInfoKey{}, UserInfo{ID: id, Role: role})
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
 // Check role for access
-func RoleBasedAccess(requiredRole ...string) func(next http.Handler) http.Handler {
+func RoleBasedAccess(requiredRole ...int) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			log.Println("Start rolebaseAccess")
