@@ -11,7 +11,7 @@ func PayloadDeleteConstructor(table string, id string) ([]byte, error) {
 
 	rabbitDTO := rabbit_dto.RabbitDTO{
 		AppName: "EventService",
-		Method:  "DELETE",
+		Method:  "delete",
 		Data: rabbit_dto.RabbitData{
 			Table:            table,
 			SearchAttributes: map[string]any{"event_id": id},
