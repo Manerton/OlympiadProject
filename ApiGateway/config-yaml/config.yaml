@@ -3,9 +3,10 @@ env: "dev"
 HTTP_SERVER_INFO:
   routes:
     - prefix: "/auth"
-      target: "http://172.16.0.196:8082/applications"
-      skip_auth: true
-    - prefix: "/profile"
+      aggregate: false
+      target: "http://172.16.1.39:8080/api/events"
+      skip_auth: false
+    - prefix: "/aplicationevent"
       aggregate: true
       services:
         - "http://172.16.0.196:8082/applications"
@@ -14,7 +15,7 @@ HTTP_SERVER_INFO:
       roles: []
 
 JWT_TEMP_INFO:
-  key: "..."
+  key: "lololololololololololololololololololololololololololololol"
 
 REDIS_INFO:
   address_path: "redis:6379"

@@ -5,7 +5,7 @@ import (
 	"log"
 	"main/internal/config"
 	handlers "main/internal/handlers"
-	"net/http" // ← добавить
+	"net/http"
 	"path/filepath"
 	"runtime"
 	"strings"
