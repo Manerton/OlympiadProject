@@ -35,37 +35,37 @@ class ApplicationService
         $this->userBuilder = $userBuilder;
     }
 
-    public function find($id)
+    public function find($id, $token = null)
     {
-        $application = $this->applicationBuilder->build($this->applicationRepository->getByApiId($id));
-        $event = $this->eventBuilder->build($this->eventRepository->getByApiId($application->event_id));
-        $user = $this->userBuilder->build($this->userRepository->getByApiId($application->user_id));
+        $application = $this->applicationBuilder->build($this->applicationRepository->getByApiId($id, $token));
+        $event = $this->eventBuilder->build($this->eventRepository->getByApiId($application->event_id, $token));
+        $user = $this->userBuilder->build($this->userRepository->getByApiId($application->user_id, $token));
         $this->applicationBuilder->buildUser($application, $user);
         $this->applicationBuilder->buildEvent($application, $event);
         return $application;
     }
-    public function findAll($page)
+    public function findAll($page, $token = null)
     {
         $applications = [];
-        $data = $this->applicationRepository->getByApiAll($page);
+        $data = $this->applicationRepository->getByApiAll($page ,10, $token);
         foreach ($data as $item) {
             $application = $this->applicationBuilder->build($item);
-            $event = $this->eventBuilder->build($this->eventRepository->getByApiId($application->event_id));
-            $user = $this->userBuilder->build($this->userRepository->getByApiId($application->user_id));
+            $event = $this->eventBuilder->build($this->eventRepository->getByApiId($application->event_id, $token));
+            $user = $this->userBuilder->build($this->userRepository->getByApiId($application->user_id, $token));
             $this->applicationBuilder->buildUser($application, $user);
             $this->applicationBuilder->buildEvent($application, $event);
             $applications[] = $application;
         }
         return $applications;
     }
-    public function findByEventId($eventId)
+    public function findByEventId($eventId, $token = null)
     {
         $applications = [];
-        $data = $this->applicationRepository->getByEventId($eventId);
+        $data = $this->applicationRepository->getByEventId($eventId, $token);
         foreach ($data as $item) {
             $application = $this->applicationBuilder->build($item);
-            $event = $this->eventBuilder->build($this->eventRepository->getByApiId($eventId));
-            $user = $this->userBuilder->build($this->userRepository->getByApiId($application->user_id));
+            $event = $this->eventBuilder->build($this->eventRepository->getByApiId($eventId, $token));
+            $user = $this->userBuilder->build($this->userRepository->getByApiId($application->user_id, $token));
             $this->applicationBuilder->buildUser($application, $user);
             $this->applicationBuilder->buildEvent($application, $event);
             $applications[] = $application;

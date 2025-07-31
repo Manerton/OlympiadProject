@@ -36,26 +36,26 @@ class UserService
         $this->schoolBuilder = $schoolBuilder;
     }
 
-    public function find($id)
+    public function find($id, $token = null)
     {
-        $user = $this->userBuilder->build($this->userRepository->getByApiId($id));
+        $user = $this->userBuilder->build($this->userRepository->getByApiId($id, $token));
         if($user->role == RoleDictionary::PARTICIPANT) {
-            $participant = $this->participantBuilder->build($this->participantRepository->getByApiUserId($id));
+            $participant = $this->participantBuilder->build($this->participantRepository->getByApiUserId($id, $token));
             $this->userBuilder->buildParticipant($user, $participant);
-            $school = $this->schoolBuilder->build($this->schoolRepository->getByApiId($participant->school_id));
+            $school = $this->schoolBuilder->build($this->schoolRepository->getByApiId($participant->school_id, $token));
             $this->participantBuilder->buildSchool($participant, $school);
         }
         return $user;
     }
-    public function findAll($page = NULL){
+    public function findAll($page = null, $token = null){
         $users = [];
-        $data = $this->userRepository->getByApiAll($page);
+        $data = $this->userRepository->getByApiAll($page, 10, $token);
         foreach ($data as $item) {
             $user = $this->userBuilder->build($item);
             if($user->role == RoleDictionary::PARTICIPANT) {
-                $participant = $this->participantBuilder->build($this->participantRepository->getByApiUserId($user->id));
+                $participant = $this->participantBuilder->build($this->participantRepository->getByApiUserId($user->id, $token));
                 $this->userBuilder->buildParticipant($user, $participant);
-                $school = $this->schoolBuilder->build($this->schoolRepository->getByApiId($participant->school_id));
+                $school = $this->schoolBuilder->build($this->schoolRepository->getByApiId($participant->school_id, $token));
                 $this->participantBuilder->buildSchool($participant, $school);
             }
             $users[] = $user;

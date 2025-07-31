@@ -12,8 +12,9 @@ class ParticipantRepository
     public function __construct(ApiService $apiService){
         $this->apiService = $apiService;
     }
-    public function getByApiAll($page = 1, $limit = 10)
+    public function getByApiAll($page = 1, $limit = 10, $token = null)
     {
+        $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::PARTICIPANT_URL_API,
             [
@@ -21,40 +22,43 @@ class ParticipantRepository
                 'limit' => $limit
             ],
             [
-                'Authorization' => "Bearer ". json_decode(Cookie::get('username'))->token
+                'Authorization' => "Bearer ". $token
             ]
         );
         return $response['data']['data'] ? $response['data']['data'] : [];
     }
-    public function getByApiId($id)
+    public function getByApiId($id , $token = null)
     {
+        $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response =  $this->apiService->get(
             ApiHelper::PARTICIPANT_URL_API . '/' . $id,
             [],
             [
-                'Authorization' => "Bearer ". json_decode(Cookie::get('username'))->token
+                'Authorization' => "Bearer ". $token
             ]
         );
         return $response['data']['data'];
     }
-    public function getByApiUserId($id)
+    public function getByApiUserId($id, $token = null)
     {
+        $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::PARTICIPANT_BY_USER_URL_API . '/' . $id,
             [],
             [
-                'Authorization' => "Bearer ". json_decode(Cookie::get('username'))->token
+                'Authorization' => "Bearer ". $token
             ]
         );
         return $response['data']['data'];
     }
-    public function getCount()
+    public function getCount($token = null)
     {
+        $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::PARTICIPANT_COUNT_URL_API,
             [],
             [
-                'Authorization' => "Bearer ". json_decode(Cookie::get('username'))->token
+                'Authorization' => "Bearer ". $token
             ]
         );
         return $response['data']['data'];

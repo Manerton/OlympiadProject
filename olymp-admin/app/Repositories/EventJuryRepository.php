@@ -16,12 +16,13 @@ class EventJuryRepository
         $this->apiService = $apiService;
     }
 
-    public function getByEventId($eventId){
+    public function getByEventId($eventId, $token = null){
+        $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::EVENT_JURY_URL_API . '/' . $eventId,
             [],
             [
-                'Authorization' => "Bearer ". json_decode(Cookie::get('username'))->token
+                'Authorization' => "Bearer ". $token
             ]
         );
         return $response['data']['data'];

@@ -12,8 +12,9 @@ class ApplicationRepository
     public function __construct(ApiService $apiService){
         $this->apiService = $apiService;
     }
-    public function getByApiAll($page = 1, $limit = 10)
+    public function getByApiAll($page = 1, $limit = 10, $token = null)
     {
+        $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::APPLICATION_URL_API,
             [
@@ -21,40 +22,43 @@ class ApplicationRepository
                 'limit' => $limit
             ],
             [
-                'Authorization' => "Bearer ". json_decode(Cookie::get('username'))->token
+                'Authorization' => "Bearer ". $token
             ]
         );
         return $response['data']['data'] ? $response['data']['data'] : [];
     }
-    public function getByEventId($id)
+    public function getByEventId($id, $token = null)
     {
+        $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::APPLICATION_EVENT_URL_API . '/' . $id,
             [],
             [
-                'Authorization' => "Bearer ". json_decode(Cookie::get('username'))->token
+                'Authorization' => "Bearer ". $token
             ]
         );
         return $response['data']['data'] ? $response['data']['data'] : [];
     }
-    public function getByApiId($id)
+    public function getByApiId($id, $token = null)
     {
+        $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::APPLICATION_URL_API . '/' . $id,
             [],
             [
-                'Authorization' => "Bearer ". json_decode(Cookie::get('username'))->token
+                'Authorization' => "Bearer ". $token
             ]
         );
         return $response['data']['data'];
     }
-    public function getCount()
+    public function getCount($token = null)
     {
+        $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::APPLICATION_COUNT_URL_API,
             [],
             [
-                'Authorization' => "Bearer ". json_decode(Cookie::get('username'))->token
+                'Authorization' => "Bearer ". $token
             ]
         );
         return $response['data']['data'];
