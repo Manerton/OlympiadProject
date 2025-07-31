@@ -13,8 +13,8 @@ import (
 )
 
 type SchoolService interface {
-	GetAll(ctx context.Context, page, limit *int) ([]school_dto.SchoolResponeDTO, error)
-	GetById(ctx context.Context, id string) (school_dto.SchoolResponeDTO, error)
+	GetAll(ctx context.Context, page, limit *int) ([]school_dto.SchoolResponseDTO, error)
+	GetById(ctx context.Context, id string) (school_dto.SchoolResponseDTO, error)
 
 	GetCount(ctx context.Context) (int64, error)
 
@@ -32,6 +32,14 @@ func New(schoolService SchoolService) *SchoolHandler {
 	}
 }
 
+// @Summery count
+// @Security BearerAuth
+// @Description Получение количества школ
+// @Tags schools
+// @Produce json
+// @Success 200 {object} int
+// @Failure 400 {object} response.ApiResponse{data=int}
+// @Router /api/schools/count [get]
 func (h *SchoolHandler) GetCount(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -50,6 +58,14 @@ func (h *SchoolHandler) GetCount(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// @Summery all
+// @Security BearerAuth
+// @Description Получение всех школ
+// @Tags schools
+// @Produce json
+// @Success 200 {object} response.ApiResponse{data=[]school_dto.SchoolResponseDTO}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/schools [get]
 func (h *SchoolHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -77,6 +93,15 @@ func (h *SchoolHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summery by id
+// @Security BearerAuth
+// @Description Получение школы по id
+// @Tags schools
+// @Produce json
+// @Param id path string true "id школы"
+// @Success 200 {object} response.ApiResponse{data=school_dto.SchoolResponseDTO}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/schools/{id} [get]
 func (h *SchoolHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -96,6 +121,16 @@ func (h *SchoolHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summery create
+// @Security BearerAuth
+// @Description Создание школы
+// @Tags schools
+// @Accept json
+// @Produce json
+// @Param credentials body school_dto.CreateSchoolRequestDTO true "Данные для создания школы"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/schools [post]
 func (h *SchoolHandler) Create(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -117,6 +152,16 @@ func (h *SchoolHandler) Create(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, response.SuccessResponse("success create"))
 }
 
+// @Summery update
+// @Security BearerAuth
+// @Description Обновление школы
+// @Tags schools
+// @Accept json
+// @Produce json
+// @Param credentials body school_dto.UpdateSchoolRequestDTO true "Данные для обновления школы"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/schools [put]
 func (h *SchoolHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

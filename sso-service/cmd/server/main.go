@@ -20,6 +20,9 @@ const configPath = "config-yaml/dev.yaml"
 // @description Документация к микросервису авторизации
 // @host 172.16.1.39:8181
 // @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 
 	cfg := config.MustConfig(configPath)

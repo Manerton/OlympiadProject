@@ -10,6 +10,61 @@ definitions:
     - email
     - password
     type: object
+  login_dto.LoginResponseDTO:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+    type: object
+  register_dto.RegisterParticipantRequestDTO:
+    properties:
+      birthdate:
+        type: string
+      citizenship:
+        type: string
+      class_number:
+        type: string
+      disability:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      gender:
+        type: string
+      password:
+        type: string
+      patronymic:
+        type: string
+      phone_number:
+        type: string
+      school_id:
+        type: string
+      surname:
+        type: string
+    type: object
+  register_dto.RegisterUserRequestDTO:
+    properties:
+      birthdate:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      gender:
+        type: string
+      password:
+        type: string
+      patronymic:
+        type: string
+      phone_number:
+        type: string
+      role:
+        type: string
+      surname:
+        type: string
+    type: object
   response.ApiResponse:
     properties:
       data: {}
@@ -23,6 +78,29 @@ definitions:
       status_code:
         type: integer
     type: object
+  school_dto.CreateSchoolRequestDTO:
+    properties:
+      name:
+        type: string
+      region:
+        type: string
+    type: object
+  school_dto.SchoolResponseDTO:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      region:
+        type: integer
+    type: object
+  school_dto.UpdateSchoolRequestDTO:
+    properties:
+      name:
+        type: string
+      region:
+        type: string
+    type: object
 host: 172.16.1.39:8181
 info:
   contact: {}
@@ -30,6 +108,162 @@ info:
   title: SSO Service API
   version: "1.0"
 paths:
+  /api/byadmin/register:
+    post:
+      consumes:
+      - application/json
+      description: Регистрация пользователя для админа
+      parameters:
+      - description: Данные для регистрации от панели админа
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/register_dto.RegisterUserRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - auth
+  /api/schools:
+    get:
+      description: Получение всех школ
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/school_dto.SchoolResponseDTO'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - schools
+    post:
+      consumes:
+      - application/json
+      description: Создание школы
+      parameters:
+      - description: Данные для создания школы
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/school_dto.CreateSchoolRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - schools
+    put:
+      consumes:
+      - application/json
+      description: Обновление школы
+      parameters:
+      - description: Данные для обновления школы
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/school_dto.UpdateSchoolRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - schools
+  /api/schools/{id}:
+    get:
+      description: Получение школы по id
+      parameters:
+      - description: id школы
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/school_dto.SchoolResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - schools
+  /api/schools/count:
+    get:
+      description: Получение количества школ
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  type: integer
+              type: object
+      security:
+      - BearerAuth: []
+      tags:
+      - schools
   /api/users/login:
     post:
       consumes:
@@ -56,4 +290,104 @@ paths:
       summary: Login
       tags:
       - auth
+  /api/users/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Обновление access-токена по refresh-токену из cookie
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/login_dto.LoginResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      summary: Refresh
+      tags:
+      - auth
+  /api/users/register:
+    post:
+      consumes:
+      - application/json
+      description: Регистрация пользователя как ученика
+      parameters:
+      - description: Данные для регистрации
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/register_dto.RegisterParticipantRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      tags:
+      - auth
+  /api/users/revoke-all/{id}:
+    post:
+      parameters:
+      - description: id пользователя
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - auth
+  /api/users/revoke/{id}:
+    post:
+      parameters:
+      - description: id refresh токена
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - auth
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
