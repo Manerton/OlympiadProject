@@ -408,6 +408,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Блокировка всех refresh токенов пользователя",
                 "produces": [
                     "application/json"
                 ],
@@ -446,6 +447,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
+                "description": "Блокировка refresh токена",
                 "produces": [
                     "application/json"
                 ],

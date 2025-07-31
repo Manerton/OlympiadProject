@@ -341,6 +341,7 @@ paths:
       - auth
   /api/users/revoke-all/{id}:
     post:
+      description: Блокировка всех refresh токенов пользователя
       parameters:
       - description: id пользователя
         in: path
@@ -364,6 +365,7 @@ paths:
       - auth
   /api/users/revoke/{id}:
     post:
+      description: Блокировка refresh токена
       parameters:
       - description: id refresh токена
         in: path
