@@ -55,7 +55,7 @@ func (s *SchoolService) GetCount(ctx context.Context) (int64, error) {
 	return schoolCount, nil
 }
 
-func (s *SchoolService) GetById(ctx context.Context, id string) (school_dto.SchoolResponeDTO, error) {
+func (s *SchoolService) GetById(ctx context.Context, id string) (school_dto.SchoolResponseDTO, error) {
 	const op = "services.school_service.GetById"
 	const errMsg = "failed get school"
 
@@ -66,19 +66,19 @@ func (s *SchoolService) GetById(ctx context.Context, id string) (school_dto.Scho
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		log.Error("failed parse id", liblogger.Err(err))
-		return school_dto.SchoolResponeDTO{}, fmt.Errorf("%s", errMsg)
+		return school_dto.SchoolResponseDTO{}, fmt.Errorf("%s", errMsg)
 	}
 
 	schoolModel, err := s.schoolRepository.GetById(ctx, s.db, uid)
 	if err != nil {
 		log.Error("failed get school", liblogger.Err(err))
-		return school_dto.SchoolResponeDTO{}, fmt.Errorf("%s", errMsg)
+		return school_dto.SchoolResponseDTO{}, fmt.Errorf("%s", errMsg)
 	}
 
 	return school_mapper.FromModelToDTO(schoolModel), nil
 }
 
-func (s *SchoolService) GetAll(ctx context.Context, page, limit *int) ([]school_dto.SchoolResponeDTO, error) {
+func (s *SchoolService) GetAll(ctx context.Context, page, limit *int) ([]school_dto.SchoolResponseDTO, error) {
 	const op = "services.school_service.GetAll"
 	const errMsg = "failed get all schools"
 
@@ -97,7 +97,7 @@ func (s *SchoolService) GetAll(ctx context.Context, page, limit *int) ([]school_
 		return nil, fmt.Errorf("%s", errMsg)
 	}
 
-	schoolDTO := make([]school_dto.SchoolResponeDTO, 0, len(schoolsResult))
+	schoolDTO := make([]school_dto.SchoolResponseDTO, 0, len(schoolsResult))
 	for _, schoolRes := range schoolsResult {
 		schoolDTO = append(schoolDTO, school_mapper.FromModelToDTO(schoolRes))
 	}

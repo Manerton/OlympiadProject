@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 )
 
-func FromModelToDTO(school school.School) school_dto.SchoolResponeDTO {
-	return school_dto.SchoolResponeDTO{
+func FromModelToDTO(school school.School) school_dto.SchoolResponseDTO {
+	return school_dto.SchoolResponseDTO{
 		ID:     school.ID.String(),
 		Name:   school.Name,
 		Region: school.Region,

@@ -1,5 +1,7 @@
 package response
 
+import "net/http"
+
 const (
 	SUCCESS = "success"
 	ERROR   = "error"
@@ -17,7 +19,7 @@ type ApiResponse struct {
 func ErrorResponse(msg string) ApiResponse {
 	return ApiResponse{
 		Status:     ERROR,
-		StatusCode: 400,
+		StatusCode: http.StatusBadRequest,
 		Message:    msg,
 	}
 }
@@ -25,7 +27,7 @@ func ErrorResponse(msg string) ApiResponse {
 func SuccessResponse(msg string) ApiResponse {
 	return ApiResponse{
 		Status:     SUCCESS,
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Message:    msg,
 	}
 }

@@ -50,9 +50,9 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	router.Use(middleware.URLFormat)
 	// add Authentication with JWT token
 
-	// router.Use(func(next http.Handler) http.Handler {
-	// 	return auth.AuthenticateMiddleware(next, cfg.Key)
-	// })
+	router.Use(func(next http.Handler) http.Handler {
+		return auth.AuthenticateMiddleware(next, cfg.Key)
+	})
 
 	// init subject service and handler
 	subjectStorage := subject.NewSubjectsStorage()

@@ -10,7 +10,7 @@ type UpdateSchoolRequestDTO struct {
 	Region *string `json:"region"`
 }
 
-type SchoolResponeDTO struct {
+type SchoolResponseDTO struct {
 	ID     string `json:"id"`
 	Name   string `json:"name"`
 	Region int    `json:"region"`
