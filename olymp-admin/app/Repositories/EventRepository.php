@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Components\ApiHelper;
 use App\Services\ApiService;
 use Illuminate\Contracts\Validation\ValidatorAwareRule;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 
 class EventRepository
@@ -13,8 +14,9 @@ class EventRepository
     public function __construct(ApiService $apiService){
         $this->apiService = $apiService;
     }
-    public function getByApiAll($page = 1, $limit = 10, $token = null)
+    public function getByApiAll($page = 1, $limit = 10)
     {
+        $token = Request::header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::EVENT_URL_API,
@@ -28,8 +30,9 @@ class EventRepository
         );
         return $response['data']['data'];
     }
-    public function getByApiId($id, $token = null)
+    public function getByApiId($id)
     {
+        $token = Request::header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::EVENT_MODEL_URL_API . '/' . $id,
@@ -40,8 +43,9 @@ class EventRepository
         );
         return $response['data']['data'] ? $response['data']['data'] : [];
     }
-    public function getCount($token = null)
+    public function getCount()
     {
+        $token = Request::header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::EVENT_URL_API,

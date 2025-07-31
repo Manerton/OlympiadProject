@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Components\Dictionaries\GenderDictionary;
+use App\Components\Dictionaries\RoleDictionary;
+use App\Components\RabbitMQHelper;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserRequest;
 use App\Repositories\UserRepository;
+use App\Services\RabbitMQService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
@@ -11,20 +16,22 @@ use Illuminate\Support\Facades\Cookie;
 class UserApiController extends Controller
 {
     private UserRepository $userRepository;
+    private RabbitMQService $rabbitMQService;
     private UserService $userService;
     public function __construct(
         UserRepository $userRepository,
+        RabbitMQService $rabbitMQService,
         UserService $userService
     )
     {
         $this->userRepository = $userRepository;
+        $this->rabbitMQService = $rabbitMQService;
         $this->userService = $userService;
     }
 
-    public function index(Request $request, $page = 1){
-        $token =  $request->header('Authorization');
-        $usersAmount = $this->userRepository->getCount($token);
-        $users = $this->userService->findAll($page, $token);
+    public function index($page = 1){
+        $usersAmount = $this->userRepository->getCount();
+        $users = $this->userService->findAll($page);
         return response()->json([
             'page' => $page,
             'users' => array_map(fn($user) => (array)$user, $users),
@@ -32,5 +39,70 @@ class UserApiController extends Controller
             'currentPage' => $page,
             'perPage' => 10
         ]);
+    }
+    public function create(){
+        $roles = RoleDictionary::getList();
+        $genders = GenderDictionary::getList();
+        return response()->json([
+           'roles' => $roles,
+           'genders' => $genders
+        ]);
+    }
+    public function store(UserRequest $request){
+
+        $data = $request->validated();
+        $this->rabbitMQService->publish(
+            [RabbitMQHelper::AUTH_QUEUE_NAME],
+            RabbitMQHelper::QUEUE_NAME,
+            RabbitMQHelper::CREATE,
+            RabbitMQHelper::USER_TABLE,
+            array_diff_key($data, ['id' => null]),
+        );
+        return response()->json([
+
+        ]);
+    }
+    public function show($id){
+        $model = $this->userService->find($id);
+        $roles = RoleDictionary::getList();
+        $genders = GenderDictionary::getList();
+        return response()->json([
+            'model' => $model,
+            'roles' => $roles,
+            'genders' => $genders
+        ]);
+    }
+    public function edit($id){
+        $user = $this->userService->find($id);
+        $roles = RoleDictionary::getList();
+        $genders = GenderDictionary::getList();
+        return response()->json([
+            'user' => $user,
+            'roles' => $roles,
+            'genders' => $genders
+        ]);
+    }
+    public function update(UserRequest $request, $id){
+        $data = $request->validated();
+        $this->rabbitMQService->publish(
+            [RabbitMQHelper::AUTH_QUEUE_NAME],
+            RabbitMQHelper::QUEUE_NAME,
+            RabbitMQHelper::UPDATE,
+            RabbitMQHelper::USER_TABLE,
+            array_diff_key($data, ['id' => null]),
+            ['id' => $id]
+        );
+
+    }
+    public function delete($id){
+        $this->rabbitMQService->publish(
+            [RabbitMQHelper::AUTH_QUEUE_NAME],
+            RabbitMQHelper::QUEUE_NAME,
+            RabbitMQHelper::DELETE,
+            RabbitMQHelper::USER_TABLE,
+            [],
+            ['id' => $id]
+        );
+        return response()->json([]);
     }
 }

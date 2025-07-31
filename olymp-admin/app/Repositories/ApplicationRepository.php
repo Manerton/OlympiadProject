@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Components\ApiHelper;
 use App\Services\ApiService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 
 class ApplicationRepository
@@ -12,8 +13,9 @@ class ApplicationRepository
     public function __construct(ApiService $apiService){
         $this->apiService = $apiService;
     }
-    public function getByApiAll($page = 1, $limit = 10, $token = null)
+    public function getByApiAll($page = 1, $limit = 10)
     {
+        $token = Request::header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::APPLICATION_URL_API,
@@ -27,8 +29,9 @@ class ApplicationRepository
         );
         return $response['data']['data'] ? $response['data']['data'] : [];
     }
-    public function getByEventId($id, $token = null)
+    public function getByEventId($id)
     {
+        $token = Request::header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::APPLICATION_EVENT_URL_API . '/' . $id,
@@ -39,8 +42,9 @@ class ApplicationRepository
         );
         return $response['data']['data'] ? $response['data']['data'] : [];
     }
-    public function getByApiId($id, $token = null)
+    public function getByApiId($id)
     {
+        $token = Request::header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::APPLICATION_URL_API . '/' . $id,
@@ -51,8 +55,9 @@ class ApplicationRepository
         );
         return $response['data']['data'];
     }
-    public function getCount($token = null)
+    public function getCount()
     {
+        $token = Request::header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::APPLICATION_COUNT_URL_API,

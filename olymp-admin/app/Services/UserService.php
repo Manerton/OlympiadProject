@@ -9,7 +9,7 @@ use App\Components\Dictionaries\RoleDictionary;
 use App\Repositories\ParticipantRepository;
 use App\Repositories\SchoolRepository;
 use App\Repositories\UserRepository;
-use Couchbase\Role;
+
 
 class UserService
 {
@@ -36,26 +36,26 @@ class UserService
         $this->schoolBuilder = $schoolBuilder;
     }
 
-    public function find($id, $token = null)
+    public function find($id)
     {
-        $user = $this->userBuilder->build($this->userRepository->getByApiId($id, $token));
+        $user = $this->userBuilder->build($this->userRepository->getByApiId($id));
         if($user->role == RoleDictionary::PARTICIPANT) {
-            $participant = $this->participantBuilder->build($this->participantRepository->getByApiUserId($id, $token));
+            $participant = $this->participantBuilder->build($this->participantRepository->getByApiUserId($id));
             $this->userBuilder->buildParticipant($user, $participant);
-            $school = $this->schoolBuilder->build($this->schoolRepository->getByApiId($participant->school_id, $token));
+            $school = $this->schoolBuilder->build($this->schoolRepository->getByApiId($participant->school_id));
             $this->participantBuilder->buildSchool($participant, $school);
         }
         return $user;
     }
-    public function findAll($page = null, $token = null){
+    public function findAll($page = null){
         $users = [];
-        $data = $this->userRepository->getByApiAll($page, 10, $token);
+        $data = $this->userRepository->getByApiAll($page);
         foreach ($data as $item) {
             $user = $this->userBuilder->build($item);
             if($user->role == RoleDictionary::PARTICIPANT) {
-                $participant = $this->participantBuilder->build($this->participantRepository->getByApiUserId($user->id, $token));
+                $participant = $this->participantBuilder->build($this->participantRepository->getByApiUserId($user->id));
                 $this->userBuilder->buildParticipant($user, $participant);
-                $school = $this->schoolBuilder->build($this->schoolRepository->getByApiId($participant->school_id, $token));
+                $school = $this->schoolBuilder->build($this->schoolRepository->getByApiId($participant->school_id));
                 $this->participantBuilder->buildSchool($participant, $school);
             }
             $users[] = $user;
