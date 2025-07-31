@@ -106,33 +106,39 @@ func (a *App) initRoutes(router *chi.Mux,
 
 	router.Post("/api/byadmin/register", authHandler.AdminRegister)
 	router.Post("/api/users/login", authHandler.Login)
+	router.Post("/api/users/logout", authHandler.Logout)
 	router.Post("/api/users/register", authHandler.Register)
 	router.Post("/api/users/refresh", authHandler.Refresh)
 
 	router.With(base_access.BaseAccess(jwtManager)).Group(func(r chi.Router) {
+		// participant GET
 		r.Get("/api/participants", participantHandler.GetAllParticipants)
 		r.Get("/api/participants/count", participantHandler.GetCount)
 		r.Get("/api/participants/{id}", participantHandler.GetById)
 		r.Get("/api/participants/byuser/{id}", participantHandler.GetByUserId)
 
+		// users GET
 		r.Get("/api/users", userHandler.GetAll)
 		r.Get("/api/users/count", userHandler.GetCountUsers)
 		r.Get("/api/users/list", userHandler.GetUsersByListId)
 		r.Get("/api/users/{id}", userHandler.GetUserById)
 		r.Get("/api/users/all-info/{id}", userHandler.GetUserParticipantById)
 
+		// schools GET
 		r.Get("/api/schools", schoolHandler.GetAll)
 		r.Get("/api/schools/count", schoolHandler.GetCount)
 		r.Get("/api/schools/{id}", schoolHandler.GetById)
 
-		r.Post("/api/school/create", schoolHandler.Create)
+		// schools POST
+		r.Post("/api/schools/create", schoolHandler.Create)
+
+		// users POST
+		r.Post("/api/users/revoke/{id}", authHandler.RevokeToken)
+		r.Post("/api/users/revoke-all/{id}", authHandler.RevokeAllUserTokens)
 
 		r.Put("/api/users/{id}", userHandler.Update)
 		r.Put("/api/participant/{id}", participantHandler.Update)
 		r.Put("/api/schools/{id}", schoolHandler.Update)
-
-		r.Put("/api/users/revoke/{id}", authHandler.RevokeToken)
-		r.Put("/api/users/revoke/{user_id}", authHandler.RevokeAllUserTokens)
 
 		// r.Put("/schools/{id}", sch)
 

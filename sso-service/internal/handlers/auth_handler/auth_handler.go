@@ -14,6 +14,8 @@ import (
 
 type AuthService interface {
 	Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO) (*login_dto.AuthResultDTO, error)
+	Logout(ctx context.Context, tokeId string) error
+
 	RegisterParticipant(ctx context.Context, registerRequest *register_dto.RegisterParticipantRequestDTO) error
 	RegisterUser(ctx context.Context, userRequest *register_dto.RegisterUserRequestDTO) error
 
@@ -42,7 +44,6 @@ func New(authService AuthService) *AuthHandler {
 // @Failure 401 {object} response.ApiResponse
 // @Router /api/users/login [post]
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-
 	ctx := r.Context()
 
 	var loginRequest login_dto.LoginRequestDTO
@@ -69,7 +70,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Secure:   true,
 		// Domain:   "172.16.1.39",
 		SameSite: http.SameSiteStrictMode,
-		Path:     "api/users/refresh",
+		Path:     "api/users",
 		Expires:  time.Now().Add(time.Duration(authResult.ExpiresInRefresh) * time.Second), // Match the token expiration
 	})
 
@@ -84,6 +85,36 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	cookie, err := r.Cookie("refresh_token")
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("refresh token not found"))
+		return
+	}
+
+	cookieStr := cookie.Value
+	err = h.authService.Logout(ctx, cookieStr)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed logout"))
+		return
+	}
+
+	render.JSON(w, r, response.SuccessResponse("success logout"))
+}
+
+// @Summery Register
+// @Description Регистрация пользователя как ученика
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param credentials body register_dto.RegisterParticipantRequestDTO true "Данные для регистрации"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users/register [post]
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -107,6 +138,16 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, response.SuccessResponse("Register success"))
 }
 
+// @Summery AdminRegister
+// @Security BearerAuth
+// @Description Регистрация пользователя для админа
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param credentials body register_dto.RegisterUserRequestDTO true "Данные для регистрации от панели админа"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/byadmin/register [post]
 func (h *AuthHandler) AdminRegister(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -130,6 +171,14 @@ func (h *AuthHandler) AdminRegister(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, response.SuccessResponse("register success"))
 }
 
+// @Summary Refresh
+// @Description Обновление access-токена по refresh-токену из cookie
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.ApiResponse{data=login_dto.LoginResponseDTO}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users/refresh [post]
 func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -169,6 +218,15 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summery Revoke token
+// @Security BearerAuth
+// @Description Блокировка refresh токена
+// @Tags auth
+// @Produce json
+// @Param id path string true "id refresh токена"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users/revoke/{id} [post]
 func (h *AuthHandler) RevokeToken(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -184,10 +242,19 @@ func (h *AuthHandler) RevokeToken(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, response.SuccessResponse("success token revoked"))
 }
 
+// @Summery Revoke all token by user
+// @Security BearerAuth
+// @Description Блокировка всех refresh токенов пользователя
+// @Tags auth
+// @Produce json
+// @Param id path string true "id пользователя"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users/revoke-all/{id} [post]
 func (h *AuthHandler) RevokeAllUserTokens(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	userID := chi.URLParam(r, "user_id")
+	userID := chi.URLParam(r, "id")
 
 	err := h.authService.RevokeAllUserTokens(ctx, userID)
 	if err != nil {
@@ -197,5 +264,4 @@ func (h *AuthHandler) RevokeAllUserTokens(w http.ResponseWriter, r *http.Request
 	}
 
 	render.JSON(w, r, response.SuccessResponse("success tokens revoked"))
-
 }

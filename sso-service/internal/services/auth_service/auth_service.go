@@ -63,7 +63,7 @@ func New(log *slog.Logger, orm orm.ORM, jwtManager *jwttoken.JWTManager,
 }
 
 func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO) (*login_dto.AuthResultDTO, error) {
-	const op = "services.auth_services.Login"
+	const op = "services.AuthService.Login"
 	const errMsg = "failed login"
 
 	log := s.log.With(
@@ -109,16 +109,46 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 	}, err
 }
 
+func (s *AuthService) Logout(ctx context.Context, tokenStr string) error {
+	const op = "services.AuthService.Logout"
+	const errMsg = "failed logout"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	token, err := s.jwtManager.ParseRefreshTokenWithClaims(tokenStr)
+	if err != nil {
+		log.Error("failed parse refresh token", liblogger.Err(err))
+		return fmt.Errorf("%s: failed parse token", errMsg)
+	}
+
+	uid, err := uuid.Parse(token.ID)
+	if err != nil {
+		log.Error("failed parse id to uuid", liblogger.Err(err))
+		return fmt.Errorf("%s", errMsg)
+	}
+
+	err = s.refreshRepository.Delete(ctx, s.db, uid)
+	if err != nil {
+		log.Error("failed delete refresh token", liblogger.Err(err))
+		return fmt.Errorf("%s", errMsg)
+	}
+
+	return nil
+}
+
 func (s *AuthService) preparationRefreshToken(ctx context.Context, userResult user.User) (string, error) {
+	tokenId := uuid.New()
 	// create refresh token
-	refreshToken, err := s.jwtManager.CreateRefreshToken(userResult)
+	refreshToken, err := s.jwtManager.CreateRefreshToken(userResult, tokenId.String())
 	if err != nil {
 		return "", fmt.Errorf("failed when create refresh token: %w", err)
 	}
 
 	// hash token
-
 	refreshTokenModel := refresh_token.RefreshToken{
+		ID:        tokenId,
 		UserID:    userResult.ID,
 		TokenHash: refreshToken,
 		ExpiresAt: time.Now().Add(s.jwtManager.GetRefreshDuration()),
@@ -134,7 +164,7 @@ func (s *AuthService) preparationRefreshToken(ctx context.Context, userResult us
 }
 
 func (s *AuthService) RegisterUser(ctx context.Context, registerUser *register_dto.RegisterUserRequestDTO) error {
-	const op = "services.auth_service.RegisterUser"
+	const op = "services.AuthService.RegisterUser"
 	const errMsg = "failed register user"
 
 	log := s.log.With(
@@ -169,7 +199,7 @@ func (s *AuthService) RegisterUser(ctx context.Context, registerUser *register_d
 }
 
 func (s *AuthService) RegisterParticipant(ctx context.Context, registerRequst *register_dto.RegisterParticipantRequestDTO) error {
-	const op = "services.auth_service.RegisterParticipant"
+	const op = "services.AuthService.RegisterParticipant"
 	const errMsg = "failed register participant"
 
 	log := s.log.With(
@@ -227,7 +257,7 @@ func (s *AuthService) RegisterParticipant(ctx context.Context, registerRequst *r
 }
 
 func (s *AuthService) ActivateAccount(ctx context.Context, email string, userCode string) error {
-	const op = "services.auth_service.ActivateAccount"
+	const op = "services.AuthService.ActivateAccount"
 	const errMsg = "failed to activate account"
 
 	log := s.log.With(
@@ -262,29 +292,28 @@ func (s *AuthService) ActivateAccount(ctx context.Context, email string, userCod
 }
 
 func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_dto.AuthResultDTO, error) {
-	const op = "services.auth_service.Refresh"
+	const op = "services.AuthService.Refresh"
 	const errMsg = "failed to refresh tokens"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
-	// first check token
-	nowToken, err := s.jwtManager.VerifyToken(refreshToken)
-	if err != nil {
-		log.Error("failed verify token", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
-	}
-
-	// get claims
-	tokenClaims, err := s.jwtManager.GetRefreshClaims(nowToken)
+	// check and get claims
+	tokenClaims, err := s.jwtManager.ParseRefreshTokenWithClaims(refreshToken)
 	if err != nil {
 		log.Error("failed get refresh token claims", liblogger.Err(err))
 		return nil, fmt.Errorf("%s", errMsg)
 	}
 
+	tokenUid, err := uuid.Parse(tokenClaims.ID)
+	if err != nil {
+		log.Error("failed parse id to uuid", liblogger.Err(err))
+		return nil, fmt.Errorf("%s", errMsg)
+	}
+
 	// get token from db
-	tokenDB, err := s.refreshRepository.GetById(ctx, s.db, tokenClaims.ID)
+	tokenDB, err := s.refreshRepository.GetById(ctx, s.db, tokenUid)
 	if err != nil {
 		log.Error("failed get refresh token", liblogger.Err(err))
 		return nil, fmt.Errorf("%s", errMsg)
@@ -304,14 +333,21 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 
 	// delete old token
 	go func() {
-		err := s.refreshRepository.Delete(ctx, s.db, tokenClaims.ID)
+		err := s.refreshRepository.Delete(ctx, s.db, tokenUid)
 		if err != nil {
 			log.Error("failed delete refresh token", liblogger.Err(err))
 		}
 	}()
 
+	// parse user id to uuid
+	userUid, err := uuid.Parse(tokenClaims.Subject)
+	if err != nil {
+		log.Error("failed parse user id from token to uuid", liblogger.Err(err))
+		return nil, fmt.Errorf("%s: failed parse id to uid", errMsg)
+	}
+
 	// find user
-	userFind, err := s.userRepository.GetById(ctx, s.db, tokenClaims.UserId)
+	userFind, err := s.userRepository.GetById(ctx, s.db, userUid)
 	if err != nil {
 		log.Error("failed get user", liblogger.Err(err))
 		return nil, fmt.Errorf("%s", errMsg)
@@ -340,7 +376,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 }
 
 func (s *AuthService) RevokeToken(ctx context.Context, id string) error {
-	const op = "services.auth_service.RevokeToken"
+	const op = "services.AuthService.RevokeToken"
 	const errMsg = "failed to revoke token"
 
 	log := s.log.With(
@@ -368,7 +404,7 @@ func (s *AuthService) RevokeToken(ctx context.Context, id string) error {
 }
 
 func (s *AuthService) RevokeAllUserTokens(ctx context.Context, userId string) error {
-	const op = "services.auth_service.RevokeAllUserTokens"
+	const op = "services.AuthService.RevokeAllUserTokens"
 	const errMsg = "failed to revoke all user tokens"
 
 	log := s.log.With(

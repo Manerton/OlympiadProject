@@ -1,17 +1,23 @@
 package jwttoken
 
 import (
+	"errors"
 	"fmt"
 	"main/internal/models/user"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
-type TokenClaims struct {
-	ID     uuid.UUID
-	UserId uuid.UUID
+type TokenAccessClaims struct {
+	Email string `json:"email"`
+	Role  int    `json:"role"`
+	jwt.RegisteredClaims
+}
+
+type TokenRefreshClaims struct {
+	ID string `json:"id"`
+	TokenAccessClaims
 }
 
 type JWTManager struct {
@@ -36,63 +42,56 @@ func (m *JWTManager) GetRefreshDuration() time.Duration {
 	return m.refreshDuration
 }
 
-func (m *JWTManager) GetRefreshClaims(token *jwt.Token) (*TokenClaims, error) {
-	resultClaims, err := m.GetClaims(token)
+func (m *JWTManager) ParseRefreshTokenWithClaims(tokenStr string) (*TokenRefreshClaims, error) {
+	const op = ""
+
+	token, err := jwt.ParseWithClaims(tokenStr, &TokenRefreshClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return m.secretKey, nil
+	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return nil, fmt.Errorf("failed get claims")
+	claims, ok := token.Claims.(*TokenRefreshClaims)
+	if !ok || !token.Valid {
+		return nil, errors.New("invalid token")
 	}
 
-	// exist only refresh token
-	id, ok := claims["id"].(string)
-	if !ok {
-		return nil, fmt.Errorf("failed get id on claims")
-	}
-
-	uid, err := uuid.Parse(id)
-	if err != nil {
-		return nil, fmt.Errorf("failed parse id to uuid: %w", err)
-	}
-	resultClaims.ID = uid
-
-	return resultClaims, nil
+	return claims, nil
 }
 
-func (m *JWTManager) GetClaims(token *jwt.Token) (*TokenClaims, error) {
-	resultClaims := &TokenClaims{}
+func (m *JWTManager) ParseAccessTokenWithClaims(tokenStr string) (*TokenAccessClaims, error) {
+	const op = ""
 
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return nil, fmt.Errorf("failed get claims")
-	}
-
-	userId, ok := claims["user_id"].(string)
-	if !ok {
-		return nil, fmt.Errorf("failed get user_id on claims")
-	}
-
-	uid, err := uuid.Parse(userId)
+	token, err := jwt.ParseWithClaims(tokenStr, &TokenAccessClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return m.secretKey, nil
+	})
 	if err != nil {
-		return nil, fmt.Errorf("failed parse user_id to uuid: %w", err)
+		return nil, fmt.Errorf("%s: %w", op, err)
 	}
-	resultClaims.UserId = uid
 
-	return resultClaims, nil
+	claims, ok := token.Claims.(*TokenAccessClaims)
+	if !ok || !token.Valid {
+		return nil, errors.New("invalid token")
+	}
+
+	return claims, nil
 }
 
 func (m *JWTManager) CreateToken(user user.User) (string, error) {
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":    user.ID,
-		"email": user.Email,
-		"role":  user.Role,
-		"exp":   time.Now().Add(m.accessDuration).Unix(),
-	})
+	claims := TokenAccessClaims{
+		Email: user.Email,
+		Role:  int(user.Role),
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   user.ID.String(),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(m.refreshDuration)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
 
-	tokenStr, err := claims.SignedString(m.secretKey)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenStr, err := token.SignedString(m.secretKey)
 	if err != nil {
 		return "", err
 	}
@@ -100,15 +99,23 @@ func (m *JWTManager) CreateToken(user user.User) (string, error) {
 	return tokenStr, nil
 }
 
-func (m *JWTManager) CreateRefreshToken(user user.User) (string, error) {
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":    user.ID,
-		"email": user.Email,
-		"role":  user.Role,
-		"exp":   time.Now().Add(m.refreshDuration).Unix(),
-	})
+func (m *JWTManager) CreateRefreshToken(user user.User, tokenId string) (string, error) {
+	claims := TokenRefreshClaims{
+		ID: tokenId,
+		TokenAccessClaims: TokenAccessClaims{
+			Email: user.Email,
+			Role:  int(user.Role),
+			RegisteredClaims: jwt.RegisteredClaims{
+				Subject:   user.ID.String(),
+				ExpiresAt: jwt.NewNumericDate(time.Now().Add(m.refreshDuration)),
+				IssuedAt:  jwt.NewNumericDate(time.Now()),
+			},
+		},
+	}
 
-	tokenStr, err := claims.SignedString(m.secretKey)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	tokenStr, err := token.SignedString(m.secretKey)
 	if err != nil {
 		return "", err
 	}
