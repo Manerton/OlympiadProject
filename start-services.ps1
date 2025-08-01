@@ -8,7 +8,7 @@ $services = @(
     @{ Name = "AuthMock"; Path = ".\AuthMock\cmd\server\main.go" },
     @{ Name = "EventService"; Path = ".\event-service\cmd\server\main.go" },
     @{ Name = "JuryAssignmentsService"; Path = ".\Jure-assignments-service\cmd\server\main.go" },
-    @{ Name = "OlympiadReact"; Path = ".\OlympiadReact" }
+    @{ Name = "vision"; Path = ".\vision" }
 )
 
 function Start-Service {
@@ -19,11 +19,11 @@ function Start-Service {
 
     Write-Host "Zapusk $Name..." -ForegroundColor Cyan
 
-    if ($Name -eq "OlympiadReact") {
+    if ($Name -eq "vision") {
         # Запуск фронта на Deno
         Push-Location $Path
         Write-Host "Ispol'zuetsya Deno dlya zapuska React" -ForegroundColor Magenta
-        Start-Process -NoNewWindow -FilePath "deno" -ArgumentList "run", "-A", "dev.ts"  # или ваш файл запуска
+        Start-Process -NoNewWindow -FilePath "deno" -ArgumentList "run", "-A", "dev"  # или ваш файл запуска
         Pop-Location
     }
     else {
