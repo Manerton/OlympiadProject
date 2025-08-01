@@ -17,6 +17,32 @@ definitions:
       expires_in:
         type: integer
     type: object
+  participant_dto.ParticipantResponseDTO:
+    properties:
+      citizenship:
+        type: string
+      class_number:
+        type: string
+      disability:
+        type: string
+      id:
+        type: string
+      school_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  participant_dto.UpdateParticipantRequestDTO:
+    properties:
+      citizenship:
+        type: string
+      class_number:
+        type: string
+      disability:
+        type: string
+      school_id:
+        type: string
+    type: object
   register_dto.RegisterParticipantRequestDTO:
     properties:
       birthdate:
@@ -101,6 +127,104 @@ definitions:
       region:
         type: string
     type: object
+  user_dto.SearchAttributesUserDTO:
+    properties:
+      activated:
+        type: boolean
+      birthdate:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      gender:
+        type: integer
+      id:
+        type: string
+      patronymic:
+        type: string
+      phone_number:
+        type: string
+      role:
+        type: integer
+      surname:
+        type: string
+    type: object
+  user_dto.UpdateUserRequestDTO:
+    properties:
+      birthdate:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      gender:
+        type: string
+      password:
+        type: string
+      patronymic:
+        type: string
+      phone_number:
+        type: string
+      surname:
+        type: string
+    type: object
+  user_dto.UserParticipantResponseDTO:
+    properties:
+      activated:
+        type: boolean
+      birthdate:
+        type: string
+      citizenship:
+        type: string
+      class_number:
+        type: string
+      disability:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      gender:
+        type: integer
+      id:
+        type: string
+      patronymic:
+        type: string
+      phone_number:
+        type: string
+      role:
+        type: integer
+      school_id:
+        type: string
+      surname:
+        type: string
+      user_id:
+        type: string
+    type: object
+  user_dto.UserResponseDTO:
+    properties:
+      activated:
+        type: boolean
+      birthdate:
+        type: string
+      email:
+        type: string
+      firstname:
+        type: string
+      gender:
+        type: integer
+      id:
+        type: string
+      patronymic:
+        type: string
+      phone_number:
+        type: string
+      role:
+        type: integer
+      surname:
+        type: string
+    type: object
 host: 172.16.1.39:8181
 info:
   contact: {}
@@ -135,9 +259,154 @@ paths:
       - BearerAuth: []
       tags:
       - auth
+  /api/participants:
+    get:
+      description: Получение всех учеников
+      parameters:
+      - description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      - description: Ограничение на количество записей
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/participant_dto.ParticipantResponseDTO'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - participants
+  /api/participants/{id}:
+    get:
+      description: Получение данных о ученике по id
+      parameters:
+      - description: id ученика
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - participants
+    put:
+      consumes:
+      - application/json
+      description: Обновление данных об ученике
+      parameters:
+      - description: Новые данные для обновления
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/participant_dto.UpdateParticipantRequestDTO'
+      - description: id пользователя
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - participants
+  /api/participants/byuser/{id}:
+    get:
+      description: Получение данных о ученике по user id
+      parameters:
+      - description: id пользователя
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - participants
+  /api/participants/count:
+    get:
+      description: Получение количества участников
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  type: integer
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - participants
   /api/schools:
     get:
       description: Получение всех школ
+      parameters:
+      - description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      - description: Ограничение на количество записей
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -186,32 +455,6 @@ paths:
       - BearerAuth: []
       tags:
       - schools
-    put:
-      consumes:
-      - application/json
-      description: Обновление школы
-      parameters:
-      - description: Данные для обновления школы
-        in: body
-        name: credentials
-        required: true
-        schema:
-          $ref: '#/definitions/school_dto.UpdateSchoolRequestDTO'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.ApiResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.ApiResponse'
-      security:
-      - BearerAuth: []
-      tags:
-      - schools
   /api/schools/{id}:
     get:
       description: Получение школы по id
@@ -241,6 +484,37 @@ paths:
       - BearerAuth: []
       tags:
       - schools
+    put:
+      consumes:
+      - application/json
+      description: Обновление школы
+      parameters:
+      - description: Данные для обновления школы
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/school_dto.UpdateSchoolRequestDTO'
+      - description: id пользователя
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - schools
   /api/schools/count:
     get:
       description: Получение количества школ
@@ -250,9 +524,174 @@ paths:
         "200":
           description: OK
           schema:
-            type: integer
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  type: integer
+              type: object
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - schools
+  /api/users:
+    get:
+      description: Получение всех пользователей
+      parameters:
+      - description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      - description: Ограничение на количество записей
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/user_dto.UserResponseDTO'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuths: []
+      tags:
+      - users
+  /api/users/{id}:
+    delete:
+      description: Удаление пользователя
+      parameters:
+      - description: id пользователя
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - users
+    get:
+      description: Получение пользователя по id
+      parameters:
+      - description: id пользователя
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/user_dto.UserResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Обновление пользователя
+      parameters:
+      - description: Данные для обновления пользователя
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/user_dto.UpdateUserRequestDTO'
+      - description: id пользователя
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - users
+  /api/users/all-info/{id}:
+    get:
+      description: Получение всей информации о пользователе ученике
+      parameters:
+      - description: id пользователя
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/user_dto.UserParticipantResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - users
+  /api/users/count:
+    get:
+      description: Получение количесва пользователей
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
           schema:
             allOf:
             - $ref: '#/definitions/response.ApiResponse'
@@ -260,10 +699,82 @@ paths:
                 data:
                   type: integer
               type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
       security:
       - BearerAuth: []
       tags:
-      - schools
+      - users
+  /api/users/filter:
+    post:
+      consumes:
+      - application/json
+      description: Получение пользователя по фильтру из его полей
+      parameters:
+      - description: Данные для поиска пользователя
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/user_dto.SearchAttributesUserDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/user_dto.UserResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuths: []
+      tags:
+      - users
+  /api/users/list:
+    post:
+      consumes:
+      - application/json
+      description: Получение пользователей по списку id
+      parameters:
+      - description: Список id пользователей
+        in: body
+        name: credentials
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/user_dto.UserResponseDTO'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - users
   /api/users/login:
     post:
       consumes:
@@ -288,6 +799,22 @@ paths:
           schema:
             $ref: '#/definitions/response.ApiResponse'
       summary: Login
+      tags:
+      - auth
+  /api/users/logout:
+    post:
+      description: Выход из учётной записи
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
       tags:
       - auth
   /api/users/refresh:

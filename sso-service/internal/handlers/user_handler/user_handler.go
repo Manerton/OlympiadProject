@@ -16,7 +16,7 @@ type UserService interface {
 	GetByFilter(ctx context.Context, searchUser user_dto.SearchAttributesUserDTO) (user_dto.UserResponseDTO, error)
 	GetById(ctx context.Context, id string) (user_dto.UserResponseDTO, error)
 	GetUserParticipantById(ctx context.Context, id string) (user_dto.UserParticipantResponseDTO, error)
-	GetByListId(ctx context.Context, ids []*string) ([]user_dto.UserResponseDTO, error)
+	GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error)
 
 	GetCount(ctx context.Context) (int64, error)
 
@@ -34,6 +34,14 @@ func New(userService UserService) *UserHandler {
 	}
 }
 
+// @Summery Users count
+// @Security BearerAuth
+// @Description Получение количесва пользователей
+// @Tags users
+// @Produce json
+// @Success 200 {object} response.ApiResponse{data=int}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users/count [get]
 func (h *UserHandler) GetCountUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -52,6 +60,16 @@ func (h *UserHandler) GetCountUsers(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// @Summery All users
+// @Security BearerAuths
+// @Description Получение всех пользователей
+// @Tags users
+// @Produce json
+// @Param page query int false "Номер страницы"
+// @Param limit query int false "Ограничение на количество записей"
+// @Success 200 {object} response.ApiResponse{data=[]user_dto.UserResponseDTO}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users [get]
 func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -72,15 +90,23 @@ func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.Status(r, http.StatusOK)
 	render.JSON(w, r, response.ApiResponse{
 		Status:     response.SUCCESS,
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Data:       usersResponse,
 	})
-
 }
 
+// @Summery Get user by filter
+// @Security BearerAuths
+// @Description Получение пользователя по фильтру из его полей
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param credentials body user_dto.SearchAttributesUserDTO true "Данные для поиска пользователя"
+// @Success 200 {object} response.ApiResponse{data=user_dto.UserResponseDTO}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users/filter [post]
 func (h *UserHandler) GetUserByFilter(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -99,15 +125,23 @@ func (h *UserHandler) GetUserByFilter(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.Status(r, http.StatusOK)
 	render.JSON(w, r, response.ApiResponse{
 		Status:     response.SUCCESS,
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Data:       userResponse,
 	})
 
 }
 
+// @Summery Get user by id
+// @Security BearerAuth
+// @Description Получение пользователя по id
+// @Tags users
+// @Produce json
+// @Param id path string true "id пользователя"
+// @Success 200 {object} response.ApiResponse{data=user_dto.UserResponseDTO}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users/{id} [get]
 func (h *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -119,14 +153,22 @@ func (h *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.Status(r, http.StatusOK)
 	render.JSON(w, r, response.ApiResponse{
 		Status:     response.SUCCESS,
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Data:       userResponse,
 	})
 }
 
+// @Summery Get full user participant info
+// @Security BearerAuth
+// @Description Получение всей информации о пользователе ученике
+// @Tags users
+// @Produce json
+// @Param id path string true "id пользователя"
+// @Success 200 {object} response.ApiResponse{data=user_dto.UserParticipantResponseDTO}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users/all-info/{id} [get]
 func (h *UserHandler) GetUserParticipantById(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -138,19 +180,28 @@ func (h *UserHandler) GetUserParticipantById(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	render.Status(r, http.StatusOK)
 	render.JSON(w, r, response.ApiResponse{
 		Status:     response.SUCCESS,
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Data:       participantUserResponse,
 	})
 }
 
+// @Summery Get users by list id
+// @Security BearerAuth
+// @Description Получение пользователей по списку id
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param credentials body []string true "Список id пользователей"
+// @Success 200 {object} response.ApiResponse{data=[]user_dto.UserResponseDTO}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users/list [post]
 func (h *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	type IdsReq struct {
-		Ids []*string `json:"ids"`
+		Ids []string `json:"ids"`
 	}
 	var ids IdsReq
 
@@ -166,7 +217,6 @@ func (h *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.Status(r, http.StatusOK)
 	render.JSON(w, r, response.ApiResponse{
 		Status:     response.SUCCESS,
 		StatusCode: http.StatusOK,
@@ -174,6 +224,17 @@ func (h *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summery Update user
+// @Security BearerAuth
+// @Description Обновление пользователя
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param credentials body user_dto.UpdateUserRequestDTO true "Данные для обновления пользователя"
+// @Param id path string true "id пользователя"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users/{id} [put]
 func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -192,10 +253,18 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.Status(r, http.StatusOK)
 	render.JSON(w, r, response.SuccessResponse("user update success"))
 }
 
+// @Summery Delete user
+// @Security BearerAuth
+// @Description Удаление пользователя
+// @Tags users
+// @Produce json
+// @Param id path string true "id пользователя"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users/{id} [delete]
 func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -208,6 +277,5 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.Status(r, http.StatusOK)
 	render.JSON(w, r, response.SuccessResponse("user delete success"))
 }

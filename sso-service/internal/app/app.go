@@ -120,7 +120,8 @@ func (a *App) initRoutes(router *chi.Mux,
 		// users GET
 		r.Get("/api/users", userHandler.GetAll)
 		r.Get("/api/users/count", userHandler.GetCountUsers)
-		r.Get("/api/users/list", userHandler.GetUsersByListId)
+		r.Post("/api/users/filter", userHandler.GetUserByFilter)
+		r.Post("/api/users/list", userHandler.GetUsersByListId)
 		r.Get("/api/users/{id}", userHandler.GetUserById)
 		r.Get("/api/users/all-info/{id}", userHandler.GetUserParticipantById)
 
@@ -137,7 +138,7 @@ func (a *App) initRoutes(router *chi.Mux,
 		r.Post("/api/users/revoke-all/{id}", authHandler.RevokeAllUserTokens)
 
 		r.Put("/api/users/{id}", userHandler.Update)
-		r.Put("/api/participant/{id}", participantHandler.Update)
+		r.Put("/api/participants/{id}", participantHandler.Update)
 		r.Put("/api/schools/{id}", schoolHandler.Update)
 
 		// r.Put("/schools/{id}", sch)

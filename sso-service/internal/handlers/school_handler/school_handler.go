@@ -37,8 +37,8 @@ func New(schoolService SchoolService) *SchoolHandler {
 // @Description Получение количества школ
 // @Tags schools
 // @Produce json
-// @Success 200 {object} int
-// @Failure 400 {object} response.ApiResponse{data=int}
+// @Success 200 {object} response.ApiResponse{data=int}
+// @Failure 400 {object} response.ApiResponse
 // @Router /api/schools/count [get]
 func (h *SchoolHandler) GetCount(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -63,6 +63,8 @@ func (h *SchoolHandler) GetCount(w http.ResponseWriter, r *http.Request) {
 // @Description Получение всех школ
 // @Tags schools
 // @Produce json
+// @Param page query int false "Номер страницы"
+// @Param limit query int false "Ограничение на количество записей"
 // @Success 200 {object} response.ApiResponse{data=[]school_dto.SchoolResponseDTO}
 // @Failure 400 {object} response.ApiResponse
 // @Router /api/schools [get]
@@ -159,9 +161,10 @@ func (h *SchoolHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param credentials body school_dto.UpdateSchoolRequestDTO true "Данные для обновления школы"
+// @Param id path string true "id пользователя"
 // @Success 200 {object} response.ApiResponse
 // @Failure 400 {object} response.ApiResponse
-// @Router /api/schools [put]
+// @Router /api/schools/{id} [put]
 func (h *SchoolHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

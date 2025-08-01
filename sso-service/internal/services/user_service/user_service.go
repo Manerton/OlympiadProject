@@ -166,7 +166,7 @@ func (s *UserService) GetUserParticipantById(ctx context.Context, id string) (us
 
 }
 
-func (s *UserService) GetByListId(ctx context.Context, ids []*string) ([]user_dto.UserResponseDTO, error) {
+func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error) {
 	const op = "services.user_handler.GetByListId"
 	const errMsg = "failed to find users by list id"
 
@@ -176,7 +176,7 @@ func (s *UserService) GetByListId(ctx context.Context, ids []*string) ([]user_dt
 
 	uids := make([]uuid.UUID, 0, len(ids))
 	for _, id := range ids {
-		uid, err := uuid.Parse(*id)
+		uid, err := uuid.Parse(id)
 		if err != nil {
 			log.Error("failed to parse id", liblogger.Err(err))
 			return nil, fmt.Errorf("%s", errMsg)
