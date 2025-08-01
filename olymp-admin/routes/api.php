@@ -23,7 +23,7 @@ Route::get('/user/index/{page?}', [UserApiController::class, 'index'])->name('us
 Route::get('/user/create', [UserApiController::class, 'create'])->name('user-api.create');
 Route::post('/user/store', [UserApiController::class, 'store'])->name('user-api.store');
 Route::get('/user/edit/{id}', [UserApiController::class, 'edit'])->name('user-api.edit');
-Route::post('/user/update/{id}', [UserApiController::class, 'update'])->name('user-api.update');
+Route::put('/user/update/{id}', [UserApiController::class, 'update'])->name('user-api.update');
 Route::delete('/user/delete/{id}', [UserApiController::class, 'delete'])->name('user-api.delete');
 Route::get('/user/show/{id}', [UserApiController::class, 'show'])->name('user-api.show');
 

@@ -49,7 +49,6 @@ class UserApiController extends Controller
         ]);
     }
     public function store(UserRequest $request){
-
         $data = $request->validated();
         $this->rabbitMQService->publish(
             [RabbitMQHelper::AUTH_QUEUE_NAME],
@@ -59,7 +58,7 @@ class UserApiController extends Controller
             array_diff_key($data, ['id' => null]),
         );
         return response()->json([
-
+            'status' => 'OK!'
         ]);
     }
     public function show($id){
@@ -67,7 +66,7 @@ class UserApiController extends Controller
         $roles = RoleDictionary::getList();
         $genders = GenderDictionary::getList();
         return response()->json([
-            'model' => $model,
+            'model' => (array)$model,
             'roles' => $roles,
             'genders' => $genders
         ]);
@@ -77,7 +76,7 @@ class UserApiController extends Controller
         $roles = RoleDictionary::getList();
         $genders = GenderDictionary::getList();
         return response()->json([
-            'user' => $user,
+            'user' => (array)$user,
             'roles' => $roles,
             'genders' => $genders
         ]);
@@ -92,7 +91,7 @@ class UserApiController extends Controller
             array_diff_key($data, ['id' => null]),
             ['id' => $id]
         );
-
+        return response()->json([]);
     }
     public function delete($id){
         $this->rabbitMQService->publish(
