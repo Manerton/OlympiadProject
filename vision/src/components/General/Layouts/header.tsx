@@ -11,7 +11,7 @@ function Header() {
   const userRole = "роль";
 
   return (
-    <Navbar bg="light" expand="lg">
+    <Navbar bg="light" expand="lg" sticky="top">
       <Container fluid>
         <Navbar.Brand href="/">ВСОШ</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
