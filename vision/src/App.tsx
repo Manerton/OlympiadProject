@@ -2,10 +2,13 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import UserIndex from './components/olymp-admin/user/index.tsx';
 import UserShow from './components/olymp-admin/user/show.tsx';
+import UserCreate from './components/olymp-admin/user/create.tsx';
+import UserEdit from './components/olymp-admin/user/edit.tsx';
 import Header from './components/General/Layouts/header.tsx'
 import ProfilePage from './components/General/Pages/Profile.tsx'
 import MainPage from './components/General/Pages/MainPage.tsx'
 import Layout from './components/General/Layouts/Layout.tsx'
+
 
 function App() {
     return (
