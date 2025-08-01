@@ -1,18 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-const UserIndex = () => {
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalUsers, setTotalUsers] = useState(0);
-    const [perPage, setPerPage] = useState(10);
+interface User {
+    id: string;
+    full_name: string;
+    email: string;
+    phone_number: string;
+}
 
-    const fetchUsers = (page = 1) => {
+interface UserResponse {
+    users: User[];
+    usersAmount: number;
+    perPage: number;
+}
+
+const UserIndex: React.FC = () => {
+    const [users, setUsers] = useState<User[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [totalUsers, setTotalUsers] = useState<number>(0);
+    const [perPage, setPerPage] = useState<number>(10);
+    const navigate = useNavigate();
+
+    const fetchUsers = (page: number = 1) => {
         setLoading(true);
         const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
         
-        axios.get(`http://olymp-admin-v2/api/user/index/${page}`, {
+        axios.get<UserResponse>(`http://olymp-admin-v2/api/user/index/${page}`, {
             headers: {
                 'Authorization': token
             },
@@ -22,7 +37,7 @@ const UserIndex = () => {
             setUsers(response.data.users);
             setTotalUsers(response.data.usersAmount);
             setPerPage(response.data.perPage);
-            setCurrentPage(page); // Убедимся, что текущая страница синхронизирована
+            setCurrentPage(page);
             setLoading(false);
         })
         .catch(error => {
@@ -49,7 +64,7 @@ const UserIndex = () => {
                 Добавить пользователя
             </button>
 
-                        <table className="table">
+            <table className="table">
                 <thead>
                     <tr>
                         <th>#</th>
@@ -67,13 +82,11 @@ const UserIndex = () => {
                             <td>{user.email}</td>
                             <td>{user.phone_number}</td>
                             <td>
-                                <button className="btn btn-primary btn-sm">Просмотр</button>
-                                <button className="btn btn-warning btn-sm">Редактировать</button>
-                                <button 
-                                    className="btn btn-danger btn-sm"
-                                    onClick={() => alert(`Удалить пользователя ${user.id}`)}
+                               <button 
+                                    className="btn btn-primary btn-sm"
+                                    onClick={() => navigate(`/olymp-admin/user/show/${user.id}`)}
                                 >
-                                    Удалить
+                                    Просмотр
                                 </button>
                             </td>
                         </tr>
