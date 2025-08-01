@@ -16,7 +16,7 @@ class EventRepository
     }
     public function getByApiAll($page = 1, $limit = 10)
     {
-        $token = Request::header('Authorization');
+        $token = request()->header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::EVENT_URL_API,
@@ -32,7 +32,7 @@ class EventRepository
     }
     public function getByApiId($id)
     {
-        $token = Request::header('Authorization');
+        $token = request()->header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::EVENT_MODEL_URL_API . '/' . $id,
@@ -45,7 +45,7 @@ class EventRepository
     }
     public function getCount()
     {
-        $token = Request::header('Authorization');
+        $token = request()->header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::EVENT_URL_API,

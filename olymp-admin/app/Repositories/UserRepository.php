@@ -18,7 +18,7 @@ class UserRepository
     }
     public function getByApiAll($page = 1, $limit = 10)
     {
-        $token = Request::header('Authorization');
+        $token = request()->header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::USER_URL_API,
@@ -34,7 +34,7 @@ class UserRepository
     }
     public function getByApiId($id)
     {
-        $token = Request::header('Authorization');
+        $token = request()->header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::USER_URL_API . '/' . $id,
@@ -47,7 +47,7 @@ class UserRepository
     }
     public function getCount()
     {
-        $token = Request::header('Authorization');
+        $token = request()->header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::USER_COUNT_URL_API,

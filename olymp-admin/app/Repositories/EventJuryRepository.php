@@ -18,7 +18,7 @@ class EventJuryRepository
     }
 
     public function getByEventId($eventId){
-        $token = Request::header('Authorization');
+        $token = request()->header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::EVENT_JURY_URL_API . '/' . $eventId,

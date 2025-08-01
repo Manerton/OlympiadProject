@@ -19,7 +19,7 @@ class SchoolRepository
 
     public function getByApiAll($page = 1, $limit = 10)
     {
-        $token = Request::header('Authorization');
+        $token = request()->header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::SCHOOL_URL_API,
@@ -35,7 +35,7 @@ class SchoolRepository
     }
     public function getByApiId($id)
     {
-        $token = Request::header('Authorization');
+        $token =  request()->header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::SCHOOL_URL_API . '/' . $id,
@@ -48,7 +48,7 @@ class SchoolRepository
     }
     public function getCount()
     {
-        $token = Request::header('Authorization');
+        $token = request()->header('Authorization');
         $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
         $response = $this->apiService->get(
             ApiHelper::SCHOOL_COUNT_URL_API,
