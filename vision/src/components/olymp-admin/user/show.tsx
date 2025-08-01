@@ -34,30 +34,30 @@ const UserShow = () => {
     return `${user.firstname || ''} ${user.surname || ''} ${user.patronymic || ''}`.trim();
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm('Вы уверены, что хотите удалить этого пользователя?')) {
-      return;
+  const handleDelete = async (userId: string) => {
+  if (!window.confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+    return;
+  }
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+  try {
+    const response = await axios.delete(`http://olymp-admin-v2/api/user/delete/${userId}`, {
+      headers: {
+        'Authorization': token,
+        'Content-Type': 'application/json'
+      },
+      withCredentials: true
+    });
+    const navigate = useNavigate();
+    if (response.status === 200) {
+      navigate("/olymp-admin/user/index");
+    } else {
+      throw new Error('Ошибка при удалении');
     }
-
-    try {
-      const response = await fetch(`/api/users/${user.id}`, {
-        method: 'DELETE',
-        headers: {
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        navigate('/users');
-      } else {
-        throw new Error('Ошибка при удалении');
-      }
-    } catch (error) {
-      console.error('Delete error:', error);
-      alert('Не удалось удалить пользователя');
-    }
-  };
+  } catch (error) {
+    console.error('Delete error:', error);
+    alert('Не удалось удалить пользователя');
+  }
+};
 
   if (loading) {
     return <p>Загрузка...</p>;
@@ -86,7 +86,7 @@ const UserShow = () => {
             Редактировать
           </Link>
           <button 
-            onClick={handleDelete}
+            onClick={() => handleDelete(user.id)}
             className="btn btn-danger"
           >
             Удалить

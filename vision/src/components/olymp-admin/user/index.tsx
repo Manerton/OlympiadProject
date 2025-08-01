@@ -8,13 +8,35 @@ interface User {
     email: string;
     phone_number: string;
 }
-
 interface UserResponse {
     users: User[];
     usersAmount: number;
     perPage: number;
 }
-
+ const handleDelete = async (userId: string) => {
+  if (!window.confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+    return;
+  }
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+  try {
+    const response = await axios.delete(`http://olymp-admin-v2/api/user/delete/${userId}`, {
+      headers: {
+        'Authorization': token,
+        'Content-Type': 'application/json'
+      },
+      withCredentials: true
+    });
+    const navigate = useNavigate();
+    if (response.status === 200) {
+      navigate("/olymp-admin/user/index");
+    } else {
+      throw new Error('Ошибка при удалении');
+    }
+  } catch (error) {
+    console.error('Delete error:', error);
+    alert('Не удалось удалить пользователя');
+  }
+};
 const UserIndex: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -58,7 +80,7 @@ const UserIndex: React.FC = () => {
         <div className="user-index">
             <h2>Список пользователей</h2>
             <button 
-                onClick={() => alert('Форма добавления пользователя')} 
+                 onClick={() => navigate(`/olymp-admin/user/create`)}
                 className="btn btn-success"
             >
                 Добавить пользователя
@@ -78,7 +100,7 @@ const UserIndex: React.FC = () => {
                     {users.map((user, index) => (
                         <tr key={user.id}>
                             <td>{(currentPage - 1) * perPage + index + 1}</td>
-                            <td>{user.full_name}</td>
+                            <td>{`${user.firstname || ''} ${user.surname || ''} ${user.patronymic || ''}`.trim()}</td>
                             <td>{user.email}</td>
                             <td>{user.phone_number}</td>
                             <td>
@@ -87,6 +109,18 @@ const UserIndex: React.FC = () => {
                                     onClick={() => navigate(`/olymp-admin/user/show/${user.id}`)}
                                 >
                                     Просмотр
+                                </button>
+                                <button 
+                                    className="btn btn-primary btn-sm"
+                                    onClick={() => navigate(`/olymp-admin/user/edit/${user.id}`)}
+                                >
+                                    Редактирование
+                                </button>
+                                <button 
+                                    className="btn btn-primary btn-sm"
+                                    onClick={() => handleDelete(user.id)}
+                                >
+                                    Удалить
                                 </button>
                             </td>
                         </tr>
