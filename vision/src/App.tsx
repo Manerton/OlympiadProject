@@ -8,6 +8,11 @@ import ParticipantIndex from './components/olymp-admin/participant/index.tsx';
 import ParticipantShow from './components/olymp-admin/participant/show.tsx';
 import ParticipantCreate from './components/olymp-admin/participant/create.tsx';
 import ParticipantEdit from './components/olymp-admin/participant/edit.tsx';
+import SchoolIndex from './components/olymp-admin/school/index.tsx';
+import SchoolCreate from './components/olymp-admin/school/create.tsx';
+import SchoolShow from './components/olymp-admin/school/show.tsx';
+import SchoolEdit from './components/olymp-admin/school/edit.tsx';
+
 import Header from './components/General/Layouts/header.tsx'
 import ProfilePage from './components/General/Pages/Profile.tsx'
 import MainPage from './components/General/Pages/MainPage.tsx'
@@ -32,6 +37,11 @@ function App() {
                     <Route path="/olymp-admin/participant/show/:id" element={<ParticipantShow />} />
                     <Route path="/olymp-admin/participant/create" element={<ParticipantCreate />} />
                     <Route path="/olymp-admin/participant/edit/:id" element={<ParticipantEdit />} />
+
+                    <Route path="/olymp-admin/school/index" element={<SchoolIndex />} />
+                    <Route path="/olymp-admin/school/show/:id" element={<SchoolShow />} />
+                    <Route path="/olymp-admin/school/create" element={<SchoolCreate />} />
+                    <Route path="/olymp-admin/school/edit/:id" element={<SchoolEdit />} />
                 </Routes>
             </div>
             </Layout>

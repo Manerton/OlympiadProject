@@ -1,0 +1,150 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate, useParams } from 'react-router-dom';
+
+interface SchoolFormData {
+  name: string;
+  region: string;
+}
+
+interface FormErrors {
+  name?: string;
+  region?: string;
+}
+
+interface Dictionary {
+  [key: string]: string;
+}
+
+const SchoolCreate: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState<SchoolFormData>({
+    name: '',
+    region: '1' // Default region value
+  });
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [regions, setRegions] = useState<Dictionary>({});
+  const [loading, setLoading] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const token = 'your-auth-token-here';
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch regions
+        const regionsResponse = await axios.get('http://olymp-admin-v2/api/school/create', {
+          headers: { 'Authorization': token },
+          withCredentials: true
+        });
+        setRegions(regionsResponse.data.regions || {});
+
+        // If in edit mode, fetch school data
+        if (id) {
+          setIsEditMode(true);
+          const schoolResponse = await axios.get(`http://olymp-admin-v2/api/school/show/${id}`, {
+            headers: { 'Authorization': token },
+            withCredentials: true
+          });
+          setFormData({
+            name: schoolResponse.data.model.name,
+            region: schoolResponse.data.model.region
+          });
+        }
+
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (isEditMode) {
+        // Update existing school
+        await axios.put(`http://olymp-admin-v2/api/school/update/${id}`, formData, {
+          headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true
+        });
+      } else {
+        // Create new school
+        await axios.post('http://olymp-admin-v2/api/school/store', formData, {
+          headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true
+        });
+      }
+      navigate('/olymp-admin/school/index');
+    } catch (error: any) {
+      if (error.response?.data?.errors) {
+        setErrors(error.response.data.errors);
+      } else {
+        console.error("Error saving school:", error);
+      }
+    }
+  };
+
+  if (loading) {
+    return <div className="text-center mt-5">Загрузка...</div>;
+  }
+
+  return (
+    <div className="container mt-4">
+      <form onSubmit={handleSubmit} id="dynamic-form">
+        <div className="form-group mb-3">
+          <label htmlFor="name" className="form-label">Название образовательного учреждения</label>
+          <input
+            type="text"
+            className={`form-control ${errors.name ? 'is-invalid' : ''}`}
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            maxLength={255}
+          />
+          {errors.name && <div className="invalid-feedback">{errors.name}</div>}
+        </div>
+
+        <div className="form-group mb-3">
+          <label htmlFor="region" className="form-label">Регион</label>
+          <select
+            name="region"
+            id="region"
+            className={`form-control ${errors.region ? 'is-invalid' : ''}`}
+            value={formData.region}
+            onChange={handleChange}
+          >
+            {Object.entries(regions).map(([key, value]) => (
+              <option key={key} value={key}>{value}</option>
+            ))}
+          </select>
+          {errors.region && <div className="invalid-feedback">{errors.region}</div>}
+        </div>
+
+        <button type="submit" className="btn btn-primary">
+          {isEditMode ? 'Обновить' : 'Сохранить'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default SchoolCreate;
