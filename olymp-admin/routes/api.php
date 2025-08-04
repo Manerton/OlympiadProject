@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\api\ParticipantApiController;
+use App\Http\Controllers\api\SchoolApiController;
 use App\Http\Controllers\api\UserApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -34,3 +35,11 @@ Route::get('/participant/edit/{id}', [ParticipantApiController::class, 'edit'])-
 Route::post('/participant/update/{id}', [ParticipantApiController::class, 'update'])->name('participant-api.update');
 Route::delete('/participant/delete/{id}', [ParticipantApiController::class, 'delete'])->name('participant-api.delete');
 Route::get('/participant/show/{id}', [ParticipantApiController::class, 'show'])->name('participant-api.show');
+
+Route::get('/school/index/{page?}', [SchoolApiController::class, 'index'])->name('school-api.index');
+Route::get('/school/create', [SchoolApiController::class, 'create'])->name('school-api.create');
+Route::post('/school/store', [SchoolApiController::class, 'store'])->name('school-api.store');
+Route::get('/school/edit/{id}', [SchoolApiController::class, 'edit'])->name('school-api.edit');
+Route::post('/school/update/{id}', [SchoolApiController::class, 'update'])->name('school-api.update');
+Route::delete('/school/delete/{id}', [SchoolApiController::class, 'delete'])->name('school-api.delete');
+Route::get('/school/show/{id}', [SchoolApiController::class, 'show'])->name('school-api.show');
