@@ -2,11 +2,13 @@ package auth_service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	login_dto "main/internal/dto/auth/login"
 	register_dto "main/internal/dto/auth/register"
 	"main/internal/lib/crypt"
+	"main/internal/lib/errs"
 	"main/internal/lib/jwttoken"
 	"main/internal/lib/liblogger"
 	paricipant_mapper "main/internal/lib/mapper/participant_mapper"
@@ -20,11 +22,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type UserRepository interface {
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (user.User, error)
-	GetByEmail(ctx context.Context, orm orm.ORM, email string) (*user.User, error)
+	GetByEmail(ctx context.Context, orm orm.ORM, email string) (user.User, error)
 	Create(ctx context.Context, orm orm.ORM, user user.User) (uuid.UUID, error)
 	Update(ctx context.Context, orm orm.ORM, user user.User) error
 }
@@ -64,41 +67,40 @@ func New(log *slog.Logger, orm orm.ORM, jwtManager *jwttoken.JWTManager,
 
 func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO) (*login_dto.AuthResultDTO, error) {
 	const op = "services.AuthService.Login"
-	const errMsg = "failed login"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
 	userResult, err := s.userRepository.GetByEmail(ctx, s.db, loginRequest.Email)
-	if err != nil {
-		log.Error("failed to get user by email", loginRequest.Email, liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Error("failed user not fount", err)
+		return nil, errs.ErrAuthFailed.Wrap("email not found")
 	}
 
-	if userResult == nil {
-		log.Error("failed user not fount")
-		return nil, fmt.Errorf("%s: %s", errMsg, "user is not exist")
+	if err != nil {
+		log.Error("failed to get user by email", loginRequest.Email, liblogger.Err(err))
+		return nil, errs.ErrInternalError.Wrap("failed get user by email")
 	}
 
 	// check password hash
 	if !crypt.CheckPasswordHash(loginRequest.Password, userResult.PasswordHash) {
 		log.Error("uncorrect password")
-		return nil, fmt.Errorf("%s: uncorrent login or password", errMsg)
+		return nil, errs.ErrAuthFailed.Wrap("uncorrect password")
 	}
 
 	// create token
-	token, err := s.jwtManager.CreateToken(*userResult)
+	token, err := s.jwtManager.CreateToken(userResult)
 	if err != nil {
 		log.Error("failed when create token", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, errs.ErrAccessToken
 	}
 
 	// create refresh token
-	refreshToken, err := s.preparationRefreshToken(ctx, *userResult)
+	refreshToken, err := s.preparationRefreshToken(ctx, userResult)
 	if err != nil {
 		log.Error("failed when create refresh token", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, errs.ErrRefreshToken
 	}
 
 	return &login_dto.AuthResultDTO{
@@ -111,7 +113,6 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 
 func (s *AuthService) Logout(ctx context.Context, tokenStr string) error {
 	const op = "services.AuthService.Logout"
-	const errMsg = "failed logout"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -120,19 +121,19 @@ func (s *AuthService) Logout(ctx context.Context, tokenStr string) error {
 	token, err := s.jwtManager.ParseRefreshTokenWithClaims(tokenStr)
 	if err != nil {
 		log.Error("failed parse refresh token", liblogger.Err(err))
-		return fmt.Errorf("%s: failed parse token", errMsg)
+		return errs.ErrInternalError.Wrap("failed parse refresh token")
 	}
 
 	uid, err := uuid.Parse(token.ID)
 	if err != nil {
 		log.Error("failed parse id to uuid", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		return errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
 	err = s.refreshRepository.Delete(ctx, s.db, uid)
 	if err != nil {
 		log.Error("failed delete refresh token", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		return errs.ErrInternalError.Wrap("failed delete refresh token")
 	}
 
 	return nil
@@ -165,34 +166,33 @@ func (s *AuthService) preparationRefreshToken(ctx context.Context, userResult us
 
 func (s *AuthService) RegisterUser(ctx context.Context, registerUser *register_dto.RegisterUserRequestDTO) error {
 	const op = "services.AuthService.RegisterUser"
-	const errMsg = "failed register user"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
-	userFind, err := s.userRepository.GetByEmail(ctx, s.db, registerUser.Email)
-	if err != nil {
-		log.Error("failed when check user exist", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+	_, err := s.userRepository.GetByEmail(ctx, s.db, registerUser.Email)
+	if err == nil {
+		log.Warn("failed user exist", slog.String("email", registerUser.Email))
+		return errs.ErrUserAlreadyExists
 	}
 
-	if userFind != nil {
-		log.Error("failed user exist", slog.Any("user", userFind))
-		return fmt.Errorf("%s: %s", errMsg, "user already exist")
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Error("failed to check user exist", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed get user by email")
 	}
 
 	userModel := user_mapper.FromRegisterUserToModel(registerUser)
 	userModel.PasswordHash, err = crypt.HashPassword(registerUser.Password)
 	if err != nil {
-		log.Error("failed when hash password", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		log.Error("failed to hash password", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed hash password")
 	}
 
 	_, err = s.userRepository.Create(ctx, s.db, userModel)
 	if err != nil {
-		log.Error("failed when create user", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		log.Error("failed to create user", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed create user")
 	}
 
 	return nil
@@ -200,49 +200,48 @@ func (s *AuthService) RegisterUser(ctx context.Context, registerUser *register_d
 
 func (s *AuthService) RegisterParticipant(ctx context.Context, registerRequst *register_dto.RegisterParticipantRequestDTO) error {
 	const op = "services.AuthService.RegisterParticipant"
-	const errMsg = "failed register participant"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
-	userFind, err := s.userRepository.GetByEmail(ctx, s.db, registerRequst.Email)
-	if err != nil {
-		log.Error("failed when check user exist", liblogger.Err(err))
-		return fmt.Errorf("%s", err)
+	_, err := s.userRepository.GetByEmail(ctx, s.db, registerRequst.Email)
+	if err == nil {
+		log.Warn("failed user exist", slog.String("email", registerRequst.Email))
+		return errs.ErrUserAlreadyExists
 	}
 
-	if userFind != nil {
-		log.Error("failed user exist")
-		return fmt.Errorf("%s: %s", errMsg, "user already exist")
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Error("failed to check user exist", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed to check user exist")
 	}
 
 	userModel := user_mapper.FromRegisterToModel(registerRequst)
 	transaction, err := s.db.TransactionBegin()
 	if err != nil {
-		log.Error("failed when begin transaction", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		log.Error("failed to begin transaction", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed to begin transaction")
 	}
 
 	userModel.PasswordHash, err = crypt.HashPassword(registerRequst.Password)
 	if err != nil {
-		log.Error("failed when hash password", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		log.Error("failed to hash password", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed to hash password")
 	}
 
 	userId, err := s.userRepository.Create(ctx, transaction, userModel)
 	if err != nil {
 		transaction.TransactionRollback()
-		log.Error("failed when create user", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		log.Error("failed to create user", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed to create user")
 	}
 
 	participantModel := paricipant_mapper.FromRegisterToModel(registerRequst, userId)
 	_, err = s.participantRepository.Create(ctx, transaction, participantModel)
 	if err != nil {
 		transaction.TransactionRollback()
-		log.Error("failed when create participant", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		log.Error("failed to create participant", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed to create participant")
 	}
 
 	transaction.TransactionCommit()
@@ -250,7 +249,7 @@ func (s *AuthService) RegisterParticipant(ctx context.Context, registerRequst *r
 	err = another_service.SendNotifyAcceptAccount(userModel.Email)
 	if err != nil {
 		log.Error("failed send notify on email: %w", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		return errs.ErrInternalError.Wrap("failed to send notify on email")
 	}
 
 	return nil
@@ -266,23 +265,29 @@ func (s *AuthService) ActivateAccount(ctx context.Context, email string, userCod
 
 	trustCode, err := redisdb.GetActivationCode(email)
 	if err != nil {
-		log.Error("failed get trust code", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		log.Error("failed get trust code", liblogger.Err(err), slog.String("email", email))
+		return errs.ErrActivationCodeNotFound
 	}
 
 	if trustCode != userCode {
-		log.Error("userCode incorrent")
-		return fmt.Errorf("%s", errMsg)
+		log.Error("user code incorrent", slog.String("user code", userCode), slog.String("trust code", trustCode))
+		return errs.ErrInvalidActivationCode
 	}
 
 	userModel, err := s.userRepository.GetByEmail(ctx, s.db, email)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Error("failed user not found", liblogger.Err(err), slog.String("email", email))
+		return errs.ErrUserNotFound
+	}
+
 	if err != nil {
 		log.Error("failed to find user by email", email, liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		return errs.ErrUserNotFoundEmail
 	}
+
 	// activate account
 	userModel.Activated = true
-	err = s.userRepository.Update(ctx, s.db, *userModel)
+	err = s.userRepository.Update(ctx, s.db, userModel)
 	if err != nil {
 		log.Error("failed update user activate status", liblogger.Err(err))
 		return fmt.Errorf("%s", errMsg)

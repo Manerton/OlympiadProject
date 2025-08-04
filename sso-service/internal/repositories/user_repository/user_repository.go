@@ -2,13 +2,11 @@ package user_repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"main/internal/models/user"
 	"main/internal/storage/orm"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type UserRepository struct{}
@@ -47,16 +45,14 @@ func (r *UserRepository) GetByFilter(ctx context.Context, orm orm.ORM, userModel
 	return userResult, nil
 }
 
-func (r *UserRepository) GetByEmail(ctx context.Context, orm orm.ORM, email string) (*user.User, error) {
+func (r *UserRepository) GetByEmail(ctx context.Context, orm orm.ORM, email string) (user.User, error) {
 	const op = "repositories.UserRepository.GetByEmail"
 
-	userResult := &user.User{}
-	err := orm.First(ctx, user.User{}, nil, userResult, user.User{Email: email})
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
-	}
+	userResult := user.User{}
+	err := orm.First(ctx, user.User{}, nil, &userResult, user.User{Email: email})
+
 	if err != nil {
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return user.User{}, fmt.Errorf("%s: %w", op, err)
 	}
 
 	return userResult, nil

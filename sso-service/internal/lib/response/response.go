@@ -1,6 +1,9 @@
 package response
 
-import "net/http"
+import (
+	"main/internal/lib/errs"
+	"net/http"
+)
 
 const (
 	SUCCESS = "success"
@@ -8,12 +11,12 @@ const (
 )
 
 type ApiResponse struct {
-	Status     string      `json:"status"`
-	StatusCode int         `json:"status_code"`
-	Data       interface{} `json:"data,omitempty"`
-	Error      string      `json:"error,omitempty"`
-	Message    string      `json:"message,omitempty"`
-	Metadata   interface{} `json:"metadata,omitempty"`
+	Status     string         `json:"status"`
+	StatusCode int            `json:"status_code"`
+	Data       interface{}    `json:"data,omitempty"`
+	Error      *errs.ApiError `json:"error,omitempty"`
+	Message    string         `json:"message,omitempty"`
+	Metadata   interface{}    `json:"metadata,omitempty"`
 }
 
 func ErrorResponse(msg string) ApiResponse {
