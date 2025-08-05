@@ -43,7 +43,7 @@ func (m *JWTManager) GetRefreshDuration() time.Duration {
 }
 
 func (m *JWTManager) ParseRefreshTokenWithClaims(tokenStr string) (*TokenRefreshClaims, error) {
-	const op = ""
+	const op = "jwtManager.ParseRefreshTokenWithClaims"
 
 	token, err := jwt.ParseWithClaims(tokenStr, &TokenRefreshClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return m.secretKey, nil
@@ -61,7 +61,7 @@ func (m *JWTManager) ParseRefreshTokenWithClaims(tokenStr string) (*TokenRefresh
 }
 
 func (m *JWTManager) ParseAccessTokenWithClaims(tokenStr string) (*TokenAccessClaims, error) {
-	const op = ""
+	const op = "jwtManager.ParseAccessTokenWithClaims"
 
 	token, err := jwt.ParseWithClaims(tokenStr, &TokenAccessClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return m.secretKey, nil

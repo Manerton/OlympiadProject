@@ -31,8 +31,10 @@ var (
 
 // Token errors
 var (
-	ErrAccessToken  = &ApiError{Code: "ACCESS_TOKEN_GENERATION_FAILED", HttpCode: http.StatusInternalServerError, Message: "Ошибка при создании access токена"}
-	ErrRefreshToken = &ApiError{Code: "REFRESH_TOKEN_GENERATION_FAILED", HttpCode: http.StatusInternalServerError, Message: "Ошибка при создании refresh токена"}
+	ErrTokenNotFound = &ApiError{Code: "TOKEN_NOT_FOUND", HttpCode: http.StatusNotFound}
+	ErrAccessToken   = &ApiError{Code: "ACCESS_TOKEN_GENERATION_FAILED", HttpCode: http.StatusInternalServerError, Message: "Ошибка при создании access токена"}
+	ErrRefreshToken  = &ApiError{Code: "REFRESH_TOKEN_GENERATION_FAILED", HttpCode: http.StatusInternalServerError, Message: "Ошибка при создании refresh токена"}
+	ErrRevokedToken  = &ApiError{Code: "REVOKED_TOKEN", HttpCode: http.StatusBadRequest, Message: "token was be revoked"}
 )
 
 // Auth errors
@@ -47,4 +49,14 @@ var (
 var (
 	ErrUserNotFound      = &ApiError{Code: "USER_NOT_FOUND", HttpCode: http.StatusNotFound}
 	ErrUserNotFoundEmail = &ApiError{Code: "USER_NOT_FOUND_EMAIL", HttpCode: http.StatusNotFound}
+)
+
+// Participant error
+var (
+	ErrParticipantNotFound = &ApiError{Code: "PARTICIPANT_NOT_FOUND", HttpCode: http.StatusNotFound, Message: "participant not found"}
+)
+
+// School participant
+var (
+	ErrSchoolNotFound = &ApiError{Code: "SCHOOL_NOT_FOUND", HttpCode: http.StatusNotFound, Message: "school not found"}
 )

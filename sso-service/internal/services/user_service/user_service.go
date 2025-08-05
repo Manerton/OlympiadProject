@@ -2,10 +2,11 @@ package user_service
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"log/slog"
 	user_dto "main/internal/dto/user"
 	"main/internal/lib/crypt"
+	"main/internal/lib/errs"
 	"main/internal/lib/liblogger"
 	paricipant_mapper "main/internal/lib/mapper/participant_mapper"
 	"main/internal/lib/mapper/user_mapper"
@@ -14,6 +15,7 @@ import (
 	"main/internal/storage/orm"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type UserRepository interface {
@@ -50,7 +52,6 @@ func New(log *slog.Logger, orm orm.ORM, userRepository UserRepository, participa
 
 func (s *UserService) GetCount(ctx context.Context) (int64, error) {
 	const op = "services.user_services.GetCount"
-	const errMsg = "failed to get count users"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -59,7 +60,7 @@ func (s *UserService) GetCount(ctx context.Context) (int64, error) {
 	userCount, err := s.userRepository.GetCount(ctx, s.db)
 	if err != nil {
 		log.Error("failed get count users", liblogger.Err(err))
-		return 0, fmt.Errorf("%s", errMsg)
+		return 0, errs.ErrInternalError.Wrap("failed get count users")
 	}
 
 	return userCount, nil
@@ -67,7 +68,6 @@ func (s *UserService) GetCount(ctx context.Context) (int64, error) {
 
 func (s *UserService) GetAll(ctx context.Context, page *int, limit *int) ([]user_dto.UserResponseDTO, error) {
 	const op = "services.user_services.GetAll"
-	const errMsg = "failed to find users"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -81,7 +81,7 @@ func (s *UserService) GetAll(ctx context.Context, page *int, limit *int) ([]user
 	usersResult, err := s.userRepository.GetAll(ctx, s.db, offset, limit)
 	if err != nil {
 		log.Error("failed find users", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, errs.ErrInternalError.Wrap("failed get all users")
 	}
 
 	usersDTO := make([]user_dto.UserResponseDTO, 0, len(usersResult))
@@ -94,7 +94,6 @@ func (s *UserService) GetAll(ctx context.Context, page *int, limit *int) ([]user
 
 func (s *UserService) GetByFilter(ctx context.Context, userDTO user_dto.SearchAttributesUserDTO) (user_dto.UserResponseDTO, error) {
 	const op = "services.user_services.GetByFilter"
-	const errMsg = "failed to find user"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -102,9 +101,14 @@ func (s *UserService) GetByFilter(ctx context.Context, userDTO user_dto.SearchAt
 
 	userModel := user_mapper.FromSearchToModel(userDTO)
 	userResult, err := s.userRepository.GetByFilter(ctx, s.db, userModel)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Warn("user not found", slog.Any("model", userModel), liblogger.Err(err))
+		return user_dto.UserResponseDTO{}, errs.ErrUserNotFound
+	}
+
 	if err != nil {
 		log.Error("failed get user", liblogger.Err(err))
-		return user_dto.UserResponseDTO{}, fmt.Errorf("%s", errMsg)
+		return user_dto.UserResponseDTO{}, errs.ErrInternalError.Wrap("failed find user")
 	}
 
 	return user_mapper.ToDTO(userResult), nil
@@ -112,7 +116,6 @@ func (s *UserService) GetByFilter(ctx context.Context, userDTO user_dto.SearchAt
 
 func (s *UserService) GetById(ctx context.Context, id string) (user_dto.UserResponseDTO, error) {
 	const op = "services.user_services.GetById"
-	const errMsg = "failed to find user"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -120,14 +123,19 @@ func (s *UserService) GetById(ctx context.Context, id string) (user_dto.UserResp
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed to parse id from string to uuid", liblogger.Err(err))
-		return user_dto.UserResponseDTO{}, fmt.Errorf("%s", errMsg)
+		log.Error("failed to parse id from string to uuid", slog.String("id", id), liblogger.Err(err))
+		return user_dto.UserResponseDTO{}, errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
 	userResult, err := s.userRepository.GetById(ctx, s.db, uid)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Warn("user not found", slog.String("id", id), liblogger.Err(err))
+		return user_dto.UserResponseDTO{}, errs.ErrUserNotFound
+	}
+
 	if err != nil {
 		log.Error("failed to get user", liblogger.Err(err))
-		return user_dto.UserResponseDTO{}, fmt.Errorf("%s", errMsg)
+		return user_dto.UserResponseDTO{}, errs.ErrInternalError.Wrap("failed find user")
 	}
 
 	return user_mapper.ToDTO(userResult), nil
@@ -135,7 +143,6 @@ func (s *UserService) GetById(ctx context.Context, id string) (user_dto.UserResp
 
 func (s *UserService) GetUserParticipantById(ctx context.Context, id string) (user_dto.UserParticipantResponseDTO, error) {
 	const op = "services.user_services.GetUserParticipantById"
-	const errMsg = "failed to find all info user"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -143,20 +150,30 @@ func (s *UserService) GetUserParticipantById(ctx context.Context, id string) (us
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed to parse id from string to uuid", liblogger.Err(err))
-		return user_dto.UserParticipantResponseDTO{}, fmt.Errorf("%s", errMsg)
+		log.Error("failed to parse id from string to uuid", slog.String("id", id), liblogger.Err(err))
+		return user_dto.UserParticipantResponseDTO{}, errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
 	userResult, err := s.userRepository.GetById(ctx, s.db, uid)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Warn("user not found", slog.String("id", id), liblogger.Err(err))
+		return user_dto.UserParticipantResponseDTO{}, errs.ErrUserNotFound
+	}
+
 	if err != nil {
 		log.Error("failed to get user", liblogger.Err(err))
-		return user_dto.UserParticipantResponseDTO{}, fmt.Errorf("%s", errMsg)
+		return user_dto.UserParticipantResponseDTO{}, errs.ErrInternalError.Wrap("failed find user")
 	}
 
 	participantResult, err := s.participantRepository.GetByUserId(ctx, s.db, userResult.ID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Error("participant not found", slog.String("user id", userResult.ID.String()), liblogger.Err(err))
+		return user_dto.UserParticipantResponseDTO{}, errs.ErrParticipantNotFound
+	}
+
 	if err != nil {
 		log.Error("failed to get participant", liblogger.Err(err))
-		return user_dto.UserParticipantResponseDTO{}, fmt.Errorf("%s", errMsg)
+		return user_dto.UserParticipantResponseDTO{}, errs.ErrInternalError.Wrap("failed to get participant")
 	}
 
 	return user_dto.UserParticipantResponseDTO{
@@ -168,7 +185,6 @@ func (s *UserService) GetUserParticipantById(ctx context.Context, id string) (us
 
 func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error) {
 	const op = "services.user_handler.GetByListId"
-	const errMsg = "failed to find users by list id"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -178,8 +194,8 @@ func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto
 	for _, id := range ids {
 		uid, err := uuid.Parse(id)
 		if err != nil {
-			log.Error("failed to parse id", liblogger.Err(err))
-			return nil, fmt.Errorf("%s", errMsg)
+			log.Error("failed to parse id", slog.String("id", id), liblogger.Err(err))
+			return nil, errs.ErrBadRequest.Wrap("failed parse uuid")
 		}
 		uids = append(uids, uid)
 	}
@@ -187,7 +203,7 @@ func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto
 	usersResult, err := s.userRepository.GetByListId(ctx, s.db, uids)
 	if err != nil {
 		log.Error("failed to get users by list id", slog.Any("ids", ids), liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, errs.ErrInternalError.Wrap("failed find users by list id")
 	}
 
 	usersDTO := make([]user_dto.UserResponseDTO, 0, len(usersResult))
@@ -199,7 +215,6 @@ func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto
 
 func (s *UserService) Update(ctx context.Context, id string, userDto user_dto.UpdateUserRequestDTO) error {
 	const op = "services.user_sevice.Update"
-	const errMsg = "failed update user"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -207,24 +222,23 @@ func (s *UserService) Update(ctx context.Context, id string, userDto user_dto.Up
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id", liblogger.Err(err))
-		return fmt.Errorf("failed parse id")
+		log.Error("failed parse id", slog.String("id", id), liblogger.Err(err))
+		return errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
 	userModel := user_mapper.FromUpdateToModel(userDto, uid)
-
 	if userDto.Password != nil {
 		userModel.PasswordHash, err = crypt.HashPassword(*userDto.Password)
 		if err != nil {
 			log.Error("failed hash password", liblogger.Err(err))
-			return fmt.Errorf("%s", errMsg)
+			return errs.ErrInternalError.Wrap("failed hash password")
 		}
 	}
 
 	err = s.userRepository.Update(ctx, s.db, userModel)
 	if err != nil {
 		log.Error("failed update user", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		return errs.ErrInternalError.Wrap("failed update user")
 	}
 
 	return nil
@@ -232,7 +246,6 @@ func (s *UserService) Update(ctx context.Context, id string, userDto user_dto.Up
 
 func (s *UserService) Delete(ctx context.Context, id string) error {
 	const op = "services.user_service.Delete"
-	const errMsg = "failed delete user"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -240,14 +253,14 @@ func (s *UserService) Delete(ctx context.Context, id string) error {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id", id, liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		log.Error("failed parse id", slog.String("id", id), liblogger.Err(err))
+		return errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
 	err = s.userRepository.Delete(ctx, s.db, uid)
 	if err != nil {
 		log.Error("failed delete user", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		return errs.ErrInternalError.Wrap("failed delete user")
 	}
 
 	return nil

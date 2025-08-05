@@ -46,7 +46,7 @@ func (h *SchoolHandler) GetCount(w http.ResponseWriter, r *http.Request) {
 	schoolCount, err := h.schoolService.GetCount(ctx)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("failed get count", err))
 		return
 	}
 
@@ -77,14 +77,14 @@ func (h *SchoolHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	page, limit, err := parser.ParsePageLimit(pageStr, limitStr)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed parse page/limit"))
+		render.JSON(w, r, response.ErrorResponse("failed parse page/limit", err))
 		return
 	}
 
 	schoolResponse, err := h.schoolService.GetAll(ctx, page, limit)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("failed get", err))
 		return
 	}
 
@@ -112,7 +112,7 @@ func (h *SchoolHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	schoolResponse, err := h.schoolService.GetById(ctx, id)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("failed get", err))
 		return
 	}
 
@@ -140,14 +140,14 @@ func (h *SchoolHandler) Create(w http.ResponseWriter, r *http.Request) {
 	err := render.DecodeJSON(r.Body, &schoolDTO)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed decode json"))
+		render.JSON(w, r, response.ErrorResponse("failed decode json", err))
 		return
 	}
 
 	_, err = h.schoolService.Create(ctx, schoolDTO)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("failed create", err))
 		return
 	}
 
@@ -174,14 +174,14 @@ func (h *SchoolHandler) Update(w http.ResponseWriter, r *http.Request) {
 	err := render.DecodeJSON(r.Body, &schoolDTO)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed decode json"))
+		render.JSON(w, r, response.ErrorResponse("failed decode json", err))
 		return
 	}
 
 	err = h.schoolService.Update(ctx, id, schoolDTO)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("failed update", err))
 		return
 	}
 

@@ -2,15 +2,17 @@ package participant_service
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"log/slog"
 	participant_dto "main/internal/dto/participant"
+	"main/internal/lib/errs"
 	"main/internal/lib/liblogger"
 	"main/internal/lib/mapper/participant_mapper"
 	"main/internal/models/participant"
 	"main/internal/storage/orm"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type ParticipantRepository interface {
@@ -39,7 +41,6 @@ func New(log *slog.Logger, orm orm.ORM, participantRepository ParticipantReposit
 
 func (s *ParticipantService) GetCount(ctx context.Context) (int64, error) {
 	const op = "services.participant_service.GetCount"
-	const errMsg = "failed count participants"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -48,7 +49,7 @@ func (s *ParticipantService) GetCount(ctx context.Context) (int64, error) {
 	participantCount, err := s.participantRepository.GetCount(ctx, s.db)
 	if err != nil {
 		log.Error("failed participant count users", liblogger.Err(err))
-		return 0, fmt.Errorf("%s", errMsg)
+		return 0, errs.ErrInternalError.Wrap("failed get count participants")
 	}
 
 	return participantCount, nil
@@ -56,7 +57,6 @@ func (s *ParticipantService) GetCount(ctx context.Context) (int64, error) {
 
 func (s *ParticipantService) GetById(ctx context.Context, id string) (participant_dto.ParticipantResponseDTO, error) {
 	const op = "services.participant_service.GetById"
-	const errMsg = "failed get participant"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -64,14 +64,19 @@ func (s *ParticipantService) GetById(ctx context.Context, id string) (participan
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id to uid", liblogger.Err(err))
-		return participant_dto.ParticipantResponseDTO{}, fmt.Errorf("%s", errMsg)
+		log.Error("failed parse id to uid", slog.String("id", id), liblogger.Err(err))
+		return participant_dto.ParticipantResponseDTO{}, errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
 	participant, err := s.participantRepository.GetById(ctx, s.db, uid)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Warn("particioant not found", liblogger.Err(err))
+		return participant_dto.ParticipantResponseDTO{}, errs.ErrParticipantNotFound
+	}
+
 	if err != nil {
 		log.Error("failed get participant", liblogger.Err(err))
-		return participant_dto.ParticipantResponseDTO{}, fmt.Errorf("%s", errMsg)
+		return participant_dto.ParticipantResponseDTO{}, errs.ErrInternalError.Wrap("failed get participant")
 	}
 
 	return participant_mapper.ToDTO(participant), nil
@@ -79,7 +84,6 @@ func (s *ParticipantService) GetById(ctx context.Context, id string) (participan
 
 func (s *ParticipantService) GetByUserId(ctx context.Context, id string) (participant_dto.ParticipantResponseDTO, error) {
 	const op = "services.participant_service.GetByUserID"
-	const errMsg = "failed get participant"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -87,23 +91,26 @@ func (s *ParticipantService) GetByUserId(ctx context.Context, id string) (partic
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id to uid", liblogger.Err(err))
-		return participant_dto.ParticipantResponseDTO{}, fmt.Errorf("%s", errMsg)
+		log.Error("failed parse id to uid", slog.String("id", id), liblogger.Err(err))
+		return participant_dto.ParticipantResponseDTO{}, errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
 	participantModel, err := s.participantRepository.GetByUserId(ctx, s.db, uid)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Warn("participant not found", liblogger.Err(err))
+		return participant_dto.ParticipantResponseDTO{}, errs.ErrParticipantNotFound
+	}
+
 	if err != nil {
 		log.Error("failed get participant by user id", liblogger.Err(err))
-		return participant_dto.ParticipantResponseDTO{}, fmt.Errorf("%s", errMsg)
+		return participant_dto.ParticipantResponseDTO{}, errs.ErrInternalError.Wrap("failed get participant")
 	}
 
 	return participant_mapper.ToDTO(participantModel), nil
-
 }
 
 func (s *ParticipantService) GetAll(ctx context.Context, page, limit *int) ([]participant_dto.ParticipantResponseDTO, error) {
 	const op = "services.participant_service.GetAll"
-	const errMsg = "failed get participants"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -117,7 +124,7 @@ func (s *ParticipantService) GetAll(ctx context.Context, page, limit *int) ([]pa
 	participants, err := s.participantRepository.GetAll(ctx, s.db, offset, limit)
 	if err != nil {
 		log.Error("failed get participants", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, errs.ErrInternalError.Wrap("failed get participant")
 	}
 
 	participantsDTO := make([]participant_dto.ParticipantResponseDTO, 0, len(participants))
@@ -125,12 +132,10 @@ func (s *ParticipantService) GetAll(ctx context.Context, page, limit *int) ([]pa
 		participantsDTO = append(participantsDTO, participant_mapper.ToDTO(participantModel))
 	}
 	return participantsDTO, nil
-
 }
 
 func (s *ParticipantService) Update(ctx context.Context, id string, participantDTO participant_dto.UpdateParticipantRequestDTO) error {
 	const op = "services.participant_service.Update"
-	const errMsg = "failed update participant"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -138,20 +143,20 @@ func (s *ParticipantService) Update(ctx context.Context, id string, participantD
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id", liblogger.Err(err))
-		return fmt.Errorf("failed parse id")
+		log.Error("failed parse id", slog.String("id", id), liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed parse uuid")
 	}
 
 	participantModel, err := participant_mapper.FromUpdateToModel(participantDTO, uid)
 	if err != nil {
 		log.Error("failed convert update dto to model", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		return errs.ErrBadRequest.Wrap("failed convert dto to model")
 	}
 
 	err = s.participantRepository.Update(ctx, s.db, participantModel)
 	if err != nil {
 		log.Error("failed update participant", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		return errs.ErrInternalError.Wrap("failed update participant")
 	}
 	return nil
 }

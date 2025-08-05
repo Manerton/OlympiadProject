@@ -45,7 +45,7 @@ func (h *ParticipantHandler) GetCount(w http.ResponseWriter, r *http.Request) {
 	participantCount, err := h.participantService.GetCount(ctx)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed get participant users"))
+		render.JSON(w, r, response.ErrorResponse("failed get participant users", err))
 		return
 	}
 
@@ -74,7 +74,7 @@ func (h *ParticipantHandler) GetById(w http.ResponseWriter, r *http.Request) {
 	participantRes, err := h.participantService.GetById(ctx, id)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("failed get", err))
 		return
 	}
 
@@ -101,7 +101,7 @@ func (h *ParticipantHandler) GetByUserId(w http.ResponseWriter, r *http.Request)
 	participantRes, err := h.participantService.GetByUserId(ctx, id)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("failed get", err))
 		return
 	}
 
@@ -132,14 +132,14 @@ func (h *ParticipantHandler) GetAllParticipants(w http.ResponseWriter, r *http.R
 	page, limit, err := parser.ParsePageLimit(pageStr, limitStr)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed parse page/limit"))
+		render.JSON(w, r, response.ErrorResponse("failed parse page/limit", err))
 		return
 	}
 
 	participantResponse, err := h.participantService.GetAll(ctx, page, limit)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("failed get", err))
 		return
 	}
 
@@ -170,14 +170,14 @@ func (h *ParticipantHandler) Update(w http.ResponseWriter, r *http.Request) {
 	err := render.DecodeJSON(r.Body, &participantDTO)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed decode json"))
+		render.JSON(w, r, response.ErrorResponse("failed decode json", err))
 		return
 	}
 
 	err = h.participantService.Update(ctx, id, participantDTO)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("failed update", err))
 		return
 	}
 

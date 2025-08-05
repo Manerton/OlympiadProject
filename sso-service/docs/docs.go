@@ -1162,6 +1162,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "errs.ApiError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "httpCode": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "login_dto.LoginRequestDTO": {
             "type": "object",
             "required": [
@@ -1306,7 +1320,7 @@ const docTemplate = `{
             "properties": {
                 "data": {},
                 "error": {
-                    "type": "string"
+                    "$ref": "#/definitions/errs.ApiError"
                 },
                 "message": {
                     "type": "string"

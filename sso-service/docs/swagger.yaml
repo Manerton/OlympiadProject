@@ -1,5 +1,14 @@
 basePath: /
 definitions:
+  errs.ApiError:
+    properties:
+      code:
+        type: string
+      httpCode:
+        type: integer
+      message:
+        type: string
+    type: object
   login_dto.LoginRequestDTO:
     properties:
       email:
@@ -95,7 +104,7 @@ definitions:
     properties:
       data: {}
       error:
-        type: string
+        $ref: '#/definitions/errs.ApiError'
       message:
         type: string
       metadata: {}

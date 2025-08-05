@@ -48,7 +48,7 @@ func (h *UserHandler) GetCountUsers(w http.ResponseWriter, r *http.Request) {
 	userCount, err := h.UserService.GetCount(ctx)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed get count users"))
+		render.JSON(w, r, response.ErrorResponse("failed get count users", err))
 		return
 	}
 
@@ -79,14 +79,14 @@ func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	page, limit, err := parser.ParsePageLimit(pageStr, limitStr)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed parse page/limit"))
+		render.JSON(w, r, response.ErrorResponse("failed parse page/limit", err))
 		return
 	}
 
 	usersResponse, err := h.UserService.GetAll(ctx, page, limit)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed find users"))
+		render.JSON(w, r, response.ErrorResponse("failed find users", err))
 		return
 	}
 
@@ -114,14 +114,14 @@ func (h *UserHandler) GetUserByFilter(w http.ResponseWriter, r *http.Request) {
 	err := render.DecodeJSON(r.Body, &searchDTO)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed decode json"))
+		render.JSON(w, r, response.ErrorResponse("failed decode json", err))
 		return
 	}
 
 	userResponse, err := h.UserService.GetByFilter(ctx, searchDTO)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed find user"))
+		render.JSON(w, r, response.ErrorResponse("failed find user", err))
 		return
 	}
 
@@ -149,7 +149,7 @@ func (h *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
 
 	userResponse, err := h.UserService.GetById(ctx, id)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed to find user"))
+		render.JSON(w, r, response.ErrorResponse("failed to find user", err))
 		return
 	}
 
@@ -176,7 +176,7 @@ func (h *UserHandler) GetUserParticipantById(w http.ResponseWriter, r *http.Requ
 
 	participantUserResponse, err := h.UserService.GetUserParticipantById(ctx, id)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed to find user"))
+		render.JSON(w, r, response.ErrorResponse("failed to find user", err))
 		return
 	}
 
@@ -207,13 +207,13 @@ func (h *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) {
 
 	err := render.DecodeJSON(r.Body, &ids)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed to decode json"))
+		render.JSON(w, r, response.ErrorResponse("failed to decode json", err))
 		return
 	}
 
 	usersResponse, err := h.UserService.GetByListId(ctx, ids.Ids)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed to find users"))
+		render.JSON(w, r, response.ErrorResponse("failed to find users", err))
 		return
 	}
 
@@ -243,13 +243,13 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	err := render.DecodeJSON(r.Body, &userDto)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed decode json"))
+		render.JSON(w, r, response.ErrorResponse("failed decode json", err))
 		return
 	}
 
 	err = h.UserService.Update(ctx, id, userDto)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed update user"))
+		render.JSON(w, r, response.ErrorResponse("failed update user", err))
 		return
 	}
 
@@ -273,7 +273,7 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	err := h.UserService.Delete(ctx, id)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed delete user"))
+		render.JSON(w, r, response.ErrorResponse("failed delete user", err))
 		return
 	}
 

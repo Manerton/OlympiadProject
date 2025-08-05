@@ -51,14 +51,14 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	err := render.DecodeJSON(r.Body, &loginRequest)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to decode json"))
+		render.JSON(w, r, response.ErrorResponse("failed to decode json", err))
 		return
 	}
 
 	authResult, err := h.authService.Login(ctx, &loginRequest)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("failed login", err))
 		return
 	}
 
@@ -98,7 +98,7 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("refresh_token")
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("refresh token not found"))
+		render.JSON(w, r, response.ErrorResponse("refresh token not found", err))
 		return
 	}
 
@@ -106,7 +106,7 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	err = h.authService.Logout(ctx, cookieStr)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed logout"))
+		render.JSON(w, r, response.ErrorResponse("failed logout", err))
 		return
 	}
 
@@ -130,14 +130,14 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	err := render.DecodeJSON(r.Body, &registerRequest)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to decode json"))
+		render.JSON(w, r, response.ErrorResponse("failed to decode json", err))
 		return
 	}
 
 	err = h.authService.RegisterParticipant(ctx, &registerRequest)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("failed register", err))
 		return
 	}
 
@@ -163,14 +163,14 @@ func (h *AuthHandler) AdminRegister(w http.ResponseWriter, r *http.Request) {
 	err := render.DecodeJSON(r.Body, registerRequest)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("failed decode", err))
 		return
 	}
 
 	err = h.authService.RegisterUser(ctx, registerRequest)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("", err))
 		return
 	}
 
@@ -192,14 +192,14 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 	refreshToken, err := r.Cookie("refresh_token")
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("refresh token not found"))
+		render.JSON(w, r, response.ErrorResponse("refresh token not found", err))
 		return
 	}
 
 	loginDTO, err := h.authService.Refresh(ctx, refreshToken.Value)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("", err))
 		return
 	}
 
@@ -242,7 +242,7 @@ func (h *AuthHandler) RevokeToken(w http.ResponseWriter, r *http.Request) {
 	err := h.authService.RevokeToken(ctx, id)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("", err))
 		return
 	}
 
@@ -266,7 +266,7 @@ func (h *AuthHandler) RevokeAllUserTokens(w http.ResponseWriter, r *http.Request
 	err := h.authService.RevokeAllUserTokens(ctx, userID)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		render.JSON(w, r, response.ErrorResponse("", err))
 		return
 	}
 

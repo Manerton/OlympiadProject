@@ -74,12 +74,12 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 
 	userResult, err := s.userRepository.GetByEmail(ctx, s.db, loginRequest.Email)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Error("failed user not fount", err)
+		log.Error("failed user not fount", slog.String("email", loginRequest.Email), liblogger.Err(err))
 		return nil, errs.ErrAuthFailed.Wrap("email not found")
 	}
 
 	if err != nil {
-		log.Error("failed to get user by email", loginRequest.Email, liblogger.Err(err))
+		log.Error("failed to get user by email", liblogger.Err(err))
 		return nil, errs.ErrInternalError.Wrap("failed get user by email")
 	}
 
@@ -257,7 +257,6 @@ func (s *AuthService) RegisterParticipant(ctx context.Context, registerRequst *r
 
 func (s *AuthService) ActivateAccount(ctx context.Context, email string, userCode string) error {
 	const op = "services.AuthService.ActivateAccount"
-	const errMsg = "failed to activate account"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -282,7 +281,7 @@ func (s *AuthService) ActivateAccount(ctx context.Context, email string, userCod
 
 	if err != nil {
 		log.Error("failed to find user by email", email, liblogger.Err(err))
-		return errs.ErrUserNotFoundEmail
+		return errs.ErrInternalError.Wrap("failed to find user by email")
 	}
 
 	// activate account
@@ -290,7 +289,7 @@ func (s *AuthService) ActivateAccount(ctx context.Context, email string, userCod
 	err = s.userRepository.Update(ctx, s.db, userModel)
 	if err != nil {
 		log.Error("failed update user activate status", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		return errs.ErrInternalError.Wrap("failed update user activate status")
 	}
 
 	return nil
@@ -298,7 +297,6 @@ func (s *AuthService) ActivateAccount(ctx context.Context, email string, userCod
 
 func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_dto.AuthResultDTO, error) {
 	const op = "services.AuthService.Refresh"
-	const errMsg = "failed to refresh tokens"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -308,32 +306,37 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 	tokenClaims, err := s.jwtManager.ParseRefreshTokenWithClaims(refreshToken)
 	if err != nil {
 		log.Error("failed get refresh token claims", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, errs.ErrInternalError.Wrap("failed get claims from refresh token")
 	}
 
 	tokenUid, err := uuid.Parse(tokenClaims.ID)
 	if err != nil {
-		log.Error("failed parse id to uuid", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		log.Error("failed parse id to uuid", slog.String("id", tokenClaims.ID), liblogger.Err(err))
+		return nil, errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
 	// get token from db
 	tokenDB, err := s.refreshRepository.GetById(ctx, s.db, tokenUid)
-	if err != nil {
-		log.Error("failed get refresh token", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Error("refresh token does not exist on db", slog.String("id", tokenClaims.ID), liblogger.Err(err))
+		return nil, errs.ErrTokenNotFound.Wrap("refresh token not found")
 	}
 
-	// check hash
-	if !crypt.CheckPasswordHash(refreshToken, tokenDB.TokenHash) {
-		log.Error("failed check hash token")
-		return nil, fmt.Errorf("%s", errMsg)
+	if err != nil {
+		log.Error("failed get refresh token", liblogger.Err(err))
+		return nil, errs.ErrInternalError.Wrap("failed get refresh token")
 	}
+
+	// // check hash
+	// if !crypt.CheckPasswordHash(refreshToken, tokenDB.TokenHash) {
+	// 	log.Error("failed check hash token")
+	// 	return nil, fmt.Errorf("%s", errMsg)
+	// }
 
 	// check token is revoked
 	if tokenDB.Revoked {
 		log.Error("Token was be revoked")
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, errs.ErrRevokedToken
 	}
 
 	// delete old token
@@ -347,29 +350,33 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 	// parse user id to uuid
 	userUid, err := uuid.Parse(tokenClaims.Subject)
 	if err != nil {
-		log.Error("failed parse user id from token to uuid", liblogger.Err(err))
-		return nil, fmt.Errorf("%s: failed parse id to uid", errMsg)
+		log.Error("failed parse user id from token to uuid", slog.String("user id", tokenClaims.Subject), liblogger.Err(err))
+		return nil, errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
 	// find user
 	userFind, err := s.userRepository.GetById(ctx, s.db, userUid)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Warn("user not found", liblogger.Err(err))
+		return nil, errs.ErrUserNotFound
+	}
 	if err != nil {
 		log.Error("failed get user", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, errs.ErrInternalError.Wrap("failed get user")
 	}
 
 	// create token
 	token, err := s.jwtManager.CreateToken(userFind)
 	if err != nil {
 		log.Error("failed when create token", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, errs.ErrInternalError.Wrap("failed create token")
 	}
 
 	// create refresh token
 	newRefreshToken, err := s.preparationRefreshToken(ctx, userFind)
 	if err != nil {
 		log.Error("failed when create refresh token", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, errs.ErrRefreshToken
 	}
 
 	return &login_dto.AuthResultDTO{
@@ -382,7 +389,6 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 
 func (s *AuthService) RevokeToken(ctx context.Context, id string) error {
 	const op = "services.AuthService.RevokeToken"
-	const errMsg = "failed to revoke token"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -390,8 +396,8 @@ func (s *AuthService) RevokeToken(ctx context.Context, id string) error {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id to uuid", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		log.Error("failed parse id to uuid", slog.String("id", id), liblogger.Err(err))
+		return errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
 	updates := refresh_token.RefreshToken{
@@ -402,7 +408,7 @@ func (s *AuthService) RevokeToken(ctx context.Context, id string) error {
 	err = s.refreshRepository.Update(ctx, s.db, nil, updates)
 	if err != nil {
 		log.Error("failed update refresh token", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		return errs.ErrInternalError.Wrap("failed revoke refresh token")
 	}
 
 	return nil
@@ -410,7 +416,6 @@ func (s *AuthService) RevokeToken(ctx context.Context, id string) error {
 
 func (s *AuthService) RevokeAllUserTokens(ctx context.Context, userId string) error {
 	const op = "services.AuthService.RevokeAllUserTokens"
-	const errMsg = "failed to revoke all user tokens"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -418,20 +423,20 @@ func (s *AuthService) RevokeAllUserTokens(ctx context.Context, userId string) er
 
 	uid, err := uuid.Parse(userId)
 	if err != nil {
-		log.Error("failed parse user ID to uuid", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		log.Error("failed parse user ID to uuid", slog.String("user id", userId), liblogger.Err(err))
+		return errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
 	conditions := refresh_token.RefreshToken{
 		Revoked: true,
 	}
 
-	updates := refresh_token.RefreshToken{ID: uid}
+	updates := refresh_token.RefreshToken{UserID: uid}
 
 	err = s.refreshRepository.Update(ctx, s.db, &conditions, updates)
 	if err != nil {
 		log.Error("failed updates all user tokens", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		return errs.ErrInternalError.Wrap("failed revoke all user refresh tokens")
 	}
 
 	return nil

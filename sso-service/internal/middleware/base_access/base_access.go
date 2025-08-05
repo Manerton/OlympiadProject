@@ -40,7 +40,7 @@ func BaseAccess(jwtManager *jwttoken.JWTManager) func(next http.Handler) http.Ha
 			if err != nil {
 				log.Printf("token verification failed: %v\n", err)
 				render.Status(r, http.StatusUnauthorized)
-				render.JSON(w, r, response.ErrorResponse("invalid token claims"))
+				render.JSON(w, r, response.ErrorResponse("invalid token claims", err))
 				return
 			}
 

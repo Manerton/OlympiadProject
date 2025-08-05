@@ -19,10 +19,14 @@ type ApiResponse struct {
 	Metadata   interface{}    `json:"metadata,omitempty"`
 }
 
-func ErrorResponse(msg string) ApiResponse {
+func ErrorResponse(msg string, err error) ApiResponse {
+
+	apiErr := err.(*errs.ApiError)
+
 	return ApiResponse{
 		Status:     ERROR,
-		StatusCode: http.StatusBadRequest,
+		StatusCode: apiErr.HttpCode,
+		Error:      apiErr,
 		Message:    msg,
 	}
 }

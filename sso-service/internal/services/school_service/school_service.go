@@ -2,15 +2,17 @@ package school_service
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"log/slog"
 	school_dto "main/internal/dto/school"
+	"main/internal/lib/errs"
 	"main/internal/lib/liblogger"
 	"main/internal/lib/mapper/school_mapper"
 	"main/internal/models/school"
 	"main/internal/storage/orm"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type SchoolRepository interface {
@@ -40,7 +42,6 @@ func New(log *slog.Logger, orm orm.ORM, schoolRepository SchoolRepository) *Scho
 
 func (s *SchoolService) GetCount(ctx context.Context) (int64, error) {
 	const op = "services.school_service.GetCount"
-	const errMsg = "failed get count school"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -49,7 +50,7 @@ func (s *SchoolService) GetCount(ctx context.Context) (int64, error) {
 	schoolCount, err := s.schoolRepository.GetCount(ctx, s.db)
 	if err != nil {
 		log.Error("failed get count schools", liblogger.Err(err))
-		return 0, fmt.Errorf("%s", errMsg)
+		return 0, errs.ErrInternalError.Wrap("failed get cound schools")
 	}
 
 	return schoolCount, nil
@@ -57,7 +58,6 @@ func (s *SchoolService) GetCount(ctx context.Context) (int64, error) {
 
 func (s *SchoolService) GetById(ctx context.Context, id string) (school_dto.SchoolResponseDTO, error) {
 	const op = "services.school_service.GetById"
-	const errMsg = "failed get school"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -65,14 +65,19 @@ func (s *SchoolService) GetById(ctx context.Context, id string) (school_dto.Scho
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id", liblogger.Err(err))
-		return school_dto.SchoolResponseDTO{}, fmt.Errorf("%s", errMsg)
+		log.Error("failed parse id", slog.String("id", id), liblogger.Err(err))
+		return school_dto.SchoolResponseDTO{}, errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
 	schoolModel, err := s.schoolRepository.GetById(ctx, s.db, uid)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		log.Warn("school not found", liblogger.Err(err))
+		return school_dto.SchoolResponseDTO{}, errs.ErrSchoolNotFound
+	}
+
 	if err != nil {
 		log.Error("failed get school", liblogger.Err(err))
-		return school_dto.SchoolResponseDTO{}, fmt.Errorf("%s", errMsg)
+		return school_dto.SchoolResponseDTO{}, errs.ErrInternalError.Wrap("failed find school")
 	}
 
 	return school_mapper.FromModelToDTO(schoolModel), nil
@@ -80,7 +85,6 @@ func (s *SchoolService) GetById(ctx context.Context, id string) (school_dto.Scho
 
 func (s *SchoolService) GetAll(ctx context.Context, page, limit *int) ([]school_dto.SchoolResponseDTO, error) {
 	const op = "services.school_service.GetAll"
-	const errMsg = "failed get all schools"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -94,7 +98,7 @@ func (s *SchoolService) GetAll(ctx context.Context, page, limit *int) ([]school_
 	schoolsResult, err := s.schoolRepository.GetAll(ctx, s.db, offset, limit)
 	if err != nil {
 		log.Error("failed get all schools", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, errs.ErrInternalError.Wrap("failed get all schools")
 	}
 
 	schoolDTO := make([]school_dto.SchoolResponseDTO, 0, len(schoolsResult))
@@ -107,7 +111,6 @@ func (s *SchoolService) GetAll(ctx context.Context, page, limit *int) ([]school_
 
 func (s *SchoolService) Create(ctx context.Context, schoolDTO school_dto.CreateSchoolRequestDTO) (uuid.UUID, error) {
 	const op = "services.school_service.Create"
-	const errMsg = "failed create school"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -115,13 +118,13 @@ func (s *SchoolService) Create(ctx context.Context, schoolDTO school_dto.CreateS
 
 	schoolModel, err := school_mapper.FromCreateDTOToModel(schoolDTO)
 	if err != nil {
-		log.Error("failed convert dto to model", liblogger.Err(err))
-		return uuid.Nil, fmt.Errorf("%s", errMsg)
+		log.Error("failed convert dto to model", slog.Any("dto", schoolDTO), liblogger.Err(err))
+		return uuid.Nil, errs.ErrBadRequest.Wrap("failed convert dto to model")
 	}
 	uid, err := s.schoolRepository.Create(ctx, s.db, schoolModel)
 	if err != nil {
 		log.Error("failed create school", liblogger.Err(err))
-		return uuid.Nil, fmt.Errorf("%s", errMsg)
+		return uuid.Nil, errs.ErrInternalError.Wrap("failed create school")
 	}
 
 	return uid, nil
@@ -129,7 +132,6 @@ func (s *SchoolService) Create(ctx context.Context, schoolDTO school_dto.CreateS
 
 func (s *SchoolService) Update(ctx context.Context, id string, schoolDTO school_dto.UpdateSchoolRequestDTO) error {
 	const op = "services.school_service.Update"
-	const errMsg = "failed update school"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -137,20 +139,20 @@ func (s *SchoolService) Update(ctx context.Context, id string, schoolDTO school_
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id", liblogger.Err(err))
-		return fmt.Errorf("failed parse id")
+		log.Error("failed parse id", slog.String("id", id), liblogger.Err(err))
+		return errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
 	schoolModel, err := school_mapper.FromUpdateDTOToModel(schoolDTO, uid)
 	if err != nil {
-		log.Error("failed convert dto to model", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		log.Error("failed convert dto to model", slog.Any("dto", schoolDTO), liblogger.Err(err))
+		return errs.ErrBadRequest.Wrap("failed convert dto to model")
 	}
 
 	err = s.schoolRepository.Update(ctx, s.db, schoolModel)
 	if err != nil {
 		log.Error("failed update school", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		return errs.ErrInternalError.Wrap("failed update school")
 	}
 
 	return nil
@@ -158,7 +160,6 @@ func (s *SchoolService) Update(ctx context.Context, id string, schoolDTO school_
 
 func (s *SchoolService) Delete(ctx context.Context, id string) error {
 	const op = "services.school_service.Delete"
-	const errMsg = "failed delete school"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -166,14 +167,14 @@ func (s *SchoolService) Delete(ctx context.Context, id string) error {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		log.Error("failed parse id", slog.String("id", id), liblogger.Err(err))
+		return errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
 	err = s.schoolRepository.Delete(ctx, s.db, uid)
 	if err != nil {
 		log.Error("failed delete school", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		return errs.ErrInternalError.Wrap("failed delete school")
 	}
 
 	return nil
