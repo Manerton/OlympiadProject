@@ -2,6 +2,7 @@ import React from "react";
 import { Navbar, Nav, Dropdown, Container } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
 import { PersonCircle, BoxArrowInRight } from "react-bootstrap-icons";
+import ThemeToggleButton from '../../Helpers/ThemeToggleButton';
 
 function Header() {
   // Заглушки: в будущем подключите контекст пользователя
@@ -11,8 +12,8 @@ function Header() {
   const userRole = "admin"; // временно установлено 'admin' для демонстрации
 
   return (
-    <Navbar bg="light" expand="lg" sticky="top">
-      <Container fluid>
+    <Navbar expand="lg" sticky="top" className="bg-body-tertiary border border-1">
+      <Container fluid="lg" className="mx-auto">
         <Navbar.Brand href="/">ВСОШ</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav" className="navbar-expand-lg">
@@ -94,6 +95,7 @@ function Header() {
               </Nav.Link>
             )}
           </Nav>
+          <ThemeToggleButton />
         </Navbar.Collapse>
       </Container>
     </Navbar>

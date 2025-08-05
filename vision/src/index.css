@@ -23,7 +23,10 @@ a:hover {
 }
 
 body {
-  margin: 100px; /* Внешние отступы */
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
   display: flex;
   place-items: center;
   min-width: 320px;
