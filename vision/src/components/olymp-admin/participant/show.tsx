@@ -32,7 +32,7 @@ const ParticipantShow = () => {
   const [classes, setClasses] = useState<Dictionaries>({});
   const [loading, setLoading] = useState(true);
   
-  const token = 'your-auth-token-here';
+  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
 
   useEffect(() => {
     axios.get(`http://olymp-admin-v2/api/participant/show/${id}`, {
@@ -42,7 +42,7 @@ const ParticipantShow = () => {
       withCredentials: true
     })
       .then(response => {
-        setParticipant(response.data.model);
+        setParticipant(response.data.participant);
         setCountries(response.data.countries || {});
         setDisabilities(response.data.disabilities || {});
         setClasses(response.data.classes || {});

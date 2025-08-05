@@ -109,7 +109,22 @@ class ParticipantApiController extends Controller
             'disabilities' => $disabilities,
             'countries' => $countries,
             'classes' => $classes,
-            'participant' => $participant
+            'participant' => [
+                'id' => $participant->id,
+                'user_id' => $participant->user_id,
+                'disability' => $participant->disability,
+                'citizenship' => $participant->citizenship,
+                'class' => $participant->class,
+                'school_id' => $participant->school_id,
+                'userAPI' => [
+                    'firstname' => $participant->userAPI->firstname ?? null,
+                    'surname' => $participant->userAPI->surname ?? null,
+                    'patronymic' => $participant->userAPI->patronymic ?? null,
+                ],
+                'schoolAPI' => [
+                    'name' => $participant->schoolAPI->name ?? null,
+                ]
+            ]
         ]);
     }
     public function edit($id){
@@ -124,8 +139,27 @@ class ParticipantApiController extends Controller
             'disabilities' => $disabilities,
             'countries' => $countries,
             'classes' => $classes,
-            'participant' => $participant,
-            'schools' => $schools,
+            'participant' => [
+                'id' => $participant->id,
+                'user_id' => $participant->user_id,
+                'disability' => $participant->disability,
+                'citizenship' => $participant->citizenship,
+                'class' => $participant->class,
+                'school_id' => $participant->school_id,
+                'userAPI' => [
+                    'email' => $participant->userAPI->email ?? null,
+                    'firstname' => $participant->userAPI->firstname ?? null,
+                    'surname' => $participant->userAPI->surname ?? null,
+                    'patronymic' => $participant->userAPI->patronymic ?? null,
+                    'phone_number' => $participant->userAPI->phone_number ?? null,
+                ],
+                'schoolAPI' => [
+                    'id' => $participant->schoolAPI->id ?? null,
+                    'name' => $participant->schoolAPI->name ?? null,
+                    'region' => $participant->schoolAPI->region ?? null,
+                ]
+            ],
+            'schools' => array_map(fn($school) => (array)$school, $schools),
             'roles' => $roles,
             'genders' => $genders
         ]);

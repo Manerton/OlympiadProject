@@ -28,27 +28,23 @@ const SchoolEdit: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [regions, setRegions] = useState<Dictionary>({});
   const [loading, setLoading] = useState(true);
-  const token = 'your-auth-token-here';
+  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [regionsResponse, schoolResponse] = await Promise.all([
-          axios.get('http://olymp-admin-v2/api/school/create', {
-            headers: { 'Authorization': token },
-            withCredentials: true
-          }),
-          axios.get(`http://olymp-admin-v2/api/school/show/${id}`, {
+        const [schoolResponse] = await Promise.all([
+          axios.get(`http://olymp-admin-v2/api/school/edit/${id}`, {
             headers: { 'Authorization': token },
             withCredentials: true
           })
         ]);
 
-        setRegions(regionsResponse.data.regions || {});
+        setRegions(schoolResponse.data.regions || {});
         setFormData({
-          id: schoolResponse.data.model.id,
-          name: schoolResponse.data.model.name,
-          region: schoolResponse.data.model.region
+          id: schoolResponse.data.school.id,
+          name: schoolResponse.data.school.name,
+          region: schoolResponse.data.school.region
         });
         setLoading(false);
       } catch (error) {

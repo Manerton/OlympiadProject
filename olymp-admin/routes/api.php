@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\api\ParticipantApiController;
+use App\Http\Controllers\api\ReportApiController;
 use App\Http\Controllers\api\SchoolApiController;
 use App\Http\Controllers\api\UserApiController;
 use Illuminate\Http\Request;
@@ -43,3 +44,6 @@ Route::get('/school/edit/{id}', [SchoolApiController::class, 'edit'])->name('sch
 Route::post('/school/update/{id}', [SchoolApiController::class, 'update'])->name('school-api.update');
 Route::delete('/school/delete/{id}', [SchoolApiController::class, 'delete'])->name('school-api.delete');
 Route::get('/school/show/{id}', [SchoolApiController::class, 'show'])->name('school-api.show');
+
+Route::get('/report/index', [ReportApiController::class, 'index'])->name('report-api.index');
+Route::get('/report/download/{id}', [ReportApiController::class, 'download'])->name('report-api.download');

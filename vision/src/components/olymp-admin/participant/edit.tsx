@@ -74,32 +74,28 @@ const ParticipantEdit: React.FC = () => {
     schools: [] as School[]
   });
 
-  const token = 'your-auth-token-here';
+  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [dictionariesResponse, participantResponse] = await Promise.all([
-          axios.get('http://olymp-admin-v2/api/participant/create', {
+        const [participantResponse] = await Promise.all([
+          axios.get(`http://olymp-admin-v2/api/participant/edit/${id}`, {
             headers: { 'Authorization': token },
             withCredentials: true
           }),
-          axios.get(`http://olymp-admin-v2/api/participant/show/${id}`, {
-            headers: { 'Authorization': token },
-            withCredentials: true
-          })
         ]);
 
-        const participant = participantResponse.data.model;
+        const participant = participantResponse.data.participant;
         const user = participant.userAPI || {};
         
         setDictionaries({
-          genders: dictionariesResponse.data.genders || {},
-          roles: dictionariesResponse.data.roles || {},
-          disabilities: dictionariesResponse.data.disabilities || {},
-          classes: dictionariesResponse.data.classes || {},
-          countries: dictionariesResponse.data.countries || {},
-          schools: dictionariesResponse.data.schools || []
+          genders: participantResponse.data.genders || {},
+          roles: participantResponse.data.roles || {},
+          disabilities: participantResponse.data.disabilities || {},
+          classes: participantResponse.data.classes || {},
+          countries: participantResponse.data.countries || {},
+          schools: participantResponse.data.schools || []
         });
 
         setFormData({
@@ -115,7 +111,7 @@ const ParticipantEdit: React.FC = () => {
           disability: (participant.disability || '1').toString(),
           class_number: (participant.class || '9').toString(),
           citizenship: (participant.citizenship || '1').toString(),
-          school_id: participant.school_id || (dictionariesResponse.data.schools[0]?.id || '')
+          school_id: participant.school_id || (participantResponse.data.schools[0]?.id || '')
         });
 
         setLoading(false);

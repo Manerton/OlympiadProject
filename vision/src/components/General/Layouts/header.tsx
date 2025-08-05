@@ -8,7 +8,7 @@ function Header() {
   const isAuthenticated = true; // временная проверка
   const userName = "Имя";
   const userId = "123";
-  const userRole = "роль";
+  const userRole = "admin"; // временно установлено 'admin' для демонстрации
 
   return (
     <Navbar bg="light" expand="lg" sticky="top">
@@ -17,7 +17,6 @@ function Header() {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav" className="navbar-expand-lg">
           <Nav className="me-auto">
-
             <LinkContainer to="/">
               <Nav.Link>Главная</Nav.Link>
             </LinkContainer>
@@ -33,6 +32,31 @@ function Header() {
             <LinkContainer to="/attendance">
               <Nav.Link>Отметить присутствие</Nav.Link>
             </LinkContainer>
+
+            {/* Админские ссылки, показываются только для админов */}
+            {userRole === 'admin' && (
+              <>
+                <Dropdown>
+                  <Dropdown.Toggle as={Nav.Link} variant="light">
+                    Администрирование
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu>
+                    <LinkContainer to="/olymp-admin/user/index">
+                      <Dropdown.Item>Пользователи</Dropdown.Item>
+                    </LinkContainer>
+                    <LinkContainer to="/olymp-admin/participant/index">
+                      <Dropdown.Item>Участники</Dropdown.Item>
+                    </LinkContainer>
+                    <LinkContainer to="/olymp-admin/school/index">
+                      <Dropdown.Item>Школы</Dropdown.Item>
+                    </LinkContainer>
+                    <LinkContainer to="/olymp-admin/report/index">
+                      <Dropdown.Item>Отчёты</Dropdown.Item>
+                    </LinkContainer>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </>
+            )}
           </Nav>
 
           <Nav className="ms-auto">

@@ -18,7 +18,7 @@ const SchoolShow: React.FC = () => {
   const [school, setSchool] = useState<School | null>(null);
   const [regions, setRegions] = useState<Dictionary>({});
   const [loading, setLoading] = useState<boolean>(true);
-  const token = 'your-auth-token-here';
+  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,7 +30,7 @@ const SchoolShow: React.FC = () => {
           withCredentials: true
         });
 
-        setSchool(response.data.model);
+        setSchool(response.data.school);
         setRegions(response.data.regions || {});
         setLoading(false);
       } catch (error) {

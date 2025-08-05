@@ -12,7 +12,7 @@ import SchoolIndex from './components/olymp-admin/school/index.tsx';
 import SchoolCreate from './components/olymp-admin/school/create.tsx';
 import SchoolShow from './components/olymp-admin/school/show.tsx';
 import SchoolEdit from './components/olymp-admin/school/edit.tsx';
-
+import ReportIndex from './components/olymp-admin/report/index.tsx';
 import Header from './components/General/Layouts/header.tsx'
 import ProfilePage from './components/General/Pages/Profile.tsx'
 import MainPage from './components/General/Pages/MainPage.tsx'
@@ -42,6 +42,8 @@ function App() {
                     <Route path="/olymp-admin/school/show/:id" element={<SchoolShow />} />
                     <Route path="/olymp-admin/school/create" element={<SchoolCreate />} />
                     <Route path="/olymp-admin/school/edit/:id" element={<SchoolEdit />} />
+
+                    <Route path="/olymp-admin/report/index" element={<ReportIndex />} />
                 </Routes>
             </div>
             </Layout>

@@ -31,7 +31,9 @@ class SchoolApiController extends Controller
         $schoolsAmount = $this->schoolRepository->getCount();
         $regions = RegionDictionary::REGIONS;
         return response()->json([
-            'schools' => $schools,
+            'schools' => array_map(function ($school) {
+                return (array)$school;
+            }, $schools),
             'schoolsAmount' => $schoolsAmount,
             'regions' => $regions,
             'currentPage' => $page,
@@ -59,7 +61,7 @@ class SchoolApiController extends Controller
         $model = $this->schoolService->find($id);
         $regions = RegionDictionary::REGIONS;
         return response()->json([
-            'school' => $model,
+            'school' => (array)$model,
             'regions' => $regions
         ]);
     }
@@ -67,7 +69,7 @@ class SchoolApiController extends Controller
         $model = $this->schoolService->find($id);
         $regions = RegionDictionary::REGIONS;
         return response()->json([
-            'school' => $model,
+            'school' => (array)$model,
             'regions' => $regions
         ]);
     }
