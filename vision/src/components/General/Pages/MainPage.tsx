@@ -6,15 +6,31 @@ const MainPage: React.FC = () => {
   return (
     <>
       {/* Hero Section */}
-      <Row className="g-0 border border-1 rounded">
+      <Row className="g-0 border border-1 rounded justify-content-center align-items-center">
            <Col md={6}>
+                <div
+                  className="d-flex flex-column justify-content-center align-items-center h-100 text-center p-4"
+                  style={{ backgroundColor: 'rgba(177, 172, 172, 0.5)', minHeight: '70dvh' }}
+                >
+                  <h1 className="display-4 fw-bold text-center">
+                      Всероссийская олимпиада школьников <br />
+                      <span
+                        style={{
+                          background: 'linear-gradient(to right, #1494D4, #70FF99)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          display: 'inline-block'
+                        }}
+                      >
+                        в твоём регионе!
+                      </span>
+                    </h1>
 
-            <div className="h-100 text-center p-4" style={{ backgroundColor: 'rgba(177, 172, 172, 0.5)' }}>
-            <h1 className="display-4 fw-bold">Всероссийская олимпиада школьников в твоём регионе!</h1>
-            <p className="lead">Упрощение процессов, помощь талантливым школьникам раскрыть свой потенциал.</p>
-            </div>
-
-           </Col> 
+                  <p className="lead">
+                    Упрощение процессов, помощь талантливым школьникам раскрыть свой потенциал.
+                  </p>
+                </div>
+              </Col>
 
            <Col md={6}>
             <div
