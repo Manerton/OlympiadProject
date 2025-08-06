@@ -3,6 +3,7 @@ package user_handler
 import (
 	"context"
 	user_dto "main/internal/dto/user"
+	"main/internal/lib/errs"
 	"main/internal/lib/parser"
 	"main/internal/lib/response"
 	"net/http"
@@ -47,8 +48,14 @@ func (h *UserHandler) GetCountUsers(w http.ResponseWriter, r *http.Request) {
 
 	userCount, err := h.UserService.GetCount(ctx)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed get count users", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -57,11 +64,10 @@ func (h *UserHandler) GetCountUsers(w http.ResponseWriter, r *http.Request) {
 		StatusCode: http.StatusOK,
 		Data:       userCount,
 	})
-
 }
 
 // @Summery All users
-// @Security BearerAuths
+// @Security BearerAuth
 // @Description Получение всех пользователей
 // @Tags users
 // @Produce json
@@ -79,14 +85,20 @@ func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	page, limit, err := parser.ParsePageLimit(pageStr, limitStr)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed parse page/limit", err))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("incorrect page/limit")))
 		return
 	}
 
 	usersResponse, err := h.UserService.GetAll(ctx, page, limit)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed find users", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -98,7 +110,7 @@ func (h *UserHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summery Get user by filter
-// @Security BearerAuths
+// @Security BearerAuth
 // @Description Получение пользователя по фильтру из его полей
 // @Tags users
 // @Accept json
@@ -114,14 +126,20 @@ func (h *UserHandler) GetUserByFilter(w http.ResponseWriter, r *http.Request) {
 	err := render.DecodeJSON(r.Body, &searchDTO)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed decode json", err))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body")))
 		return
 	}
 
 	userResponse, err := h.UserService.GetByFilter(ctx, searchDTO)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed find user", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -149,7 +167,14 @@ func (h *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
 
 	userResponse, err := h.UserService.GetById(ctx, id)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed to find user", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -176,7 +201,14 @@ func (h *UserHandler) GetUserParticipantById(w http.ResponseWriter, r *http.Requ
 
 	participantUserResponse, err := h.UserService.GetUserParticipantById(ctx, id)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed to find user", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -207,13 +239,21 @@ func (h *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) {
 
 	err := render.DecodeJSON(r.Body, &ids)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed to decode json", err))
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body")))
 		return
 	}
 
 	usersResponse, err := h.UserService.GetByListId(ctx, ids.Ids)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed to find users", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -243,13 +283,21 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	err := render.DecodeJSON(r.Body, &userDto)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed decode json", err))
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body")))
 		return
 	}
 
 	err = h.UserService.Update(ctx, id, userDto)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed update user", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -272,8 +320,14 @@ func (h *UserHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	err := h.UserService.Delete(ctx, id)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed delete user", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 

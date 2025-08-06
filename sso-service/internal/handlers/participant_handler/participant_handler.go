@@ -3,6 +3,7 @@ package participant_handler
 import (
 	"context"
 	participant_dto "main/internal/dto/participant"
+	"main/internal/lib/errs"
 	"main/internal/lib/parser"
 	"main/internal/lib/response"
 	"net/http"
@@ -44,8 +45,14 @@ func (h *ParticipantHandler) GetCount(w http.ResponseWriter, r *http.Request) {
 
 	participantCount, err := h.participantService.GetCount(ctx)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed get participant users", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -54,7 +61,6 @@ func (h *ParticipantHandler) GetCount(w http.ResponseWriter, r *http.Request) {
 		StatusCode: http.StatusOK,
 		Data:       participantCount,
 	})
-
 }
 
 // @Summery Get by id
@@ -73,8 +79,14 @@ func (h *ParticipantHandler) GetById(w http.ResponseWriter, r *http.Request) {
 
 	participantRes, err := h.participantService.GetById(ctx, id)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed get", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -100,8 +112,14 @@ func (h *ParticipantHandler) GetByUserId(w http.ResponseWriter, r *http.Request)
 	id := chi.URLParam(r, "id")
 	participantRes, err := h.participantService.GetByUserId(ctx, id)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed get", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -110,7 +128,6 @@ func (h *ParticipantHandler) GetByUserId(w http.ResponseWriter, r *http.Request)
 		StatusCode: http.StatusOK,
 		Data:       participantRes,
 	})
-
 }
 
 // @Summery Get all
@@ -132,14 +149,20 @@ func (h *ParticipantHandler) GetAllParticipants(w http.ResponseWriter, r *http.R
 	page, limit, err := parser.ParsePageLimit(pageStr, limitStr)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed parse page/limit", err))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("incorrect page/limit")))
 		return
 	}
 
 	participantResponse, err := h.participantService.GetAll(ctx, page, limit)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed get", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -170,14 +193,20 @@ func (h *ParticipantHandler) Update(w http.ResponseWriter, r *http.Request) {
 	err := render.DecodeJSON(r.Body, &participantDTO)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed decode json", err))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body")))
 		return
 	}
 
 	err = h.participantService.Update(ctx, id, participantDTO)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed update", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 

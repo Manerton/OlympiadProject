@@ -3,11 +3,8 @@ package base_access
 import (
 	"log"
 	"main/internal/lib/jwttoken"
-	"main/internal/lib/response"
 	"net/http"
 	"strings"
-
-	"github.com/go-chi/render"
 )
 
 func BaseAccess(jwtManager *jwttoken.JWTManager) func(next http.Handler) http.Handler {
@@ -39,8 +36,7 @@ func BaseAccess(jwtManager *jwttoken.JWTManager) func(next http.Handler) http.Ha
 			_, err := jwtManager.VerifyToken(tokenString)
 			if err != nil {
 				log.Printf("token verification failed: %v\n", err)
-				render.Status(r, http.StatusUnauthorized)
-				render.JSON(w, r, response.ErrorResponse("invalid token claims", err))
+				http.Error(w, "token verification failed", http.StatusUnauthorized)
 				return
 			}
 

@@ -3,6 +3,7 @@ package school_handler
 import (
 	"context"
 	school_dto "main/internal/dto/school"
+	"main/internal/lib/errs"
 	"main/internal/lib/parser"
 	"main/internal/lib/response"
 	"net/http"
@@ -45,8 +46,14 @@ func (h *SchoolHandler) GetCount(w http.ResponseWriter, r *http.Request) {
 
 	schoolCount, err := h.schoolService.GetCount(ctx)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed get count", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -77,14 +84,20 @@ func (h *SchoolHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	page, limit, err := parser.ParsePageLimit(pageStr, limitStr)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed parse page/limit", err))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("incorrect page/limit")))
 		return
 	}
 
 	schoolResponse, err := h.schoolService.GetAll(ctx, page, limit)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed get", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -111,8 +124,14 @@ func (h *SchoolHandler) GetById(w http.ResponseWriter, r *http.Request) {
 
 	schoolResponse, err := h.schoolService.GetById(ctx, id)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed get", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -140,14 +159,20 @@ func (h *SchoolHandler) Create(w http.ResponseWriter, r *http.Request) {
 	err := render.DecodeJSON(r.Body, &schoolDTO)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed decode json", err))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body")))
 		return
 	}
 
 	_, err = h.schoolService.Create(ctx, schoolDTO)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed create", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -174,14 +199,20 @@ func (h *SchoolHandler) Update(w http.ResponseWriter, r *http.Request) {
 	err := render.DecodeJSON(r.Body, &schoolDTO)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed decode json", err))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body")))
 		return
 	}
 
 	err = h.schoolService.Update(ctx, id, schoolDTO)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed update", err))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
