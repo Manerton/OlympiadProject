@@ -12,6 +12,14 @@ import (
 
 const LocalFilePath = "config-yaml/dev.yaml"
 
+// @title Event Service API
+// @version 1.0
+// @description Документация к микросервису событий
+// @host 172.16.1.39:8080
+// @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Events
 var DockerFilePath string = os.Getenv("CONFIG_PATH")
 
 func main() {

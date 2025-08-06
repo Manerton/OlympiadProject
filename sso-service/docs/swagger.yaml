@@ -1,14 +1,5 @@
 basePath: /
 definitions:
-  errs.ApiError:
-    properties:
-      code:
-        type: string
-      httpCode:
-        type: integer
-      message:
-        type: string
-    type: object
   login_dto.LoginRequestDTO:
     properties:
       email:
@@ -104,7 +95,7 @@ definitions:
     properties:
       data: {}
       error:
-        $ref: '#/definitions/errs.ApiError'
+        type: string
       message:
         type: string
       metadata: {}
@@ -578,7 +569,7 @@ paths:
           schema:
             $ref: '#/definitions/response.ApiResponse'
       security:
-      - BearerAuths: []
+      - BearerAuth: []
       tags:
       - users
   /api/users/{id}:
@@ -695,7 +686,7 @@ paths:
       - users
   /api/users/count:
     get:
-      description: Получение количесва пользователей
+      description: Получение количества пользователей
       produces:
       - application/json
       responses:
@@ -745,7 +736,7 @@ paths:
           schema:
             $ref: '#/definitions/response.ApiResponse'
       security:
-      - BearerAuths: []
+      - BearerAuth: []
       tags:
       - users
   /api/users/list:

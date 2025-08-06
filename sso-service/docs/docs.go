@@ -534,7 +534,7 @@ const docTemplate = `{
             "get": {
                 "security": [
                     {
-                        "BearerAuths": []
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Получение всех пользователей",
@@ -647,7 +647,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Получение количесва пользователей",
+                "description": "Получение количества пользователей",
                 "produces": [
                     "application/json"
                 ],
@@ -686,7 +686,7 @@ const docTemplate = `{
             "post": {
                 "security": [
                     {
-                        "BearerAuths": []
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Получение пользователя по фильтру из его полей",
@@ -1162,20 +1162,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "errs.ApiError": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "httpCode": {
-                    "type": "integer"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "login_dto.LoginRequestDTO": {
             "type": "object",
             "required": [
@@ -1320,7 +1306,7 @@ const docTemplate = `{
             "properties": {
                 "data": {},
                 "error": {
-                    "$ref": "#/definitions/errs.ApiError"
+                    "type": "string"
                 },
                 "message": {
                     "type": "string"

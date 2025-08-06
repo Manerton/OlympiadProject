@@ -528,7 +528,7 @@
             "get": {
                 "security": [
                     {
-                        "BearerAuths": []
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Получение всех пользователей",
@@ -641,7 +641,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Получение количесва пользователей",
+                "description": "Получение количества пользователей",
                 "produces": [
                     "application/json"
                 ],
@@ -680,7 +680,7 @@
             "post": {
                 "security": [
                     {
-                        "BearerAuths": []
+                        "BearerAuth": []
                     }
                 ],
                 "description": "Получение пользователя по фильтру из его полей",
@@ -1156,20 +1156,6 @@
         }
     },
     "definitions": {
-        "errs.ApiError": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "httpCode": {
-                    "type": "integer"
-                },
-                "message": {
-                    "type": "string"
-                }
-            }
-        },
         "login_dto.LoginRequestDTO": {
             "type": "object",
             "required": [
@@ -1314,7 +1300,7 @@
             "properties": {
                 "data": {},
                 "error": {
-                    "$ref": "#/definitions/errs.ApiError"
+                    "type": "string"
                 },
                 "message": {
                     "type": "string"

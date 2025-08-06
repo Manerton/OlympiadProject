@@ -37,7 +37,7 @@ func New(userService UserService) *UserHandler {
 
 // @Summery Users count
 // @Security BearerAuth
-// @Description Получение количесва пользователей
+// @Description Получение количества пользователей
 // @Tags users
 // @Produce json
 // @Success 200 {object} response.ApiResponse{data=int}

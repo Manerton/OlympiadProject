@@ -44,6 +44,16 @@ func NewEventHandler(service EventServiceInterface) *EventHandler {
 	return &EventHandler{service: service}
 }
 
+// @Summery Search event by filter
+// @Security BearerAuth
+// @Description Получение события с нужными полями по фильтру полей
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param credentials body request.DetailRequest true "Данные для поиска"
+// @Success 200 {object} response.ApiResponse{data=event_dto.DetailsEvent}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/events/details/one [post]
 func (h *EventHandler) GetEventByFilterAndFields(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
@@ -70,6 +80,16 @@ func (h *EventHandler) GetEventByFilterAndFields(w http.ResponseWriter, r *http.
 	})
 }
 
+// @Summery Search events by filter
+// @Security BearerAuth
+// @Description Получение событий с нужными полями по фильтру полей
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param credentials body request.DetailRequest true "Данные для поиска"
+// @Success 200 {object} response.ApiResponse{data=[]event_dto.DetailsEvent}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/events/details [post]
 func (h *EventHandler) GetEventsByFilterAndFields(w http.ResponseWriter, r *http.Request) {
 	detailRequest := request.DetailRequest{}
 
@@ -96,6 +116,14 @@ func (h *EventHandler) GetEventsByFilterAndFields(w http.ResponseWriter, r *http
 	})
 }
 
+// @Summery Get all
+// @Security BearerAuth
+// @Description Получение всех событий
+// @Tags events
+// @Produce json
+// @Success 200 {objcet} response.ApiResponse{data=[]event_dto.EventDTOResponse}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/events [get]
 func (h *EventHandler) GetAllEvents(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
@@ -124,6 +152,15 @@ func (h *EventHandler) GetAllEvents(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summery Get event by id
+// @Security BearerAuth
+// @Description Получение события по id
+// @Tags events
+// @Produce json
+// @Param id path string true "id события"
+// @Success 200 {object} response.ApiResponse{data=event_dto.EventDTOResponse}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/events/{id} [get]
 func (h *EventHandler) GetEventByID(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
@@ -142,6 +179,17 @@ func (h *EventHandler) GetEventByID(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summery Get events type regional stage
+// @Security BearerAuth
+// @Description Получение всех событий типа "Региональный этап"
+// @Tags events
+// @Produce json
+// @Param page query int false "Номер страницы"
+// @Param limit query int false "Органичение на количество записей"
+// @Param order query string false "Поле по которому необходимо сортировать и указания для сортировки Пример(name DESC)"
+// @Success 200 {object} response.ApiResponse{data=[]event_dto.EventDTOResponse}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/events/regional-stage [get]
 func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
@@ -187,7 +235,18 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 
 }
 
-func (h *EventHandler) GetEventsByClassType(w http.ResponseWriter, r *http.Request) {
+// @Summery Get events type class
+// @Security BearerAuth
+// @Description Получение всех событий типа "Класс"
+// @Tags events
+// @Produce json
+// @Param page query int false "Номер страницы"
+// @Param limit query int false "Органичение на количество записей"
+// @Param order query string false "Поле по которому необходимо сортировать и указания для сортировки Пример(name DESC)"
+// @Success 200 {object} response.ApiResponse{data=[]event_dto.EventDTOResponse}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/events/class [get]
+func (h *EventHandler) GetEventsClassType(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	pageStr := r.URL.Query().Get("page")
@@ -233,6 +292,14 @@ func (h *EventHandler) GetEventsByClassType(w http.ResponseWriter, r *http.Reque
 
 }
 
+// @Summery Get count event type class
+// @Security BearerAuth
+// @Description Получение количества событий типа "Класс"
+// @Tags events
+// @Produce json
+// @Success 200 {object} response.ApiResponse{data=int}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/events/class/count [get]
 func (h *EventHandler) GetCountEventTypeClass(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -250,6 +317,10 @@ func (h *EventHandler) GetCountEventTypeClass(w http.ResponseWriter, r *http.Req
 	})
 }
 
+// @Summery Get events type stage and his childs
+// @Security BearerAuth
+// @Description Получение
+// TODO!!! переписать
 func (h *EventHandler) GetEventsTypeStageAndHisChilds(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()

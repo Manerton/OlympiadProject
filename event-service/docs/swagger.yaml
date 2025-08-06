@@ -1,4 +1,378 @@
+basePath: /
+definitions:
+  event.EventType:
+    enum:
+    - REGIONAL_STAGE
+    - OLYMPIAD
+    - CLASS
+    - STAGE
+    - VIEW_WORKS
+    - APPEAL
+    type: string
+    x-enum-varnames:
+    - RegionalStage
+    - Olympiad
+    - Class
+    - Stage
+    - ViewWorks
+    - Appeal
+  event_dto.DetailsEvent:
+    properties:
+      additional_info:
+        type: string
+      class_number:
+        type: integer
+      end_date:
+        description: указатель для учета нулевых значений
+        type: string
+      event_type:
+        $ref: '#/definitions/event.EventType'
+      id:
+        type: string
+      name:
+        type: string
+      previous_event_id:
+        type: string
+      start_date:
+        description: указатель для учета нулевых значений
+        type: string
+      subject:
+        type: string
+    type: object
+  event_dto.EventDTO:
+    properties:
+      additionalInfo:
+        type: string
+      class_number:
+        type: integer
+      endDate:
+        type: string
+      eventType:
+        $ref: '#/definitions/event.EventType'
+      events:
+        items:
+          $ref: '#/definitions/event_dto.EventDTO'
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      previousEventID:
+        type: string
+      startDate:
+        type: string
+      subject:
+        type: string
+    required:
+    - endDate
+    - name
+    - startDate
+    type: object
+  event_dto.EventDTOResponse:
+    properties:
+      additional_info:
+        type: string
+      class_number:
+        type: integer
+      end_date:
+        type: string
+      event_type:
+        $ref: '#/definitions/event.EventType'
+      events:
+        items:
+          $ref: '#/definitions/event_dto.EventDTOResponse'
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      previous_event_id:
+        type: string
+      start_date:
+        type: string
+      subject:
+        type: string
+    required:
+    - end_date
+    - name
+    - start_date
+    type: object
+  request.DetailRequest:
+    properties:
+      additionalInfo:
+        type: string
+      class_number:
+        type: integer
+      endDate:
+        type: string
+      eventType:
+        $ref: '#/definitions/event.EventType'
+      events:
+        items:
+          $ref: '#/definitions/event_dto.EventDTO'
+        type: array
+      fields:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      limit:
+        type: integer
+      name:
+        type: string
+      offset:
+        type: integer
+      order:
+        type: string
+      previousEventID:
+        type: string
+      startDate:
+        type: string
+      subject:
+        type: string
+    required:
+    - endDate
+    - name
+    - startDate
+    type: object
+  response.ApiResponse:
+    properties:
+      data: {}
+      error:
+        type: string
+      message:
+        type: string
+      metadata: {}
+      status:
+        type: string
+      status_code:
+        type: integer
+    type: object
+host: 172.16.1.39:8080
 info:
   contact: {}
-paths: {}
+  description: Документация к микросервису событий
+  title: Event Service API
+  version: "1.0"
+paths:
+  /api/events:
+    get:
+      description: Получение всех событий
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: objcet
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - events
+  /api/events/{id}:
+    get:
+      description: Получение события по id
+      parameters:
+      - description: id события
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/event_dto.EventDTOResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - events
+  /api/events/class:
+    get:
+      description: Получение всех событий типа "Класс"
+      parameters:
+      - description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      - description: Органичение на количество записей
+        in: query
+        name: limit
+        type: integer
+      - description: Поле по которому необходимо сортировать и указания для сортировки
+          Пример(name DESC)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/event_dto.EventDTOResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - events
+  /api/events/class/count:
+    get:
+      description: Получение количества событий типа "Класс"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  type: integer
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - events
+  /api/events/details:
+    post:
+      consumes:
+      - application/json
+      description: Получение событий с нужными полями по фильтру полей
+      parameters:
+      - description: Данные для поиска
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/request.DetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/event_dto.DetailsEvent'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - events
+  /api/events/details/one:
+    post:
+      consumes:
+      - application/json
+      description: Получение события с нужными полями по фильтру полей
+      parameters:
+      - description: Данные для поиска
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/request.DetailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/event_dto.DetailsEvent'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - events
+  /api/events/regional-stage:
+    get:
+      description: Получение всех событий типа "Региональный этап"
+      parameters:
+      - description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      - description: Органичение на количество записей
+        in: query
+        name: limit
+        type: integer
+      - description: Поле по которому необходимо сортировать и указания для сортировки
+          Пример(name DESC)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/event_dto.EventDTOResponse'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - events
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Events
+    type: apiKey
 swagger: "2.0"
