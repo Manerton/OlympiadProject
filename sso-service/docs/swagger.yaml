@@ -91,6 +91,13 @@ definitions:
       surname:
         type: string
     type: object
+  request.IdsRequest:
+    properties:
+      ids:
+        items:
+          type: string
+        type: array
+    type: object
   response.ApiResponse:
     properties:
       data: {}
@@ -750,9 +757,7 @@ paths:
         name: credentials
         required: true
         schema:
-          items:
-            type: string
-          type: array
+          $ref: '#/definitions/request.IdsRequest'
       produces:
       - application/json
       responses:
