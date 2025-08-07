@@ -6,6 +6,7 @@
     "license": "MIT",
     "require": {
         "php": "^7.4|^8.0",
+        "elasticsearch/elasticsearch": "^8.19",
         "fruitcake/laravel-cors": "^3.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "jimdo/prometheus_client_php": "^0.6.0",
@@ -13,7 +14,8 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "php-amqplib/php-amqplib": "^3.7",
-        "phpoffice/phpspreadsheet": "^1.12"
+        "phpoffice/phpspreadsheet": "^1.12",
+        "symfony/psr-http-message-bridge": "^2.3"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
@@ -58,7 +60,10 @@
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true

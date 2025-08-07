@@ -127,6 +127,15 @@
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/vlucas/phpdotenv" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/voku/portable-ascii" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/webmozart/assert" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/elastic/transport" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/elasticsearch/elasticsearch" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/open-telemetry/api" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/open-telemetry/context" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/php-http/discovery" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/php-http/httplug" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/php-http/promise" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/symfony/polyfill-php82" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/symfony/psr-http-message-bridge" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

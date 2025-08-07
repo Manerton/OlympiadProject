@@ -80,6 +80,36 @@ services:
     networks:
       - olympic
 
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
+    container_name: olymp_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - olympic
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: olymp_grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - olympic
+    depends_on:
+      - elasticsearch
+
 networks:
   olympic:
 
@@ -87,3 +117,5 @@ volumes:
   db_data:
   redis_data:
   rabbitmq_data:
+  elasticsearch_data:
+  grafana_data:

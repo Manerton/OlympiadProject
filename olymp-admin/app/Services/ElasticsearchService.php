@@ -1,0 +1,74 @@
+<?php
+
+namespace App\Services;
+
+use Elastic\Elasticsearch\Client;
+use Elastic\Elasticsearch\ClientBuilder;
+use Elastic\Elasticsearch\Exception\AuthenticationException;
+
+class ElasticsearchService
+{
+    protected Client $client;
+
+    public function __construct()
+    {
+        try {
+            $this->client = ClientBuilder::create()
+                ->setHosts([
+                    sprintf(
+                        '%s://%s:%s',
+                        env('ELASTICSEARCH_SCHEME', 'http'),
+                        env('ELASTICSEARCH_HOST', 'elasticsearch'),
+                        env('ELASTICSEARCH_PORT', '9200')
+                    )
+                ])
+                ->build();
+        } catch (\Exception $e) {
+            throw new \RuntimeException('Elasticsearch connection failed: ' . $e->getMessage());
+        }
+    }
+
+    public function getClient(): Client
+    {
+        return $this->client;
+    }
+
+    public function index(string $index, array $document, string $id = null)
+    {
+        $params = [
+            'index' => $index,
+            'body'  => $document,
+        ];
+
+        if ($id) {
+            $params['id'] = $id;
+        }
+
+        return $this->client->index($params);
+    }
+
+    public function search(string $index, array $query)
+    {
+        return $this->client->search([
+            'index' => $index,
+            'body'  => $query,
+        ]);
+    }
+    public function get(string $index, string $id, array $sourceFields = [])
+    {
+        $params = [
+            'index' => $index,
+            'id'    => $id,
+        ];
+
+        if (!empty($sourceFields)) {
+            $params['_source'] = $sourceFields;
+        }
+
+        return $this->client->get($params);
+    }
+    public function decode($response){
+        $result = $response->asArray();
+        return $result['hits']['hits'];
+    }
+}
