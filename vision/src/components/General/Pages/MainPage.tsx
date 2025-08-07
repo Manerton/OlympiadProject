@@ -1,16 +1,17 @@
 // MainPage.tsx
 import React from 'react';
 import { Container, Row, Col, Button, Form, Accordion } from 'react-bootstrap';
-
+import Layout from '../Layouts/Layout.tsx'
 const MainPage: React.FC = () => {
   return (
     <>
+
       {/* Hero Section */}
-      <Row className="g-0 border border-1 rounded justify-content-center align-items-center">
+      <Row className="g-1 border border-1 rounded justify-content-center align-items-center">
            <Col md={6}>
                 <div
                   className="d-flex flex-column justify-content-center align-items-center h-100 text-center p-4"
-                  style={{ backgroundColor: 'rgba(177, 172, 172, 0.5)', minHeight: '70dvh' }}
+                  style={{minHeight: '70dvh' }}
                 >
                   <h1 className="display-4 fw-bold text-center">
                       Всероссийская олимпиада школьников <br />

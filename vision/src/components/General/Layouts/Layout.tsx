@@ -1,21 +1,17 @@
-// Layout.tsx
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { Container } from 'react-bootstrap';
 import Header from './Header';
 import Footer from './Footer';
+import { Outlet } from 'react-router-dom';
 
-interface LayoutProps {
-  children: ReactNode;
-}
-
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout: React.FC = () => {
   return (
     <>
       <Header />
       <div className="d-flex flex-column min-vh-100">
         <Container fluid="lg" className="flex-grow-1">
           <main className="py-4">
-            {children}
+            <Outlet />
           </main>
         </Container>
         <Footer />
@@ -25,14 +21,3 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 };
 
 export default Layout;
-
-
-
-
-//  <div className="d-flex flex-column justify-content-center min-vh-100 min-vw-100">
-//       <Header />
-//        <Container fluid="lg" as="main" className="flex-grow-1 py-1">
-//         {children}
-//       </Container>
-//       <Footer />
-//     </div>

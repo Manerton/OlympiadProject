@@ -1,6 +1,7 @@
 import React from "react";
 import { Navbar, Nav, Dropdown, Container } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
+import { Link } from "react-router-dom";
 import { PersonCircle, BoxArrowInRight } from "react-bootstrap-icons";
 import ThemeToggleButton from '../../Helpers/ThemeToggleButton';
 
@@ -14,7 +15,7 @@ function Header() {
   return (
     <Navbar expand="lg" sticky="top" className="bg-body-tertiary border border-1">
       <Container fluid="lg" className="mx-auto">
-        <Navbar.Brand href="/">ВСОШ</Navbar.Brand>
+        <Navbar.Brand as={Link} to="/">ВСОШ</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav" className="navbar-expand-lg">
           <Nav className="me-auto">
@@ -30,14 +31,13 @@ function Header() {
               <Nav.Link>Статус заявки</Nav.Link>
             </LinkContainer>
 
-            <LinkContainer to="/attendance">
-              <Nav.Link>Отметить присутствие</Nav.Link>
-            </LinkContainer>
-
             {/* Админские ссылки, показываются только для админов */}
             {userRole === 'admin' && (
               <>
-                <Dropdown>
+                <LinkContainer to="/AdminPanel">
+                  <Nav.Link>Панель Администрирования</Nav.Link>
+                </LinkContainer>
+                {/* <Dropdown>
                   <Dropdown.Toggle as={Nav.Link} variant="light">
                     Администрирование
                   </Dropdown.Toggle>
@@ -55,7 +55,7 @@ function Header() {
                       <Dropdown.Item>Отчёты</Dropdown.Item>
                     </LinkContainer>
                   </Dropdown.Menu>
-                </Dropdown>
+                </Dropdown> */}
               </>
             )}
           </Nav>
@@ -75,7 +75,7 @@ function Header() {
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
-                  <Dropdown.Item href="/profile">
+                  <Dropdown.Item as={Link} to="/profile">
                     <PersonCircle className="me-2" /> Мой профиль
                   </Dropdown.Item>
                   <Dropdown.Item
@@ -89,7 +89,7 @@ function Header() {
                 </Dropdown.Menu>
               </Dropdown>
             ) : (
-              <Nav.Link href="/login" className="d-flex align-items-center">
+              <Nav.Link as={Link} to="/login" className="d-flex align-items-center">
                 <BoxArrowInRight className="me-2" />
                 Войти
               </Nav.Link>

@@ -16,22 +16,31 @@ import ReportIndex from './components/olymp-admin/report/index.tsx';
 import Header from './components/General/Layouts/header.tsx'
 import ProfilePage from './components/General/Pages/Profile.tsx'
 import MainPage from './components/General/Pages/MainPage.tsx'
-import Layout from './components/General/Layouts/Layout.tsx'
+import AttendancePage from './components/General/Pages/AttendaceList.tsx'
+import AdminPanel from './components/Admin/Pages/AdminPanel.tsx'
+import Layout from './components/General/Layouts/Layout'
+import AdminLayout from './components/General/Layouts/AdminLayout'
 
 
 function App() {
     return (
         <Router>
-            <Layout>
             <div className="App">
                 <Routes>
-                     <Route path="/" element={<MainPage />} />
                     
+                    <Route element={<Layout />}>
+                        <Route path="/" element={<MainPage />} />
+                        <Route path="/profile" element={<ProfilePage />} />
+                    </Route>
+
+                    <Route element={<AdminLayout />}>
+
+                      <Route path="/AdminPanel" element={<AdminPanel />} />
                     <Route path="/olymp-admin/user/index" element={<UserIndex />} />
                     <Route path="/olymp-admin/user/show/:id" element={<UserShow />} />
                     <Route path="/olymp-admin/user/create" element={<UserCreate />} />
                     <Route path="/olymp-admin/user/edit/:id" element={<UserEdit />} />
-                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/attendance" element={<AttendancePage />} />
 
                     <Route path="/olymp-admin/participant/index" element={<ParticipantIndex />} />
                     <Route path="/olymp-admin/participant/show/:id" element={<ParticipantShow />} />
@@ -42,11 +51,14 @@ function App() {
                     <Route path="/olymp-admin/school/show/:id" element={<SchoolShow />} />
                     <Route path="/olymp-admin/school/create" element={<SchoolCreate />} />
                     <Route path="/olymp-admin/school/edit/:id" element={<SchoolEdit />} />
-
                     <Route path="/olymp-admin/report/index" element={<ReportIndex />} />
+
+
+                    </Route>
+                  
+
                 </Routes>
             </div>
-            </Layout>
         </Router>
     );
 }
