@@ -2,6 +2,7 @@ package main
 
 import (
 	"log/slog"
+	_ "main/docs"
 	"main/internal/app"
 	"main/internal/config"
 	"main/internal/lib/liblogger"

@@ -9,3 +9,7 @@ type DetailRequest struct {
 	Order  *string   `json:"order"`
 	event_dto.EventDTO
 }
+
+type IdsRequest struct {
+	Ids []string `json:"ids"`
+}

@@ -221,15 +221,22 @@ func (s *EventService) GetEventsByType(ctx context.Context, eventType event.Even
 }
 
 // Get events where type=stage and his childs
-func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id uuid.UUID) ([]event_dto.EventDTOResponse, error) {
+func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id string) ([]event_dto.EventDTOResponse, error) {
 	const op = "services.event_service.GetEventsTypeStageAndHisChilds"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
+
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error("failed parse id to uuid", slog.String("id", id), liblogger.Err(err))
+		return nil, fmt.Errorf("failed parse")
+	}
+
 	// Get all event stage by previousID
 	// tx := s.db.Begin()
-	events, err := s.eventRepository.GetEventsByPreviousID(ctx, s.db, id, nil, nil, nil)
+	events, err := s.eventRepository.GetEventsByPreviousID(ctx, s.db, uid, nil, nil, nil)
 	if err != nil {
 		// tx.Rollback()
 		log.Error("failed to get events type stage by PreviousID",
@@ -301,14 +308,23 @@ func (s *EventService) GetEventsByPreviousID(ctx context.Context, previousId str
 }
 
 // Get list events by list id
-func (s *EventService) GetEventsByListID(ctx context.Context, ids []uuid.UUID) ([]event_dto.EventDTOResponse, error) {
+func (s *EventService) GetEventsByListID(ctx context.Context, ids []string) ([]event_dto.EventDTOResponse, error) {
 	const op = "services.event_service.GetEventsByListID"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
-	events, err := s.eventRepository.GetEventsByListID(ctx, s.db, ids)
+	uids := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		uid, err := uuid.Parse(id)
+		if err != nil {
+			return nil, fmt.Errorf("failed")
+		}
+		uids = append(uids, uid)
+	}
+
+	events, err := s.eventRepository.GetEventsByListID(ctx, s.db, uids)
 	if err != nil {
 		log.Error("failed to get events by listID",
 			slog.Any("ids", ids),
