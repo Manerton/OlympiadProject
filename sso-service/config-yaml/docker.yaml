@@ -1,0 +1,32 @@
+env: "dev"
+
+DB_INFO:
+  host: "localhost"
+  name: "SSOServiceDB"
+  user: "postgres"
+  pass: "root"
+  ssl_model: "disable"
+
+
+HTTP_SERVER_INFO:
+  host: "0.0.0.0"
+  port: "8181"
+
+JWT_INFO:
+  key: "lololololololololololololololololololololololololololololol"
+  access_duration: 525600
+  refresh_duration: 7
+
+
+REDIS_INFO:
+  address_path: "redis:6379"
+
+RABBIT_INFO:
+  address_path: "amqp://sso:test@rabbitmq:5672/"
+  queue_name: "olymp_auth"
+
+ADDITIONAL_ADDRESSES:
+  react: "http://172.16.1.39:5173"
+  jure-assignments: "http://172.16.1.39:8090"
+  olymp-result: "http://172.16.0.94:8080"
+  event: "http://172.16.1.39:8080"

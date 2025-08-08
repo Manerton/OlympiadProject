@@ -21,8 +21,6 @@ const LocalFilePath = "config-yaml/dev.yaml"
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Events
-var DockerFilePath string = os.Getenv("CONFIG_PATH")
-
 func main() {
 	// Init config
 	cfg := config.GetConfig(LocalFilePath)

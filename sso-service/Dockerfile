@@ -10,7 +10,7 @@ COPY . .
 
 # Сборка приложения
 RUN go build -o migrator ./cmd/migrator/main.go
-RUN go build -o event-service ./cmd/server/main.go
+RUN go build -o sso-service ./cmd/server/main.go
 
 # Второй этап: используем минимальный образ для запуска приложения
 FROM alpine:latest
@@ -22,7 +22,7 @@ WORKDIR /app
 
 # Копируем скомпилированное приложение из первого этапа
 COPY --from=builder /app/migrator /app/migrator
-COPY --from=builder /app/event-service /app/event-service
+COPY --from=builder /app/sso-service /app/event-service
 COPY --from=builder /app/config-yaml /app/config-yaml
 
 # Открываем порт приложения

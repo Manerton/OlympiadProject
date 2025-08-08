@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"os"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/lib/pq"
@@ -26,6 +27,14 @@ func main() {
 	flag.StringVar(&migrationPath, "migration-path", "migration", "path to folder with migration files")
 
 	flag.Parse()
+
+	if dbStringConnect == "" {
+		dbStringConnect = os.Getenv("DSN")
+	}
+
+	if migrationPath == "" {
+		migrationPath = os.Getenv("MIGRATION_PATH")
+	}
 
 	if len(flag.Args()) < 1 {
 		log.Fatalf("should be use command: UP or DOWM")

@@ -1,6 +1,62 @@
 version: '3.9'
 
 services:
+  event-db:
+    image: postgres:16
+    container_name: event-db
+    environment:
+      POSTGRES_USER: event_user
+      POSTGRES_PASSWORD: event_pass
+      POSTGRES_DB: EventServiceDB
+    ports:
+      - "5433:5432"
+    networks:
+      - olympic 
+
+  event-service:
+    build: 
+      context: ./event-service
+    container_name: event-service
+    depends_on: 
+      - event-db
+    environment:
+      DSN: "postgres://event_user:event_pass@event-db:5432/EventServiceDB?sslmode=disable"
+      MIGRATION_PATH: "./migrations"
+      CONFIG_PATH: "/app/config-yaml/docker.yaml"
+    networks:
+      - olympic
+    ports:
+      - "8888:8080"
+    entrypoint: ["/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./event-service"]
+
+  sso-db:
+    image: postgres:16
+    container_name: sso-db
+    environment: 
+      POSTGRES_USER: sso_user
+      POSTGRES_PASSWORD: sso_pass
+      POSTGRES_DB: SSOServiceDB
+    ports:
+      - "5444:5432"
+    networks:
+      - olympic
+    
+  sso-service:
+    build:
+      context: ./sso-service
+    container_name: sso-service
+    depends_on:
+      - sso-db
+    enviroment:
+      DSN: "postgres://sso_user:sso_pass@sso-db:5432/SSOServiceDB?sslmode=disable"
+      MIGRATION_PATH: "./migrations"
+      CONFIG_PATH: "/app/config-yaml/docker.yaml"
+    networks:
+      - olympic
+    ports:
+      - "8989:8181"
+    entrypoint: ["/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./sso-service"]
+    
   app:
     build:
       context: ./docker/php
