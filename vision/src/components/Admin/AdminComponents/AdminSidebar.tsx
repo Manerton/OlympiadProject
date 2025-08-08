@@ -85,21 +85,15 @@ const AdminSidebar: React.FC = () => {
             {!collapsed && "Отчеты"}
           </Nav.Link>
 
-          <Nav.Link as={Link} to="/" className="text-white d-flex align-items-center">
+          <Nav.Link as={Link} to="/olymp-admin/event/index" className="text-white d-flex align-items-center">
             <CalendarCheck className="me-2" />
             {!collapsed && "Олимпиады"}
           </Nav.Link>
 
-          <Nav.Link as={Link} to="/" className="text-white d-flex align-items-center">
+          <Nav.Link as={Link} to="/olymp-admin/application/index" className="text-white d-flex align-items-center">
             <FileText className="me-2" />
             {!collapsed && "Заявки"}
           </Nav.Link>
-
-          <Nav.Link as={Link} to="/attendance" className="text-white d-flex align-items-center">
-            <Calendar className="me-2" />
-            {!collapsed && "Явки"}
-          </Nav.Link>
-
           
         </Nav>
       </div>

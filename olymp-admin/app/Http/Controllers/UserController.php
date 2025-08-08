@@ -31,7 +31,6 @@ class UserController extends Controller
     }
 
     public function index($page = 1){
-        $this->logService->create(request()->ip(), request()->userAgent(), request()->url());
         $usersAmount = $this->userRepository->getCount();
         $users = $this->userService->findAll($page);
         return view('user/index', compact('users', 'usersAmount'));
