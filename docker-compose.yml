@@ -47,7 +47,7 @@ services:
     container_name: sso-service
     depends_on:
       - sso-db
-    enviroment:
+    environment:
       DSN: "postgres://sso_user:sso_pass@sso-db:5432/SSOServiceDB?sslmode=disable"
       MIGRATION_PATH: "./migrations"
       CONFIG_PATH: "/app/config-yaml/docker.yaml"
