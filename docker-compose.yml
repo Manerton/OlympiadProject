@@ -12,16 +12,24 @@ services:
       - "5433:5432"
     networks:
       - olympic 
+    volumes:
+      - event-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U event_user -d EventServiceDB"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
   event-service:
     build: 
       context: ./event-service
     container_name: event-service
     depends_on: 
-      - event-db
+      event-db:
+        condition: service_healthy
     environment:
       DSN: "postgres://event_user:event_pass@event-db:5432/EventServiceDB?sslmode=disable"
-      MIGRATION_PATH: "./migrations"
+      MIGRATION_PATH: "/app/migrations"
       CONFIG_PATH: "/app/config-yaml/docker.yaml"
     networks:
       - olympic
@@ -40,16 +48,24 @@ services:
       - "5444:5432"
     networks:
       - olympic
+    volumes:
+      - sso-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sso_user -d SSOServiceDB"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     
   sso-service:
     build:
       context: ./sso-service
     container_name: sso-service
     depends_on:
-      - sso-db
+      sso-db:
+        condition: service_healthy
     environment:
       DSN: "postgres://sso_user:sso_pass@sso-db:5432/SSOServiceDB?sslmode=disable"
-      MIGRATION_PATH: "./migrations"
+      MIGRATION_PATH: "/app/migrations"
       CONFIG_PATH: "/app/config-yaml/docker.yaml"
     networks:
       - olympic
@@ -128,11 +144,13 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_LOAD_DEFINITIONS: "/etc/rabbitmq/definitions.json"
     ports:
       - "5672:5672"  # AMQP protocol port
       - "15672:15672"  # Management UI port
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq-definitions.json:/etc/rabbitmq/definitions.json:ro
     networks:
       - olympic
 
@@ -170,6 +188,8 @@ networks:
   olympic:
 
 volumes:
+  event-db-data:
+  sso-db-data:
   db_data:
   redis_data:
   rabbitmq_data:

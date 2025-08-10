@@ -3,8 +3,8 @@ env: "dev"
 DB_INFO:
   host: "event-db"
   name: "EventServiceDB"
-  user: "postgres"
-  pass: "root"
+  user: "event_user"
+  pass: "event_pass"
   ssl_model: "disable"
 
 
@@ -16,7 +16,7 @@ JWT_INFO:
   key: "lololololololololololololololololololololololololololololol"
 
 RABBIT_INFO:
-  address_path: "amqp://event:test@rabbitmq:5672/"
+  address_path: "amqp://event-service:event-password@olymp_rabbitmq:5672/"
   queue_name: "olymp_event"
 
 KIZNAIVER_INFO:

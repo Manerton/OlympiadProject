@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine as builder
+FROM golang:1.24-alpine as builder
 
 WORKDIR /app
 
@@ -24,6 +24,7 @@ WORKDIR /app
 COPY --from=builder /app/migrator /app/migrator
 COPY --from=builder /app/event-service /app/event-service
 COPY --from=builder /app/config-yaml /app/config-yaml
+COPY --from=builder /app/migrations /app/migrations
 
 # Открываем порт приложения
 EXPOSE 8080
