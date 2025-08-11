@@ -1,6 +1,9 @@
 package errs
 
-import "fmt"
+import (
+	"fmt"
+	"net/http"
+)
 
 type ApiError struct {
 	Code     string
@@ -25,4 +28,8 @@ func IsApiError(err error) (*ApiError, bool) {
 	return apiErr, ok
 }
 
-var ()
+// Common errors
+var (
+	ErrInternalError = &ApiError{Code: "INTERNAL_SERVER_ERROR", HttpCode: http.StatusInternalServerError, Message: "Something was wrong"}
+	ErrBadRequest    = &ApiError{Code: "BAD_REQUEST", HttpCode: http.StatusBadRequest, Message: "Invalid data"}
+)
