@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"main/internal/dto/juryAssignmentsDto"
 	"main/internal/lib/converter/dtoConverter"
+	"main/internal/lib/errs"
 	"main/internal/lib/liblogger"
 	"main/internal/lib/supportRequest"
 	"main/internal/models/jury_assignments"
@@ -52,7 +53,7 @@ func (s *JuryAssignmentsService) GetAllJuryAssignments(ctx context.Context) ([]j
 	results, err := s.repository.GetAllJuryAssignments(ctx, s.orm)
 	if err != nil {
 		log.Error("failed to get all jury assignments", liblogger.Err(err))
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errs.ErrInternalError.Wrap("failed get all jury-assignments")
 	}
 
 	return dtoConverter.ConvertManyJuryAssignmentsToDTO(results), nil
@@ -60,7 +61,6 @@ func (s *JuryAssignmentsService) GetAllJuryAssignments(ctx context.Context) ([]j
 
 func (s *JuryAssignmentsService) GetJuryAssignmentsByID(ctx context.Context, id string) (juryAssignmentsDto.JuryAssignmentsResponseDTO, error) {
 	const op = "services.juryAssignmentsService.GetJuryAssignmentsByID"
-	const errMsg = "failed get jury assignments by id"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -68,8 +68,8 @@ func (s *JuryAssignmentsService) GetJuryAssignmentsByID(ctx context.Context, id 
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id to uuid", liblogger.Err(err))
-		return juryAssignmentsDto.JuryAssignmentsResponseDTO{}, fmt.Errorf("%s", errMsg)
+		log.Error("failed parse id to uuid", slog.String("id", id), liblogger.Err(err))
+		return juryAssignmentsDto.JuryAssignmentsResponseDTO{}, errs.ErrBadRequest.Wrap("failed parse id")
 	}
 
 	filter := jury_assignments.JuryAssignments{ID: uid}
@@ -77,7 +77,7 @@ func (s *JuryAssignmentsService) GetJuryAssignmentsByID(ctx context.Context, id 
 	juryResult, err := s.repository.GetJuryAssignmentsByFilter(ctx, s.orm, filter)
 	if err != nil {
 		log.Error("failed get jury by id", liblogger.Err(err))
-		return juryAssignmentsDto.JuryAssignmentsResponseDTO{}, fmt.Errorf("%s", errMsg)
+		return juryAssignmentsDto.JuryAssignmentsResponseDTO{}, errs.ErrInternalError.Wrap("failed get jury-assignmetns by id")
 	}
 
 	return dtoConverter.ConvertJuryAssignmentsToDTO(juryResult), nil
@@ -85,7 +85,6 @@ func (s *JuryAssignmentsService) GetJuryAssignmentsByID(ctx context.Context, id 
 
 func (s *JuryAssignmentsService) GetAllByEventId(ctx context.Context, eventId string) ([]juryAssignmentsDto.JuryAssignmentsResponseDTO, error) {
 	const op = "services.juryAssignmentsService.GetAllByEventId"
-	const errMsg = "failed get all by event id"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -93,15 +92,15 @@ func (s *JuryAssignmentsService) GetAllByEventId(ctx context.Context, eventId st
 
 	uid, err := uuid.Parse(eventId)
 	if err != nil {
-		log.Error("failed parse id to uuid", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		log.Error("failed parse id to uuid", slog.String("id", eventId), liblogger.Err(err))
+		return nil, errs.ErrBadRequest.Wrap("failed parse id")
 	}
 
 	model := jury_assignments.JuryAssignments{EventID: uid}
 	result, err := s.repository.GetAllJuryAssignmentsByFilter(ctx, s.orm, model)
 	if err != nil {
 		log.Error("failed get all jury by event id", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, errs.ErrInternalError.Wrap("failed get jury-assignmetns by event-id")
 	}
 
 	return dtoConverter.ConvertManyJuryAssignmentsToDTO(result), nil
@@ -109,7 +108,6 @@ func (s *JuryAssignmentsService) GetAllByEventId(ctx context.Context, eventId st
 
 func (s *JuryAssignmentsService) GetAllByJuryId(ctx context.Context, juryId string) ([]juryAssignmentsDto.JuryAssignmentsResponseDTO, error) {
 	const op = "services.juryAssignmentsService.GetAllByJuryId"
-	const errMsg = "failed get all by jury id"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -117,15 +115,15 @@ func (s *JuryAssignmentsService) GetAllByJuryId(ctx context.Context, juryId stri
 
 	uid, err := uuid.Parse(juryId)
 	if err != nil {
-		log.Error("failed parse id to uuid", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		log.Error("failed parse id to uuid", slog.String("id", juryId), liblogger.Err(err))
+		return nil, errs.ErrBadRequest.Wrap("failed parse id")
 	}
 
 	model := jury_assignments.JuryAssignments{UserID: uid}
 	result, err := s.repository.GetAllJuryAssignmentsByFilter(ctx, s.orm, model)
 	if err != nil {
 		log.Error("failed get all by jury id", liblogger.Err(err))
-		return nil, fmt.Errorf("%s", errMsg)
+		return nil, errs.ErrInternalError.Wrap("failed get all ")
 	}
 
 	return dtoConverter.ConvertManyJuryAssignmentsToDTO(result), nil
@@ -142,7 +140,7 @@ func (s *JuryAssignmentsService) GetAllJuryAssignmentsByFilter(ctx context.Conte
 	modelFilter := dtoConverter.ConvertDTOtoJuryAssignments(filter)
 	results, err := s.repository.GetAllJuryAssignmentsByFilter(ctx, s.orm, modelFilter)
 	if err != nil {
-		log.Error("failed get all jury", liblogger.Err(err))
+		log.Error("failed get all jury-assignmetns by jury-id", liblogger.Err(err))
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return dtoConverter.ConvertManyJuryAssignmentsToDTO(results), nil
@@ -214,7 +212,6 @@ func (s *JuryAssignmentsService) GetAllJuryAssignmentsByFilter(ctx context.Conte
 
 func (s *JuryAssignmentsService) Create(ctx context.Context, dto juryAssignmentsDto.CreateJuryAssignmentsDTO) (uuid.UUID, error) {
 	const op = "services.juryAssignmentsService.Create"
-	const errMsg = "failed create jury-assignments"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -223,7 +220,7 @@ func (s *JuryAssignmentsService) Create(ctx context.Context, dto juryAssignments
 	model, err := dtoConverter.FromCreateDTOtoModel(dto)
 	if err != nil {
 		log.Error("failed convert dto to model", liblogger.Err(err))
-		return uuid.Nil, fmt.Errorf("%s: failed convert dto to model", errMsg)
+		return uuid.Nil, errs.ErrInternalError.Wrap("failed convert dto to model")
 	}
 
 	// ok, err := s.supportReq.PrepareRequest(model.JuryID, supportRequest.EventService)
@@ -248,7 +245,8 @@ func (s *JuryAssignmentsService) Create(ctx context.Context, dto juryAssignments
 
 	id, err := s.repository.CreateJuryAssignments(ctx, s.orm, model)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
+		log.Error("failed create jury-assignmetns")
+		return uuid.Nil, errs.ErrInternalError.Wrap("failed craete jury-assignmetns")
 	}
 	return id, nil
 }
