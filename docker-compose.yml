@@ -72,6 +72,42 @@ services:
     ports:
       - "8989:8181"
     entrypoint: ["/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./sso-service"]
+
+  jury-db:
+    image: postgres:16
+    container_name: jury-db
+    environment: 
+      POSTGRES_USER: jury_user
+      POSTGRES_PASSWORD: jury_pass
+      POSTGRES_DB: JureAssignmentsServiceDB
+    ports:
+      - "5445:5432"
+    networks:
+      - olympic
+    volumes:
+      - jury-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jury_user -d JureAssignmentsServiceDB"]
+      interval: 5s
+      timeout: 3s
+      retries: 5 
+
+  jury-service:
+    build:
+      context: ./Jure-assignments-service
+    container_name: jury-service
+    depends_on:
+      jury-db:
+        condition: service_healthy
+    environment:
+      DSN: "postgres://jury_user:jury_pass@jury-db:5432/JureAssignmentsServiceDB?sslmode=disable"
+      MIGRATION_PATH: "/app/migrations"
+      CONFIG_PATH: "/app/config-yaml/docker.yaml"
+    networks:
+      - olympic
+    ports:
+      - "8383:8090"
+    entrypoint: ["/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./jury-ass-service"]
     
   app:
     build:
@@ -190,6 +226,7 @@ networks:
 volumes:
   event-db-data:
   sso-db-data:
+  jury-db-data:
   db_data:
   redis_data:
   rabbitmq_data:

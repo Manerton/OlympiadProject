@@ -1,0 +1,25 @@
+env: "dev"
+
+DB_INFO:
+  host: "jury-db"
+  name: "JureAssignmentsServiceDB"
+  user: "jury_user"
+  pass: "jury_pass"
+  ssl_model: "disable"
+
+HTTP_SERVER_INFO:
+  host: "0.0.0.0"
+  port: "8090"
+  
+JWT_INFO:
+  key: "lololololololololololololololololololololololololololololol"
+
+RABBIT_INFO:
+  address_path: "amqp://jury-service:jury-password@olymp_rabbitmq:5672/"
+  queue_name: "olymp_jury"
+
+ADDITIONAL_ADDRESSES:
+  react: "http://172.16.1.39:5173"
+  olymp-result: "http://172.16.0.94:8080"
+  event: "http://172.16.1.39:8080"
+  user: "http://172.16.1.39:8181"

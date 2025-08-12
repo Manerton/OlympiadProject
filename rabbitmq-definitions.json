@@ -9,6 +9,11 @@
       "name": "event-service",
       "password": "event-password",
       "tags": "administrator"
+    },
+    {
+      "name": "jury-service",
+      "password": "jury-password",
+      "tags": "administrator"
     }
   ],
   "vhosts": [
@@ -28,6 +33,13 @@
       "configure": ".*",
       "write": ".*",
       "read": ".*"
+    },
+    {
+      "user": "jury-service",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
     }
   ],
   "queues": [
@@ -38,8 +50,15 @@
       "auto_delete": false,
       "arguments": {}
     },
-     {
+    {
       "name": "olymp_event",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "olymp_jury",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,

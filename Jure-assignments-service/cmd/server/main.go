@@ -25,7 +25,7 @@ const devConfigPath = "config-yaml/dev.yaml"
 // @in header
 // @name Jury-assigments
 func main() {
-	cfg := config.GetConfig(DebugDevlFilePath)
+	cfg := config.GetConfig(devConfigPath)
 
 	log := liblogger.SetupLogger(cfg.Env)
 	log.Info("start jure-assignments-service")
