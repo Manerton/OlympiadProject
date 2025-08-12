@@ -2,9 +2,9 @@ package jure_assignments_handler
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"main/internal/dto/juryAssignmentsDto"
+	"main/internal/lib/errs"
 	"main/internal/lib/response"
 	"net/http"
 
@@ -40,8 +40,14 @@ func (h *JuryAssignmentHandler) GetAllJuryAssignments(w http.ResponseWriter, r *
 
 	dtos, err := h.service.GetAllJuryAssignments(ctx)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get all jury assignments"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -58,8 +64,14 @@ func (h *JuryAssignmentHandler) GetJuryAssignmentsByID(w http.ResponseWriter, r 
 
 	dto, err := h.service.GetJuryAssignmentsByID(ctx, receivedID)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get jury assignments"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -76,8 +88,14 @@ func (h *JuryAssignmentHandler) GetAllByEventId(w http.ResponseWriter, r *http.R
 
 	result, err := h.service.GetAllByEventId(ctx, eventIdS)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -95,8 +113,14 @@ func (h *JuryAssignmentHandler) GetAllByJuryId(w http.ResponseWriter, r *http.Re
 
 	result, err := h.service.GetAllByJuryId(ctx, juryId)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -113,23 +137,31 @@ func (h *JuryAssignmentHandler) CreateJuryAssignments(w http.ResponseWriter, r *
 	dto := juryAssignmentsDto.CreateJuryAssignmentsDTO{}
 	err := render.DecodeJSON(r.Body, &dto)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed to decode request"))
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body")))
 		return
 	}
 
 	err = validator.New().Struct(dto)
 	if err != nil {
-		validateErr := err.(validator.ValidationErrors)
-		render.JSON(w, r, response.ErrorResponse(fmt.Sprintf("err %v", validateErr)))
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed validate dto")))
 		return
 	}
 
-	_, err = h.service.Create(ctx, dto)
+	createdId, err := h.service.Create(ctx, dto)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
-	render.JSON(w, r, response.SuccessResponse(""))
+	render.JSON(w, r, response.SuccessResponse(createdId.String()))
 }
 
 // func (h *JuryAssignmentHandler) CreateManyAssignmentsByOneJury(w http.ResponseWriter, r *http.Request) {
@@ -163,13 +195,21 @@ func (h *JuryAssignmentHandler) UpdateJuryAssignments(w http.ResponseWriter, r *
 	dto := juryAssignmentsDto.UpdateJuryAssignmentsDTO{}
 	err := render.DecodeJSON(r.Body, &dto)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed to decode request"))
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body")))
 		return
 	}
 
 	err = h.service.Update(ctx, id, dto)
 	if err != nil {
-		render.JSON(w, r, response.ErrorResponse("failed to update JuryAssignments"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 	render.JSON(w, r, response.SuccessResponse("success updated"))
@@ -182,8 +222,14 @@ func (h *JuryAssignmentHandler) DeleteJuryAssignments(w http.ResponseWriter, r *
 
 	err := h.service.Delete(ctx, receivedID)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(err.Error()))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 	render.JSON(w, r, response.SuccessResponse("object deleted"))
