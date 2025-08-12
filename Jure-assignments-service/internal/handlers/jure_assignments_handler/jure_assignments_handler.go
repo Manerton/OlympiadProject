@@ -35,6 +35,13 @@ func NewJureAssignmentHandler(js JuryAssignmentsServiceInterface, log *slog.Logg
 	return &JuryAssignmentHandler{service: js}
 }
 
+// @Summery All jury-assignments
+// @Description Получение всех связей жюри-событие
+// @Tags jury-assignments
+// @Produce json
+// @Success 200 {object} response.ApiResponse{data=[]juryAssignmentsDto.JuryAssignmentsResponseDTO}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/jury-assignments [get]
 func (h *JuryAssignmentHandler) GetAllJuryAssignments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -57,6 +64,14 @@ func (h *JuryAssignmentHandler) GetAllJuryAssignments(w http.ResponseWriter, r *
 	})
 }
 
+// @Summery Get jury-assignments by id
+// @Description Получения связи жюри-событие по id связи
+// @Tags jury-assignments
+// @Produce json
+// @Param id path string true "id связи"
+// @Success 200 {object} response.ApiResponse{data=juryAssignmentsDto.JuryAssignmentsResponseDTO}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/jury-assignments/{id} [get]
 func (h *JuryAssignmentHandler) GetJuryAssignmentsByID(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -81,6 +96,14 @@ func (h *JuryAssignmentHandler) GetJuryAssignmentsByID(w http.ResponseWriter, r 
 	})
 }
 
+// @Summery Get all jury-assignments by event-id
+// @Description Получение всех связей жюри-событие по event-id
+// @Tags jury-assignments
+// @Produce json
+// @Param id path string true "id события"
+// @Success 200 {object} response.ApiResponse{data=[]juryAssignmentsDto.JuryAssignmentsResponseDTO}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/jury-assignments/event/{id} [get]
 func (h *JuryAssignmentHandler) GetAllByEventId(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -106,6 +129,14 @@ func (h *JuryAssignmentHandler) GetAllByEventId(w http.ResponseWriter, r *http.R
 	})
 }
 
+// @Summery Get all jury-assignments by user-id
+// @Description Получение всех связей жюри-событие по user-id
+// @Tags jury-assignments
+// @Produce json
+// @Param id path string true "id жюри"
+// @Success 200 {object} response.ApiResponse{data=[]juryAssignmentsDto.JuryAssignmentsResponseDTO}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/jury-assignments/jury/{id} [get]
 func (h *JuryAssignmentHandler) GetAllByJuryId(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -131,6 +162,15 @@ func (h *JuryAssignmentHandler) GetAllByJuryId(w http.ResponseWriter, r *http.Re
 	})
 }
 
+// @Summery Create jury-assignments
+// @Description Создание связи записи жюри на событие
+// @Tags jury-assignments
+// @Accept json
+// @Produce json
+// @Param credentials body juryAssignmentsDto.CreateJuryAssignmentsDTO true "Данные для создания связи"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/jury-assignments [post]
 func (h *JuryAssignmentHandler) CreateJuryAssignments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -164,29 +204,16 @@ func (h *JuryAssignmentHandler) CreateJuryAssignments(w http.ResponseWriter, r *
 	render.JSON(w, r, response.SuccessResponse(createdId.String()))
 }
 
-// func (h *JuryAssignmentHandler) CreateManyAssignmentsByOneJury(w http.ResponseWriter, r *http.Request) {
-// 	ctx := r.Context()
-
-// 	dto := juryAssignmentsDto.OneJuryManyAssignments{}
-// 	err := render.DecodeJSON(r.Body, &dto)
-// 	if err != nil {
-// 		render.JSON(w, r, response.ErrorResponse("failed to decode request"))
-// 		return
-// 	}
-
-// 	ids, err := h.service.CreateManyAssignmentsByOneJury(ctx, dto)
-// 	if err != nil {
-// 		render.JSON(w, r, response.ErrorResponse(err.Error()))
-// 		return
-// 	}
-
-// 	render.JSON(w, r, response.ApiResponse{
-// 		Status: response.SUCCESS,
-// 		Data:   ids,
-// 	})
-
-// }
-
+// @Summery Update jury-assignments
+// @Description Обновление связи записи жюри на событие
+// @Tags jury-assignments
+// @Accept json
+// @Produce json
+// @Param id path string true "id связи"
+// @Param credentials body juryAssignmentsDto.UpdateJuryAssignmentsDTO true "Данные для обновления связи"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/jury-assignments/{id} [put]
 func (h *JuryAssignmentHandler) UpdateJuryAssignments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -215,6 +242,14 @@ func (h *JuryAssignmentHandler) UpdateJuryAssignments(w http.ResponseWriter, r *
 	render.JSON(w, r, response.SuccessResponse("success updated"))
 }
 
+// @Summery Delete jury-assignments
+// @Description Удаление связи записи жюри на событие
+// @Tags jury-assignments
+// @Produce json
+// @Param id path string true "id связи"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/jury-assignments/{id} [delete]
 func (h *JuryAssignmentHandler) DeleteJuryAssignments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

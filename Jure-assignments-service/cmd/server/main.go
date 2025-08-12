@@ -7,6 +7,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+
+	_ "main/docs"
 )
 
 const localConfigPath = "config-yaml/local.yaml"
@@ -14,6 +16,14 @@ const DebugLocalFilePath = "C:/code_folder/OlympiadProject/Jure-assignments-serv
 const DebugDevlFilePath = "C:/Users/Admin/goProject/OlympiadProject/Jure-assignments-service/config-yaml/dev.yaml"
 const devConfigPath = "config-yaml/dev.yaml"
 
+// @title Jury-assigments Service API
+// @version 1.0
+// @description Документация к микросервису назначения жюри на этапы
+// @host 172.16.1.39:8090
+// @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Jury-assigments
 func main() {
 	cfg := config.GetConfig(DebugDevlFilePath)
 

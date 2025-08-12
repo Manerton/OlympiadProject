@@ -127,7 +127,7 @@ func (s *JuryAssignmentsService) GetAllByJuryId(ctx context.Context, juryId stri
 	result, err := s.repository.GetAllJuryAssignmentsByFilter(ctx, s.orm, model)
 	if err != nil {
 		log.Error("failed get all by jury id", liblogger.Err(err))
-		return nil, errs.ErrInternalError.Wrap("failed get all ")
+		return nil, errs.ErrInternalError.Wrap("failed get jury-assignments by user-id")
 	}
 
 	return dtoConverter.ConvertManyJuryAssignmentsToDTO(result), nil

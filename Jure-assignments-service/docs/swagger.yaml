@@ -1,0 +1,242 @@
+basePath: /
+definitions:
+  juryAssignmentsDto.CreateJuryAssignmentsDTO:
+    properties:
+      event_id:
+        type: string
+      user_id:
+        type: string
+    required:
+    - event_id
+    - user_id
+    type: object
+  juryAssignmentsDto.JuryAssignmentsResponseDTO:
+    properties:
+      event_id:
+        type: string
+      id:
+        type: string
+      user_id:
+        type: string
+    required:
+    - event_id
+    - user_id
+    type: object
+  juryAssignmentsDto.UpdateJuryAssignmentsDTO:
+    properties:
+      event_id:
+        type: string
+      user_id:
+        type: string
+    required:
+    - event_id
+    - user_id
+    type: object
+  response.ApiResponse:
+    properties:
+      data: {}
+      error:
+        type: string
+      message:
+        type: string
+      metadata: {}
+      status:
+        type: string
+      status_code:
+        type: integer
+    type: object
+host: 172.16.1.39:8090
+info:
+  contact: {}
+  description: Документация к микросервису назначения жюри на этапы
+  title: Jury-assigments Service API
+  version: "1.0"
+paths:
+  /api/jury-assignments:
+    get:
+      description: Получение всех связей жюри-событие
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/juryAssignmentsDto.JuryAssignmentsResponseDTO'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      tags:
+      - jury-assignments
+    post:
+      consumes:
+      - application/json
+      description: Создание связи записи жюри на событие
+      parameters:
+      - description: Данные для создания связи
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/juryAssignmentsDto.CreateJuryAssignmentsDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      tags:
+      - jury-assignments
+  /api/jury-assignments/{id}:
+    delete:
+      description: Удаление связи записи жюри на событие
+      parameters:
+      - description: id связи
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      tags:
+      - jury-assignments
+    get:
+      description: Получения связи жюри-событие по id связи
+      parameters:
+      - description: id связи
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/juryAssignmentsDto.JuryAssignmentsResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      tags:
+      - jury-assignments
+    put:
+      consumes:
+      - application/json
+      description: Обновление связи записи жюри на событие
+      parameters:
+      - description: id связи
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Данные для обновления связи
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/juryAssignmentsDto.UpdateJuryAssignmentsDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      tags:
+      - jury-assignments
+  /api/jury-assignments/event/{id}:
+    get:
+      description: Получение всех связей жюри-событие по event-id
+      parameters:
+      - description: id события
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/juryAssignmentsDto.JuryAssignmentsResponseDTO'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      tags:
+      - jury-assignments
+  /api/jury-assignments/jury/{id}:
+    get:
+      description: Получение всех связей жюри-событие по user-id
+      parameters:
+      - description: id жюри
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/juryAssignmentsDto.JuryAssignmentsResponseDTO'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      tags:
+      - jury-assignments
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Jury-assigments
+    type: apiKey
+swagger: "2.0"
