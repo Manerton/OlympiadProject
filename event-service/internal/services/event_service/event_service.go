@@ -114,6 +114,10 @@ func (s *EventService) GetEventByFilterAndFields(ctx context.Context, filter eve
 
 	modelFilter := event_mapper.ConvertDTOtoEvent(filter)
 	event, err := s.eventRepository.GetEventByFilterAndFields(ctx, s.db, modelFilter, fields)
+	if s.db.IsNotFound(err) {
+		log.Warn("event not found", liblogger.Err(err))
+		return event_dto.DetailsEvent{}, errs.ErrNotFound.Wrap("event not found")
+	}
 	if err != nil {
 		log.Error("failed to get event",
 			slog.Any("filter", filter),

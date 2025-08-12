@@ -2,7 +2,6 @@ package user_service
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	user_dto "main/internal/dto/user"
 	"main/internal/lib/crypt"
@@ -15,7 +14,6 @@ import (
 	"main/internal/storage/orm"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type UserRepository interface {
@@ -101,7 +99,7 @@ func (s *UserService) GetByFilter(ctx context.Context, userDTO user_dto.SearchAt
 
 	userModel := user_mapper.FromSearchToModel(userDTO)
 	userResult, err := s.userRepository.GetByFilter(ctx, s.db, userModel)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if s.db.IsNotFound(err) {
 		log.Warn("user not found", slog.Any("model", userModel), liblogger.Err(err))
 		return user_dto.UserResponseDTO{}, errs.ErrUserNotFound
 	}
@@ -128,7 +126,7 @@ func (s *UserService) GetById(ctx context.Context, id string) (user_dto.UserResp
 	}
 
 	userResult, err := s.userRepository.GetById(ctx, s.db, uid)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if s.db.IsNotFound(err) {
 		log.Warn("user not found", slog.String("id", id), liblogger.Err(err))
 		return user_dto.UserResponseDTO{}, errs.ErrUserNotFound
 	}
@@ -155,7 +153,7 @@ func (s *UserService) GetUserParticipantById(ctx context.Context, id string) (us
 	}
 
 	userResult, err := s.userRepository.GetById(ctx, s.db, uid)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if s.db.IsNotFound(err) {
 		log.Warn("user not found", slog.String("id", id), liblogger.Err(err))
 		return user_dto.UserParticipantResponseDTO{}, errs.ErrUserNotFound
 	}
@@ -166,7 +164,7 @@ func (s *UserService) GetUserParticipantById(ctx context.Context, id string) (us
 	}
 
 	participantResult, err := s.participantRepository.GetByUserId(ctx, s.db, userResult.ID)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if s.db.IsNotFound(err) {
 		log.Error("participant not found", slog.String("user id", userResult.ID.String()), liblogger.Err(err))
 		return user_dto.UserParticipantResponseDTO{}, errs.ErrParticipantNotFound
 	}

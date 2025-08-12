@@ -2,7 +2,6 @@ package auth_service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	login_dto "main/internal/dto/auth/login"
@@ -22,7 +21,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type UserRepository interface {
@@ -73,7 +71,7 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 	)
 
 	userResult, err := s.userRepository.GetByEmail(ctx, s.db, loginRequest.Email)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if s.db.IsNotFound(err) {
 		log.Error("failed user not fount", slog.String("email", loginRequest.Email), liblogger.Err(err))
 		return nil, errs.ErrAuthFailed.Wrap("email not found")
 	}
@@ -177,7 +175,7 @@ func (s *AuthService) RegisterUser(ctx context.Context, registerUser *register_d
 		return errs.ErrUserAlreadyExists
 	}
 
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
+	if !s.db.IsNotFound(err) {
 		log.Error("failed to check user exist", liblogger.Err(err))
 		return errs.ErrInternalError.Wrap("failed get user by email")
 	}
@@ -211,7 +209,7 @@ func (s *AuthService) RegisterParticipant(ctx context.Context, registerRequst *r
 		return errs.ErrUserAlreadyExists
 	}
 
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
+	if !s.db.IsNotFound(err) {
 		log.Error("failed to check user exist", liblogger.Err(err))
 		return errs.ErrInternalError.Wrap("failed to check user exist")
 	}
@@ -274,7 +272,7 @@ func (s *AuthService) ActivateAccount(ctx context.Context, email string, userCod
 	}
 
 	userModel, err := s.userRepository.GetByEmail(ctx, s.db, email)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if s.db.IsNotFound(err) {
 		log.Error("failed user not found", liblogger.Err(err), slog.String("email", email))
 		return errs.ErrUserNotFound
 	}
@@ -317,7 +315,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 
 	// get token from db
 	tokenDB, err := s.refreshRepository.GetById(ctx, s.db, tokenUid)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if s.db.IsNotFound(err) {
 		log.Error("refresh token does not exist on db", slog.String("id", tokenClaims.ID), liblogger.Err(err))
 		return nil, errs.ErrTokenNotFound.Wrap("refresh token not found")
 	}
@@ -356,7 +354,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 
 	// find user
 	userFind, err := s.userRepository.GetById(ctx, s.db, userUid)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if s.db.IsNotFound(err) {
 		log.Warn("user not found", liblogger.Err(err))
 		return nil, errs.ErrUserNotFound
 	}
