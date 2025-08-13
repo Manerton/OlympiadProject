@@ -92,7 +92,10 @@ class EventApiController extends Controller
     {
         $event = $this->eventService->find($id);
         $tasks = $this->taskRepository->getByEventId($id);
-        return view('event/task', compact('event', 'tasks'));
+        return response()->json([
+            'event' => (array)$event,
+            'tasks' => $tasks
+        ]);
     }
     public function attendance($id)
     {
@@ -107,7 +110,7 @@ class EventApiController extends Controller
             'data' => collect($data)->map(function($item) {
                 return [
                     'person' => (array)$item['person'],
-                    'attendance' => (array)$item['attendance'],
+                    'attendance' => $item['attendance'],
                 ];
             })->toArray(),
             'attendances' => collect($attendances)->map(function($attendance) {
@@ -145,7 +148,18 @@ class EventApiController extends Controller
         $attendances = $this->attendanceService->attendanceFilter($this->attendanceService->applicationFilter($applications));
         $table = $this->attendanceService->createExtraTable($attendances);
         $tasks = $this->taskRepository->getByEventId($id);
-        return view('event/point', compact('event', 'tasks', 'table'));
+        return response()->json([
+            'event' => (array)$event,
+            'tasks' => $tasks,
+            'table' => array_map(function($item) {
+                return [
+                    'attendance' => $item['attendance'],
+                    'application' => (array)$item['application'],
+                    'person' => (array)$item['person'],
+                    'taskAttendances' => $item['taskAttendances']
+                ];
+            }, $table)
+        ]);
     }
     public function delete($id){
         return redirect()->route('event.index');
@@ -161,13 +175,13 @@ class EventApiController extends Controller
     {
         $data = $request->validated();
         $this->taskService->createTasks($data, $id);
-        return redirect()->route('event.task', ['id' => $id]);
+        return response()->json([]);
     }
     public function deleteTask($id)
     {
         $task = $this->taskRepository->get($id);
         $this->taskService->delete($task);
-        return redirect()->route('event.task', ['id' => $task->event_id]);
+        return response()->json([]);
     }
     public function changeAttendance(Request $request){
         try {

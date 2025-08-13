@@ -170,7 +170,22 @@ const EventShow: React.FC = () => {
                         
                         <button 
                             className="btn btn-success"
-                            onClick={() => navigate(`/olymp-admin/event/synchronize/${event.id}`)}
+                            onClick={async () => {
+                                    try {
+                                        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+                                        await axios.get(`http://olymp-admin-v2/api/event/synchronize/${event.id}`, {
+                                            headers: {
+                                                'Authorization': token,
+                                                'Content-Type': 'application/json'
+                                            },
+                                            withCredentials: true
+                                        });
+                                    } 
+                                    catch {
+
+                                    }
+                                }
+                            }
                         >
                             Синхронизировать
                         </button>

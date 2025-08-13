@@ -33,7 +33,6 @@ const EventAttendance: React.FC = () => {
 
     useEffect(() => {
         const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
-
         const fetchData = async () => {
             try {
                 const response = await axios.get(`http://olymp-admin-v2/api/event/attendance/${id}`, {
@@ -41,9 +40,11 @@ const EventAttendance: React.FC = () => {
                 });
 
                 setEvent(response.data.event);
+                
                 setAttendanceData(response.data.data || []);
                 setAttendanceStatuses(response.data.attendanceStatuses || {});
                 setLoading(false);
+                
             } catch (error) {
                 console.error('Error fetching attendance data:', error);
                 setLoading(false);
@@ -82,7 +83,9 @@ const EventAttendance: React.FC = () => {
             alert('Не удалось обновить статус явки');
         }
     };
-
+    {attendanceData.map((item, index) => (
+            console.log(item)
+    ))};
     const getFullName = (person: { firstname?: string; surname?: string; patronymic?: string }) => {
         return `${person.firstname || ''} ${person.surname || ''} ${person.patronymic || ''}`.trim();
     };
