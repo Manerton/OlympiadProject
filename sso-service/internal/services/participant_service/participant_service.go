@@ -30,8 +30,10 @@ type ParticipantService struct {
 }
 
 func New(log *slog.Logger, orm orm.ORM, participantRepository ParticipantRepository) *ParticipantService {
+	plog := log.With("owner", "ParticipantService")
+
 	return &ParticipantService{
-		log:                   log,
+		log:                   plog,
 		db:                    orm,
 		participantRepository: participantRepository,
 	}

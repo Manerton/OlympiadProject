@@ -27,7 +27,7 @@ type OutboxProducer struct {
 
 func New(log *slog.Logger, manager *rabbitmq.ConnectionManager, orm orm.ORM, repository OutboxRepositoryInteface) *OutboxProducer {
 	plog := log.With(
-		slog.String("op", "OutboxProducer"),
+		slog.String("owner", "OutboxProducer"),
 	)
 
 	return &OutboxProducer{

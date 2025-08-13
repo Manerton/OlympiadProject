@@ -50,12 +50,14 @@ type EventService struct {
 }
 
 func NewEventService(orm orm.ORM, services map[string]string, er EventRepositoryInterface, or OutboxRepositoryInteface, log *slog.Logger) *EventService {
+	elog := log.With("owner", "EventService")
+
 	return &EventService{
 		db:                orm,
 		kiznaiverServices: services,
 		eventRepository:   er,
 		outboxRepository:  or,
-		log:               log,
+		log:               elog,
 	}
 }
 

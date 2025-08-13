@@ -28,7 +28,8 @@ func SetupLogger(env string) *slog.Logger {
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
 		)
 	}
-	return log
+
+	return log.With(slog.String("service", "jury-assigments-service"))
 }
 
 func Err(err error) slog.Attr {

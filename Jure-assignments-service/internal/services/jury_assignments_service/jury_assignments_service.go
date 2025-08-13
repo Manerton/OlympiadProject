@@ -34,11 +34,13 @@ type JuryAssignmentsService struct {
 }
 
 func NewJuryAssignmentsService(log *slog.Logger, orm orm.ORM, supportReq *supportRequest.SupportRequest, jr juryAssignmentsRepositoryInterface) *JuryAssignmentsService {
+	jlog := log.With("owner", "JuryAssignmentsService")
+
 	return &JuryAssignmentsService{
 		supportReq: supportReq,
 		orm:        orm,
 		repository: jr,
-		log:        log,
+		log:        jlog,
 	}
 }
 

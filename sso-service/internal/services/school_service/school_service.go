@@ -31,8 +31,10 @@ type SchoolService struct {
 }
 
 func New(log *slog.Logger, orm orm.ORM, schoolRepository SchoolRepository) *SchoolService {
+	slog := log.With(slog.String("owner", "SchoolService"))
+
 	return &SchoolService{
-		log:              log,
+		log:              slog,
 		db:               orm,
 		schoolRepository: schoolRepository,
 	}

@@ -42,7 +42,7 @@ type RabbitConsumer struct {
 
 func New(log *slog.Logger, mananger *rabbitmq.ConnectionManager, eventService EventService) *RabbitConsumer {
 	clog := log.With(
-		slog.String("op", "RabbitConsumer"),
+		slog.String("owner", "RabbitConsumer"),
 	)
 
 	return &RabbitConsumer{

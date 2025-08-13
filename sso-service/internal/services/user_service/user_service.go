@@ -40,11 +40,13 @@ type UserService struct {
 }
 
 func New(log *slog.Logger, orm orm.ORM, userRepository UserRepository, participantRepository ParticipantRepository) *UserService {
+	ulog := log.With(slog.String("owner", "UserService"))
+
 	return &UserService{
 		participantRepository: participantRepository,
 		userRepository:        userRepository,
 		db:                    orm,
-		log:                   log,
+		log:                   ulog,
 	}
 }
 

@@ -73,7 +73,7 @@ func New(log *slog.Logger, address string,
 	const op = "RabbitMQ consumer"
 
 	clog := log.With(
-		slog.String("op", op),
+		slog.String("owner", op),
 	)
 
 	return &RabbitConsumer{

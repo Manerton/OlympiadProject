@@ -44,7 +44,7 @@ type RabbitConsumer struct {
 
 func New(log *slog.Logger, address string, juryService JureAssignmentsService) *RabbitConsumer {
 	clog := log.With(
-		slog.String("op", "RabbitConsumer"),
+		slog.String("owner", "RabbitConsumer"),
 	)
 
 	return &RabbitConsumer{

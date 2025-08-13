@@ -53,8 +53,11 @@ type AuthService struct {
 
 func New(log *slog.Logger, orm orm.ORM, jwtManager *jwttoken.JWTManager,
 	userRepository UserRepository, participantRepository ParticipantRepository, refreshRepository RefreshRepository) *AuthService {
+
+	alog := log.With("owner", "AuthService")
+
 	return &AuthService{
-		log:                   log,
+		log:                   alog,
 		db:                    orm,
 		jwtManager:            jwtManager,
 		userRepository:        userRepository,
