@@ -15,7 +15,9 @@ interface TaskAttendance {
 }
 
 interface Person {
-    fullFio: string;
+    surname?: string;
+    firstname?: string;
+    patronymic?: string;
 }
 
 interface Application {
@@ -29,20 +31,19 @@ interface TableRow {
 }
 
 const EventPoint: React.FC = () => {
-    const { eventId } = useParams<{ eventId: string }>();
+    const { id } = useParams<{ id: string }>();
     const [tasks, setTasks] = useState<Task[]>([]);
     const [table, setTable] = useState<TableRow[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const navigate = useNavigate();
 
-    const token =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc";
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc";
 
     const fetchData = async () => {
         try {
             setLoading(true);
             const response = await axios.get(
-                `http://olymp-admin-v2/api/event/points/${eventId}`,
+                `http://olymp-admin-v2/api/event/point/${id}`,
                 {
                     headers: {
                         Authorization: token,
@@ -62,8 +63,16 @@ const EventPoint: React.FC = () => {
 
     const handlePointsChange = async (
         taskAttendanceId: string,
-        points: string
+        points: string,
+        rowIndex: number,
+        attendanceIndex: number
     ) => {
+        // Обновляем локальное состояние
+        const updatedTable = [...table];
+        updatedTable[rowIndex].taskAttendances[attendanceIndex].points = points;
+        setTable(updatedTable);
+
+        // Отправляем на сервер
         const cleanedPoints = points.replace(/[^0-9]/g, "");
         try {
             await axios.post(
@@ -87,7 +96,7 @@ const EventPoint: React.FC = () => {
 
     useEffect(() => {
         fetchData();
-    }, [eventId]);
+    }, [id]);
 
     if (loading) {
         return <div className="text-center mt-4">Загрузка...</div>;
@@ -97,7 +106,7 @@ const EventPoint: React.FC = () => {
         <div className="container mt-4">
             <button
                 className="btn btn-sm btn-primary mb-3"
-                onClick={() => navigate(`/olymp-admin/event/show/${eventId}`)}
+                onClick={() => navigate(`/olymp-admin/event/show/${id}`)}
             >
                 Перейти в карточку олимпиады
             </button>
@@ -117,23 +126,23 @@ const EventPoint: React.FC = () => {
                 <tbody>
                     {table.map((row, rowIndex) => (
                         <tr key={rowIndex}>
-                            <td>{row.person.fullFio}</td>
+                            <td>{`${row.person.surname || ''} ${row.person.firstname || ''} ${row.person.patronymic || ''}`.trim()}</td>
                             <td>{row.application.code}</td>
-                            {row.taskAttendances.map((ta) => (
+                            {row.taskAttendances.map((ta, attendanceIndex) => (
                                 <td key={ta.id}>
                                     <input
                                         type="text"
                                         value={ta.points || ""}
-                                        maxLength={ta.task.max_points.toString().length}
                                         onChange={(e) =>
                                             handlePointsChange(
                                                 ta.id,
-                                                e.target.value
+                                                e.target.value,
+                                                rowIndex,
+                                                attendanceIndex
                                             )
                                         }
                                         onInput={(e) => {
-                                            const target =
-                                                e.target as HTMLInputElement;
+                                            const target = e.target as HTMLInputElement;
                                             target.value = target.value.replace(
                                                 /[^0-9]/g,
                                                 ""

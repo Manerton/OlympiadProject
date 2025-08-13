@@ -7,6 +7,10 @@ interface Task {
     number: string;
     max_points: string;
 }
+interface Event {
+    id: string;
+    name: string;
+}
 
 interface NewTask {
     number: string;
@@ -14,7 +18,8 @@ interface NewTask {
 }
 
 const EventTask: React.FC = () => {
-    const { eventId } = useParams<{ eventId: string }>();
+    const { id } = useParams<{ id: string }>();
+    const [event, setEvent] = useState<Event | null>(null);
     const navigate = useNavigate();
 
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -22,20 +27,21 @@ const EventTask: React.FC = () => {
         { number: "", point: "" },
     ]);
     const [loading, setLoading] = useState<boolean>(true);
-
+    console.log(id);
     const token =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc";
-
     const fetchTasks = async () => {
         try {
             setLoading(true);
             const response = await axios.get(
-                `http://olymp-admin-v2/api/event/tasks/${eventId}`,
+                `http://olymp-admin-v2/api/event/task/${id}`,
                 {
                     headers: { Authorization: token },
                     withCredentials: true,
                 }
             );
+            setEvent(response.data.event);
+            
             setTasks(response.data.tasks || []);
         } catch (error) {
             console.error("Error fetching tasks:", error);
@@ -43,7 +49,6 @@ const EventTask: React.FC = () => {
             setLoading(false);
         }
     };
-
     const handleAddField = () => {
         setNewTasks([...newTasks, { number: "", point: "" }]);
     };
@@ -65,25 +70,31 @@ const EventTask: React.FC = () => {
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            await axios.post(
-                `http://olymp-admin-v2/api/event/add-task/${eventId}`,
-                { tasks: newTasks },
-                {
-                    headers: {
-                        Authorization: token,
-                        "Content-Type": "application/json",
-                    },
-                    withCredentials: true,
-                }
-            );
-            setNewTasks([{ number: "", point: "" }]);
-            fetchTasks();
-        } catch (error) {
-            console.error("Error adding tasks:", error);
-        }
-    };
+    e.preventDefault();
+    try {
+        // Преобразуем данные в нужный формат
+        const requestData = {
+            number: newTasks.map(task => task.number),
+            point: newTasks.map(task => task.point) // Обратите внимание: у вас в интерфейсе поле называется 'point', но здесь опечатка 'point'
+        };
+
+        await axios.post(
+            `http://olymp-admin-v2/api/event/add-task/${id}`,
+            requestData,
+            {
+                headers: {
+                    Authorization: token,
+                    "Content-Type": "application/json",
+                },
+                withCredentials: true,
+            }
+        );
+        setNewTasks([{ number: "", point: "" }]);
+        fetchTasks();
+    } catch (error) {
+        console.error("Error adding tasks:", error);
+    }
+};
 
     const handleDelete = async (taskId: string) => {
         if (!window.confirm("Вы уверены, что хотите удалить этот элемент?")) {
@@ -105,7 +116,7 @@ const EventTask: React.FC = () => {
 
     useEffect(() => {
         fetchTasks();
-    }, [eventId]);
+    }, [id]);
 
     if (loading) {
         return <div className="text-center mt-4">Загрузка...</div>;
@@ -115,7 +126,7 @@ const EventTask: React.FC = () => {
         <div className="container mt-4">
             <button
                 className="btn btn-sm btn-primary mb-3"
-                onClick={() => navigate(`/olymp-admin/event/show/${eventId}`)}
+                onClick={() => navigate(`/olymp-admin/event/show/${id}`)}
             >
                 Перейти в карточку олимпиады
             </button>
