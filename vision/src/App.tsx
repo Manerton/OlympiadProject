@@ -20,7 +20,9 @@ import AttendancePage from './components/General/Pages/AttendaceList.tsx'
 import AdminPanel from './components/Admin/Pages/AdminPanel.tsx'
 import Layout from './components/General/Layouts/Layout'
 import AdminLayout from './components/General/Layouts/AdminLayout'
-
+import AuthPage from './components/General/Pages/AuthForm.tsx'
+import RegionalStagesPage from './components/General/Pages/Events/RegionalStages'
+import OlympiadsPage from './components/General/Pages/Events/OlympiadsPage'
 
 function App() {
     return (
@@ -30,7 +32,10 @@ function App() {
                     
                     <Route element={<Layout />}>
                         <Route path="/" element={<MainPage />} />
+                        <Route path="/auth" element={<AuthPage />} />
                         <Route path="/profile" element={<ProfilePage />} />
+                        <Route path="/RegionalStages" element={<RegionalStagesPage />} />
+                        <Route path= "OlimpiadsPage/:id" element={<OlimpiadsPage />} />
                     </Route>
 
                     <Route element={<AdminLayout />}>

@@ -4,6 +4,8 @@ import { LinkContainer } from "react-router-bootstrap";
 import { Link } from "react-router-dom";
 import { PersonCircle, BoxArrowInRight } from "react-bootstrap-icons";
 import ThemeToggleButton from '../../Helpers/ThemeToggleButton';
+import RegionalStages from '../Pages/Events/RegionalStages';
+
 
 function Header() {
   // Заглушки: в будущем подключите контекст пользователя
@@ -23,7 +25,7 @@ function Header() {
               <Nav.Link>Главная</Nav.Link>
             </LinkContainer>
 
-            <LinkContainer to="/events">
+            <LinkContainer to="/RegionalStages">
               <Nav.Link>Олимпиады</Nav.Link>
             </LinkContainer>
 
@@ -89,7 +91,7 @@ function Header() {
                 </Dropdown.Menu>
               </Dropdown>
             ) : (
-              <Nav.Link as={Link} to="/login" className="d-flex align-items-center">
+              <Nav.Link as={Link} to="/auth" className="d-flex align-items-center">
                 <BoxArrowInRight className="me-2" />
                 Войти
               </Nav.Link>
