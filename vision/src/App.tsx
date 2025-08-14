@@ -45,7 +45,7 @@ function App() {
                         <Route path="/auth" element={<AuthPage />} />
                         <Route path="/profile" element={<ProfilePage />} />
                         <Route path="/RegionalStages" element={<RegionalStagesPage />} />
-                        <Route path= "OlimpiadsPage/:id" element={<OlimpiadsPage />} />
+                        <Route path= "OlympiadsPage/:id" element={<OlympiadsPage />} />
                     </Route>
 
                     <Route element={<AdminLayout />}>

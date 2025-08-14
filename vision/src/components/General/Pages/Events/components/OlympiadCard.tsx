@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, Button } from 'react-bootstrap';
-import { MyEvent } from '../type/Event.ts'; // Assuming Event.ts is in the same directory
+import type { MyEvent } from '../type/Event.ts'; // Assuming Event.ts is in the same directory
 
 const OlympiadCard: React.FC<{ olympiad: MyEvent; onClick?: (id: string) => void }> = ({ olympiad, onClick }) => {
   const startDate = new Date(olympiad.start_date).toLocaleDateString();

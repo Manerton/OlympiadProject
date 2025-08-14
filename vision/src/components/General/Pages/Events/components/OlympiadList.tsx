@@ -1,16 +1,13 @@
 import React from 'react';
 import { Row, Col } from 'react-bootstrap';
 import OlympiadCard from './OlympiadCard';
-import { MyEvent } from '../type/Event.ts'; // Assuming Event.ts is in the same directory
+import type { MyEvent } from '../type/Event.ts'; // Assuming Event.ts is in the same directory
 
-const OlympiadList: React.FC<{ events: MyEvent[]; onEventClick?: (event: MyEvent) => void }> = ({ events, onEventClick }) => (
+const OlympiadList: React.FC<{ olympiads: MyEvent[]; onOlympiadClick?: (id: string) => void }> = ({ olympiads, onOlympiadClick }) => (
   <Row>
-    {events.map((event) => (
-      <Col md={4} key={event.id}>
-        <EventCard 
-          event={event} 
-          onClick={event.event_type === 'REGIONAL_STAGE' && onEventClick ? () => onEventClick(event) : undefined} 
-        />
+    {olympiads.map((olympiad) => (
+      <Col md={4} key={olympiad.id} className="mb-4">
+        <OlympiadCard olympiad={olympiad} onClick={onOlympiadClick} />
       </Col>
     ))}
   </Row>
