@@ -1,6 +1,7 @@
 // pages/RegionalStagesPage.tsx
 import React, { useEffect, useState } from "react";
 import { Container, Spinner, Alert } from "react-bootstrap";
+import { useNavigate } from 'react-router-dom';
 import RegionalStageList from "./components/RegionalStageList";
 import axios from 'axios';
 
@@ -43,7 +44,7 @@ const RegionalStagesPage: React.FC = () => {
 
   const handleStageClick = (id: string) => {
   console.log("Переход к этапу:", id);
-  navigate(`/OlimpiadsPage/${id}`);
+  navigate(`/OlympiadsPage/${id}`);
 };
 
   return (

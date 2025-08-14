@@ -9,7 +9,10 @@ const OlympiadCard: React.FC<{ olympiad: MyEvent; onClick?: (id: string) => void
 
   return (
     <Card className="mb-3 shadow-sm">
-      <Card.Img variant="top" src={`https://via.placeholder.com/300x200?text=${encodeURIComponent(olympiad.name)}`} />
+      <Card.Img
+        variant="top"
+        src={`https://placehold.co/300x200?text=${encodeURIComponent(olympiad.name)}`}
+      />
       <Card.Body>
         <Card.Title>{olympiad.name}</Card.Title>
         <Card.Text>
