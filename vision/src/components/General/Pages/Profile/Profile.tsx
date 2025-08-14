@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { UserRole } from "../../../../dictionary/role";
+import ApplicationEventTab from "./Tabs/ApplicationEvents/ApplicationEvents";
 
 
 const ProfileMainPage: React.FC = () => {
@@ -9,9 +10,9 @@ const ProfileMainPage: React.FC = () => {
     const tabsByRole = {
         [UserRole.Participant]: [ 
             {"label": "Достжения", "component": ""},
-            {"label": "Олимпиады", "component": ""},
+            {"label": "Олимпиады", "component": ApplicationEventTab},
             {"label": "История", "component": ""},
-            {"label": "Апелляцит", "component": ""},
+            {"label": "Апелляции", "component": ""},
         ],
         [UserRole.Judge]: [
             {"label": "История", "component": ""},
@@ -20,7 +21,9 @@ const ProfileMainPage: React.FC = () => {
     }
 
     const tabs = tabsByRole[role] || []
-    const [acriveTab, setActiveTab] = useState(0)
+    const [activeTab, setActiveTab] = useState(0)
+
+    const ActiveComponent = tabs[activeTab].component;
 
     return (
         <div className="container mt-4">
@@ -33,12 +36,13 @@ const ProfileMainPage: React.FC = () => {
                 </div>
                 <button className="btn btn-primary ms-auto">Редактировать</button>
             </div>
+
             {/* Табы */}
             <ul className="nav nav-tabs">
                 {tabs.map((tab, i) => (
                     <li key={i} className="nav-item">
                         <button  
-                        className={`nav-link ${i === acriveTab ? "active" : ""}`}
+                        className={`nav-link ${i === activeTab ? "active" : ""}`}
                             onClick={() => setActiveTab(i)}>
                             {tab.label}
                         </button>
@@ -47,8 +51,8 @@ const ProfileMainPage: React.FC = () => {
             </ul>
 
             {/* Содержимое */}
-            <div className="tab-content p-3 border border-top-0">
-                {tabs[acriveTab].component}
+           <div className="tab-content p-3 border border-top-0">
+                {ActiveComponent && <ActiveComponent />}
             </div>
 
         </div>

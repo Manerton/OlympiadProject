@@ -19,5 +19,6 @@ export interface ApplicationEvent {
     previous_event_id: string;
     subject: number;
     class_number: number
-    additional_inf0: string
+    additional_info: string
+    status: number
 }

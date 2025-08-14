@@ -24,7 +24,6 @@ import EventPrizeScore from './components/olymp-admin/event/prize-score.tsx'
 import EventPoint from './components/olymp-admin/event/point.tsx'
 import EventTask from './components/olymp-admin/event/task.tsx'
 import Header from './components/General/Layouts/header.tsx'
-import ProfilePage from './components/General/Pages/Profile.tsx'
 import MainPage from './components/General/Pages/MainPage.tsx'
 import AttendancePage from './components/General/Pages/AttendaceList.tsx'
 import AdminPanel from './components/Admin/Pages/AdminPanel.tsx'
@@ -50,36 +49,35 @@ function App() {
                     </Route>
 
                     <Route element={<AdminLayout />}>
+                        <Route path="/AdminPanel" element={<AdminPanel />} />
+                        <Route path="/olymp-admin/user/index" element={<UserIndex />} />
+                        <Route path="/olymp-admin/user/show/:id" element={<UserShow />} />
+                        <Route path="/olymp-admin/user/create" element={<UserCreate />} />
+                        <Route path="/olymp-admin/user/edit/:id" element={<UserEdit />} />
+                        <Route path="/attendance" element={<AttendancePage />} />
 
-                      <Route path="/AdminPanel" element={<AdminPanel />} />
-                    <Route path="/olymp-admin/user/index" element={<UserIndex />} />
-                    <Route path="/olymp-admin/user/show/:id" element={<UserShow />} />
-                    <Route path="/olymp-admin/user/create" element={<UserCreate />} />
-                    <Route path="/olymp-admin/user/edit/:id" element={<UserEdit />} />
-                    <Route path="/attendance" element={<AttendancePage />} />
+                        <Route path="/olymp-admin/participant/index" element={<ParticipantIndex />} />
+                        <Route path="/olymp-admin/participant/show/:id" element={<ParticipantShow />} />
+                        <Route path="/olymp-admin/participant/create" element={<ParticipantCreate />} />
+                        <Route path="/olymp-admin/participant/edit/:id" element={<ParticipantEdit />} />
 
-                    <Route path="/olymp-admin/participant/index" element={<ParticipantIndex />} />
-                    <Route path="/olymp-admin/participant/show/:id" element={<ParticipantShow />} />
-                    <Route path="/olymp-admin/participant/create" element={<ParticipantCreate />} />
-                    <Route path="/olymp-admin/participant/edit/:id" element={<ParticipantEdit />} />
+                        <Route path="/olymp-admin/school/index" element={<SchoolIndex />} />
+                        <Route path="/olymp-admin/school/show/:id" element={<SchoolShow />} />
+                        <Route path="/olymp-admin/school/create" element={<SchoolCreate />} />
+                        <Route path="/olymp-admin/school/edit/:id" element={<SchoolEdit />} />
+                        <Route path="/olymp-admin/report/index" element={<ReportIndex />} />
 
-                    <Route path="/olymp-admin/school/index" element={<SchoolIndex />} />
-                    <Route path="/olymp-admin/school/show/:id" element={<SchoolShow />} />
-                    <Route path="/olymp-admin/school/create" element={<SchoolCreate />} />
-                    <Route path="/olymp-admin/school/edit/:id" element={<SchoolEdit />} />
-                    <Route path="/olymp-admin/report/index" element={<ReportIndex />} />
+                        <Route path="/olymp-admin/application/index" element={<ApplicationIndex />} />
+                        <Route path="/olymp-admin/application/create" element={<ApplicationCreate />} />
+                        <Route path="/olymp-admin/application/show/:id" element={<ApplicationShow />} />
+                        <Route path="/olymp-admin/application/edit/:id" element={<ApplicationEdit />} />
 
-                    <Route path="/olymp-admin/application/index" element={<ApplicationIndex />} />
-                    <Route path="/olymp-admin/application/create" element={<ApplicationCreate />} />
-                    <Route path="/olymp-admin/application/show/:id" element={<ApplicationShow />} />
-                    <Route path="/olymp-admin/application/edit/:id" element={<ApplicationEdit />} />
-
-                    <Route path="/olymp-admin/event/index" element={<EventIndex />} />
-                    <Route path="/olymp-admin/event/show/:id" element={<EventShow />} />
-                    <Route path="/olymp-admin/event/attendance/:id" element={<EventAttendance />} />
-                    <Route path="/olymp-admin/event/prize-score/:id" element={<EventPrizeScore />} />
-                    <Route path="/olymp-admin/event/task/:id" element={<EventTask />} />
-                    <Route path="/olymp-admin/event/point/:id" element={<EventPoint />} />
+                        <Route path="/olymp-admin/event/index" element={<EventIndex />} />
+                        <Route path="/olymp-admin/event/show/:id" element={<EventShow />} />
+                        <Route path="/olymp-admin/event/attendance/:id" element={<EventAttendance />} />
+                        <Route path="/olymp-admin/event/prize-score/:id" element={<EventPrizeScore />} />
+                        <Route path="/olymp-admin/event/task/:id" element={<EventTask />} />
+                        <Route path="/olymp-admin/event/point/:id" element={<EventPoint />} />
                     </Route>
                   
 
