@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"main/internal/dto/event_dto"
+	"main/internal/lib/errs"
 	"main/internal/lib/helper"
 	"main/internal/lib/liblogger"
 	"main/internal/lib/mapper/event_mapper"
@@ -49,12 +50,14 @@ type EventService struct {
 }
 
 func NewEventService(orm orm.ORM, services map[string]string, er EventRepositoryInterface, or OutboxRepositoryInteface, log *slog.Logger) *EventService {
+	elog := log.With("owner", "EventService")
+
 	return &EventService{
 		db:                orm,
 		kiznaiverServices: services,
 		eventRepository:   er,
 		outboxRepository:  or,
-		log:               log,
+		log:               elog,
 	}
 }
 
@@ -69,7 +72,7 @@ func (s *EventService) GetAllEvents(ctx context.Context, offset, limit *int) ([]
 	events, err := s.eventRepository.GetAllEvents(ctx, s.db, offset, limit)
 	if err != nil {
 		log.Error("failed to get all events: %v", liblogger.Err(err))
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errs.ErrInternalError
 	}
 
 	return event_mapper.ManyToDTO(events), nil
@@ -85,19 +88,14 @@ func (s *EventService) GetEventByID(ctx context.Context, id string) (event_dto.E
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed with id", liblogger.Err(err))
-		return event_dto.EventDTOResponse{}, fmt.Errorf("failed to parse id")
-	}
-
-	if uid == uuid.Nil {
-		log.Error("failed with id", slog.Any("invalid id:", uid))
-		return event_dto.EventDTOResponse{}, fmt.Errorf("%s: invalid ID %d", op, uid)
+		log.Error("failed parse id", slog.String("id", id), liblogger.Err(err))
+		return event_dto.EventDTOResponse{}, errs.ErrBadRequest.Wrap("invalid id")
 	}
 
 	event, err := s.eventRepository.GetEventByID(ctx, s.db, uid)
 	if err != nil {
 		log.Error("failed to get event by ID", liblogger.Err(err))
-		return event_dto.EventDTOResponse{}, fmt.Errorf("%s: %w", op, err)
+		return event_dto.EventDTOResponse{}, errs.ErrInternalError
 	}
 	return event_mapper.ToDTO(event), nil
 }
@@ -118,13 +116,17 @@ func (s *EventService) GetEventByFilterAndFields(ctx context.Context, filter eve
 
 	modelFilter := event_mapper.ConvertDTOtoEvent(filter)
 	event, err := s.eventRepository.GetEventByFilterAndFields(ctx, s.db, modelFilter, fields)
+	if s.db.IsNotFound(err) {
+		log.Warn("event not found", liblogger.Err(err))
+		return event_dto.DetailsEvent{}, errs.ErrNotFound.Wrap("event not found")
+	}
 	if err != nil {
 		log.Error("failed to get event",
 			slog.Any("filter", filter),
 			slog.Any("fields", fields),
 			liblogger.Err(err),
 		)
-		return event_dto.DetailsEvent{}, fmt.Errorf("%s: %v", op, err)
+		return event_dto.DetailsEvent{}, errs.ErrInternalError.Wrap("failed get event by filter and fields")
 	}
 	return event_mapper.ConvertEventToDetails(event), nil
 }
@@ -151,7 +153,7 @@ func (s *EventService) GetEventsByFilterAndFields(ctx context.Context, filter ev
 			slog.Any("fields", fields),
 			liblogger.Err(err),
 		)
-		return nil, fmt.Errorf("%s: %v", op, err)
+		return nil, errs.ErrInternalError.Wrap("failed get events by filter and fields")
 	}
 	return event_mapper.ConvertManyEventsToDetails(events), nil
 }
@@ -170,7 +172,7 @@ func (s *EventService) GetCountEventsByType(ctx context.Context, eventType event
 			slog.Any("eventType", eventType),
 			liblogger.Err(err),
 		)
-		return 0, fmt.Errorf("%s: %v", op, err)
+		return 0, errs.ErrInternalError.Wrap("failed get count events by event-type")
 	}
 	return count, err
 }
@@ -185,17 +187,16 @@ func (s *EventService) GetCountEventsByPreviousID(ctx context.Context, id string
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id", liblogger.Err(err))
-		return 0, fmt.Errorf("%s: %v", op, err)
+		log.Error("failed parse id", slog.String("id", id), liblogger.Err(err))
+		return 0, errs.ErrBadRequest.Wrap("failed parse id to uuid")
 	}
 
 	count, err := s.eventRepository.GetCountEventsByPreviousID(ctx, s.db, uid)
 	if err != nil {
 		log.Error("failed to get count events by PreviousID",
-			slog.Any("id", id),
 			liblogger.Err(err),
 		)
-		return 0, fmt.Errorf("%s: %v", op, err)
+		return 0, errs.ErrInternalError.Wrap("failed get count events by prev id")
 	}
 	return count, err
 }
@@ -214,29 +215,36 @@ func (s *EventService) GetEventsByType(ctx context.Context, eventType event.Even
 			slog.Any("eventType", eventType),
 			liblogger.Err(err),
 		)
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errs.ErrInternalError.Wrap("failed get events by type")
 	}
 
 	return event_mapper.ManyToDTO(events), nil
 }
 
 // Get events where type=stage and his childs
-func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id uuid.UUID) ([]event_dto.EventDTOResponse, error) {
+func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id string) ([]event_dto.EventDTOResponse, error) {
 	const op = "services.event_service.GetEventsTypeStageAndHisChilds"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
+
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error("failed parse id to uuid", slog.String("id", id), liblogger.Err(err))
+		return nil, errs.ErrBadRequest.Wrap("failed parse id")
+	}
+
 	// Get all event stage by previousID
 	// tx := s.db.Begin()
-	events, err := s.eventRepository.GetEventsByPreviousID(ctx, s.db, id, nil, nil, nil)
+	events, err := s.eventRepository.GetEventsByPreviousID(ctx, s.db, uid, nil, nil, nil)
 	if err != nil {
 		// tx.Rollback()
 		log.Error("failed to get events type stage by PreviousID",
 			slog.Any("id", id),
 			liblogger.Err(err),
 		)
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errs.ErrInternalError.Wrap("failed get events by prev id")
 	}
 	eventsDto := event_mapper.ManyToDTO(events)
 
@@ -264,9 +272,9 @@ func (s *EventService) GetEventsTypeStageAndHisChilds(ctx context.Context, id uu
 		// tx.Rollback()
 		log.Error("failed to get event childs by id",
 			slog.Any("id", id),
-			liblogger.Err(err),
+			liblogger.Err(<-errors),
 		)
-		return nil, fmt.Errorf("%s: %w", op, <-errors)
+		return nil, errs.ErrInternalError.Wrap("failed get child by stage id")
 	}
 	// tx.Commit()
 	return eventsDto, nil
@@ -283,38 +291,45 @@ func (s *EventService) GetEventsByPreviousID(ctx context.Context, previousId str
 	uid, err := uuid.Parse(previousId)
 	if err != nil {
 		log.Error("failed to parse PreviousID",
-			slog.Any("id", previousId),
+			slog.String("id", previousId),
 			liblogger.Err(err),
 		)
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errs.ErrBadRequest.Wrap("failed parse id")
 	}
 
 	events, err := s.eventRepository.GetEventsByPreviousID(ctx, s.db, uid, offset, limit, order)
 	if err != nil {
 		log.Error("failed to get events by PreviousID",
-			slog.Any("id", previousId),
 			liblogger.Err(err),
 		)
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errs.ErrInternalError.Wrap("failed get event by prev id")
 	}
 	return event_mapper.ManyToDTO(events), nil
 }
 
 // Get list events by list id
-func (s *EventService) GetEventsByListID(ctx context.Context, ids []uuid.UUID) ([]event_dto.EventDTOResponse, error) {
+func (s *EventService) GetEventsByListID(ctx context.Context, ids []string) ([]event_dto.EventDTOResponse, error) {
 	const op = "services.event_service.GetEventsByListID"
 
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
-	events, err := s.eventRepository.GetEventsByListID(ctx, s.db, ids)
+	uids := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		uid, err := uuid.Parse(id)
+		if err != nil {
+			return nil, errs.ErrBadRequest.Wrap("failed parse id")
+		}
+		uids = append(uids, uid)
+	}
+
+	events, err := s.eventRepository.GetEventsByListID(ctx, s.db, uids)
 	if err != nil {
 		log.Error("failed to get events by listID",
-			slog.Any("ids", ids),
 			liblogger.Err(err),
 		)
-		return nil, fmt.Errorf("%s: %w", op, err)
+		return nil, errs.ErrInternalError.Wrap("failed get events by list id")
 	}
 	log.Info("events getted", slog.Any("events", events))
 
@@ -424,57 +439,9 @@ func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventModel *eve
 	return nil
 }
 
-// func (s *EventService) multipleCreateEvents(ctx context.Context, eventDTO event_dto.EventDTO, id *uuid.UUID) error {
-// 	const op = "service.event_service.multipleCreateEvents"
-
-// 	errGroup := errgroup.Group{}
-
-// 	// Additional support struct
-// 	type StackEvent struct {
-// 		event event_dto.EventDTO
-// 		id    *uuid.UUID
-// 	}
-
-// 	// channel with events and ids
-// 	eventChannel := make(chan StackEvent, 50)
-
-// 	// count worker equal max procs
-// 	workerCount := runtime.GOMAXPROCS(0)
-
-// 	for i := 0; i < workerCount; i++ {
-// 		errGroup.Go(func() error {
-// 			for current := range eventChannel {
-
-// 				current.event.PreviousEventID = current.id
-// 				err := s.checkCorrectEventDTO(ctx, &current.event, false)
-// 				if err != nil {
-// 					return err
-// 				}
-
-// 				eventModel := ConvertDTOtoEvent(current.event)
-// 				newId, err := s.repository.CreateEvent(ctx, s.db, eventModel)
-// 				if err != nil {
-// 					return fmt.Errorf("%s: %w", op, err)
-// 				}
-
-// 				for _, event := range *current.event.Events {
-// 					eventChannel <- StackEvent{
-// 						event: event,
-// 						id:    &newId,
-// 					}
-// 				}
-// 			}
-// 			return nil
-// 		})
-// 	}
-
-// 	return nil
-// }
-
 // Create event
 func (s *EventService) CreateEvent(ctx context.Context, eventDTO event_dto.CreateEventDTORequest) (uuid.UUID, error) {
 	const op = "services.event_service.CreateEvent"
-	const errMsg = "failed create event"
 	log := s.log.With(
 		slog.String("op", op),
 	)
@@ -484,14 +451,14 @@ func (s *EventService) CreateEvent(ctx context.Context, eventDTO event_dto.Creat
 	err := s.checkCorrectEventDTO(ctx, &eventModel, false)
 	if err != nil {
 		log.Error("failed check correct event", liblogger.Err(err))
-		return uuid.Nil, fmt.Errorf("%s", errMsg)
+		return uuid.Nil, errs.ErrBadRequest.Wrap("incorrect event dto")
 	}
 	// Auto create events for all subject
 	if eventModel.EventType == event.RegionalStage {
 		id, err := s.createEventsBySubjects(ctx, eventModel)
 		if err != nil {
 			log.Error("failed create event by subjects", liblogger.Err(err))
-			return uuid.Nil, fmt.Errorf("%s", errMsg)
+			return uuid.Nil, errs.ErrInternalError.Wrap("failed auto create events for all subjects")
 		}
 		log.Info("events success created (with all subjects)", slog.Any("eventID", id))
 		return id, nil
@@ -499,7 +466,7 @@ func (s *EventService) CreateEvent(ctx context.Context, eventDTO event_dto.Creat
 	id, err := s.eventRepository.CreateEvent(ctx, s.db, eventModel)
 	if err != nil {
 		log.Error("failed to create event", liblogger.Err(err))
-		return uuid.Nil, fmt.Errorf("%s", errMsg)
+		return uuid.Nil, errs.ErrInternalError.Wrap("failed create event")
 	}
 	log.Info("event success created (only one)", slog.Any("eventID", id))
 	return id, nil
@@ -566,33 +533,32 @@ func (s *EventService) updateEventDTO(ctx context.Context, updatedEvent event.Ev
 // Update event
 func (s *EventService) UpdateEvent(ctx context.Context, id string, eventDTO event_dto.UpdateEventDTORequest) error {
 	const op = "services.event_service.UpdateEvent"
-	const errMsg = "failed update event"
 	log := s.log.With(
 		slog.String("op", op),
 	)
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed parse id to uuid", liblogger.Err(err))
-		return fmt.Errorf("%s", errMsg)
+		log.Error("failed parse id to uuid", slog.String("id", id), liblogger.Err(err))
+		return errs.ErrBadRequest.Wrap("failed parse id")
 	}
 
 	event := event_mapper.FromUpdateToModel(eventDTO, uid)
 	event, err = s.updateEventDTO(ctx, event, uid)
 	if err != nil {
-		return err
+		return errs.ErrInternalError.Wrap("failed get and update dto model")
 	}
 
 	err = s.checkCorrectEventDTO(ctx, &event, true)
 	if err != nil {
 		log.Error("failed check correct event", liblogger.Err(err))
-		return fmt.Errorf("%s: %w", op, err)
+		return errs.ErrBadRequest.Wrap("incorrect event data")
 	}
 
 	err = s.eventRepository.UpdateEvent(ctx, s.db, event)
 	if err != nil {
 		log.Error("failed update event", liblogger.Err(err))
-		return fmt.Errorf("%s: %w", op, err)
+		return errs.ErrInternalError.Wrap("failed update event")
 	}
 	log.Info("event success updated")
 	return nil
@@ -607,14 +573,14 @@ func (s *EventService) DeleteEvent(ctx context.Context, id string) error {
 
 	uid, err := uuid.Parse(id)
 	if err != nil {
-		log.Error("failed to parse id", liblogger.Err(err))
-		return fmt.Errorf("failed parse id %s: %w", op, err)
+		log.Error("failed to parse id", slog.String("id", id), liblogger.Err(err))
+		return errs.ErrBadRequest.Wrap("failed parse id")
 	}
 
 	tx, err := s.db.TransactionBegin()
 	if err != nil {
 		log.Error("failed begin transaction", liblogger.Err(err))
-		return fmt.Errorf("failed begin transaction")
+		return errs.ErrInternalError.Wrap("failed begin transaction to delete event")
 	}
 
 	// откат в случае ошибки
@@ -629,14 +595,14 @@ func (s *EventService) DeleteEvent(ctx context.Context, id string) error {
 	err = s.eventRepository.DeleteEvent(ctx, tx, uid)
 	if err != nil {
 		log.Error("failed to delete event", liblogger.Err(err))
-		return fmt.Errorf("failed delete event")
+		return errs.ErrInternalError.Wrap("failed delete event")
 	}
 
 	for queueName, tableName := range s.kiznaiverServices {
 		payload, err := helper.PayloadDeleteConstructor(tableName, uid.String())
 		if err != nil {
 			log.Error("failed create payload", liblogger.Err(err))
-			return fmt.Errorf("failed create payload")
+			return errs.ErrInternalError.Wrap("failed create payload")
 		}
 
 		outboxModel := outbox.Outbox{
@@ -646,11 +612,15 @@ func (s *EventService) DeleteEvent(ctx context.Context, id string) error {
 		_, err = s.outboxRepository.Create(ctx, tx, outboxModel)
 		if err != nil {
 			log.Error("failed create outbox", liblogger.Err(err))
-			return fmt.Errorf("failed ")
+			return errs.ErrInternalError.Wrap("failed create outbox message")
 		}
 	}
 
-	tx.TransactionCommit()
+	err = tx.TransactionCommit()
+	if err != nil {
+		log.Error("failed transaction commit", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed transaction commit")
+	}
 	log.Info("event success deleted")
 	return nil
 }

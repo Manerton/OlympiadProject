@@ -2,7 +2,6 @@ package school_service
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	school_dto "main/internal/dto/school"
 	"main/internal/lib/errs"
@@ -12,7 +11,6 @@ import (
 	"main/internal/storage/orm"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type SchoolRepository interface {
@@ -33,8 +31,10 @@ type SchoolService struct {
 }
 
 func New(log *slog.Logger, orm orm.ORM, schoolRepository SchoolRepository) *SchoolService {
+	slog := log.With(slog.String("owner", "SchoolService"))
+
 	return &SchoolService{
-		log:              log,
+		log:              slog,
 		db:               orm,
 		schoolRepository: schoolRepository,
 	}
@@ -70,7 +70,7 @@ func (s *SchoolService) GetById(ctx context.Context, id string) (school_dto.Scho
 	}
 
 	schoolModel, err := s.schoolRepository.GetById(ctx, s.db, uid)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if s.db.IsNotFound(err) {
 		log.Warn("school not found", liblogger.Err(err))
 		return school_dto.SchoolResponseDTO{}, errs.ErrSchoolNotFound
 	}

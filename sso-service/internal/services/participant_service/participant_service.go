@@ -2,7 +2,6 @@ package participant_service
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	participant_dto "main/internal/dto/participant"
 	"main/internal/lib/errs"
@@ -12,7 +11,6 @@ import (
 	"main/internal/storage/orm"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type ParticipantRepository interface {
@@ -32,8 +30,10 @@ type ParticipantService struct {
 }
 
 func New(log *slog.Logger, orm orm.ORM, participantRepository ParticipantRepository) *ParticipantService {
+	plog := log.With("owner", "ParticipantService")
+
 	return &ParticipantService{
-		log:                   log,
+		log:                   plog,
 		db:                    orm,
 		participantRepository: participantRepository,
 	}
@@ -69,7 +69,7 @@ func (s *ParticipantService) GetById(ctx context.Context, id string) (participan
 	}
 
 	participant, err := s.participantRepository.GetById(ctx, s.db, uid)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if s.db.IsNotFound(err) {
 		log.Warn("particioant not found", liblogger.Err(err))
 		return participant_dto.ParticipantResponseDTO{}, errs.ErrParticipantNotFound
 	}
@@ -96,7 +96,7 @@ func (s *ParticipantService) GetByUserId(ctx context.Context, id string) (partic
 	}
 
 	participantModel, err := s.participantRepository.GetByUserId(ctx, s.db, uid)
-	if errors.Is(err, gorm.ErrRecordNotFound) {
+	if s.db.IsNotFound(err) {
 		log.Warn("participant not found", liblogger.Err(err))
 		return participant_dto.ParticipantResponseDTO{}, errs.ErrParticipantNotFound
 	}

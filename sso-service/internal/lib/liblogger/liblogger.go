@@ -29,7 +29,7 @@ func SetupLogger(env string) *slog.Logger {
 		)
 	}
 
-	return log
+	return log.With(slog.String("service", "sso-service"))
 }
 
 func Err(err error) slog.Attr {

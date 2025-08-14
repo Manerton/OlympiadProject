@@ -1,6 +1,114 @@
-version: '3.9'
+# version: '3.9'
 
 services:
+  event-db:
+    image: postgres:16
+    container_name: event-db
+    environment:
+      POSTGRES_USER: event_user
+      POSTGRES_PASSWORD: event_pass
+      POSTGRES_DB: EventServiceDB
+    ports:
+      - "5433:5432"
+    networks:
+      - olympic 
+    volumes:
+      - event-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U event_user -d EventServiceDB"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  event-service:
+    build: 
+      context: ./event-service
+    container_name: event-service
+    depends_on: 
+      event-db:
+        condition: service_healthy
+    environment:
+      DSN: "postgres://event_user:event_pass@event-db:5432/EventServiceDB?sslmode=disable"
+      MIGRATION_PATH: "/app/migrations"
+      CONFIG_PATH: "/app/config-yaml/docker.yaml"
+    networks:
+      - olympic
+    ports:
+      - "8888:8080"
+    entrypoint: ["/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./event-service"]
+
+  sso-db:
+    image: postgres:16
+    container_name: sso-db
+    environment: 
+      POSTGRES_USER: sso_user
+      POSTGRES_PASSWORD: sso_pass
+      POSTGRES_DB: SSOServiceDB
+    ports:
+      - "5444:5432"
+    networks:
+      - olympic
+    volumes:
+      - sso-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sso_user -d SSOServiceDB"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    
+  sso-service:
+    build:
+      context: ./sso-service
+    container_name: sso-service
+    depends_on:
+      sso-db:
+        condition: service_healthy
+    environment:
+      DSN: "postgres://sso_user:sso_pass@sso-db:5432/SSOServiceDB?sslmode=disable"
+      MIGRATION_PATH: "/app/migrations"
+      CONFIG_PATH: "/app/config-yaml/docker.yaml"
+    networks:
+      - olympic
+    ports:
+      - "8989:8181"
+    entrypoint: ["/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./sso-service"]
+
+  jury-db:
+    image: postgres:16
+    container_name: jury-db
+    environment: 
+      POSTGRES_USER: jury_user
+      POSTGRES_PASSWORD: jury_pass
+      POSTGRES_DB: JureAssignmentsServiceDB
+    ports:
+      - "5445:5432"
+    networks:
+      - olympic
+    volumes:
+      - jury-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jury_user -d JureAssignmentsServiceDB"]
+      interval: 5s
+      timeout: 3s
+      retries: 5 
+
+  jury-service:
+    build:
+      context: ./Jure-assignments-service
+    container_name: jury-service
+    depends_on:
+      jury-db:
+        condition: service_healthy
+    environment:
+      DSN: "postgres://jury_user:jury_pass@jury-db:5432/JureAssignmentsServiceDB?sslmode=disable"
+      MIGRATION_PATH: "/app/migrations"
+      CONFIG_PATH: "/app/config-yaml/docker.yaml"
+    networks:
+      - olympic
+    ports:
+      - "8383:8090"
+    entrypoint: ["/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./jury-ass-service"]
+    
   app:
     build:
       context: ./docker/php
@@ -54,6 +162,7 @@ services:
       - db
     networks:
       - olympic
+
   redis:
     image: redis:latest
     container_name: olymp_redis
@@ -72,11 +181,73 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions \"/etc/rabbitmq/definitions.json\""
     ports:
       - "5672:5672"  # AMQP protocol port
       - "15672:15672"  # Management UI port
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+      - ./rabbitmq-definitions.json:/etc/rabbitmq/definitions.json:ro
+    networks:
+      - olympic
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
+    container_name: olymp_elasticsearch
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - olympic
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: olymp_grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - olympic
+    depends_on:
+      - elasticsearch
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    volumes:
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - olympic
+
+ 
+  loki-init:
+    image: busybox
+    command: ["sh", "-c", "mkdir -p /data/chunks /data/index /data/cache /data/compactor"]
+    volumes:
+      - loki-data:/data
+    restart: "no"
+
+  loki:
+    image: grafana/loki:2.9.0
+    depends_on:
+      - loki-init
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
     networks:
       - olympic
 
@@ -84,6 +255,12 @@ networks:
   olympic:
 
 volumes:
+  loki-data:
+  event-db-data:
+  sso-db-data:
+  jury-db-data:
   db_data:
   redis_data:
   rabbitmq_data:
+  elasticsearch_data:
+  grafana_data:

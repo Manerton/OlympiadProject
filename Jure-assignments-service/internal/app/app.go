@@ -20,6 +20,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type App struct {
@@ -84,6 +85,8 @@ func (a *App) initCors(router *chi.Mux, cfg config.AdditionalAddressesConfig) {
 }
 
 func (a *App) initRoutes(router *chi.Mux, handler *jure_assignments_handler.JuryAssignmentHandler) {
+	router.Get("/swagger/*", httpSwagger.WrapHandler)
+
 	router.Get("/api/jury-assignments", handler.GetAllJuryAssignments)
 	router.Get("/api/jury-assignments/{id}", handler.GetJuryAssignmentsByID)
 	router.Get("/api/jury-assignments/event/{id}", handler.GetAllByEventId)

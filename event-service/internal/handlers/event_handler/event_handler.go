@@ -2,10 +2,9 @@ package event_handler
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io"
 	"main/internal/dto/event_dto"
+	"main/internal/lib/errs"
 	"main/internal/lib/parsing"
 	"main/internal/lib/request"
 	"main/internal/lib/response"
@@ -27,9 +26,9 @@ type EventServiceInterface interface {
 	GetCountEventsByType(ctx context.Context, eventType event.EventType) (int64, error)
 	GetCountEventsByPreviousID(ctx context.Context, previousID string) (int64, error)
 	GetEventsByType(ctx context.Context, eventType event.EventType, offset, limit *int, order *string) ([]event_dto.EventDTOResponse, error)
-	GetEventsTypeStageAndHisChilds(ctx context.Context, id uuid.UUID) ([]event_dto.EventDTOResponse, error)
+	GetEventsTypeStageAndHisChilds(ctx context.Context, id string) ([]event_dto.EventDTOResponse, error)
 	GetEventsByPreviousID(ctx context.Context, previousID string, offset, limit *int, order *string) ([]event_dto.EventDTOResponse, error)
-	GetEventsByListID(ctx context.Context, ids []uuid.UUID) ([]event_dto.EventDTOResponse, error)
+	GetEventsByListID(ctx context.Context, ids []string) ([]event_dto.EventDTOResponse, error)
 
 	CreateEvent(ctx context.Context, eventDTO event_dto.CreateEventDTORequest) (uuid.UUID, error)
 	UpdateEvent(ctx context.Context, id string, eventDTO event_dto.UpdateEventDTORequest) error
@@ -63,14 +62,20 @@ func (h *EventHandler) GetEventByFilterAndFields(w http.ResponseWriter, r *http.
 	err := render.DecodeJSON(r.Body, &detailRequest)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to decode details"))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("")))
 		return
 	}
 
 	eventDetails, err := h.service.GetEventByFilterAndFields(ctx, detailRequest.EventDTO, detailRequest.Fields)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get event"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -98,15 +103,21 @@ func (h *EventHandler) GetEventsByFilterAndFields(w http.ResponseWriter, r *http
 	err := render.DecodeJSON(r.Body, &detailRequest)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to decode details"))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode json")))
 		return
 	}
 
 	eventDetails, err := h.service.GetEventsByFilterAndFields(ctx,
 		detailRequest.EventDTO, detailRequest.Fields, detailRequest.Offset, detailRequest.Limit, detailRequest.Order)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get events"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -121,7 +132,9 @@ func (h *EventHandler) GetEventsByFilterAndFields(w http.ResponseWriter, r *http
 // @Description Получение всех событий
 // @Tags events
 // @Produce json
-// @Success 200 {objcet} response.ApiResponse{data=[]event_dto.EventDTOResponse}
+// @Param page query int false "Номер страницы"
+// @Param limit query int false "Органичение на количество записей"
+// @Success 200 {object} response.ApiResponse{data=[]event_dto.EventDTOResponse}
 // @Failure 400 {object} response.ApiResponse
 // @Router /api/events [get]
 func (h *EventHandler) GetAllEvents(w http.ResponseWriter, r *http.Request) {
@@ -134,14 +147,20 @@ func (h *EventHandler) GetAllEvents(w http.ResponseWriter, r *http.Request) {
 	offset, limit, err := parsing.ParsePageLimitToOffsetLimit(pageStr, limitStr)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get events"))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed parse page/limit")))
 		return
 	}
 
 	eventsDTO, err := h.service.GetAllEvents(ctx, offset, limit)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get events"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -168,8 +187,14 @@ func (h *EventHandler) GetEventByID(w http.ResponseWriter, r *http.Request) {
 	receivedID := chi.URLParam(r, "id")
 	eventDTO, err := h.service.GetEventByID(ctx, receivedID)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get event"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -201,14 +226,20 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 	offset, limit, err := parsing.ParsePageLimitToOffsetLimit(pageStr, limitStr)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get events"))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed parse page/limit")))
 		return
 	}
 
 	eventsDTO, err := h.service.GetEventsByType(ctx, event.RegionalStage, offset, limit, &orderStr)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get events by type"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -222,8 +253,14 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 
 	count, err := h.service.GetCountEventsByType(ctx, event.RegionalStage)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get count events by type"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -256,14 +293,20 @@ func (h *EventHandler) GetEventsClassType(w http.ResponseWriter, r *http.Request
 	offset, limit, err := parsing.ParsePageLimitToOffsetLimit(pageStr, limitStr)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get events"))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed parse page/limit")))
 		return
 	}
 
 	eventsDTO, err := h.service.GetEventsByType(ctx, event.Class, offset, limit, &orderStr)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get events by type"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -277,8 +320,14 @@ func (h *EventHandler) GetEventsClassType(w http.ResponseWriter, r *http.Request
 
 	count, err := h.service.GetCountEventsByType(ctx, event.Class)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get count events by type"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -293,7 +342,6 @@ func (h *EventHandler) GetEventsClassType(w http.ResponseWriter, r *http.Request
 }
 
 // @Summery Get count event type class
-// @Security BearerAuth
 // @Description Получение количества событий типа "Класс"
 // @Tags events
 // @Produce json
@@ -305,8 +353,14 @@ func (h *EventHandler) GetCountEventTypeClass(w http.ResponseWriter, r *http.Req
 
 	count, err := h.service.GetCountEventsByType(ctx, event.Class)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get count events by type"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -318,25 +372,29 @@ func (h *EventHandler) GetCountEventTypeClass(w http.ResponseWriter, r *http.Req
 }
 
 // @Summery Get events type stage and his childs
-// @Security BearerAuth
-// @Description Получение
-// TODO!!! переписать
+// @Description Получение всех событий типа "Этап"
+// @Tags events
+// @Produce json
+// @Param id path string true "id олимпиады типа Класс"
+// @Success 200 {object} response.ApiResponse{data=[]event_dto.EventDTOResponse}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/events/stages/{id} [get]
 func (h *EventHandler) GetEventsTypeStageAndHisChilds(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	receivedID := chi.URLParam(r, "id")
-	searchedID, err := uuid.Parse(receivedID)
-	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to parse id"))
-		return
-	}
+	id := chi.URLParam(r, "id")
 
-	eventsDto, err := h.service.GetEventsTypeStageAndHisChilds(ctx, searchedID)
+	eventsDto, err := h.service.GetEventsTypeStageAndHisChilds(ctx, id)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get events"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -346,6 +404,17 @@ func (h *EventHandler) GetEventsTypeStageAndHisChilds(w http.ResponseWriter, r *
 	})
 }
 
+// @Summery Get events by previous id
+// @Description Получение всех дочерних событий первого уровня по id родителя
+// @Tags events
+// @Produce json
+// @Param id path string true "id родителя (previous id)"
+// @Param page query int false "Номер страницы"
+// @Param limit query int false "Органичение на количество записей"
+// @Param order query string false "Поле по которому необходимо сортировать и указания для сортировки Пример(name DESC)"
+// @Success 200 {object} response.ApiResponse{data=[]event_dto.EventDTOResponse}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/events/child/{id} [get]
 func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
@@ -357,7 +426,7 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 	offset, limit, err := parsing.ParsePageLimitToOffsetLimit(pageStr, limitStr)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to pares offset/limit"))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed parse page/limit")))
 		return
 	}
 
@@ -365,8 +434,14 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 
 	eventsDTO, err := h.service.GetEventsByPreviousID(ctx, receivedID, offset, limit, &orderStr)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get events"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -381,8 +456,14 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 
 	count, err := h.service.GetCountEventsByPreviousID(ctx, receivedID)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get count events by type"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
@@ -393,30 +474,38 @@ func (h *EventHandler) GetEventsByPreviousID(w http.ResponseWriter, r *http.Requ
 	})
 }
 
+// @Summery Get events by list id
+// @Security BearerAuth
+// @Description Получение всех событий по списку id
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param credentials body request.IdsRequest true "Список id событий"
+// @Success 200 {object} response.ApiResponse{data=[]event_dto.EventDTOResponse}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/events/list [post]
 func (h *EventHandler) GetEventsByListID(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
-	type ReqIds struct {
-		IDs []uuid.UUID `json:"ids"`
-	}
-	var ids ReqIds
+	var ids request.IdsRequest
 	err := render.DecodeJSON(r.Body, &ids)
-	if errors.Is(err, io.EOF) {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("empty request"))
-		return
-	}
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failde to decode request"))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode list id")))
 		return
 	}
 
-	eventsDTO, err := h.service.GetEventsByListID(ctx, ids.IDs)
+	eventsDTO, err := h.service.GetEventsByListID(ctx, ids.Ids)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to get event"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 	render.JSON(w, r, response.ApiResponse{
@@ -425,6 +514,16 @@ func (h *EventHandler) GetEventsByListID(w http.ResponseWriter, r *http.Request)
 	})
 }
 
+// @Summery create event
+// @Security BearerAuth
+// @Description Создание события
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param credentials body event_dto.CreateEventDTORequest true "Создание события"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/events [post]
 func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
@@ -432,34 +531,45 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	var eventDTO event_dto.CreateEventDTORequest
 
 	err := render.DecodeJSON(r.Body, &eventDTO)
-	if errors.Is(err, io.EOF) {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("empty request"))
-		return
-	}
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failde to decode request"))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode dto")))
 		return
 	}
 
 	err = validator.New().Struct(eventDTO)
 	if err != nil {
-		validateErr := err.(validator.ValidationErrors)
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse(fmt.Sprintf("err %v", validateErr)))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("validate error")))
 		return
 	}
 
 	id, err := h.service.CreateEvent(ctx, eventDTO)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to create event"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 	render.JSON(w, r, response.SuccessResponse(fmt.Sprintf("id = %v", id)))
 }
 
+// @Summery update event
+// @Security BearerAuth
+// @Description Обновление события
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param credentials body event_dto.UpdateEventDTORequest true "Данные для обновления события"
+// @Param id path string true "id события"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/events/{id} [put]
 func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
@@ -468,27 +578,37 @@ func (h *EventHandler) UpdateEvent(w http.ResponseWriter, r *http.Request) {
 	receivedID := chi.URLParam(r, "id")
 
 	err := render.DecodeJSON(r.Body, &eventDTO)
-	if errors.Is(err, io.EOF) {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("empty request"))
-		return
-	}
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to decode event"))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode dto")))
 		return
 	}
 
 	err = h.service.UpdateEvent(ctx, receivedID, eventDTO)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to update event"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 
 	render.JSON(w, r, response.SuccessResponse("success update"))
 }
 
+// @Summery Delete events
+// @Security BearerAuth
+// @Description Удаление события
+// @Tags events
+// @Produce json
+// @Param id path string true "id события"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/events/{id} [delete]
 func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
@@ -497,8 +617,14 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 
 	err := h.service.DeleteEvent(ctx, receivedID)
 	if err != nil {
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorResponse("failed to delete event"))
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
 

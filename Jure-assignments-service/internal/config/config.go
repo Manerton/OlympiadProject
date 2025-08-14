@@ -63,20 +63,21 @@ func (cfg *Config) GetAddress() string {
 }
 
 func GetConfig(configPath string) *Config {
-	if configPath == "" {
-		configPath = os.Getenv("CONFIG_PATH")
-		if configPath == "" {
+	envConfigPath := os.Getenv("CONFIG_PATH")
+	if envConfigPath == "" {
+		envConfigPath = configPath
+		if envConfigPath == "" {
 			log.Fatalf("CONFIG PATH is not set")
 		}
 	}
 
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config file does not exist: %s", configPath)
+	if _, err := os.Stat(envConfigPath); os.IsNotExist(err) {
+		log.Fatalf("config file does not exist: %s", envConfigPath)
 	}
 
 	var myconfig Config
-	if err := cleanenv.ReadConfig(configPath, &myconfig); err != nil {
-		log.Fatalf("Can not read config file %s: %s", configPath, err)
+	if err := cleanenv.ReadConfig(envConfigPath, &myconfig); err != nil {
+		log.Fatalf("Can not read config file %s: %s", envConfigPath, err)
 	}
 
 	return &myconfig

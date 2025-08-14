@@ -5,6 +5,7 @@ import (
 	user_dto "main/internal/dto/user"
 	"main/internal/lib/errs"
 	"main/internal/lib/parser"
+	"main/internal/lib/request"
 	"main/internal/lib/response"
 	"net/http"
 
@@ -225,17 +226,14 @@ func (h *UserHandler) GetUserParticipantById(w http.ResponseWriter, r *http.Requ
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param credentials body []string true "Список id пользователей"
+// @Param credentials body request.IdsRequest true "Список id пользователей"
 // @Success 200 {object} response.ApiResponse{data=[]user_dto.UserResponseDTO}
 // @Failure 400 {object} response.ApiResponse
 // @Router /api/users/list [post]
 func (h *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	type IdsReq struct {
-		Ids []string `json:"ids"`
-	}
-	var ids IdsReq
+	var ids request.IdsRequest
 
 	err := render.DecodeJSON(r.Body, &ids)
 	if err != nil {

@@ -4,7 +4,7 @@
 
 @section('content')
     <a href="{{ route('event.show', $event->id) }}" class="btn btn-sm btn-primary">Перейти в карточку олимпиады</a>
-    <div class="event-task">
+    <div class="event-point">
         <h1>Выставление баллов</h1>
         <table class="table table-bordered table-striped mt-3">
             <thead>

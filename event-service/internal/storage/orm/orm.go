@@ -2,6 +2,7 @@ package orm
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -27,6 +28,8 @@ type ORM interface {
 	TransactionBegin() (ORM, error)
 	TransactionCommit() error
 	TransactionRollback() error
+
+	IsNotFound(err error) bool
 }
 
 type Gorm struct {
@@ -35,6 +38,10 @@ type Gorm struct {
 
 func NewGormORM(db *gorm.DB) ORM {
 	return &Gorm{DB: db}
+}
+
+func (g *Gorm) IsNotFound(err error) bool {
+	return errors.Is(err, gorm.ErrRecordNotFound)
 }
 
 func (g *Gorm) Count(ctx context.Context, model interface{}, count *int64, query interface{}, args ...interface{}) error {

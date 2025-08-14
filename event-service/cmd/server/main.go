@@ -2,6 +2,7 @@ package main
 
 import (
 	"log/slog"
+	_ "main/docs"
 	"main/internal/app"
 	"main/internal/config"
 	"main/internal/lib/liblogger"
@@ -20,8 +21,6 @@ const LocalFilePath = "config-yaml/dev.yaml"
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Events
-var DockerFilePath string = os.Getenv("CONFIG_PATH")
-
 func main() {
 	// Init config
 	cfg := config.GetConfig(LocalFilePath)

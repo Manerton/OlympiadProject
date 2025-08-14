@@ -7,6 +7,7 @@ use App\Components\Dictionaries\RoleDictionary;
 use App\Components\RabbitMQHelper;
 use App\Http\Requests\UserRequest;
 use App\Repositories\UserRepository;
+use App\Services\LogService;
 use App\Services\RabbitMQService;
 use App\Services\UserService;
 
@@ -15,15 +16,18 @@ class UserController extends Controller
     private UserRepository $userRepository;
     private RabbitMQService $rabbitMQService;
     private UserService $userService;
+    private LogService $logService;
     public function __construct(
         UserRepository $userRepository,
         RabbitMQService $rabbitMQService,
-        UserService $userService
+        UserService $userService,
+        LogService $logService
     )
     {
         $this->userRepository = $userRepository;
         $this->rabbitMQService = $rabbitMQService;
         $this->userService = $userService;
+        $this->logService = $logService;
     }
 
     public function index($page = 1){

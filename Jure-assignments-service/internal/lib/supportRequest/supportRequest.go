@@ -42,7 +42,7 @@ func (r *SupportRequest) PrepareRequest(id uuid.UUID, service string) (bool, err
 	}
 
 	if result.StatusCode != http.StatusOK {
-		return false, fmt.Errorf("%s: %s", op, result.Error)
+		return false, fmt.Errorf("%s: %s", op, result.ErrorCode)
 	}
 
 	return true, nil

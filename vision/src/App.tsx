@@ -13,6 +13,16 @@ import SchoolCreate from './components/olymp-admin/school/create.tsx';
 import SchoolShow from './components/olymp-admin/school/show.tsx';
 import SchoolEdit from './components/olymp-admin/school/edit.tsx';
 import ReportIndex from './components/olymp-admin/report/index.tsx';
+import ApplicationIndex from './components/olymp-admin/application/index.tsx';
+import ApplicationCreate from './components/olymp-admin/application/create.tsx';
+import ApplicationShow from './components/olymp-admin/application/show.tsx';
+import ApplicationEdit from './components/olymp-admin/application/edit.tsx';
+import EventIndex from './components/olymp-admin/event/index.tsx';
+import EventShow from './components/olymp-admin/event/show.tsx';
+import EventAttendance from './components/olymp-admin/event/attendance.tsx';
+import EventPrizeScore from './components/olymp-admin/event/prize-score.tsx'
+import EventPoint from './components/olymp-admin/event/point.tsx'
+import EventTask from './components/olymp-admin/event/task.tsx'
 import Header from './components/General/Layouts/header.tsx'
 import ProfilePage from './components/General/Pages/Profile.tsx'
 import MainPage from './components/General/Pages/MainPage.tsx'
@@ -58,7 +68,17 @@ function App() {
                     <Route path="/olymp-admin/school/edit/:id" element={<SchoolEdit />} />
                     <Route path="/olymp-admin/report/index" element={<ReportIndex />} />
 
+                    <Route path="/olymp-admin/application/index" element={<ApplicationIndex />} />
+                    <Route path="/olymp-admin/application/create" element={<ApplicationCreate />} />
+                    <Route path="/olymp-admin/application/show/:id" element={<ApplicationShow />} />
+                    <Route path="/olymp-admin/application/edit/:id" element={<ApplicationEdit />} />
 
+                    <Route path="/olymp-admin/event/index" element={<EventIndex />} />
+                    <Route path="/olymp-admin/event/show/:id" element={<EventShow />} />
+                    <Route path="/olymp-admin/event/attendance/:id" element={<EventAttendance />} />
+                    <Route path="/olymp-admin/event/prize-score/:id" element={<EventPrizeScore />} />
+                    <Route path="/olymp-admin/event/task/:id" element={<EventTask />} />
+                    <Route path="/olymp-admin/event/point/:id" element={<EventPoint />} />
                     </Route>
                   
 

@@ -11,7 +11,7 @@ class AttendanceDictionary
         return [
             self::NO_ATTENDANCE => 'Неявка',
             self::ATTENDANCE => 'Явка',
-            self::DISTANCE => 'Дистант'
+            //self::DISTANCE => 'Дистант'
         ];
     }
 }
