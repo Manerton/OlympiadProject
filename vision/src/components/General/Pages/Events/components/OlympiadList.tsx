@@ -1,7 +1,7 @@
 import React from 'react';
 import { Row, Col } from 'react-bootstrap';
 import OlympiadCard from './OlympiadCard';
-import type { MyEvent } from '../type/Event.ts'; // Assuming Event.ts is in the same directory
+import type  { MyEvent } from '../../../../types/event.ts'; 
 
 const OlympiadList: React.FC<{ olympiads: MyEvent[]; onOlympiadClick?: (id: string) => void }> = ({ olympiads, onOlympiadClick }) => (
   <Row>
