@@ -10,3 +10,14 @@ export interface MyEvent {
     additional_info?: string;
     events?: MyEvent[];
 }
+
+export interface ApplicationEvent {
+    id: string
+    name: string
+    start_date: string
+    end_date: string
+    previous_event_id: string;
+    subject: number;
+    class_number: number
+    additional_inf0: string
+}
