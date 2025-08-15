@@ -10,7 +10,7 @@ const ThemeToggleButton = () => {
    <Button
         onClick={toggleTheme}
         variant={theme === 'light' ? 'dark' : 'light'}
-        className="d-flex justify-content-center align-items-center mx-auto p-1"
+        className="d-flex justify-content-center align-items-center ms-auto p-1"
         style={{
             width: '36px',
             height: '36px',
