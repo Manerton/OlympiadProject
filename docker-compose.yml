@@ -231,7 +231,15 @@ services:
     networks:
       - olympic
 
-
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: olymp_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - olympic
   loki-init:
     image: busybox
     command: ["sh", "-c", "mkdir -p /data/chunks /data/index /data/cache /data/compactor"]

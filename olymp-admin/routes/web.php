@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 use Prometheus\CollectorRegistry;
 use Prometheus\RenderTextFormat;
 use Prometheus\Storage\InMemory;
-
+use Prometheus\Storage\Redis;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -81,18 +81,20 @@ Route::group(['middleware' => 'auth.custom'], function() {
     Route::get('/report/download/{id}', [ReportController::class, 'download'])->name('report.download');
 });
 Route::get('/metrics', function () {
-    $storageAdapter = new InMemory();
-    $registry = new CollectorRegistry($storageAdapter);
-    $counter = $registry->getOrRegisterCounter(
-        'app',
-        'requests_total',
-        'Total HTTP requests',
-        ['path']
-    );
-    $counter->inc([request()->path()]);
+    $adapter = new Redis([
+        'host' => env('REDIS_HOST', 'redis'),
+        'port' => env('REDIS_PORT', 6379),
+    ]);
+    $registry = new CollectorRegistry($adapter);
+
     $renderer = new RenderTextFormat();
-    $metrics = $registry->getMetricFamilySamples();
-    $result = $renderer->render($metrics);
-    return response($result, 200)
+
+    try {
+        $metrics = $renderer->render($registry->getMetricFamilySamples());
+    } catch (\Exception $e) {
+        return response("Error rendering metrics: ".$e->getMessage(), 500);
+    }
+
+    return response($metrics, 200)
         ->header('Content-Type', RenderTextFormat::MIME_TYPE);
 });
