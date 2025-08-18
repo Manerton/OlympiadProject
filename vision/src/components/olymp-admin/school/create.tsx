@@ -33,7 +33,7 @@ const SchoolCreate: React.FC = () => {
     const fetchData = async () => {
       try {
         // Fetch regions
-        const regionsResponse = await axios.get('http://olymp-admin-v2/api/school/create', {
+        const regionsResponse = await axios.get('http://localhost:8080/api/school/create', {
           headers: { 'Authorization': token },
           withCredentials: true
         });
@@ -42,7 +42,7 @@ const SchoolCreate: React.FC = () => {
         // If in edit mode, fetch school data
         if (id) {
           setIsEditMode(true);
-          const schoolResponse = await axios.get(`http://olymp-admin-v2/api/school/show/${id}`, {
+          const schoolResponse = await axios.get(`http://localhost:8080/api/school/show/${id}`, {
             headers: { 'Authorization': token },
             withCredentials: true
           });
@@ -75,7 +75,7 @@ const SchoolCreate: React.FC = () => {
     try {
       if (isEditMode) {
         // Update existing school
-        await axios.put(`http://olymp-admin-v2/api/school/update/${id}`, formData, {
+        await axios.put(`http://localhost:8080/api/school/update/${id}`, formData, {
           headers: {
             'Authorization': token,
             'Content-Type': 'application/json'
@@ -84,7 +84,7 @@ const SchoolCreate: React.FC = () => {
         });
       } else {
         // Create new school
-        await axios.post('http://olymp-admin-v2/api/school/store', formData, {
+        await axios.post('http://localhost:8080/api/school/store', formData, {
           headers: {
             'Authorization': token,
             'Content-Type': 'application/json'

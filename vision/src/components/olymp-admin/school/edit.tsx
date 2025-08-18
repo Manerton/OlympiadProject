@@ -34,7 +34,7 @@ const SchoolEdit: React.FC = () => {
     const fetchData = async () => {
       try {
         const [schoolResponse] = await Promise.all([
-          axios.get(`http://olymp-admin-v2/api/school/edit/${id}`, {
+          axios.get(`http://localhost:8080/school/edit/${id}`, {
             headers: { 'Authorization': token },
             withCredentials: true
           })
@@ -67,7 +67,7 @@ const SchoolEdit: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.put(`http://olymp-admin-v2/api/school/update/${id}`, formData, {
+      await axios.put(`http://localhost:8080/api/school/update/${id}`, formData, {
         headers: {
           'Authorization': token,
           'Content-Type': 'application/json'

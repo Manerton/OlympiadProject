@@ -35,7 +35,7 @@ const ParticipantShow = () => {
   const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
 
   useEffect(() => {
-    axios.get(`http://olymp-admin-v2/api/participant/show/${id}`, {
+    axios.get(`http://localhost:8080/api/participant/show/${id}`, {
       headers: {
         'Authorization': token
       },
@@ -68,7 +68,7 @@ const ParticipantShow = () => {
     }
     
     try {
-      const response = await axios.delete(`http://olymp-admin-v2/api/participant/delete/${participant.id}`, {
+      const response = await axios.delete(`http://localhost:8080/api/participant/delete/${participant.id}`, {
         headers: {
           'Authorization': token,
           'Content-Type': 'application/json'

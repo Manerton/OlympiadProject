@@ -18,7 +18,7 @@ const ReportIndex: React.FC<ReportIndexProps> = () => {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const response = await axios.get('http://olymp-admin-v2/api/report/index', {
+        const response = await axios.get('http://localhost:8080/api/report/index', {
           headers: {
             'Authorization': token
           },
@@ -53,7 +53,7 @@ const ReportIndex: React.FC<ReportIndexProps> = () => {
   const handleDownload = async (subjectId: number) => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://olymp-admin-v2/api/report/download/${subjectId}`, {
+      const response = await axios.get(`http://localhost:8080/api/report/download/${subjectId}`, {
         headers: {
           'Authorization': token
         },

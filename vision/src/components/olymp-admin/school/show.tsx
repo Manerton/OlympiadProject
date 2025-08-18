@@ -23,7 +23,7 @@ const SchoolShow: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://olymp-admin-v2/api/school/show/${id}`, {
+        const response = await axios.get(`http://localhost:8080/api/school/show/${id}`, {
           headers: {
             'Authorization': token
           },
@@ -48,7 +48,7 @@ const SchoolShow: React.FC = () => {
     }
 
     try {
-      const response = await axios.delete(`http://olymp-admin-v2/api/school/delete/${school.id}`, {
+      const response = await axios.delete(`http://localhost:8080/api/school/delete/${school.id}`, {
         headers: {
           'Authorization': token,
           'Content-Type': 'application/json'

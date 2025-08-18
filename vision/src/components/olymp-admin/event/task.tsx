@@ -34,7 +34,7 @@ const EventTask: React.FC = () => {
         try {
             setLoading(true);
             const response = await axios.get(
-                `http://olymp-admin-v2/api/event/task/${id}`,
+                `http://localhost:8080/api/event/task/${id}`,
                 {
                     headers: { Authorization: token },
                     withCredentials: true,
@@ -79,7 +79,7 @@ const EventTask: React.FC = () => {
         };
 
         await axios.post(
-            `http://olymp-admin-v2/api/event/add-task/${id}`,
+            `http://localhost:8080/api/event/add-task/${id}`,
             requestData,
             {
                 headers: {
@@ -102,7 +102,7 @@ const EventTask: React.FC = () => {
         }
         try {
             await axios.delete(
-                `http://olymp-admin-v2/api/event/delete-task/${taskId}`,
+                `http://localhost:8080/api/event/delete-task/${taskId}`,
                 {
                     headers: { Authorization: token },
                     withCredentials: true,
