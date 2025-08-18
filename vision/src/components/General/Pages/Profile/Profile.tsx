@@ -2,13 +2,15 @@ import { useState } from "react";
 import { UserRole } from "../../../../dictionary/role";
 import ApplicationEventTab from "./Tabs/ApplicationEvents";
 import HistoryTab from "./Tabs/History";
-import AppealTab from "./Tabs/Appeal";
+import AppealTab from "./Tabs/AppealMain";
 import type { ApplicationEvent } from "../../../types/event";
+import ResultByEvent from "./Tabs/ResultByEvent";
 
 // общий тип для таба
 type TabItem = {
-    label: string;
-    component?: React.ComponentType<any>; // можно передавать пропы
+  label: string;
+  component?: React.ComponentType<any>;
+  detailComponent?: React.ComponentType<{ event: ApplicationEvent; onBack: () => void }>;
 };
 
 
@@ -18,14 +20,14 @@ const ProfileMainPage: React.FC = () => {
 
     const tabsByRole: Record<number, TabItem[]> = {
         [UserRole.Participant]: [
-            { "label": "Достжения" },
-            { "label": "Олимпиады", "component": ApplicationEventTab },
-            { "label": "История", "component": HistoryTab },
-            { "label": "Апелляции", "component": AppealTab },
+            { label: "Достжения" },
+            { label: "Олимпиады", component: ApplicationEventTab},
+            { label: "История", component: HistoryTab, detailComponent: ResultByEvent},
+            { label: "Апелляции", component: AppealTab },
         ],
         [UserRole.Judge]: [
-            { "label": "История" },
-            { "label": "Олимпиады" },
+            { label: "История" },
+            { label: "Олимпиады" },
         ]
     }
 
@@ -35,6 +37,7 @@ const ProfileMainPage: React.FC = () => {
 
 
     const ActiveComponent = tabs[activeTab].component;
+    const DetailsComponent = tabs[activeTab].detailComponent
 
     return (
         <div className="container mt-4">
@@ -66,8 +69,8 @@ const ProfileMainPage: React.FC = () => {
 
             {/* Содержимое */}
             <div className="tab-content p-3">
-                {selectedEvent ? (
-                    <EventDetail event={selectedEvent} onBack={() => setSelectedEvent(null)} />
+                {DetailsComponent && selectedEvent ? (
+                    <DetailsComponent event={selectedEvent} onBack={() => setSelectedEvent(null)} />
                 ) : ActiveComponent ? (
                     // пробрасываем селектор события только туда, где он нужен
                     <ActiveComponent onSelectEvent={setSelectedEvent} />
@@ -78,23 +81,3 @@ const ProfileMainPage: React.FC = () => {
 };
 
 export default ProfileMainPage
-
-function EventDetail({
-    event,
-    onBack,
-}: {
-    event: ApplicationEvent;
-    onBack: () => void;
-}) {
-    return (
-        <div>
-            <button className="btn btn-link mb-3" onClick={onBack}>
-                ← Назад
-            </button>
-            <h3 className="mb-3">{event.name}</h3>
-            <p><strong>Дата начала:</strong> {new Date(event.start_date).toLocaleDateString()}</p>
-            <p><strong>Дата окончания:</strong> {new Date(event.end_date).toLocaleDateString()}</p>
-            <p>{event.additional_info}</p>
-        </div>
-    );
-}

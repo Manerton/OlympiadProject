@@ -11,7 +11,6 @@ import (
 // AggregationStrategy интерфейс для всех стратегий агрегации
 type AggregationStrategy interface {
 	Aggregate(services []string, origReq *http.Request) ([]interface{}, error)
-	
 }
 
 // DefaultAggregationStrategy текущая реализация агрегации
