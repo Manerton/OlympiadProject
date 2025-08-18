@@ -73,10 +73,10 @@ const AppealTab:  React.FC<Props> = ({onSelectEvent}) => {
 
     if (events.length === 0) return <div>Вы не подавали аппеляции</div>
 
-    function footer(status: number): ReactNode {
+    function footer(status: number, event: ApplicationEvent): ReactNode {
         return (
             <div className="d-flex flex-column justify-content-between h-100">
-                <button className="btn btn-primary mb-2">Результаты</button>
+                <button className="btn btn-primary mb-2" onClick={() => onSelectEvent?.(event)}>Результаты</button>
                 <div className="text-end">
                     <b>Статус апелляции  <StatusIcon status={status} /></b>
                 </div>
@@ -87,7 +87,7 @@ const AppealTab:  React.FC<Props> = ({onSelectEvent}) => {
     return (
         <div>
             {events.map((event) => (
-                <ApplicationEventCart key={event.id} event={event} footer={footer(event.status)} onClick={() => onSelectEvent?.(event)} />
+                <ApplicationEventCart key={event.id} event={event} footer={footer(event.status, event)} />
             ))}
         </div>
     );

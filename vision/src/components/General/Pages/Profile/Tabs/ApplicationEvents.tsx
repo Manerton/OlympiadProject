@@ -77,7 +77,6 @@ const ApplicationEventTab: React.FC<Props> = ({onSelectEvent}) => {
     function footer(status: number) {
         return (
             <div className="d-flex flex-column justify-content-between h-100">
-                <button className="btn btn-primary mb-2">Результаты</button>
                 <div className="text-end">
                     <b>Статус заявки  <StatusIcon status={status} /></b>
                 </div>
@@ -88,7 +87,7 @@ const ApplicationEventTab: React.FC<Props> = ({onSelectEvent}) => {
     return (
         <div>
             {events.map((event) => (
-                <ApplicationEventCart key={event.id} event={event} footer={footer(event.status)} onClick={() => onSelectEvent?.(event)}/>
+                <ApplicationEventCart key={event.id} event={event} footer={footer(event.status)} />
             ))}
         </div>
     );

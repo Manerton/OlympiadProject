@@ -6,17 +6,16 @@ import { StatusIcon } from "../../../../Helpers/StatusBlock";
 interface Props {
   event: ApplicationEvent;
   footer?: React.ReactNode; // сюда передаем либо статус, либо кнопки
-  onClick?: () => void;     // просто тип, без вызова
 }
 
-const EventCard: React.FC<Props & { onClick?: () => void }> = ({ event, footer, onClick }) => {
+const EventCard: React.FC<Props> = ({ event, footer }) => {
 
     const startDate = new Date(event.start_date).toLocaleDateString();
     const endDate = new Date(event.end_date).toLocaleDateString();
     
 
     return (
-        <Card className="mb-3" onClick={onClick}>
+        <Card className="mb-3" >
             <Card.Body>
                 <Row className="">
                 <Col md={3}>

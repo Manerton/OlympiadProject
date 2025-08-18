@@ -73,10 +73,10 @@ const HistoryTab: React.FC<Props> = ({onSelectEvent}) => {
 
     if (events.length === 0) return <div>Вы не участвовали в олимпиадах</div>
 
-    function footer(): ReactNode {
+    function footer(event: ApplicationEvent): ReactNode {
            return (
                <div className="d-flex flex-column justify-content-between h-100">
-                   <button className="btn btn-primary mb-2">Результаты</button>
+                   <button className="btn btn-primary mb-2" onClick={() => onSelectEvent?.(event)}>Результаты</button>
                    <button className="btn btn-danger mb-2">Подать аппеляцию</button>
                </div>
            )
@@ -85,7 +85,7 @@ const HistoryTab: React.FC<Props> = ({onSelectEvent}) => {
     return (
         <div>
             {events.map((event) => (
-                <ApplicationEventCart key={event.id} event={event} footer={footer()} onClick={() => onSelectEvent?.(event)}/>
+                <ApplicationEventCart key={event.id} event={event} footer={footer(event)} />
             ))}
         </div>
     );
