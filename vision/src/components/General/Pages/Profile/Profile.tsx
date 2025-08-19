@@ -2,9 +2,10 @@ import { useState } from "react";
 import { UserRole } from "../../../../dictionary/role";
 import ApplicationEventTab from "./Tabs/ApplicationEvents";
 import HistoryTab from "./Tabs/History";
-import AppealTab from "./Tabs/AppealMain";
+import AppealTab from "./Tabs/Appeal/Appeal";
 import type { ApplicationEvent } from "../../../types/event";
 import ResultByEvent from "./Tabs/ResultByEvent";
+import ResultAppeal from "./Tabs/Appeal/ResultAppeal";
 
 // общий тип для таба
 type TabItem = {
@@ -23,7 +24,7 @@ const ProfileMainPage: React.FC = () => {
             { label: "Достжения" },
             { label: "Олимпиады", component: ApplicationEventTab},
             { label: "История", component: HistoryTab, detailComponent: ResultByEvent},
-            { label: "Апелляции", component: AppealTab },
+            { label: "Апелляции", component: AppealTab, detailComponent: ResultAppeal },
         ],
         [UserRole.Judge]: [
             { label: "История" },

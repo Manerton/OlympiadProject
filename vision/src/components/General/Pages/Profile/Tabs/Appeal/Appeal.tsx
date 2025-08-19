@@ -1,8 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
-import type { ApplicationEvent } from "../../../../types/event";
-import ApplicationEventCart from "./EventCart";
-import { StatusIcon } from "../../../../Helpers/StatusBlock";
-import { ApplicationStatus } from "../../../../../dictionary/applicationStatus";
+import type { ApplicationEvent } from "../../../../../types/event";
+import ApplicationEventCart from "../EventCart";
+import { StatusIcon } from "../../../../../Helpers/StatusBlock";
+import { ApplicationStatus } from "../../../../../../dictionary/applicationStatus";
 
 type Props = {
   onSelectEvent?: (e: ApplicationEvent) => void;
