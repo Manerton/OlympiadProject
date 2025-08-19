@@ -12,7 +12,6 @@ const ApplicationEventTab: React.FC<Props> = ({onSelectEvent}) => {
     const [events, setEvents] = useState<ApplicationEvent[]>([]);
     const [loading, setLoading] = useState(true);
 
-
     const mockEvents: ApplicationEvent[] = [
         {
             id: "1",
