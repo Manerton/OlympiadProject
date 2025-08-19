@@ -1,56 +1,81 @@
 import { useState } from "react";
 import { UserRole } from "../../../../dictionary/role";
+import ApplicationEventTab from "./Tabs/ApplicationEvents";
+import HistoryTab from "./Tabs/History";
+import AppealTab from "./Tabs/AppealMain";
+import type { ApplicationEvent } from "../../../types/event";
+import ResultByEvent from "./Tabs/ResultByEvent";
+
+// общий тип для таба
+type TabItem = {
+  label: string;
+  component?: React.ComponentType<any>;
+  detailComponent?: React.ComponentType<{ event: ApplicationEvent; onBack: () => void }>;
+};
 
 
 const ProfileMainPage: React.FC = () => {
 
     const role = 2
 
-    const tabsByRole = {
-        [UserRole.Participant]: [ 
-            {"label": "Достжения", "component": ""},
-            {"label": "Олимпиады", "component": ""},
-            {"label": "История", "component": ""},
-            {"label": "Апелляцит", "component": ""},
+    const tabsByRole: Record<number, TabItem[]> = {
+        [UserRole.Participant]: [
+            { label: "Достжения" },
+            { label: "Олимпиады", component: ApplicationEventTab},
+            { label: "История", component: HistoryTab, detailComponent: ResultByEvent},
+            { label: "Апелляции", component: AppealTab },
         ],
         [UserRole.Judge]: [
-            {"label": "История", "component": ""},
-            {"label": "Олимпиады", "component": ""},
+            { label: "История" },
+            { label: "Олимпиады" },
         ]
     }
 
     const tabs = tabsByRole[role] || []
-    const [acriveTab, setActiveTab] = useState(0)
+    const [activeTab, setActiveTab] = useState(0)
+    const [selectedEvent, setSelectedEvent] = useState<ApplicationEvent | null>(null);
+
+
+    const ActiveComponent = tabs[activeTab].component;
+    const DetailsComponent = tabs[activeTab].detailComponent
 
     return (
         <div className="container mt-4">
             {/* Информация о пользователе */}
             <div className="d-flex align-items-center mb-4">
-                <img src="" alt="" className="roumded-circle me-3" width={80} height={80}/>
+                <img src="" alt="" className="roumded-circle me-3" width={80} height={80} />
                 <div>
-                    <h4>FIO</h4>
-                    <p className="text-muted">EMAIL</p>
+                    <h4>Иванов Иван Иванович</h4>
+                    <p className="text-muted">ivanovivan@main.com</p>
                 </div>
                 <button className="btn btn-primary ms-auto">Редактировать</button>
             </div>
+
             {/* Табы */}
-            <ul className="nav nav-tabs">
-                {tabs.map((tab, i) => (
-                    <li key={i} className="nav-item">
-                        <button  
-                        className={`nav-link ${i === acriveTab ? "active" : ""}`}
-                            onClick={() => setActiveTab(i)}>
-                            {tab.label}
-                        </button>
-                    </li>
-                ))}
-            </ul>
+            {!selectedEvent && (
+                <ul className="nav nav-tabs nav-fill w-100">
+                    {tabs.map((tab, i) => (
+                        <li key={i} className="nav-item">
+                            <button
+                                className={`nav-link ${i === activeTab ? "active" : ""}`}
+                                onClick={() => setActiveTab(i)}
+                            >
+                                {tab.label}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
 
             {/* Содержимое */}
-            <div className="tab-content p-3 border border-top-0">
-                {tabs[acriveTab].component}
+            <div className="tab-content p-3">
+                {DetailsComponent && selectedEvent ? (
+                    <DetailsComponent event={selectedEvent} onBack={() => setSelectedEvent(null)} />
+                ) : ActiveComponent ? (
+                    // пробрасываем селектор события только туда, где он нужен
+                    <ActiveComponent onSelectEvent={setSelectedEvent} />
+                ) : null}
             </div>
-
         </div>
     );
 };

@@ -27,7 +27,15 @@ class ElasticsearchService
             throw new \RuntimeException('Elasticsearch connection failed: ' . $e->getMessage());
         }
     }
-
+    public function createIndexWithMapping(array $params)
+    {
+        $index = $params['index'];
+        $exists = $this->client->indices()->exists(['index' => $index]);
+        if ($exists->getStatusCode() != 200) {
+            return $this->client->indices()->create($params);
+        }
+        return true;
+    }
     public function getClient(): Client
     {
         return $this->client;
@@ -66,6 +74,22 @@ class ElasticsearchService
         }
 
         return $this->client->get($params);
+    }
+    public function deleteIndex(string $index): bool
+    {
+        try {
+            $this->client->indices()->delete([
+                'index' => $index
+            ]);
+
+            return true; // Успех
+        } catch (\Elastic\Elasticsearch\Exception\ClientResponseException $e) {
+            if ($e->getCode() === 404) {
+                // Индекс не найден
+                return false;
+            }
+            throw $e; // пробрасываем остальные ошибки
+        }
     }
     public function decode($response){
         $result = $response->asArray();

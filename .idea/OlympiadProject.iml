@@ -8,6 +8,10 @@
       <sourceFolder url="file://$MODULE_DIR$/olymp-admin/tests" isTestSource="true" packagePrefix="Tests\" />
       <sourceFolder url="file://$MODULE_DIR$/olymp-admin/tests/Feature" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/olymp-admin/tests/Unit" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/olymp-admin/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/olymp_notification/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/brick/math" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/carbonphp/carbon-doctrine-types" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/composer" />
@@ -136,6 +140,97 @@
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/php-http/promise" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/symfony/polyfill-php82" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/symfony/psr-http-message-bridge" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/behat/gherkin" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/bower-asset/bootstrap" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/bower-asset/inputmask" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/bower-asset/jquery" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/bower-asset/punycode" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/bower-asset/yii2-pjax" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/cebe/markdown" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/codeception/codeception" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/codeception/lib-asserts" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/codeception/lib-innerbrowser" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/codeception/module-asserts" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/codeception/module-filesystem" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/codeception/module-yii2" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/codeception/phpunit-wrapper" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/codeception/stub" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/codeception/verify" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/composer" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/doctrine/deprecations" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/doctrine/instantiator" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/doctrine/lexer" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/egulias/email-validator" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/ezyang/htmlpurifier" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/fakerphp/faker" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/guzzlehttp/psr7" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/myclabs/deep-copy" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/nikic/php-parser" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/paragonie/random_compat" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/phar-io/manifest" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/phar-io/version" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/phpspec/php-diff" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/phpunit/php-code-coverage" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/phpunit/php-file-iterator" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/phpunit/php-invoker" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/phpunit/php-text-template" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/phpunit/php-timer" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/phpunit/phpunit" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/psr/container" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/psr/event-dispatcher" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/psr/http-factory" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/psr/http-message" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/psr/log" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/ralouphie/getallheaders" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/cli-parser" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/code-unit" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/code-unit-reverse-lookup" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/comparator" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/complexity" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/diff" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/environment" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/exporter" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/global-state" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/lines-of-code" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/object-enumerator" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/object-reflector" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/recursion-context" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/resource-operations" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/type" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/sebastian/version" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/swiftmailer/swiftmailer" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/browser-kit" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/console" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/css-selector" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/deprecation-contracts" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/dom-crawler" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/event-dispatcher" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/event-dispatcher-contracts" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/finder" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/mailer" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/mime" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/polyfill-ctype" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/polyfill-iconv" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/polyfill-intl-grapheme" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/polyfill-intl-idn" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/polyfill-intl-normalizer" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/polyfill-mbstring" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/polyfill-php73" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/polyfill-php80" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/service-contracts" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/string" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/symfony/yaml" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/theseer/tokenizer" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/yiisoft/yii2" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/yiisoft/yii2-bootstrap5" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/yiisoft/yii2-composer" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/yiisoft/yii2-debug" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/yiisoft/yii2-faker" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/yiisoft/yii2-gii" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/yiisoft/yii2-httpclient" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/yiisoft/yii2-redis" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/yiisoft/yii2-swiftmailer" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp_notification/vendor/yiisoft/yii2-symfonymailer" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

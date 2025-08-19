@@ -54,11 +54,11 @@ const UserEdit: React.FC = () => {
     const fetchData = async () => {
       try {
         const [dictionariesResponse, userResponse] = await Promise.all([
-          axios.get('http://olymp-admin-v2/api/user/create', {
+          axios.get('http://localhost:8080/api/user/create', {
             headers: { 'Authorization': token },
             withCredentials: true
           }),
-          axios.get(`http://olymp-admin-v2/api/user/show/${id}`, {
+          axios.get(`http://localhost:8080/api/user/show/${id}`, {
             headers: { 'Authorization': token },
             withCredentials: true
           })
@@ -105,7 +105,7 @@ const UserEdit: React.FC = () => {
         password: formData.password || undefined
       };
 
-      const response = await axios.put(`http://olymp-admin-v2/api/user/update/${id}`, dataToSend, {
+      const response = await axios.put(`http://localhost:8080/api/user/update/${id}`, dataToSend, {
         headers: {
           'Authorization': token,
           'Content-Type': 'application/json'

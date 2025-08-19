@@ -37,7 +37,7 @@ const EventShow: React.FC = () => {
 
         const fetchData = async () => {
             try {
-                const response = await axios.get(`http://olymp-admin-v2/api/event/show/${id}`, {
+                const response = await axios.get(`http://localhost:8080/api/event/show/${id}`, {
                     headers: { 'Authorization': token }
                 });
 
@@ -61,7 +61,7 @@ const EventShow: React.FC = () => {
 
         const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
         try {
-            await axios.delete(`http://olymp-admin-v2/api/event/delete/${id}`, {
+            await axios.delete(`http://localhost:8080/api/event/delete/${id}`, {
                 headers: {
                     'Authorization': token,
                     'Content-Type': 'application/json'
@@ -112,7 +112,7 @@ const EventShow: React.FC = () => {
             <h1>{event.name}</h1>
 
             <div className="card mt-4">
-                <div className="card-body">
+                <div className="card-body">deno 
                     <div className="row">
                         <div className="col-md-6">
                             <h5 className="card-title">Основная информация</h5>
@@ -173,7 +173,7 @@ const EventShow: React.FC = () => {
                             onClick={async () => {
                                     try {
                                         const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
-                                        await axios.get(`http://olymp-admin-v2/api/event/synchronize/${event.id}`, {
+                                        await axios.get(`http://localhost:8080/api/event/synchronize/${event.id}`, {
                                             headers: {
                                                 'Authorization': token,
                                                 'Content-Type': 'application/json'

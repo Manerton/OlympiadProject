@@ -43,7 +43,7 @@ const EventPoint: React.FC = () => {
         try {
             setLoading(true);
             const response = await axios.get(
-                `http://olymp-admin-v2/api/event/point/${id}`,
+                `http://localhost:8080/api/event/point/${id}`,
                 {
                     headers: {
                         Authorization: token,
@@ -76,7 +76,7 @@ const EventPoint: React.FC = () => {
         const cleanedPoints = points.replace(/[^0-9]/g, "");
         try {
             await axios.post(
-                "http://olymp-admin-v2/api/event/change-score",
+                "http://localhost:8080/api/event/change-score",
                 {
                     task_attendance_id: taskAttendanceId,
                     points: cleanedPoints,

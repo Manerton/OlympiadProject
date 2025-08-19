@@ -11,7 +11,7 @@ services:
     ports:
       - "5433:5432"
     networks:
-      - olympic 
+      - olympic
     volumes:
       - event-db-data:/var/lib/postgresql/data
     healthcheck:
@@ -21,10 +21,10 @@ services:
       retries: 5
 
   event-service:
-    build: 
+    build:
       context: ./event-service
     container_name: event-service
-    depends_on: 
+    depends_on:
       event-db:
         condition: service_healthy
     environment:
@@ -40,7 +40,7 @@ services:
   sso-db:
     image: postgres:16
     container_name: sso-db
-    environment: 
+    environment:
       POSTGRES_USER: sso_user
       POSTGRES_PASSWORD: sso_pass
       POSTGRES_DB: SSOServiceDB
@@ -55,7 +55,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-    
+
   sso-service:
     build:
       context: ./sso-service
@@ -76,7 +76,7 @@ services:
   jury-db:
     image: postgres:16
     container_name: jury-db
-    environment: 
+    environment:
       POSTGRES_USER: jury_user
       POSTGRES_PASSWORD: jury_pass
       POSTGRES_DB: JureAssignmentsServiceDB
@@ -90,7 +90,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U jury_user -d JureAssignmentsServiceDB"]
       interval: 5s
       timeout: 3s
-      retries: 5 
+      retries: 5
 
   jury-service:
     build:
@@ -108,7 +108,7 @@ services:
     ports:
       - "8383:8090"
     entrypoint: ["/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./jury-ass-service"]
-    
+
   app:
     build:
       context: ./docker/php
@@ -231,7 +231,15 @@ services:
     networks:
       - olympic
 
- 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: olymp_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - olympic
   loki-init:
     image: busybox
     command: ["sh", "-c", "mkdir -p /data/chunks /data/index /data/cache /data/compactor"]

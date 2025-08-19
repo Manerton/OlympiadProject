@@ -78,7 +78,7 @@ const ParticipantCreate: React.FC = () => {
   useEffect(() => {
     const fetchDictionaries = async () => {
       try {
-        const response = await axios.get('http://olymp-admin-v2/api/participant/create', {
+        const response = await axios.get('http://localhost:8080/api/participant/create', {
           headers: { 'Authorization': token },
           withCredentials: true
         });
@@ -122,7 +122,7 @@ const ParticipantCreate: React.FC = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        'http://olymp-admin-v2/api/participant/store', 
+        'http://localhost:8080/api/participant/store', 
         formData, 
         {
           headers: {

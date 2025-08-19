@@ -80,7 +80,7 @@ const ParticipantEdit: React.FC = () => {
     const fetchData = async () => {
       try {
         const [participantResponse] = await Promise.all([
-          axios.get(`http://olymp-admin-v2/api/participant/edit/${id}`, {
+          axios.get(`http://localhost:8080/api/participant/edit/${id}`, {
             headers: { 'Authorization': token },
             withCredentials: true
           }),
@@ -141,7 +141,7 @@ const ParticipantEdit: React.FC = () => {
       };
 
       const response = await axios.put(
-        `http://olymp-admin-v2/api/participant/update/${id}`, 
+        `http://localhost:8080/api/participant/update/${id}`, 
         dataToSend, 
         {
           headers: {
