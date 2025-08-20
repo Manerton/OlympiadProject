@@ -9,7 +9,7 @@ import RegionalStages from '../Pages/Events/RegionalStages';
 
 function Header() {
   // Заглушки: в будущем подключите контекст пользователя
-  const isAuthenticated = true; // временная проверка
+  const isAuthenticated = false; // временная проверка
   const userName = "Имя";
   const userId = "123";
   const userRole = "admin"; // временно установлено 'admin' для демонстрации

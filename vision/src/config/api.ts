@@ -6,6 +6,10 @@ const API_CONFIG = {
     APPLICATION: "http://172.16.1.39:8082/applications",
 };
 
+export const AUTH = {
+    login: "http://172.16.0.196:6611/auth"
+}
+
 const LOCAL_CONFIG = {
     EVENTS: "http://localhost:8080/events",
     JUREASSIGNMENTS: "http://localhost:8090/jury-assignments",
