@@ -54,7 +54,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
 
     useEffect(() => {
         refresh()
-    })
+    }, [])
 
     return (
         <AuthContext.Provider value={{user, accessToken, login, register, logout, refresh}}>
