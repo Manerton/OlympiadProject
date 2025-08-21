@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"flag"
+	"io"
 	"log"
 	"main/internal/config"
 	handlers "main/internal/handlers"
@@ -66,10 +68,26 @@ func main() {
 		mux.Handle(route.Prefix, http.StripPrefix(strings.TrimSuffix(route.Prefix, "/"), handler))
 	}
 
-	// Логируем все запросы
 	loggedMux := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Request: %s %s from %s", r.Method, r.URL.Path, r.RemoteAddr)
-		mux.ServeHTTP(w, r)
+		// читаем тело запроса
+		bodyBytes, _ := io.ReadAll(r.Body)
+		r.Body = io.NopCloser(bytes.NewBuffer(bodyBytes)) // восстанавливаем body для следующего хендлера
+
+		// логируем куки
+		cookies := r.Cookies()
+
+		// оборачиваем writer, чтобы перехватить ответ
+		lrw := newLoggingResponseWriter(w)
+
+		// вызываем основной mux
+		mux.ServeHTTP(lrw, r)
+
+		// Логируем
+		log.Printf("➡️ Request: %s %s, Cookies: %+v, Body: %s",
+			r.Method, r.URL.Path, cookies, string(bodyBytes))
+
+		log.Printf("⬅️ Response: %d, Body: %s",
+			lrw.statusCode, lrw.body.String())
 	})
 
 	// Применяем CORS middleware
@@ -77,4 +95,24 @@ func main() {
 
 	log.Printf("API Gateway listening on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, corsHandler))
+}
+
+type loggingResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+	body       bytes.Buffer
+}
+
+func newLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
+	return &loggingResponseWriter{ResponseWriter: w, statusCode: http.StatusOK}
+}
+
+func (lrw *loggingResponseWriter) WriteHeader(code int) {
+	lrw.statusCode = code
+	lrw.ResponseWriter.WriteHeader(code)
+}
+
+func (lrw *loggingResponseWriter) Write(b []byte) (int, error) {
+	lrw.body.Write(b) // копируем в буфер
+	return lrw.ResponseWriter.Write(b)
 }

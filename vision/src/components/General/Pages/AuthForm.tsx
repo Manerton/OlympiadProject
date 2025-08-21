@@ -85,7 +85,7 @@ const AuthForm: React.FC = () => {
 
       await register(registerData)
     } else {
-      await login("", "")
+      await login(email, password)
     }
   }
 

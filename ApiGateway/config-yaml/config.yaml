@@ -22,6 +22,10 @@ HTTP_SERVER_INFO:
       aggregate: false
       target: "http://172.16.1.39:8181/api/users/refresh"
       skip_auth: true  
+    - prefix: "/logout"
+      aggregate: false
+      target: "http://172.16.1.39:8181/api/users/logout"
+      skip_auth: true  
     - prefix: "/aplicationevent"
       aggregate: true
       services:
