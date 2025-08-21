@@ -8,7 +8,7 @@ import { useNavigate,useParams } from 'react-router-dom';
 import type { MyEvent } from '../../../types/event.ts';
 
 const API_BASE = 'http://172.16.1.39:8080/api/events/child';
-const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
 
 const OlympiadsPage: React.FC = () => {
   const [olympiads, setOlympiads] = useState<MyEvent[]>([]);
@@ -36,8 +36,11 @@ const OlympiadsPage: React.FC = () => {
           url += `&date=${dateStr}`; // предполагается, что API принимает параметр date
         }
         const res = await axios.get(url, {
-          headers: { Authorization: `Bearer ${TOKEN}` },
-        });
+          headers: {
+              'Authorization': `Bearer ${token}`  // <- добавляем "Bearer " перед токеном
+          },
+          withCredentials: true
+      });
         setOlympiads(res.data.data);
         setTotal(res.data.metadata);
       } catch (err) {
@@ -60,7 +63,7 @@ const OlympiadsPage: React.FC = () => {
   };
 
  const totalPages = Math.ceil(total / limit);
-//console.log('Всего страниц:', totalPages, 'Всего записей:', total, 'Лимит на страницу:', limit);
+
 
 
   return (
