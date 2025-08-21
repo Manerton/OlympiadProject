@@ -9,7 +9,8 @@ const API_CONFIG = {
 export const AUTH = {
     login: "http://172.16.0.196:6611/auth",
     logout: "http://172.16.0.196:6611/logout",
-    refresh: "http://172.16.0.196:6611/refresh"
+    refresh: "http://172.16.0.196:6611/refresh",
+    register: "http://172.16.0.196:6611/register"
 }
 
 const LOCAL_CONFIG = {

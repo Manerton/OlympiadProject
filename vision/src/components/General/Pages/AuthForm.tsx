@@ -10,6 +10,8 @@ import {
   ListGroup,
 } from "react-bootstrap";
 import { EyeFill, EyeSlashFill } from "react-bootstrap-icons";
+import { useAuth } from "../../Helpers/AuthContext";
+import type { RegisterForm } from "../../types/user";
 
 const mockSchools = [
   "Школа №1",
@@ -24,12 +26,27 @@ const AuthForm: React.FC = () => {
   const [isRegister, setIsRegister] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Состояния для поиска школы
+  // Поля формы
+  const [firstName, setFirstName] = useState("")
+  const [surName, setSurname] = useState("")
+  const [patronymic, setPatronymic] = useState("")
+  const [birthdate, setBirthdate] = useState("")
+
+  const [classNumber, setClassNumber] = useState(0)
+  const [gender, setGender] = useState(0)
+  const [phoneNumber, setPhoneNumber] = useState("")
+
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("") 
   const [schoolQuery, setSchoolQuery] = useState("");
+
+
+  // Состояния для поиска школы
   const [filteredSchools, setFilteredSchools] = useState<string[]>([]);
   const [showList, setShowList] = useState(false);
 
-  // 
+  // State авторизации
+  const {login, register} = useAuth();
 
   const handleSchoolChange = (value: string) => {
     setSchoolQuery(value);
@@ -52,6 +69,24 @@ const AuthForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isRegister) {
+      var registerData: RegisterForm = {
+        firstname: firstName,
+        surname: surName,
+        patronymic: patronymic,
+        email: email,
+        password: password,
+        phone_number: phoneNumber,
+        gender: gender,
+        school: schoolQuery,
+        birthdate: birthdate,
+        classnumber: classNumber
+      }
+
+      await register(registerData)
+    } else {
+      await login("", "")
+    }
   }
 
   return (
@@ -114,17 +149,20 @@ const AuthForm: React.FC = () => {
           </div>
 
           {/* Форма */}
-          <Form >
+          <Form onSubmit={handleSubmit}>
             {isRegister && (
               <>
                 <Form.Group className="mb-3">
-                  <Form.Control type="text" placeholder="Имя" />
+                  <Form.Control type="text" placeholder="Имя" value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)} />
                 </Form.Group>
                 <Form.Group className="mb-3">
-                  <Form.Control type="text" placeholder="Фамилия" />
+                  <Form.Control type="text" placeholder="Фамилия" value={surName}
+                  onChange={(e) => setSurname(e.target.value)} />
                 </Form.Group>
                 <Form.Group className="mb-3">
-                  <Form.Control type="text" placeholder="Отчество" />
+                  <Form.Control type="text" placeholder="Отчество" value={patronymic}
+                  onChange={(e) => setPatronymic(e.target.value)}/>
                 </Form.Group>
 
                 {/* Поле выбора образовательного учреждения с поиском */}
@@ -163,7 +201,7 @@ const AuthForm: React.FC = () => {
 
                 {/* Поле выбора класса с 5 по 11 */}
                 <Form.Group className="mb-3">
-                  <Form.Select>
+                  <Form.Select value={classNumber} onChange={(e) => setClassNumber(Number(e.target.value))}>
                     {[...Array(7)].map((_, i) => {
                       const grade = i + 5;
                       return <option key={grade}>{grade}</option>;
@@ -174,7 +212,8 @@ const AuthForm: React.FC = () => {
             )}
 
             <Form.Group className="mb-3">
-              <Form.Control type="email" placeholder="Почта" />
+              <Form.Control type="email" placeholder="Почта" value={email} 
+              onChange={(e) => setEmail(e.target.value)}/>
             </Form.Group>
 
             <Form.Group className="mb-4">
@@ -182,6 +221,8 @@ const AuthForm: React.FC = () => {
                 <Form.Control
                   type={showPassword ? "text" : "password"}
                   placeholder="Пароль"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
                 <Button
                   variant="outline-secondary"

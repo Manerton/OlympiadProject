@@ -8,6 +8,7 @@ interface AuthContextType {
     user: UserAuth | null
     accessToken: string | null
     login: (email: string, password: string) => Promise<void>
+    register: (data: RegisterForm) => Promise<void>
     logout: () => void
     refresh: () => Promise<void>
 }
@@ -19,7 +20,12 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
     const [accessToken, setAccessToken] = useState<string | null>(null)
 
     const register = async (data: RegisterForm) => {
-        
+        const response = await axios.post(AUTH.register, data, {withCredentials: true})
+        if (response.status == 200) {
+            console.log("success regisger")
+        } else {
+            console.log("failed register")
+        }
     }
 
     const login = async (email: string, password: string) => {
@@ -51,7 +57,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
     })
 
     return (
-        <AuthContext.Provider value={{user, accessToken, login, logout, refresh}}>
+        <AuthContext.Provider value={{user, accessToken, login, register, logout, refresh}}>
             {children}
         </AuthContext.Provider >
     )

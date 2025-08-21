@@ -6,6 +6,14 @@ export interface UserAuth {
 
 
 export interface RegisterForm {
+    email: string  
+    password: string
     firstname: string
-    lastname: string
+    surname: string
+    patronymic: string
+    phone_number: string
+    birthdate: string
+    gender: number
+    school: string
+    classnumber: number
 }
