@@ -29,6 +29,8 @@ const AuthForm: React.FC = () => {
   const [filteredSchools, setFilteredSchools] = useState<string[]>([]);
   const [showList, setShowList] = useState(false);
 
+  // 
+
   const handleSchoolChange = (value: string) => {
     setSchoolQuery(value);
     if (value.trim() === "") {
@@ -47,6 +49,10 @@ const AuthForm: React.FC = () => {
     setSchoolQuery(school);
     setShowList(false);
   };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+  }
 
   return (
     <Container fluid className="vh-100 d-flex align-items-center">
@@ -108,7 +114,7 @@ const AuthForm: React.FC = () => {
           </div>
 
           {/* Форма */}
-          <Form>
+          <Form >
             {isRegister && (
               <>
                 <Form.Group className="mb-3">

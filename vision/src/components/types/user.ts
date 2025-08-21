@@ -3,3 +3,9 @@ export interface UserAuth {
     Email: string
     role: number
 }
+
+
+export interface RegisterForm {
+    firstname: string
+    lastname: string
+}

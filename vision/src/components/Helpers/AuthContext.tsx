@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import type { UserAuth } from "../types/user";
+import type { RegisterForm, UserAuth } from "../types/user";
 import axios from "axios";
 import { AUTH } from "../../config/api";
 
@@ -18,6 +18,10 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
     const [user, setUser] = useState<UserAuth | null>(null);
     const [accessToken, setAccessToken] = useState<string | null>(null)
 
+    const register = async (data: RegisterForm) => {
+        
+    }
+
     const login = async (email: string, password: string) => {
         const response = await axios.post(AUTH.login, {email, password}, {withCredentials: true})
         const {accessToken, user} = response.data
@@ -29,11 +33,17 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
     const logout = () => {
         setAccessToken(null)
         setUser(null)
-        // axios.post()
+        axios.post(AUTH.logout, {}, {withCredentials: true})
     }
 
     const refresh = async () => {
-
+        try {
+            const response = await axios.post(AUTH.refresh, {}, {withCredentials: true})
+            setAccessToken(response.data.access_token)
+        } catch(err) {
+            console.error("refresh failed", err)
+            logout()
+        }
     }
 
     useEffect(() => {

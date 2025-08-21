@@ -7,7 +7,9 @@ const API_CONFIG = {
 };
 
 export const AUTH = {
-    login: "http://172.16.0.196:6611/auth"
+    login: "http://172.16.0.196:6611/auth",
+    logout: "http://172.16.0.196:6611/logout",
+    refresh: "http://172.16.0.196:6611/refresh"
 }
 
 const LOCAL_CONFIG = {
