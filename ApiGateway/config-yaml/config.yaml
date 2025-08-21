@@ -25,7 +25,7 @@ HTTP_SERVER_INFO:
     - prefix: "/logout"
       aggregate: false
       target: "http://172.16.1.39:8181/api/users/logout"
-      skip_auth: true  
+      skip_auth: false  
     - prefix: "/aplicationevent"
       aggregate: true
       services:

@@ -48,7 +48,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 
 func main() {
 	cfgPath := flag.String("config", getConfigPath(), "path to config file")
-	addr := "0.0.0.0:6611"
+	addr := "172.16.0.196:6611"
 	flag.Parse()
 
 	cfg := config.GetConfig(*cfgPath)
@@ -109,6 +109,14 @@ func newLoggingResponseWriter(w http.ResponseWriter) *loggingResponseWriter {
 
 func (lrw *loggingResponseWriter) WriteHeader(code int) {
 	lrw.statusCode = code
+
+	// Логируем Set-Cookie заголовки
+	if cookies := lrw.Header().Values("Set-Cookie"); len(cookies) > 0 {
+		for _, c := range cookies {
+			log.Printf("⬅️ Set-Cookie: %s", c)
+		}
+	}
+
 	lrw.ResponseWriter.WriteHeader(code)
 }
 

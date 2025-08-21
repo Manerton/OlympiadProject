@@ -91,6 +91,16 @@ func NewProxyHandler(route config.Route, jwtKey string) http.Handler {
 			resp.Header.Del("Access-Control-Expose-Headers")
 			resp.Header.Del("Access-Control-Allow-Credentials")
 			resp.Header.Del("Access-Control-Max-Age")
+			// for i, c := range resp.Header["Set-Cookie"] {
+			// 	// убираем Domain, чтобы браузер сохранял куку на gateway
+			// 	c = strings.ReplaceAll(c, "Domain=172.16.1.39", "")
+			// 	c = strings.ReplaceAll(c, "Domain=172.16.0.196", "")
+
+			// 	// ставим SameSite=Lax вместо None (чтобы не требовал Secure при HTTP)
+			// 	c = strings.ReplaceAll(c, "SameSite=None", "SameSite=Lax")
+
+			// 	resp.Header["Set-Cookie"][i] = c
+			// }
 			return nil
 		},
 	}
