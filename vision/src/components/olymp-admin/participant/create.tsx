@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-
+import { HOSTS } from '../../../config/api.ts';
 interface Dictionary {
   [key: string]: string;
 }
@@ -78,7 +78,7 @@ const ParticipantCreate: React.FC = () => {
   useEffect(() => {
     const fetchDictionaries = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/participant/create', {
+        const response = await axios.get(HOSTS['OLYMP_ADMIN'] + '/api/participant/create', {
           headers: { 'Authorization': token },
           withCredentials: true
         });
@@ -122,7 +122,7 @@ const ParticipantCreate: React.FC = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        'http://localhost:8080/api/participant/store', 
+        HOSTS['OLYMP_ADMIN'] + '/api/participant/store', 
         formData, 
         {
           headers: {

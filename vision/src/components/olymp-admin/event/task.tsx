@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-
+import { HOSTS } from '../../../config/api.ts';
 interface Task {
     id: string;
     number: string;
@@ -34,7 +34,7 @@ const EventTask: React.FC = () => {
         try {
             setLoading(true);
             const response = await axios.get(
-                `http://localhost:8080/api/event/task/${id}`,
+                HOSTS['OLYMP_ADMIN'] + `/api/event/task/${id}`,
                 {
                     headers: { Authorization: token },
                     withCredentials: true,
@@ -79,7 +79,7 @@ const EventTask: React.FC = () => {
         };
 
         await axios.post(
-            `http://localhost:8080/api/event/add-task/${id}`,
+            HOSTS['OLYMP_ADMIN'] + `/api/event/add-task/${id}`,
             requestData,
             {
                 headers: {
@@ -102,7 +102,7 @@ const EventTask: React.FC = () => {
         }
         try {
             await axios.delete(
-                `http://localhost:8080/api/event/delete-task/${taskId}`,
+                HOSTS['OLYMP_ADMIN'] + `/api/event/delete-task/${taskId}`,
                 {
                     headers: { Authorization: token },
                     withCredentials: true,

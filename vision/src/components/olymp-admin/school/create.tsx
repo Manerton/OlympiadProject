@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-
+import { HOSTS } from '../../../config/api.ts';
 interface SchoolFormData {
   name: string;
   region: string;
@@ -33,7 +33,7 @@ const SchoolCreate: React.FC = () => {
     const fetchData = async () => {
       try {
         // Fetch regions
-        const regionsResponse = await axios.get('http://localhost:8080/api/school/create', {
+        const regionsResponse = await axios.get(HOSTS['OLYMP_ADMIN'] + '/api/school/create', {
           headers: { 'Authorization': token },
           withCredentials: true
         });
@@ -42,7 +42,7 @@ const SchoolCreate: React.FC = () => {
         // If in edit mode, fetch school data
         if (id) {
           setIsEditMode(true);
-          const schoolResponse = await axios.get(`http://localhost:8080/api/school/show/${id}`, {
+          const schoolResponse = await axios.get(HOSTS['OLYMP_ADMIN'] + `/api/school/show/${id}`, {
             headers: { 'Authorization': token },
             withCredentials: true
           });
@@ -75,7 +75,7 @@ const SchoolCreate: React.FC = () => {
     try {
       if (isEditMode) {
         // Update existing school
-        await axios.put(`http://localhost:8080/api/school/update/${id}`, formData, {
+        await axios.put(HOSTS['OLYMP_ADMIN'] + `/api/school/update/${id}`, formData, {
           headers: {
             'Authorization': token,
             'Content-Type': 'application/json'
@@ -84,7 +84,7 @@ const SchoolCreate: React.FC = () => {
         });
       } else {
         // Create new school
-        await axios.post('http://localhost:8080/api/school/store', formData, {
+        await axios.post(HOSTS['OLYMP_ADMIN'] + '/api/school/store', formData, {
           headers: {
             'Authorization': token,
             'Content-Type': 'application/json'

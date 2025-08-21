@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link, useParams } from 'react-router-dom';
-
+import { HOSTS } from '../../../config/api.ts';
 interface Dictionary {
   [key: string]: string;
 }
@@ -80,7 +80,7 @@ const ParticipantEdit: React.FC = () => {
     const fetchData = async () => {
       try {
         const [participantResponse] = await Promise.all([
-          axios.get(`http://localhost:8080/api/participant/edit/${id}`, {
+          axios.get(HOSTS['OLYMP_ADMIN'] + `/api/participant/edit/${id}`, {
             headers: { 'Authorization': token },
             withCredentials: true
           }),
@@ -141,7 +141,7 @@ const ParticipantEdit: React.FC = () => {
       };
 
       const response = await axios.put(
-        `http://localhost:8080/api/participant/update/${id}`, 
+        HOSTS['OLYMP_ADMIN'] + `/api/participant/update/${id}`, 
         dataToSend, 
         {
           headers: {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-
+import { HOSTS } from '../../../config/api.ts';
 interface Application {
     id: string;
     code: string;
@@ -35,7 +35,7 @@ const ApplicationShow: React.FC = () => {
 
         const fetchData = async () => {
             try {
-                const response = await axios.get(`http://localhost:8080/api/application/show/${id}`, {
+                const response = await axios.get(HOSTS['OLYMP_ADMIN'] +`/api/application/show/${id}`, {
                     headers: { 'Authorization': token }
                 });
 

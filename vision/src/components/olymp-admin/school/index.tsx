@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-
+import { HOSTS } from '../../../config/api.ts';
 interface School {
   id: string;
   name: string;
@@ -26,7 +26,7 @@ const SchoolIndex: React.FC = () => {
   const fetchSchools = (page: number = 1) => {
     setLoading(true);
     
-    axios.get(`http://localhost:8080/api/school/index/${page}`, {
+    axios.get(HOSTS['OLYMP_ADMIN'] + `/api/school/index/${page}`, {
       headers: {
         'Authorization': token
       },
@@ -51,7 +51,7 @@ const SchoolIndex: React.FC = () => {
     }
 
     try {
-      const response = await axios.delete(`http://localhost:8080/api/school/delete/${schoolId}`, {
+      const response = await axios.delete(HOSTS['OLYMP_ADMIN'] + `/api/school/delete/${schoolId}`, {
         headers: {
           'Authorization': token,
           'Content-Type': 'application/json'

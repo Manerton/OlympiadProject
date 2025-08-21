@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link, useParams } from 'react-router-dom';
-
+import { HOSTS } from '../../../config/api.ts';
 interface Dictionary {
   [key: string]: string; // Ключи также должны быть строками
 }
@@ -54,11 +54,11 @@ const UserEdit: React.FC = () => {
     const fetchData = async () => {
       try {
         const [dictionariesResponse, userResponse] = await Promise.all([
-          axios.get('http://localhost:8080/api/user/create', {
+          axios.get(HOSTS['OLYMP_ADMIN'] + '/api/user/create', {
             headers: { 'Authorization': token },
             withCredentials: true
           }),
-          axios.get(`http://localhost:8080/api/user/show/${id}`, {
+          axios.get(HOSTS['OLYMP_ADMIN'] + `/api/user/show/${id}`, {
             headers: { 'Authorization': token },
             withCredentials: true
           })
@@ -105,7 +105,7 @@ const UserEdit: React.FC = () => {
         password: formData.password || undefined
       };
 
-      const response = await axios.put(`http://localhost:8080/api/user/update/${id}`, dataToSend, {
+      const response = await axios.put(HOSTS['OLYMP_ADMIN'] + `/api/user/update/${id}`, dataToSend, {
         headers: {
           'Authorization': token,
           'Content-Type': 'application/json'

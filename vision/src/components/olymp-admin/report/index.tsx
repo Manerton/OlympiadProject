@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-
+import { HOSTS } from '../../../config/api.ts';
 interface ReportIndexProps {}
 
 interface Subject {
@@ -18,7 +18,7 @@ const ReportIndex: React.FC<ReportIndexProps> = () => {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/report/index', {
+        const response = await axios.get(HOSTS['OLYMP_ADMIN'] + '/api/report/index', {
           headers: {
             'Authorization': token
           },
@@ -53,7 +53,7 @@ const ReportIndex: React.FC<ReportIndexProps> = () => {
   const handleDownload = async (subjectId: number) => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:8080/api/report/download/${subjectId}`, {
+      const response = await axios.get(HOSTS['OLYMP_ADMIN'] + `/api/report/download/${subjectId}`, {
         headers: {
           'Authorization': token
         },

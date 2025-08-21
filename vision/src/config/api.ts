@@ -18,4 +18,9 @@ const LOCAL_CONFIG = {
     APPLICATION: "http://localhost:8082/applications",
 }
 
-export default API_CONFIG;
+export const HOSTS = {
+    OLYMP_ADMIN: "http://admin.olymp.local",
+    OLYMP_NOTIFICATION: "http://notification.olymp.local"
+}
+
+export default { API_CONFIG, HOSTS };

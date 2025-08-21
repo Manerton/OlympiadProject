@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-
+import { HOSTS } from '../../../config/api.ts';
 interface Dictionary {
   [key: string]: string; // Ключи теперь строки
 }
@@ -52,7 +52,7 @@ const UserCreate: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/user/create', {
+        const response = await axios.get(HOSTS['OLYMP_ADMIN'] + '/api/user/create', {
           headers: {
             'Authorization': token
           },
@@ -80,7 +80,7 @@ const UserCreate: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/api/user/store', formData, {
+      const response = await axios.post(HOSTS['OLYMP_ADMIN'] + '/api/user/store', formData, {
         headers: {
           'Authorization': token,
           'Content-Type': 'application/json'

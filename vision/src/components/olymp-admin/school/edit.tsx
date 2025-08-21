@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-
+import { HOSTS } from '../../../config/api.ts';
 interface School {
   id: string;
   name: string;
@@ -34,7 +34,7 @@ const SchoolEdit: React.FC = () => {
     const fetchData = async () => {
       try {
         const [schoolResponse] = await Promise.all([
-          axios.get(`http://localhost:8080/school/edit/${id}`, {
+          axios.get(HOSTS['OLYMP_ADMIN'] + `/api/school/edit/${id}`, {
             headers: { 'Authorization': token },
             withCredentials: true
           })
@@ -67,7 +67,7 @@ const SchoolEdit: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:8080/api/school/update/${id}`, formData, {
+      await axios.put(HOSTS['OLYMP_ADMIN'] + `/api/school/update/${id}`, formData, {
         headers: {
           'Authorization': token,
           'Content-Type': 'application/json'

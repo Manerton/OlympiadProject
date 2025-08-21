@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
-
+import { HOSTS } from '../../../config/api.ts';
 interface Event {
   id: string;
   name: string;
@@ -25,7 +25,7 @@ const EventPrizeScoreForm: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/event/prize-score/${id}`, {
+        const response = await axios.get(HOSTS['OLYMP_ADMIN'] + `/api/event/prize-score/${id}`, {
           headers: { Authorization: token },
         });
         setEvent(response.data.event);
@@ -51,7 +51,7 @@ const EventPrizeScoreForm: React.FC = () => {
     e.preventDefault();
     try {
       await axios.post(
-        `http://localhost:8080/api/event/set-prize-score/${id}`,
+        HOSTS['OLYMP_ADMIN'] + `/api/event/set-prize-score/${id}`,
         {
           prize_score: scores.prize_score,
           winner_score: scores.winner_score,

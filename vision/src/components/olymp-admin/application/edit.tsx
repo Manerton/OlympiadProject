@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-
+import { HOSTS } from '../../../config/api.ts';
 interface Application {
     id: string;
     code: string;
@@ -56,7 +56,7 @@ const ApplicationEdit: React.FC = () => {
 
         const fetchData = async () => {
             try {
-                const response = await axios.get(`http://localhost:8080/api/application/edit/${id}`, {
+                const response = await axios.get(HOSTS['OLYMP_ADMIN'] + `/api/application/edit/${id}`, {
                     headers: { 'Authorization': token }
                 });
 
@@ -99,7 +99,7 @@ const ApplicationEdit: React.FC = () => {
         const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
 
         try {
-            await axios.put(`http://localhost:8080/api/application/update/${id}`, formData, {
+            await axios.put(HOSTS['OLYMP_ADMIN'] + `/api/application/update/${id}`, formData, {
                 headers: {
                     'Authorization': token,
                     'Content-Type': 'application/json'

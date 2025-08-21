@@ -1,137 +1,36 @@
 # version: '3.9'
 
 services:
-  event-db:
-    image: postgres:16
-    container_name: event-db
-    environment:
-      POSTGRES_USER: event_user
-      POSTGRES_PASSWORD: event_pass
-      POSTGRES_DB: EventServiceDB
-    ports:
-      - "5433:5432"
-    networks:
-      - olympic
-    volumes:
-      - event-db-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U event_user -d EventServiceDB"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  event-service:
-    build:
-      context: ./event-service
-    container_name: event-service
-    depends_on:
-      event-db:
-        condition: service_healthy
-    environment:
-      DSN: "postgres://event_user:event_pass@event-db:5432/EventServiceDB?sslmode=disable"
-      MIGRATION_PATH: "/app/migrations"
-      CONFIG_PATH: "/app/config-yaml/docker.yaml"
-    networks:
-      - olympic
-    ports:
-      - "8888:8080"
-    entrypoint: ["/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./event-service"]
-
-  sso-db:
-    image: postgres:16
-    container_name: sso-db
-    environment:
-      POSTGRES_USER: sso_user
-      POSTGRES_PASSWORD: sso_pass
-      POSTGRES_DB: SSOServiceDB
-    ports:
-      - "5444:5432"
-    networks:
-      - olympic
-    volumes:
-      - sso-db-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U sso_user -d SSOServiceDB"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  sso-service:
-    build:
-      context: ./sso-service
-    container_name: sso-service
-    depends_on:
-      sso-db:
-        condition: service_healthy
-    environment:
-      DSN: "postgres://sso_user:sso_pass@sso-db:5432/SSOServiceDB?sslmode=disable"
-      MIGRATION_PATH: "/app/migrations"
-      CONFIG_PATH: "/app/config-yaml/docker.yaml"
-    networks:
-      - olympic
-    ports:
-      - "8989:8181"
-    entrypoint: ["/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./sso-service"]
-
-  jury-db:
-    image: postgres:16
-    container_name: jury-db
-    environment:
-      POSTGRES_USER: jury_user
-      POSTGRES_PASSWORD: jury_pass
-      POSTGRES_DB: JureAssignmentsServiceDB
-    ports:
-      - "5445:5432"
-    networks:
-      - olympic
-    volumes:
-      - jury-db-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U jury_user -d JureAssignmentsServiceDB"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  jury-service:
-    build:
-      context: ./Jure-assignments-service
-    container_name: jury-service
-    depends_on:
-      jury-db:
-        condition: service_healthy
-    environment:
-      DSN: "postgres://jury_user:jury_pass@jury-db:5432/JureAssignmentsServiceDB?sslmode=disable"
-      MIGRATION_PATH: "/app/migrations"
-      CONFIG_PATH: "/app/config-yaml/docker.yaml"
-    networks:
-      - olympic
-    ports:
-      - "8383:8090"
-    entrypoint: ["/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./jury-ass-service"]
 
   app:
     build:
-      context: ./docker/php
-    container_name: olymp
-    working_dir: /var/www/html
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    container_name: php_app
     volumes:
-      - ./olymp-admin:/var/www/html
+      - ./olymp-admin:/var/www/olymp-admin
+      - ./olymp-notification:/var/www/olymp-notification
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
     networks:
       - olympic
 
   nginx:
-    image: nginx:latest
-    container_name: laravel_nginx
+    image: nginx:alpine
+    container_name: nginx_server
     ports:
-      - "8080:80"
+      - "80:80"
+      - "443:443"
     volumes:
-      - ./olymp-admin:/var/www/html
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/nginx/default.conf:/etc/nginx/nginx.conf
+      - ./olymp-admin/public:/var/www/olymp-admin/public
+      - ./olymp-notification/web:/var/www/olymp-notification/web
     depends_on:
       - app
     networks:
       - olympic
-
   db:
     image: mariadb:10.11
     container_name: olymp_admin_db
@@ -147,7 +46,17 @@ services:
       - db_data:/var/lib/mysql
     networks:
       - olympic
-
+  vision:
+    image: denoland/deno:latest
+    container_name: vision_app
+    working_dir: /app
+    volumes:
+      - ./vision:/app
+    command: deno task dev run
+    ports:
+      - "5173:5173"
+    networks:
+      - olympic
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: olymp_admin_phpmyadmin

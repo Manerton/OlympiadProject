@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { HOSTS } from '../../../config/api.ts';
 interface Task {
     id: string;
     number: string;
@@ -43,7 +43,7 @@ const EventPoint: React.FC = () => {
         try {
             setLoading(true);
             const response = await axios.get(
-                `http://localhost:8080/api/event/point/${id}`,
+                HOSTS['OLYMP_ADMIN'] +`/api/event/point/${id}`,
                 {
                     headers: {
                         Authorization: token,
@@ -76,7 +76,7 @@ const EventPoint: React.FC = () => {
         const cleanedPoints = points.replace(/[^0-9]/g, "");
         try {
             await axios.post(
-                "http://localhost:8080/api/event/change-score",
+                HOSTS['OLYMP_ADMIN'] + "/api/event/change-score",
                 {
                     task_attendance_id: taskAttendanceId,
                     points: cleanedPoints,

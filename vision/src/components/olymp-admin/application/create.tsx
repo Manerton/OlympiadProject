@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
+import { HOSTS } from '../../../config/api.ts';
 interface User {
     id: string;
     firstname?: string;
@@ -35,7 +35,7 @@ const ApplicationCreate: React.FC = () => {
 
         const fetchData = async () => {
             try {
-                const response = await axios.get('http://localhost:8080/api/application/create', {
+                const response = await axios.get(HOSTS['OLYMP_ADMIN'] + '/api/application/create', {
                     headers: { 'Authorization': token }
                 });
 
@@ -66,7 +66,7 @@ const ApplicationCreate: React.FC = () => {
         const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
 
         try {
-            await axios.post('http://localhost:8080/api/application/store', formData, {
+            await axios.post(HOSTS['OLYMP_ADMIN'] + '/api/application/store', formData, {
                 headers: {
                     'Authorization': token,
                     'Content-Type': 'application/json'

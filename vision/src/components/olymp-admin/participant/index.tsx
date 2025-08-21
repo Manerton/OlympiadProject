@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-
+import { HOSTS } from '../../../config/api.ts';
 interface Participant {
     id: string;
     userAPI: {
@@ -37,7 +37,7 @@ const handleDelete = async (participantId: string) => {
     }
     const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
     try {
-        const response = await axios.delete(`http://localhost:8080/api/participant/delete/${participantId}`, {
+        const response = await axios.delete(HOSTS['OLYMP_ADMIN'] + `/api/participant/delete/${participantId}`, {
             headers: {
                 'Authorization': token,
                 'Content-Type': 'application/json'
@@ -70,7 +70,7 @@ const ParticipantIndex: React.FC = () => {
         setLoading(true);
         const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
         
-        axios.get<ParticipantResponse>(`http://localhost:8080/api/participant/index/${page}`, {
+        axios.get<ParticipantResponse>(HOSTS['OLYMP_ADMIN'] + `/api/participant/index/${page}`, {
             headers: {
                 'Authorization': token
             },
