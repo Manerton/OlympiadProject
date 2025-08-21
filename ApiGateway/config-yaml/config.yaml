@@ -2,10 +2,26 @@ env: "dev"
 
 HTTP_SERVER_INFO:
   routes:
+    - prefix: "/regional-stages"
+      aggregate: false
+      target: "http://172.16.1.39:8080/api/events/regional-stage"
+      skip_auth: false
+    - prefix: "/events-child"
+      aggregate: false
+      target: "http://172.16.1.39:8080/api/events/child"
+      skip_auth: false
     - prefix: "/auth"
       aggregate: false
-      target: "http://172.16.1.39:8080/api/events"
-      skip_auth: false
+      target: "http://172.16.1.39:8181/api/users/login"
+      skip_auth: true
+    - prefix: "/register"
+      aggregate: false
+      target: "http://172.16.1.39:8181/api/users/register"
+      skip_auth: true
+    - prefix: "/refresh"
+      aggregate: false
+      target: "http://172.16.1.39:8181/api/users/refresh"
+      skip_auth: true  
     - prefix: "/aplicationevent"
       aggregate: true
       services:

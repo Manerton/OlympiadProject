@@ -19,7 +19,7 @@ interface MyEvent {
 }
 
 
-const API_URL = "http://172.16.1.39:8080/api/events/regional-stage";
+const API_URL = "http://172.16.0.196:6611/regional-stages";
 
 const RegionalStagesPage: React.FC = () => {
   const [stages, setStages] = useState<MyEvent[]>([]);
@@ -30,7 +30,12 @@ const RegionalStagesPage: React.FC = () => {
   useEffect(() => {
     const fetchStages = async () => {
       try {
-        const res = await axios.get(API_URL);
+        const res = await axios.get(API_URL, {
+          headers: {
+              'Authorization': `Bearer ${token}`  // <- добавляем "Bearer " перед токеном
+          },
+          withCredentials: true
+      });
         setStages(res.data.data);
       } catch (err) {
         setError((err as Error).message);
