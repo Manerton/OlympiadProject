@@ -342,7 +342,8 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 
 	// delete old token
 	go func() {
-		err := s.refreshRepository.Delete(ctx, s.db, tokenUid)
+		gctx := context.Background()
+		err := s.refreshRepository.Delete(gctx, s.db, tokenUid)
 		if err != nil {
 			log.Error("failed delete refresh token", liblogger.Err(err))
 		}
