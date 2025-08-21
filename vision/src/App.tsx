@@ -34,8 +34,11 @@ import RegionalStagesPage from './components/General/Pages/Events/RegionalStages
 import OlympiadsPage from './components/General/Pages/Events/OlympiadsPage'
 import ProfileMainPage from './components/General/Pages/Profile/Profile.tsx';
 
+
 function App() {
     return (
+        
+        
         <Router>
             <div className="App">
                 <Routes>
