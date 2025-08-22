@@ -7,6 +7,7 @@ use App\Components\Dictionaries\RoleDictionary;
 use App\Components\RabbitMQHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserRequest;
+use App\Repositories\TokenRepository;
 use App\Repositories\UserRepository;
 use App\Services\RabbitMQService;
 use App\Services\UserService;
@@ -18,15 +19,18 @@ class UserApiController extends Controller
     private UserRepository $userRepository;
     private RabbitMQService $rabbitMQService;
     private UserService $userService;
+    private TokenRepository $tokenRepository;
     public function __construct(
         UserRepository $userRepository,
         RabbitMQService $rabbitMQService,
-        UserService $userService
+        UserService $userService,
+        TokenRepository $tokenRepository
     )
     {
         $this->userRepository = $userRepository;
         $this->rabbitMQService = $rabbitMQService;
         $this->userService = $userService;
+        $this->tokenRepository = $tokenRepository;
     }
 
     public function index($page = 1){
@@ -102,6 +106,11 @@ class UserApiController extends Controller
             [],
             ['id' => $id]
         );
+        return response()->json([]);
+    }
+    public function revoke($id)
+    {
+        $this->tokenRepository->revoke($id);
         return response()->json([]);
     }
 }

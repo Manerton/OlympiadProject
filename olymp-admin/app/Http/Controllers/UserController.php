@@ -6,8 +6,8 @@ use App\Components\Dictionaries\GenderDictionary;
 use App\Components\Dictionaries\RoleDictionary;
 use App\Components\RabbitMQHelper;
 use App\Http\Requests\UserRequest;
+use App\Repositories\TokenRepository;
 use App\Repositories\UserRepository;
-use App\Services\LogService;
 use App\Services\RabbitMQService;
 use App\Services\UserService;
 
@@ -16,18 +16,18 @@ class UserController extends Controller
     private UserRepository $userRepository;
     private RabbitMQService $rabbitMQService;
     private UserService $userService;
-    private LogService $logService;
+    private TokenRepository $tokenRepository;
     public function __construct(
         UserRepository $userRepository,
         RabbitMQService $rabbitMQService,
         UserService $userService,
-        LogService $logService
+        TokenRepository $tokenRepository
     )
     {
         $this->userRepository = $userRepository;
         $this->rabbitMQService = $rabbitMQService;
         $this->userService = $userService;
-        $this->logService = $logService;
+        $this->tokenRepository = $tokenRepository;
     }
 
     public function index($page = 1){
@@ -86,6 +86,11 @@ class UserController extends Controller
             [],
             ['id' => $id]
         );
+        return redirect('/user/index');
+    }
+    public function revoke($id)
+    {
+        $this->tokenRepository->revoke($id);
         return redirect('/user/index');
     }
 }

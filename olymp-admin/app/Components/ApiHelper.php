@@ -11,6 +11,8 @@ class ApiHelper
     public const STATUS_NOT_FOUND = 404;
     public const AUTH_URL_API = 'http://172.16.1.39:8181/api/users/login';
     public const USER_URL_API = 'http://172.16.1.39:8181/api/users';
+    public const TOKEN_REVOKE_URL_API = 'http://172.16.1.39:8181/api/users/revoke-all';
+    public const TOKEN_REFRESH_URL_API = 'http://172.16.1.39:8181/api/users/refresh';
     public const EVENT_URL_API = 'http://172.16.1.39:8080/api/events/class';
     public const EVENT_MODEL_URL_API = 'http://172.16.1.39:8080/api/events';
     public const EVENT_JURY_URL_API = 'http://172.16.1.39:8090/api/jury-assignments/event';

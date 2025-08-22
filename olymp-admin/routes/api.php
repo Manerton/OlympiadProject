@@ -34,6 +34,7 @@ Route::group(['middleware' => 'prometheus'], function() {
     Route::put('/user/update/{id}', [UserApiController::class, 'update'])->name('user-api.update');
     Route::delete('/user/delete/{id}', [UserApiController::class, 'delete'])->name('user-api.delete');
     Route::get('/user/show/{id}', [UserApiController::class, 'show'])->name('user-api.show');
+    Route::post('/user/revoke/{id}', [UserApiController::class, 'revoke'])->name('user.revoke');
 
     Route::get('/participant/index/{page?}', [ParticipantApiController::class, 'index'])->name('participant-api.index');
     Route::get('/participant/create', [ParticipantApiController::class, 'create'])->name('participant-api.create');

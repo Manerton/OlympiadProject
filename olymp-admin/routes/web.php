@@ -44,6 +44,7 @@ Route::group(['middleware' => 'auth.custom'], function() {
     Route::post('/user/update/{id}', [UserController::class, 'update'])->name('user.update');
     Route::delete('/user/delete/{id}', [UserController::class, 'delete'])->name('user.delete');
     Route::get('/user/show/{id}', [UserController::class, 'show'])->name('user.show');
+    Route::post('/user/revoke/{id}', [UserController::class, 'revoke'])->name('user.revoke');
 
     Route::get('/participant/index/{page?}', [ParticipantController::class, 'index'])->name('participant.index');
     Route::get('/participant/create', [ParticipantController::class, 'create'])->name('participant.create');

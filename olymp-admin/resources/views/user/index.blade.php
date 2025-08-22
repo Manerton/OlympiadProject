@@ -32,6 +32,11 @@
                     <td>
                         <a href="{{ route('user.show', $user->id) }}" class="btn btn-sm btn-primary">Просмотр</a>
                         <a href="{{ route('user.edit', $user->id) }}" class="btn btn-sm btn-warning">Редактировать</a>
+                        <form action="{{ route('user.revoke', $user->id) }}" method="POST" style="display: inline-block;">
+                            @csrf
+                            @method('POST')
+                            <button type="submit" class="btn btn-sm btn-info" onclick="return confirm('Вы уверены, что хотите отозвать токены этого пользователя?')">Отозвать токены</button>
+                        </form>
                         <form action="{{ route('user.delete', $user->id) }}" method="POST" style="display: inline-block;">
                             @csrf
                             @method('DELETE')
