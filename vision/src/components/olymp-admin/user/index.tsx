@@ -37,6 +37,32 @@ const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwu
     alert('Не удалось удалить пользователя');
   }
 };
+
+ const handleRevoke = async (userId: string) => {
+  if (!window.confirm('Вы уверены, что хотите отозвать токены этого пользователя?')) {
+    return;
+  }
+const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+  try {
+    const response = await axios.delete(HOSTS['OLYMP_ADMIN'] + `/api/user/revoke/${userId}`, {
+      headers: {
+        'Authorization': token,
+        'Content-Type': 'application/json'
+      },
+      withCredentials: true
+    });
+    const navigate = useNavigate();
+    if (response.status === 200) {
+      navigate("/olymp-admin/user/index");
+    } else {
+      throw new Error('Ошибка при отзыве');
+    }
+  } catch (error) {
+    console.error('Revoke error:', error);
+    alert('Не удалось отозвать токены пользователя');
+  }
+};
+
 const UserIndex: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -115,6 +141,12 @@ const UserIndex: React.FC = () => {
                                     onClick={() => navigate(`/olymp-admin/user/edit/${user.id}`)}
                                 >
                                     Редактирование
+                                </button>
+                                <button 
+                                    className="btn btn-info btn-sm"
+                                    onClick={() => handleRevoke(user.id)}
+                                >
+                                    Отозвать токены
                                 </button>
                                 <button 
                                     className="btn btn-primary btn-sm"
