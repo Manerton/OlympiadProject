@@ -117,9 +117,10 @@ services:
     volumes:
       - ./olymp-admin:/var/www/olymp-admin
     environment:
-      - DB_HOST=db
+      - DB_HOST=olymp-admin-db
     depends_on:
-      - db
+      - olymp-admin-db
+      - rabbitmq
     networks:
       - olympic
 
@@ -131,9 +132,9 @@ services:
     volumes:
       - ./olymp-notification:/var/www/olymp-notification
     environment:
-      - DB_HOST=db
+      - DB_HOST=olymp-admin-db
     depends_on:
-      - db
+      - olymp-admin-db
     networks:
       - olympic
 
@@ -152,19 +153,36 @@ services:
       - olympic-notification
     networks:
       - olympic
-  db:
+
+  olymp-admin-db:
     image: mariadb:10.11
-    container_name: olymp_admin_db
+    container_name: olymp-admin-db
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: laravel
+      MYSQL_DATABASE: olymp_admin
       MYSQL_USER: laravel
       MYSQL_PASSWORD: laravel
     ports:
       - "3306:3306"
     volumes:
-      - db_data:/var/lib/mysql
+      - olymp-admin-db_data:/var/lib/mysql
+    networks:
+      - olympic
+
+  olymp-notification-db:
+    image: mariadb:10.11
+    container_name: olymp-notification-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: olymp_notificaion
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: laravel
+    ports:
+      - "3307:3306"
+    volumes:
+      - olymp-notification-db_data:/var/lib/mysql
     networks:
       - olympic
 
@@ -180,18 +198,33 @@ services:
     networks:
       - olympic
 
-  phpmyadmin:
+  phpmyadmin-admin:
     image: phpmyadmin:latest
     container_name: olymp_admin_phpmyadmin
     restart: always
     ports:
       - "8081:80"
     environment:
-      PMA_HOST: db
+      PMA_HOST: olymp-admin-db
       PMA_USER: root
       PMA_PASSWORD: root
     depends_on:
-      - db
+      - olymp-admin-db
+    networks:
+      - olympic
+
+  phpmyadmin-notification:
+    image: phpmyadmin:latest
+    container_name: olymp_notification_phpmyadmin
+    restart: always
+    ports:
+      - "8082:80"
+    environment:
+      PMA_HOST: olymp-notification-db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    depends_on:
+      - olymp-notification-db
     networks:
       - olympic
 
@@ -297,7 +330,8 @@ volumes:
   event-db-data:
   sso-db-data:
   jury-db-data:
-  db_data:
+  olymp-admin-db_data:
+  olymp-notification-db_data:
   redis_data:
   rabbitmq_data:
   elasticsearch_data:

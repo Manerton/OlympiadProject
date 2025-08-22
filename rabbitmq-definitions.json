@@ -14,6 +14,11 @@
       "name": "jury-service",
       "password": "jury-password",
       "tags": "administrator"
+    },
+    {
+      "name": "olymp-service",
+      "password": "olymp-password",
+      "tags": "administrator"
     }
   ],
   "vhosts": [
@@ -40,6 +45,13 @@
       "configure": ".*",
       "write": ".*",
       "read": ".*"
+    },
+    {
+      "user": "olymp-service",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
     }
   ],
   "queues": [
@@ -59,6 +71,13 @@
     },
     {
       "name": "olymp_jury",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "olymp_admin",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,
