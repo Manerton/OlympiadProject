@@ -29,7 +29,7 @@ func ParseAccessTokenWithClaims(secret string, tokenStr string) (*TokenAccessCla
 	const op = "jwtManager.ParseAccessTokenWithClaims"
 
 	token, err := jwt.ParseWithClaims(tokenStr, &TokenAccessClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return secret, nil
+		return []byte(secret), nil // <- здесь преобразуем в []byte
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)

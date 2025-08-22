@@ -24,64 +24,87 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) => {
     const [user, setUser] = useState<UserAuth | null>(null);
-    const [accessToken, setAccessToken] = useState<string | null>(null)
+    const [accessToken, setAccessToken] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true); // флаг загрузки авторизации
 
     const register = async (data: RegisterForm) => {
-        const response = await axios.post(AUTH.register, data, {withCredentials: true})
-        if (response.status == 200) {
-            console.log("success regisger")
+        const response = await axios.post(AUTH.register, data, {withCredentials: true});
+        if (response.status === 200) {
+            console.log("success register");
         } else {
-            console.log("failed register")
+            console.log("failed register");
         }
-    }
+    };
 
     const login = async (email: string, password: string) => {
-        const response = await axios.post(AUTH.login, {email, password}, {withCredentials: true})
-        const accessToken = response.data.data.access_token
-        console.log(response.data.data.access_token)
-        setAccessToken(accessToken)
-        const decoded = jwtDecode<JwtPayload>(accessToken);
-       
+        const response = await axios.post(AUTH.login, {email, password}, {withCredentials: true});
+        const token = response.data.data.access_token;
+        setAccessToken(token);
+        const decoded = jwtDecode<JwtPayload>(token);
         setUser({
             id: decoded.sub,
             Email: decoded.email,
-            role:  Number(decoded.role),
+            role: Number(decoded.role),
         });
     };
 
-    const logout = () => {
-        setAccessToken(null)
-        setUser(null)
-        axios.post(AUTH.logout, {}, {withCredentials: true})
+    const logout = async () => {
+    const token = accessToken; // берем текущий accessToken из состояния
+    console.log(token)
+    setAccessToken(null);
+    setUser(null);
+
+    try {
+        await axios.post(
+            AUTH.logout,
+            {}, // тело запроса
+            {
+                withCredentials: true,
+                headers: {
+                    Authorization: `Bearer ${token}` // добавляем токен
+                }
+            }
+        );
+    } catch (err) {
+        console.error("Failed to logout:", err);
     }
+};
 
     const refresh = async () => {
         try {
-            const response = await axios.post(AUTH.refresh, {}, {withCredentials: true})
-            setAccessToken(response.data.data.access_token)
-            console.log(response.data.data.access_token)
-            const decoded = jwtDecode<JwtPayload>(response.data.data.access_token);
+            const response = await axios.post(AUTH.refresh, {}, {withCredentials: true});
+            const token = response.data.data.access_token;
+            setAccessToken(token);
+            const decoded = jwtDecode<JwtPayload>(token);
             setUser({
                 id: decoded.sub,
                 Email: decoded.email,
-                role:  Number(decoded.role),
+                role: Number(decoded.role),
             });
-        } catch(err) {
-            console.error("refresh failed", err)
-            logout()
+        } catch (err) {
+            console.error("refresh failed", err);
+            logout();
+        } finally {
+            setLoading(false); // даже при ошибке снимаем флаг загрузки
         }
-    }
+    };
 
+    // при монтировании вызываем refresh
     useEffect(() => {
-        refresh()
-    }, [])
+        refresh();
+    }, []);
+
+    // пока идет проверка токена показываем "Загрузка..."
+    if (loading) {
+        return <div>Загрузка...</div>;
+    }
 
     return (
         <AuthContext.Provider value={{user, accessToken, login, register, logout, refresh}}>
             {children}
-        </AuthContext.Provider >
-    )
-}
+        </AuthContext.Provider>
+    );
+};
 
 
 export const useAuth = () => {
