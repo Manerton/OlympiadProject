@@ -12,6 +12,7 @@ import {
 import { EyeFill, EyeSlashFill } from "react-bootstrap-icons";
 import { useAuth } from "../../Helpers/AuthContext";
 import type { RegisterForm } from "../../types/user";
+import { useNavigate } from "react-router-dom";
 
 const mockSchools = [
   "Школа №1",
@@ -23,6 +24,7 @@ const mockSchools = [
 ];
 
 const AuthForm: React.FC = () => {
+  const navigate = useNavigate()
   const [isRegister, setIsRegister] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -86,6 +88,7 @@ const AuthForm: React.FC = () => {
       await register(registerData)
     } else {
       await login(email, password)
+      navigate("/") 
     }
   }
 

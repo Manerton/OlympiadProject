@@ -3,16 +3,15 @@ import { Navbar, Nav, Dropdown, Container } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
 import { Link } from "react-router-dom";
 import { PersonCircle, BoxArrowInRight } from "react-bootstrap-icons";
-import ThemeToggleButton from '../../Helpers/ThemeToggleButton';
-import RegionalStages from '../Pages/Events/RegionalStages';
-
+import ThemeToggleButton from "../../Helpers/ThemeToggleButton";
+import { useAuth } from "../../Helpers/AuthContext";
 
 function Header() {
-  // Заглушки: в будущем подключите контекст пользователя
-  const isAuthenticated = false; // временная проверка
-  const userName = "Имя";
-  const userId = "123";
-  const userRole = "admin"; // временно установлено 'admin' для демонстрации
+  const { user, logout } = useAuth();
+   console.log(user);
+  // Проверка на авторизацию
+  const isAuthenticated = user;
+ 
 
   return (
     <Navbar expand="lg" sticky="top" className="bg-body-tertiary border border-1">
@@ -29,36 +28,17 @@ function Header() {
               <Nav.Link>Олимпиады</Nav.Link>
             </LinkContainer>
 
-            <LinkContainer to={`/applications/user/${userId}`}>
-              <Nav.Link>Статус заявки</Nav.Link>
-            </LinkContainer>
+            {isAuthenticated && (
+              <LinkContainer to={`/applications/user/${user?.id}`}>
+                <Nav.Link>Статус заявки</Nav.Link>
+              </LinkContainer>
+            )}
 
             {/* Админские ссылки, показываются только для админов */}
-            {userRole === 'admin' && (
-              <>
-                <LinkContainer to="/AdminPanel">
-                  <Nav.Link>Панель Администрирования</Nav.Link>
-                </LinkContainer>
-                {/* <Dropdown>
-                  <Dropdown.Toggle as={Nav.Link} variant="light">
-                    Администрирование
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    <LinkContainer to="/olymp-admin/user/index">
-                      <Dropdown.Item>Пользователи</Dropdown.Item>
-                    </LinkContainer>
-                    <LinkContainer to="/olymp-admin/participant/index">
-                      <Dropdown.Item>Участники</Dropdown.Item>
-                    </LinkContainer>
-                    <LinkContainer to="/olymp-admin/school/index">
-                      <Dropdown.Item>Школы</Dropdown.Item>
-                    </LinkContainer>
-                    <LinkContainer to="/olymp-admin/report/index">
-                      <Dropdown.Item>Отчёты</Dropdown.Item>
-                    </LinkContainer>
-                  </Dropdown.Menu>
-                </Dropdown> */}
-              </>
+            {user?.role === 1 && (
+              <LinkContainer to="/AdminPanel">
+                <Nav.Link>Панель Администрирования</Nav.Link>
+              </LinkContainer>
             )}
           </Nav>
 
@@ -71,21 +51,16 @@ function Header() {
                   className="d-flex align-items-center border-0 bg-transparent"
                 >
                   <PersonCircle size={24} className="me-2" />
-                  <span>({userName})</span>
-                  <span className="ms-2">id-{userId}</span>
-                  <span className="ms-2">role-{userRole}</span>
+                  <span className="ms-2 text-body">Email-{user?.Email}</span>
+                  <span className="ms-2 text-body">id-{user?.id}</span>
+                  <span className="ms-2 text-body">role-{user?.role}</span>
                 </Dropdown.Toggle>
 
                 <Dropdown.Menu>
                   <Dropdown.Item as={Link} to="/profile">
                     <PersonCircle className="me-2" /> Мой профиль
                   </Dropdown.Item>
-                  <Dropdown.Item
-                    onClick={() => {
-                      // Заглушка выхода
-                      alert("Выход будет реализован позже");
-                    }}
-                  >
+                  <Dropdown.Item onClick={logout}>
                     <BoxArrowInRight className="me-2" /> Выйти
                   </Dropdown.Item>
                 </Dropdown.Menu>

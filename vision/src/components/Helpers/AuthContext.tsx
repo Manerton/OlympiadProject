@@ -2,7 +2,14 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { RegisterForm, UserAuth } from "../types/user";
 import axios from "axios";
 import { AUTH } from "../../config/api";
+import {jwtDecode} from "jwt-decode";
 
+interface JwtPayload {
+  sub: string;
+  email: string;
+  role: number;
+  // добавь свои поля
+}
 
 interface AuthContextType {
     user: UserAuth | null
@@ -30,10 +37,16 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
 
     const login = async (email: string, password: string) => {
         const response = await axios.post(AUTH.login, {email, password}, {withCredentials: true})
-        const {accessToken, user} = response.data
-        
+        const accessToken = response.data.data.access_token
+        console.log(response.data.data.access_token)
         setAccessToken(accessToken)
-        setUser(user)
+        const decoded = jwtDecode<JwtPayload>(accessToken);
+       
+        setUser({
+            id: decoded.sub,
+            Email: decoded.email,
+            role:  Number(decoded.role),
+        });
     };
 
     const logout = () => {
@@ -45,7 +58,14 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
     const refresh = async () => {
         try {
             const response = await axios.post(AUTH.refresh, {}, {withCredentials: true})
-            setAccessToken(response.data.access_token)
+            setAccessToken(response.data.data.access_token)
+            console.log(response.data.data.access_token)
+            const decoded = jwtDecode<JwtPayload>(response.data.data.access_token);
+            setUser({
+                id: decoded.sub,
+                Email: decoded.email,
+                role:  Number(decoded.role),
+            });
         } catch(err) {
             console.error("refresh failed", err)
             logout()

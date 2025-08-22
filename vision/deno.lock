@@ -12,6 +12,7 @@
     "npm:eslint-plugin-react-refresh@~0.4.20": "0.4.20_eslint@9.32.0",
     "npm:eslint@^9.30.1": "9.32.0",
     "npm:globals@^16.3.0": "16.3.0",
+    "npm:jwt-decode@4": "4.0.0",
     "npm:react-bootstrap-icons@^1.11.6": "1.11.6_react@19.1.1",
     "npm:react-bootstrap@^2.10.10": "2.10.10_@types+react@19.1.9_react@19.1.1_react-dom@19.1.1__react@19.1.1",
     "npm:react-datepicker@^8.4.0": "8.4.0_react@19.1.1_react-dom@19.1.1__react@19.1.1",
@@ -1313,6 +1314,9 @@
       "integrity": "sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==",
       "bin": true
     },
+    "jwt-decode@4.0.0": {
+      "integrity": "sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA=="
+    },
     "keyv@4.5.4": {
       "integrity": "sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==",
       "dependencies": [
@@ -1789,6 +1793,7 @@
         "npm:eslint-plugin-react-refresh@~0.4.20",
         "npm:eslint@^9.30.1",
         "npm:globals@^16.3.0",
+        "npm:jwt-decode@4",
         "npm:react-bootstrap-icons@^1.11.6",
         "npm:react-bootstrap@^2.10.10",
         "npm:react-datepicker@^8.4.0",
