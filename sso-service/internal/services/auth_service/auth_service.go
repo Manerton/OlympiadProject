@@ -303,6 +303,8 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 		slog.String("op", op),
 	)
 
+	log.Debug("token", refreshToken)
+
 	// check and get claims
 	tokenClaims, err := s.jwtManager.ParseRefreshTokenWithClaims(refreshToken)
 	if err != nil {
@@ -403,11 +405,10 @@ func (s *AuthService) RevokeToken(ctx context.Context, id string) error {
 	}
 
 	updates := refresh_token.RefreshToken{
-		ID:      uid,
-		Revoked: true,
+		ID: uid,
 	}
 
-	err = s.refreshRepository.Update(ctx, s.db, nil, updates)
+	err = s.refreshRepository.Update(ctx, s.db, &updates, refresh_token.RefreshToken{Revoked: true})
 	if err != nil {
 		log.Error("failed update refresh token", liblogger.Err(err))
 		return errs.ErrInternalError.Wrap("failed revoke refresh token")
@@ -429,11 +430,11 @@ func (s *AuthService) RevokeAllUserTokens(ctx context.Context, userId string) er
 		return errs.ErrBadRequest.Wrap("failed parse uuid")
 	}
 
-	conditions := refresh_token.RefreshToken{
+	updates := refresh_token.RefreshToken{
 		Revoked: true,
 	}
 
-	updates := refresh_token.RefreshToken{UserID: uid}
+	conditions := refresh_token.RefreshToken{UserID: uid}
 
 	err = s.refreshRepository.Update(ctx, s.db, &conditions, updates)
 	if err != nil {

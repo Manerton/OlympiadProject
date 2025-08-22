@@ -84,7 +84,7 @@ func (m *JWTManager) CreateToken(user user.User) (string, error) {
 		Role:  int(user.Role),
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   user.ID.String(),
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(m.refreshDuration)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(m.accessDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}

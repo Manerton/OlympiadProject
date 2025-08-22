@@ -7,9 +7,16 @@ import ThemeToggleButton from "../../Helpers/ThemeToggleButton";
 import { useAuth } from "../../Helpers/AuthContext";
 
 function Header() {
-  const { user, logout } = useAuth();
+  const { user, logout, initialized } = useAuth();
+
+
    console.log(user);
-  // Проверка на авторизацию
+  
+  if (!initialized) {
+     return <Navbar><Container>Загрузка...</Container></Navbar>;
+  }
+
+   // Проверка на авторизацию
   const isAuthenticated = user;
  
 

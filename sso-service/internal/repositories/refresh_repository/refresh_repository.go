@@ -14,7 +14,7 @@ type RefreshRepository struct{}
 func (r *RefreshRepository) GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (refresh_token.RefreshToken, error) {
 	const op = "repository.refresh_repository.GetById"
 
-	resultToken := refresh_token.RefreshToken{}
+	resultToken := refresh_token.RefreshToken{ID: id}
 	err := orm.First(ctx, refresh_token.RefreshToken{}, nil, &resultToken)
 	if err != nil {
 		return refresh_token.RefreshToken{}, fmt.Errorf("%s: %w", op, err)

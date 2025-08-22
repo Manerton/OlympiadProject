@@ -14,6 +14,7 @@ import (
 )
 
 const configPath = "config-yaml/dev.yaml"
+const AbsolutePath = "C:/Users/Admin/goProject/OlympiadProject/sso-service/config-yaml/dev.yaml"
 
 // @title SSO Service API
 // @version 1.0
@@ -25,7 +26,7 @@ const configPath = "config-yaml/dev.yaml"
 // @name Authorization
 func main() {
 
-	cfg := config.MustConfig(configPath)
+	cfg := config.MustConfig(AbsolutePath)
 
 	log := liblogger.SetupLogger(cfg.Env)
 	log.Info("start sso-service", slog.String("env", cfg.Env))

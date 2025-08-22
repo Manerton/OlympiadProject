@@ -14,7 +14,7 @@ HTTP_SERVER_INFO:
 
 JWT_INFO:
   key: "lololololololololololololololololololololololololololololol"
-  access_duration: 525600
+  access_duration: 2
   refresh_duration: 7
 
 

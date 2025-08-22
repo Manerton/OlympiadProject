@@ -123,6 +123,17 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		HttpOnly: true,
+		Secure:   false,
+		// Domain:   "172.16.1.39",
+		SameSite: http.SameSiteLaxMode,
+		Expires:  time.Unix(0, 0), // дата в прошлом
+		MaxAge:   -1,              // сразу удалить
+	})
+
 	render.JSON(w, r, response.SuccessResponse("success logout"))
 }
 

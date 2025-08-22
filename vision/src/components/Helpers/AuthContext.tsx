@@ -14,10 +14,11 @@ interface JwtPayload {
 interface AuthContextType {
     user: UserAuth | null
     accessToken: string | null
+    initialized: boolean | null
     login: (email: string, password: string) => Promise<void>
     register: (data: RegisterForm) => Promise<void>
     logout: () => void
-    refresh: () => Promise<void>
+    refresh: () => Promise<UserAuth | null>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -26,6 +27,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
     const [user, setUser] = useState<UserAuth | null>(null);
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(true); // флаг загрузки авторизации
+    const [initialized, setInitialized] = useState(false);
 
     const register = async (data: RegisterForm) => {
         const response = await axios.post(AUTH.register, data, {withCredentials: true});
@@ -49,43 +51,40 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
     };
 
     const logout = async () => {
-    const token = accessToken; // берем текущий accessToken из состояния
-    console.log(token)
-    setAccessToken(null);
-    setUser(null);
+        const token = accessToken; // берем текущий accessToken из состояния
+        console.log(token)
+        setAccessToken(null);
+        setUser(null);
 
-    try {
-        await axios.post(
-            AUTH.logout,
-            {}, // тело запроса
-            {
-                withCredentials: true,
-                headers: {
-                    Authorization: `Bearer ${token}` // добавляем токен
-                }
-            }
-        );
-    } catch (err) {
-        console.error("Failed to logout:", err);
-    }
-};
-
-    const refresh = async () => {
         try {
-            const response = await axios.post(AUTH.refresh, {}, {withCredentials: true});
+            await axios.post(
+                AUTH.logout,
+                {}, // тело запроса
+                {
+                    withCredentials: true,
+                    headers: {
+                        Authorization: `Bearer ${token}` // добавляем токен
+                    }
+                }
+            );
+        } catch (err) {
+            console.error("Failed to logout:", err);
+        }
+    };
+    const refresh = async (): Promise<UserAuth | null> => {
+        try {
+            const response = await axios.post(AUTH.refresh, {}, { withCredentials: true });
             const token = response.data.data.access_token;
             setAccessToken(token);
             const decoded = jwtDecode<JwtPayload>(token);
-            setUser({
-                id: decoded.sub,
-                Email: decoded.email,
-                role: Number(decoded.role),
-            });
+            const newUser = { id: decoded.sub, Email: decoded.email, role: Number(decoded.role) };
+            setUser(newUser);
+            return newUser;
         } catch (err) {
-            console.error("refresh failed", err);
-            logout();
+            setUser(null);
+            return null;
         } finally {
-            setLoading(false); // даже при ошибке снимаем флаг загрузки
+            setInitialized(true);
         }
     };
 
@@ -94,13 +93,13 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
         refresh();
     }, []);
 
-    // пока идет проверка токена показываем "Загрузка..."
-    if (loading) {
-        return <div>Загрузка...</div>;
-    }
+    // // пока идет проверка токена показываем "Загрузка..."
+    // if (loading) {
+    //     return <div>Загрузка...</div>;
+    // }
 
     return (
-        <AuthContext.Provider value={{user, accessToken, login, register, logout, refresh}}>
+        <AuthContext.Provider value={{user, accessToken, login, register, logout, refresh, initialized}}>
             {children}
         </AuthContext.Provider>
     );
