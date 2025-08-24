@@ -36,6 +36,7 @@ type ParticipantRepository interface {
 
 type RefreshRepository interface {
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (refresh_token.RefreshToken, error)
+	GetByDeviceId(ctx context.Context, rom orm.ORM, deviceId uuid.UUID) (refresh_token.RefreshToken, error)
 
 	Create(ctx context.Context, orm orm.ORM, refreshToken refresh_token.RefreshToken) (uuid.UUID, error)
 	Update(ctx context.Context, orm orm.ORM, conditions *refresh_token.RefreshToken, token refresh_token.RefreshToken) error
@@ -66,7 +67,7 @@ func New(log *slog.Logger, orm orm.ORM, jwtManager *jwttoken.JWTManager,
 	}
 }
 
-func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO) (*login_dto.AuthResultDTO, error) {
+func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO, deviceId string) (*login_dto.AuthResultDTO, error) {
 	const op = "services.AuthService.Login"
 
 	log := s.log.With(
@@ -90,21 +91,47 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 		return nil, errs.ErrAuthFailed.Wrap("uncorrect password")
 	}
 
-	// create token
+	// create access token
 	token, err := s.jwtManager.CreateToken(userResult)
 	if err != nil {
 		log.Error("failed when create token", liblogger.Err(err))
 		return nil, errs.ErrAccessToken
 	}
 
-	// create refresh token
-	refreshToken, err := s.preparationRefreshToken(ctx, userResult)
-	if err != nil {
-		log.Error("failed when create refresh token", liblogger.Err(err))
-		return nil, errs.ErrRefreshToken
+	var refreshToken string
+	var deviceUid uuid.UUID
+	if deviceId != "" {
+		// update refresh token
+		deviceUid, err = uuid.Parse(deviceId)
+		if err != nil {
+			log.Error("failed parse uid", slog.String("uid", deviceId), liblogger.Err(err))
+			return nil, errs.ErrBadRequest.Wrap("invalid device uuid")
+		}
+
+		oldRefreshToken, err := s.refreshRepository.GetByDeviceId(ctx, s.db, deviceUid)
+		if err != nil {
+			log.Error("failed get refresh token by device id", slog.String("device id", deviceId), liblogger.Err(err))
+			return nil, errs.ErrInternalError.Wrap("failed get refresh token")
+		}
+
+		refreshToken, err = s.updateRefreshToken(ctx, oldRefreshToken.ID, userResult)
+		if err != nil {
+			log.Error("failed update refresh token", slog.String("token id", oldRefreshToken.ID.String()), liblogger.Err(err))
+			return nil, errs.ErrRefreshToken.Wrap("failed update refresh token")
+		}
+	} else {
+		// first login with this device
+		deviceUid = uuid.New()
+		// create refresh token
+		refreshToken, err = s.preparationRefreshToken(ctx, userResult, deviceUid, loginRequest.DeviceName)
+		if err != nil {
+			log.Error("failed when create refresh token", liblogger.Err(err))
+			return nil, errs.ErrRefreshToken
+		}
 	}
 
 	return &login_dto.AuthResultDTO{
+		DeviceId:         deviceUid.String(),
 		AccessToken:      token,
 		RefreshToken:     refreshToken,
 		ExpiresInAccess:  int64(s.jwtManager.GetAccessDuration().Seconds()),
@@ -140,7 +167,7 @@ func (s *AuthService) Logout(ctx context.Context, tokenStr string) error {
 	return nil
 }
 
-func (s *AuthService) preparationRefreshToken(ctx context.Context, userResult user.User) (string, error) {
+func (s *AuthService) preparationRefreshToken(ctx context.Context, userResult user.User, deviceId uuid.UUID, deviceName string) (string, error) {
 	tokenId := uuid.New()
 	// create refresh token
 	refreshToken, err := s.jwtManager.CreateRefreshToken(userResult, tokenId.String())
@@ -150,16 +177,39 @@ func (s *AuthService) preparationRefreshToken(ctx context.Context, userResult us
 
 	// hash token
 	refreshTokenModel := refresh_token.RefreshToken{
-		ID:        tokenId,
-		UserID:    userResult.ID,
-		TokenHash: refreshToken,
-		ExpiresAt: time.Now().Add(s.jwtManager.GetRefreshDuration()),
+		ID:         tokenId,
+		UserID:     userResult.ID,
+		Token:      refreshToken,
+		DeviceId:   deviceId,
+		DeviceName: deviceName,
+		ExpiresAt:  time.Now().Add(s.jwtManager.GetRefreshDuration()),
 	}
 
 	// save refresh token
 	_, err = s.refreshRepository.Create(ctx, s.db, refreshTokenModel)
 	if err != nil {
 		return "", fmt.Errorf("failed save refresh token: %w", err)
+	}
+
+	return refreshToken, nil
+}
+
+func (s AuthService) updateRefreshToken(ctx context.Context, updateId uuid.UUID, user user.User) (string, error) {
+	// create refresh token
+	refreshToken, err := s.jwtManager.CreateRefreshToken(user, updateId.String())
+	if err != nil {
+		return "", fmt.Errorf("failed when create refresh token: %w", err)
+	}
+
+	refreshTokenModel := refresh_token.RefreshToken{
+		Status:    refresh_token.Active,
+		Token:     refreshToken,
+		ExpiresAt: time.Now().Add(s.jwtManager.GetRefreshDuration()),
+	}
+
+	err = s.refreshRepository.Update(ctx, s.db, &refresh_token.RefreshToken{ID: updateId}, refreshTokenModel)
+	if err != nil {
+		return "", fmt.Errorf("failed update refresh token")
 	}
 
 	return refreshToken, nil
@@ -303,8 +353,6 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 		slog.String("op", op),
 	)
 
-	log.Debug("token", refreshToken)
-
 	// check and get claims
 	tokenClaims, err := s.jwtManager.ParseRefreshTokenWithClaims(refreshToken)
 	if err != nil {
@@ -330,26 +378,20 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 		return nil, errs.ErrInternalError.Wrap("failed get refresh token")
 	}
 
-	// // check hash
-	// if !crypt.CheckPasswordHash(refreshToken, tokenDB.TokenHash) {
-	// 	log.Error("failed check hash token")
-	// 	return nil, fmt.Errorf("%s", errMsg)
-	// }
-
 	// check token is revoked
-	if tokenDB.Revoked {
+	if tokenDB.Status == refresh_token.Revoke {
 		log.Error("Token was be revoked")
 		return nil, errs.ErrRevokedToken
 	}
 
-	// delete old token
-	go func() {
-		gctx := context.Background()
-		err := s.refreshRepository.Delete(gctx, s.db, tokenUid)
-		if err != nil {
-			log.Error("failed delete refresh token", liblogger.Err(err))
-		}
-	}()
+	// // delete old token
+	// go func() {
+	// 	gctx := context.Background()
+	// 	err := s.refreshRepository.Delete(gctx, s.db, tokenUid)
+	// 	if err != nil {
+	// 		log.Error("failed delete refresh token", liblogger.Err(err))
+	// 	}
+	// }()
 
 	// parse user id to uuid
 	userUid, err := uuid.Parse(tokenClaims.Subject)
@@ -377,7 +419,7 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 	}
 
 	// create refresh token
-	newRefreshToken, err := s.preparationRefreshToken(ctx, userFind)
+	newRefreshToken, err := s.updateRefreshToken(ctx, tokenDB.ID, userFind)
 	if err != nil {
 		log.Error("failed when create refresh token", liblogger.Err(err))
 		return nil, errs.ErrRefreshToken
@@ -408,7 +450,7 @@ func (s *AuthService) RevokeToken(ctx context.Context, id string) error {
 		ID: uid,
 	}
 
-	err = s.refreshRepository.Update(ctx, s.db, &updates, refresh_token.RefreshToken{Revoked: true})
+	err = s.refreshRepository.Update(ctx, s.db, &updates, refresh_token.RefreshToken{Status: refresh_token.Revoke})
 	if err != nil {
 		log.Error("failed update refresh token", liblogger.Err(err))
 		return errs.ErrInternalError.Wrap("failed revoke refresh token")
@@ -431,7 +473,7 @@ func (s *AuthService) RevokeAllUserTokens(ctx context.Context, userId string) er
 	}
 
 	updates := refresh_token.RefreshToken{
-		Revoked: true,
+		Status: refresh_token.Revoke,
 	}
 
 	conditions := refresh_token.RefreshToken{UserID: uid}

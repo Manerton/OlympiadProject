@@ -23,6 +23,17 @@ func (r *RefreshRepository) GetById(ctx context.Context, orm orm.ORM, id uuid.UU
 	return resultToken, nil
 }
 
+func (r *RefreshRepository) GetByDeviceId(ctx context.Context, orm orm.ORM, deviceId uuid.UUID) (refresh_token.RefreshToken, error) {
+	const op = "repository.refresh_repository.GetByDeviceId"
+
+	resultToken := refresh_token.RefreshToken{}
+	err := orm.First(ctx, resultToken, nil, &resultToken, refresh_token.RefreshToken{DeviceId: deviceId})
+	if err != nil {
+		return refresh_token.RefreshToken{}, fmt.Errorf("%s: %w", op, err)
+	}
+	return resultToken, nil
+
+}
 func (r *RefreshRepository) GetByUserId(ctx context.Context, orm orm.ORM, userId uuid.UUID) ([]refresh_token.RefreshToken, error) {
 	const op = "repository.refresh_repository.GetByUserId"
 
@@ -48,7 +59,6 @@ func (r *RefreshRepository) Create(ctx context.Context, orm orm.ORM, token refre
 
 func (r *RefreshRepository) Update(ctx context.Context, orm orm.ORM, conditions *refresh_token.RefreshToken, token refresh_token.RefreshToken) error {
 	const op = "repository.refresh_repository.Update"
-
 	err := orm.Updates(ctx, conditions, &token)
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)

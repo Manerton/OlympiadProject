@@ -14,7 +14,7 @@ import (
 )
 
 type AuthService interface {
-	Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO) (*login_dto.AuthResultDTO, error)
+	Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO, deviceId string) (*login_dto.AuthResultDTO, error)
 	Logout(ctx context.Context, tokeId string) error
 
 	RegisterParticipant(ctx context.Context, registerRequest *register_dto.RegisterParticipantRequestDTO) error
@@ -47,16 +47,23 @@ func New(authService AuthService) *AuthHandler {
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
+	var deviceId string = ""
+
+	deviceIdCookie, err := r.Cookie("device_id")
+	if err == nil {
+		deviceId = deviceIdCookie.Value
+	}
+
 	var loginRequest login_dto.LoginRequestDTO
 
-	err := render.DecodeJSON(r.Body, &loginRequest)
+	err = render.DecodeJSON(r.Body, &loginRequest)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
 		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body")))
 		return
 	}
 
-	authResult, err := h.authService.Login(ctx, &loginRequest)
+	authResult, err := h.authService.Login(ctx, &loginRequest, deviceId)
 	if err != nil {
 		if apiErr, ok := errs.IsApiError(err); ok {
 			render.Status(r, apiErr.HttpCode)
@@ -68,6 +75,16 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
 		return
 	}
+
+	// set device id in a cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:     "device_id",
+		Value:    authResult.DeviceId,
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
+		Expires:  time.Now().Add(time.Duration(authResult.ExpiresInRefresh) * time.Second),
+	})
 
 	// Set the JWT token in a cookie
 	http.SetCookie(w, &http.Cookie{
@@ -83,7 +100,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, response.ApiResponse{
-		Status:     "SUCCESS",
+		Status:     response.SUCCESS,
 		StatusCode: http.StatusOK,
 		Data: login_dto.LoginResponseDTO{
 			AccessToken: authResult.AccessToken,
@@ -258,7 +275,7 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, response.ApiResponse{
-		Status:     "SUCCESS",
+		Status:     response.SUCCESS,
 		StatusCode: http.StatusOK,
 		Data: login_dto.LoginResponseDTO{
 			AccessToken: loginDTO.AccessToken,

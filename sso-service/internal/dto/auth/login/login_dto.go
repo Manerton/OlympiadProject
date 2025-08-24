@@ -1,11 +1,13 @@
 package login_dto
 
 type LoginRequestDTO struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
+	Email      string `json:"email" validate:"required,email"`
+	Password   string `json:"password" validate:"required"`
+	DeviceName string `json:"device_name"`
 }
 
 type AuthResultDTO struct {
+	DeviceId         string `json:"device_id"`
 	AccessToken      string `json:"access_token"`
 	RefreshToken     string `json:"refresh_token"`
 	ExpiresInAccess  int64  `json:"expires_in_access"`  // seconds

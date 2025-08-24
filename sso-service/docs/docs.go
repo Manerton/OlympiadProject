@@ -1166,6 +1166,9 @@ const docTemplate = `{
                 "password"
             ],
             "properties": {
+                "device_name": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },

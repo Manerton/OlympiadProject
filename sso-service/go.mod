@@ -12,6 +12,10 @@ require (
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/lib/pq v1.10.9
 	github.com/pressly/goose/v3 v3.24.3
+	github.com/rabbitmq/amqp091-go v1.10.0
+	github.com/redis/go-redis/v9 v9.9.0
+	github.com/swaggo/http-swagger v1.3.4
+	github.com/swaggo/swag v1.16.6
 	golang.org/x/crypto v0.38.0
 	gorm.io/driver/postgres v1.5.11
 	gorm.io/gorm v1.30.0
@@ -20,8 +24,6 @@ require (
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
-	github.com/PuerkitoBio/purell v1.1.1 // indirect
-	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
@@ -36,16 +38,10 @@ require (
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
-	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
-	github.com/redis/go-redis/v9 v9.9.0 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
-	github.com/swaggo/http-swagger v1.3.4 // indirect
-	github.com/swaggo/swag v1.16.6 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/net v0.40.0 // indirect

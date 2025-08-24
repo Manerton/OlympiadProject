@@ -2,6 +2,8 @@ basePath: /
 definitions:
   login_dto.LoginRequestDTO:
     properties:
+      device_name:
+        type: string
       email:
         type: string
       password:
