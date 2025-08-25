@@ -16,8 +16,14 @@ class TokenRepository
         $this->apiService = $apiService;
     }
     public function revoke($userId){
-        $token = request()->header('Authorization');
-        $token = !is_null($token) ? $token : json_decode(Cookie::get('username'))->token;
+        $token = null;
+        if (isset(Cookie::getQueuedCookies()[0])) {
+            $queuedCookie = Cookie::getQueuedCookies()[0];
+            $token = json_decode($queuedCookie->getValue(), true)['token'] ?? null;
+        }
+        if (is_null($token) && Cookie::get('username')) {
+            $token = json_decode(Cookie::get('username'), true)['token'] ?? null;
+        }
         $this->apiService->post(ApiHelper::TOKEN_REVOKE_URL_API,  [
             'id' => $userId
         ],

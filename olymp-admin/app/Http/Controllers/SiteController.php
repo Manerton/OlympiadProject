@@ -29,7 +29,7 @@ class SiteController extends Controller
         $data = $request->validated();
         $response = $this->apiService->post(ApiHelper::AUTH_URL_API, $data);
         if ($response['success']) {
-            $rawCookie = $response['headers']['Set-Cookie'][0];
+            $rawCookie = $response['headers']['Set-Cookie'][1];
             preg_match('/refresh_token=([^;]+)/', $rawCookie, $matches);
             $refreshToken = $matches[1] ?? null;
             $token = $response['data']['data']['access_token'];
