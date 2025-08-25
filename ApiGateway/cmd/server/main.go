@@ -20,27 +20,31 @@ func getConfigPath() string {
 }
 
 // corsMiddleware добавляет заголовки CORS к ответам
-func corsMiddleware(next http.Handler) http.Handler {
+func CORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Логируем запрос для отладки
-		log.Printf("CORS Middleware: Handling %s %s from origin %s", r.Method, r.URL.Path, r.Header.Get("Origin"))
+		origin := r.Header.Get("Origin")
+		allowedOrigins := []string{
+			"http://172.16.0.196:5173",
+			"http://172.16.1.39:5173",
+		}
 
-		// Устанавливаем заголовки CORS
-		w.Header().Set("Access-Control-Allow-Origin", "http://172.16.0.196:5173")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type, X-CSRF-Token")
-		w.Header().Set("Access-Control-Expose-Headers", "Link")
+		for _, o := range allowedOrigins {
+			if origin == o {
+				w.Header().Set("Access-Control-Allow-Origin", origin)
+				w.Header().Set("Vary", "Origin") // важно при кэшировании
+				break
+			}
+		}
+
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
-		w.Header().Set("Access-Control-Max-Age", "300")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-		// Обрабатываем предварительные запросы OPTIONS
 		if r.Method == http.MethodOptions {
-			log.Printf("CORS Middleware: Handling OPTIONS request for %s", r.URL.Path)
-			w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusNoContent)
 			return
 		}
 
-		// Передаем запрос следующему обработчику
 		log.Printf("CORS Middleware: Passing %s %s to next handler", r.Method, r.URL.Path)
 		next.ServeHTTP(w, r)
 	})
@@ -91,7 +95,7 @@ func main() {
 	})
 
 	// Применяем CORS middleware
-	corsHandler := corsMiddleware(loggedMux)
+	corsHandler := CORSMiddleware(loggedMux)
 
 	log.Printf("API Gateway listening on %s", addr)
 	log.Fatal(http.ListenAndServe(addr, corsHandler))

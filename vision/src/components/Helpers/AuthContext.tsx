@@ -3,7 +3,7 @@ import type { RegisterForm, UserAuth } from "../types/user";
 import axios from "axios";
 import { AUTH } from "../../config/api";
 import {jwtDecode} from "jwt-decode";
-
+import { useNavigate } from "react-router-dom";
 interface JwtPayload {
   sub: string;
   email: string;
@@ -14,7 +14,7 @@ interface JwtPayload {
 interface AuthContextType {
     user: UserAuth | null
     accessToken: string | null
-    initialized: boolean | null
+    initialized: boolean 
     login: (email: string, password: string) => Promise<void>
     register: (data: RegisterForm) => Promise<void>
     logout: () => void
