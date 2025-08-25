@@ -1,24 +1,24 @@
 import React, { useState } from "react";
-import { Nav, Button, Image } from "react-bootstrap";
-import { PersonCircle, BoxArrowInRight, CalendarCheck, PersonBadge } from "react-bootstrap-icons";
+import { Nav, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import {
   HouseDoor,
-  Person,
-  FileText,
-  Calendar,
-  BarChart,
-  BoxArrowLeft,
   People,
-  FileEarmarkCheck,
+  PersonBadge,
   FileEarmarkText,
   CreditCard,
+  CalendarCheck,
+  FileText,
+  BoxArrowLeft,
+  PersonCircle,
 } from "react-bootstrap-icons";
 
 import ThemeToggleButton from "../../Helpers/ThemeToggleButton";
+import { useAuth } from "../../Helpers/AuthContext";
 
 const AdminSidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const { user, logout } = useAuth();
 
   const toggleSidebar = () => setCollapsed(!collapsed);
 
@@ -32,16 +32,23 @@ const AdminSidebar: React.FC = () => {
         height: "100vh",
         position: "sticky",
         top: 0,
-        zIndex: 1020, // выше контента, но ниже модалок
+        zIndex: 1020,
         transition: "width 0.3s",
       }}
     >
-      {/* Верхняя часть: Аватар и имя */}
+      {/* Верхняя часть: профиль */}
       <div>
         <div className="d-flex align-items-center justify-content-between py-3">
           <div className="d-flex align-items-center">
-           <PersonCircle size={24} className="me-2" />
-            {!collapsed && <strong>Иван Иванович</strong>}
+            <PersonCircle size={24} className="me-2" />
+            {!collapsed && user && (
+              <div>
+                <strong>{user.Email}</strong>
+                <div className="small">
+                  id-{user.id}, role-{user.role}
+                </div>
+              </div>
+            )}
           </div>
           <Button
             variant="link"
@@ -60,50 +67,97 @@ const AdminSidebar: React.FC = () => {
             {!collapsed && "Разделы"}
           </div>
 
-          <Nav.Link as={Link} to="/" className="text-white d-flex align-items-center">
+          <Nav.Link
+            as={Link}
+            to="/"
+            className="text-white d-flex align-items-center"
+          >
             <HouseDoor className="me-2" />
             {!collapsed && "На главную"}
           </Nav.Link>
 
-          <Nav.Link as={Link} to="/olymp-admin/user/index" className="text-white d-flex align-items-center">
-            <People className="me-2" />
-            {!collapsed && "Пользователи"}
-          </Nav.Link>
-
-          <Nav.Link as={Link} to="/olymp-admin/participant/index" className="text-white d-flex align-items-center">
-            <PersonBadge className="me-2" />
-            {!collapsed && "Участники"}
-          </Nav.Link>
-
-          <Nav.Link as={Link} to="/olymp-admin/school/index" className="text-white d-flex align-items-center">
-            <FileEarmarkText className="me-2" />
-            {!collapsed && "Школы"}
-          </Nav.Link>
-
-          <Nav.Link as={Link} to="/olymp-admin/report/index" className="text-white d-flex align-items-center">
-            <CreditCard className="me-2" />
-            {!collapsed && "Отчеты"}
-          </Nav.Link>
-
-          <Nav.Link as={Link} to="/olymp-admin/event/index" className="text-white d-flex align-items-center">
-            <CalendarCheck className="me-2" />
-            {!collapsed && "Олимпиады"}
-          </Nav.Link>
-
-          <Nav.Link as={Link} to="/olymp-admin/application/index" className="text-white d-flex align-items-center">
+          <Nav.Link
+            as={Link}
+            to={`/applications/user/${user?.id}`}
+            className="text-white d-flex align-items-center"
+          >
             <FileText className="me-2" />
-            {!collapsed && "Заявки"}
+            {!collapsed && "Статус заявки"}
           </Nav.Link>
-          
+
+          {/* Админские ссылки */}
+          {user?.role === 1 && (
+            <>
+              <Nav.Link
+                as={Link}
+                to="/olymp-admin/user/index"
+                className="text-white d-flex align-items-center"
+              >
+                <People className="me-2" />
+                {!collapsed && "Пользователи"}
+              </Nav.Link>
+
+              <Nav.Link
+                as={Link}
+                to="/olymp-admin/participant/index"
+                className="text-white d-flex align-items-center"
+              >
+                <PersonBadge className="me-2" />
+                {!collapsed && "Участники"}
+              </Nav.Link>
+
+              <Nav.Link
+                as={Link}
+                to="/olymp-admin/school/index"
+                className="text-white d-flex align-items-center"
+              >
+                <FileEarmarkText className="me-2" />
+                {!collapsed && "Школы"}
+              </Nav.Link>
+
+              <Nav.Link
+                as={Link}
+                to="/olymp-admin/report/index"
+                className="text-white d-flex align-items-center"
+              >
+                <CreditCard className="me-2" />
+                {!collapsed && "Отчеты"}
+              </Nav.Link>
+
+              <Nav.Link
+                as={Link}
+                to="/olymp-admin/event/index"
+                className="text-white d-flex align-items-center"
+              >
+                <CalendarCheck className="me-2" />
+                {!collapsed && "Олимпиады"}
+              </Nav.Link>
+
+              <Nav.Link
+                as={Link}
+                to="/olymp-admin/application/index"
+                className="text-white d-flex align-items-center"
+              >
+                <FileText className="me-2" />
+                {!collapsed && "Заявки"}
+              </Nav.Link>
+            </>
+          )}
         </Nav>
       </div>
 
-      {/* Нижняя часть: Тема и Выход */}
+      {/* Нижняя часть: Тема и выход */}
       <div className="pb-3">
-        <div className="mb-2 px-2">{<ThemeToggleButton />}</div>
-        <Nav.Link as={Link} to="/logout" className="text-danger d-flex align-items-center px-2">
+        <div className="mb-2 px-2">
+          <ThemeToggleButton />
+        </div>
+
+        <Nav.Link
+          onClick={logout}
+          className="text-danger d-flex align-items-center px-2"
+        >
           <BoxArrowLeft className="me-2" />
-          {!collapsed && "Выход"}
+          {!collapsed && "Выйти"}
         </Nav.Link>
       </div>
     </div>

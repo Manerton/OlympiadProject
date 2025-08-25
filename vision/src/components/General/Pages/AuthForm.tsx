@@ -1,5 +1,4 @@
-// src/components/AuthForm.tsx
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   Container,
   Row,
@@ -13,6 +12,7 @@ import { EyeFill, EyeSlashFill } from "react-bootstrap-icons";
 import { useAuth } from "../../Helpers/AuthContext";
 import type { RegisterForm } from "../../types/user";
 import { useNavigate } from "react-router-dom";
+import { useMask } from "@react-input/mask";
 
 const mockSchools = [
   "Школа №1",
@@ -24,31 +24,35 @@ const mockSchools = [
 ];
 
 const AuthForm: React.FC = () => {
-  const navigate = useNavigate()
-  const [isRegister, setIsRegister] = useState(true);
+  const navigate = useNavigate();
+  const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   // Поля формы
-  const [firstName, setFirstName] = useState("")
-  const [surName, setSurname] = useState("")
-  const [patronymic, setPatronymic] = useState("")
-  const [birthdate, setBirthdate] = useState("")
-
-  const [classNumber, setClassNumber] = useState(0)
-  const [gender, setGender] = useState(0)
-  const [phoneNumber, setPhoneNumber] = useState("")
-
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("") 
+  const [firstName, setFirstName] = useState("");
+  const [surName, setSurname] = useState("");
+  const [patronymic, setPatronymic] = useState("");
+  const [birthdate, setBirthdate] = useState("");
+  const [classNumber, setClassNumber] = useState(0);
+  const [gender, setGender] = useState(0);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [schoolQuery, setSchoolQuery] = useState("");
-
 
   // Состояния для поиска школы
   const [filteredSchools, setFilteredSchools] = useState<string[]>([]);
   const [showList, setShowList] = useState(false);
 
   // State авторизации
-  const {login, register} = useAuth();
+  const { login, register } = useAuth();
+
+  // Define phoneInputRef inside the component
+  const phoneInputRef = useMask({
+    mask: "+7 (___) ___-__-__",
+    replacement: { _: /\d/ },
+    showMask: true,
+  });
 
   const handleSchoolChange = (value: string) => {
     setSchoolQuery(value);
@@ -70,9 +74,9 @@ const AuthForm: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (isRegister) {
-      var registerData: RegisterForm = {
+      const registerData: RegisterForm = {
         firstname: firstName,
         surname: surName,
         patronymic: patronymic,
@@ -82,15 +86,15 @@ const AuthForm: React.FC = () => {
         gender: gender,
         school: schoolQuery,
         birthdate: birthdate,
-        classnumber: classNumber
-      }
+        classnumber: classNumber,
+      };
 
-      await register(registerData)
+      await register(registerData);
     } else {
-      await login(email, password)
-      navigate("/") 
+      await login(email, password);
+      navigate("/");
     }
-  }
+  };
 
   return (
     <Container fluid className="vh-100 d-flex align-items-center">
@@ -125,29 +129,27 @@ const AuthForm: React.FC = () => {
           <div className="d-flex justify-content-center align-items-center mb-4">
             <h4
               className={`fw-bold m-0 px-2 ${
-                isRegister ? "text-primary" : "text-secondary"
-              }`}
-              style={{ cursor: "pointer" }}
-              onClick={() => setIsRegister(true)}
-            >
-              Регистрация
-            </h4>
-
-            <span
-              className="mx-2"
-              style={{ fontSize: "1.2rem", color: "#999" }}
-            >
-              /
-            </span>
-
-            <h4
-              className={`fw-bold m-0 px-2 ${
                 !isRegister ? "text-primary" : "text-secondary"
               }`}
               style={{ cursor: "pointer" }}
               onClick={() => setIsRegister(false)}
             >
               Авторизация
+            </h4>
+            <span
+              className="mx-2"
+              style={{ fontSize: "1.2rem", color: "#999" }}
+            >
+              /
+            </span>
+            <h4
+              className={`fw-bold m-0 px-2 ${
+                isRegister ? "text-primary" : "text-secondary"
+              }`}
+              style={{ cursor: "pointer" }}
+              onClick={() => setIsRegister(true)}
+            >
+              Регистрация
             </h4>
           </div>
 
@@ -156,16 +158,65 @@ const AuthForm: React.FC = () => {
             {isRegister && (
               <>
                 <Form.Group className="mb-3">
-                  <Form.Control type="text" placeholder="Имя" value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)} />
+                  <Form.Control
+                    type="text"
+                    placeholder="Имя"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
                 </Form.Group>
                 <Form.Group className="mb-3">
-                  <Form.Control type="text" placeholder="Фамилия" value={surName}
-                  onChange={(e) => setSurname(e.target.value)} />
+                  <Form.Control
+                    type="text"
+                    placeholder="Фамилия"
+                    value={surName}
+                    onChange={(e) => setSurname(e.target.value)}
+                  />
                 </Form.Group>
                 <Form.Group className="mb-3">
-                  <Form.Control type="text" placeholder="Отчество" value={patronymic}
-                  onChange={(e) => setPatronymic(e.target.value)}/>
+                  <Form.Control
+                    type="text"
+                    placeholder="Отчество"
+                    value={patronymic}
+                    onChange={(e) => setPatronymic(e.target.value)}
+                  />
+                </Form.Group>
+
+                {/* Дата рождения */}
+                <Form.Group className="mb-3">
+                  <Form.Label>Дата рождения</Form.Label>
+                  <Form.Control
+                    type="date"
+                    value={birthdate}
+                    onChange={(e) => setBirthdate(e.target.value)}
+                    isInvalid={birthdate !== "" && new Date(birthdate) > new Date()}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    Дата рождения не может быть в будущем
+                  </Form.Control.Feedback>
+                </Form.Group>
+
+                {/* Пол */}
+                <Form.Group className="mb-3">
+                  <Form.Label>Пол</Form.Label>
+                  <Form.Select
+                    value={gender}
+                    onChange={(e) => setGender(Number(e.target.value))}
+                  >
+                    <option value={0}>Мужской</option>
+                    <option value={1}>Женский</option>
+                  </Form.Select>
+                </Form.Group>
+
+                {/* Телефон */}
+                <Form.Group className="mb-3">
+                  <Form.Control
+                    type="tel"
+                    placeholder="+7 (___) ___-__-__"
+                    ref={phoneInputRef}
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                  />
                 </Form.Group>
 
                 {/* Поле выбора образовательного учреждения с поиском */}
@@ -202,9 +253,13 @@ const AuthForm: React.FC = () => {
                   )}
                 </Form.Group>
 
-                {/* Поле выбора класса с 5 по 11 */}
+                {/* Поле выбора класса */}
                 <Form.Group className="mb-3">
-                  <Form.Select value={classNumber} onChange={(e) => setClassNumber(Number(e.target.value))}>
+                  <Form.Label>Класс</Form.Label>
+                  <Form.Select
+                    value={classNumber}
+                    onChange={(e) => setClassNumber(Number(e.target.value))}
+                  >
                     {[...Array(7)].map((_, i) => {
                       const grade = i + 5;
                       return <option key={grade}>{grade}</option>;
@@ -215,8 +270,12 @@ const AuthForm: React.FC = () => {
             )}
 
             <Form.Group className="mb-3">
-              <Form.Control type="email" placeholder="Почта" value={email} 
-              onChange={(e) => setEmail(e.target.value)}/>
+              <Form.Control
+                type="email"
+                placeholder="Почта"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </Form.Group>
 
             <Form.Group className="mb-4">
