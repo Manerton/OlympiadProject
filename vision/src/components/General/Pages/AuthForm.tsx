@@ -27,6 +27,8 @@ const AuthForm: React.FC = () => {
   const navigate = useNavigate();
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordMismatch, setPasswordMismatch] = useState(false);
 
   // Поля формы
   const [firstName, setFirstName] = useState("");
@@ -38,6 +40,7 @@ const AuthForm: React.FC = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [schoolQuery, setSchoolQuery] = useState("");
 
   // Состояния для поиска школы
@@ -73,9 +76,23 @@ const AuthForm: React.FC = () => {
     setShowList(false);
   };
 
+  // Проверка совпадения паролей
+  const checkPasswordMatch = (pwd: string, confirmPwd: string) => {
+    if (isRegister && pwd && confirmPwd) {
+      setPasswordMismatch(pwd !== confirmPwd);
+    } else {
+      setPasswordMismatch(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isRegister) {
+      // Блокируем отправку, если пароли не совпадают
+      if (passwordMismatch) {
+        return;
+      }
+
       const registerData: RegisterForm = {
         firstname: firstName,
         surname: surName,
@@ -89,10 +106,18 @@ const AuthForm: React.FC = () => {
         classnumber: classNumber,
       };
 
-      await register(registerData);
+      try {
+        await register(registerData);
+      } catch (error) {
+        console.error("Registration error:", error);
+      }
     } else {
-      await login(email, password);
-      navigate("/");
+      try {
+        await login(email, password);
+        navigate("/");
+      } catch (error) {
+        console.error("Login error:", error);
+      }
     }
   };
 
@@ -278,13 +303,16 @@ const AuthForm: React.FC = () => {
               />
             </Form.Group>
 
-            <Form.Group className="mb-4">
+            <Form.Group className="mb-3">
               <InputGroup>
                 <Form.Control
                   type={showPassword ? "text" : "password"}
                   placeholder="Пароль"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    checkPasswordMatch(e.target.value, confirmPassword);
+                  }}
                 />
                 <Button
                   variant="outline-secondary"
@@ -295,7 +323,38 @@ const AuthForm: React.FC = () => {
               </InputGroup>
             </Form.Group>
 
-            <Button variant="primary" className="w-100" type="submit">
+            {isRegister && (
+              <Form.Group className="mb-3">
+                <InputGroup>
+                  <Form.Control
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Повторите пароль"
+                    value={confirmPassword}
+                    onChange={(e) => {
+                      setConfirmPassword(e.target.value);
+                      checkPasswordMatch(password, e.target.value);
+                    }}
+                    isInvalid={passwordMismatch}
+                  />
+                  <Button
+                    variant="outline-secondary"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <EyeSlashFill /> : <EyeFill />}
+                  </Button>
+                </InputGroup>
+                <Form.Control.Feedback type="invalid">
+                  Пароли не совпадают
+                </Form.Control.Feedback>
+              </Form.Group>
+            )}
+
+            <Button
+              variant="primary"
+              className="w-100"
+              type="submit"
+              disabled={isRegister && passwordMismatch}
+            >
               {isRegister ? "Создать аккаунт" : "Войти"}
             </Button>
           </Form>
