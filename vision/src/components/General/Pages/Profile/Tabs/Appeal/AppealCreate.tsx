@@ -6,17 +6,15 @@ import type { Task } from "../../../../../types/task"
 import type { Appeal } from "../../../../../types/appeal"
 
 type Props = {
-    appeal: Appeal 
     onBack: () => void;
 }
 
-const AppealCreate: React.FC<Props> = ({appeal, onBack}) => {
+const AppealCreate: React.FC<Props> = ({onBack}) => {
 
     const handleSubmit = (e: React.FormEvent) => {
 
     }
 
-    console.log(appeal)
 
     const [selectType, setSelectType] = useState<number | "">("");
     const [tasks, setTasks] = useState<Task[]>([])

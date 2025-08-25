@@ -2,19 +2,21 @@ import { useEffect, useState, type ReactNode } from "react";
 import type { ApplicationEvent } from "../../../../types/event";
 import ApplicationEventCart from "./EventCart";
 import { ApplicationStatus } from "../../../../../dictionary/applicationStatus";
+import type { Appeal } from "../../../../types/appeal";
 
 type Props = {
-  onSelectEvent?: (e: ApplicationEvent) => void;
+    onSelectEvent?: (e: ApplicationEvent) => void;
+    onSelectAppeal?: () => void;
 };
 
 
-const HistoryTab: React.FC<Props> = ({onSelectEvent}) => {
+const HistoryTab: React.FC<Props> = ({ onSelectEvent, onSelectAppeal }) => {
     const [events, setEvents] = useState<ApplicationEvent[]>([]);
     const [loading, setLoading] = useState(true);
 
     const mockEvents: ApplicationEvent[] = [
         {
-            id: "1",    
+            id: "1",
             name: "Региональный этап по математике",
             start_date: "2025-09-01T09:00:00Z",
             end_date: "2025-09-05T15:00:00Z",
@@ -46,13 +48,13 @@ const HistoryTab: React.FC<Props> = ({onSelectEvent}) => {
             additional_info: "Подача заявлений до 14 ноября",
             status: ApplicationStatus.Rejected,
         },
-        ];
+    ];
 
     useEffect(() => {
         async function fetchHistory(userId: string) {
             try {
                 const result = await fetch("");
-                if (!result.ok) 
+                if (!result.ok)
                     throw new Error("Ошибка при загрузке олимпиад");
                 const data: ApplicationEvent[] = await result.json();
                 setEvents(data);
@@ -74,21 +76,21 @@ const HistoryTab: React.FC<Props> = ({onSelectEvent}) => {
     if (events.length === 0) return <div>Вы не участвовали в олимпиадах</div>
 
     function footer(event: ApplicationEvent): ReactNode {
-           return (
-               <div className="d-flex flex-column justify-content-between h-100">
-                   <button className="btn btn-primary mb-2" onClick={() => onSelectEvent?.(event)}>Результаты</button>
-                   <button className="btn btn-danger mb-2">Подать аппеляцию</button>
-               </div>
+        return (
+            <div className="d-flex flex-column justify-content-between h-100">
+                <button className="btn btn-primary mb-2" onClick={() => onSelectEvent?.(event)}>Результаты</button>
+                <button className="btn btn-danger mb-2" onClick={() => onSelectAppeal?.()}>Подать аппеляцию</button>
+               </div >
            )
        }
 
-    return (
-        <div>
-            {events.map((event) => (
-                <ApplicationEventCart key={event.id} event={event} footer={footer(event)} />
-            ))}
-        </div>
-    );
+return (
+    <div>
+        {events.map((event) => (
+            <ApplicationEventCart key={event.id} event={event} footer={footer(event)} />
+        ))}
+    </div>
+);
 };
 
 

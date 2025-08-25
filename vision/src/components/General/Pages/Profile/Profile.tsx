@@ -15,7 +15,7 @@ type TabItem = {
   label: string;
   component?: React.ComponentType<any>;
   detailComponent?: React.ComponentType<{ event: ApplicationEvent; onBack: () => void }>;
-  appealComponent?: React.ComponentType<{ appeal: Appeal; onBack: () => void }>; //
+  appealComponent?: React.ComponentType<{ onBack: () => void }>; //
 };
 
 
@@ -77,7 +77,7 @@ const ProfileMainPage: React.FC = () => {
             {/* Содержимое */}
             <div className="tab-content p-3">
                 {appeal ? (
-                    <AppealCreate appeal={appeal} onBack={() => setAppeal(null)} />
+                    <AppealCreate onBack={() => setAppeal(null)} />
                 ) : DetailsComponent && selectedEvent ? (
                     <DetailsComponent event={selectedEvent} onBack={() => setSelectedEvent(null)} />
                 ) : ActiveComponent ? (

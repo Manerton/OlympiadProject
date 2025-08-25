@@ -24,10 +24,12 @@ const ResultByEvent: React.FC<Props> = ({ event, onBack }) => {
                         <div className="accordion-body">
                             <table className="table w-100">
                                 <thead>
-                                    <th scope="col" className="col-2">#</th>
-                                    <th scope="col" className="col-6">Название</th>
-                                    <th scope="col" className="col-2">Макс. Балл</th>
-                                    <th scope="col" className="col-2">Полученный Балл</th>
+                                    <tr>
+                                        <th scope="col" className="col-2">#</th>
+                                        <th scope="col" className="col-6">Название</th>
+                                        <th scope="col" className="col-2">Макс. Балл</th>
+                                        <th scope="col" className="col-2">Полученный Балл</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
                                     {}
