@@ -14,7 +14,7 @@ import (
 )
 
 type AuthService interface {
-	Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO, deviceId string) (*login_dto.AuthResultDTO, error)
+	Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO, deviceId string, deviceName string) (*login_dto.AuthResultDTO, error)
 	Logout(ctx context.Context, tokeId string) error
 
 	RegisterParticipant(ctx context.Context, registerRequest *register_dto.RegisterParticipantRequestDTO) error
@@ -55,7 +55,6 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var loginRequest login_dto.LoginRequestDTO
-
 	err = render.DecodeJSON(r.Body, &loginRequest)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
@@ -63,7 +62,9 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authResult, err := h.authService.Login(ctx, &loginRequest, deviceId)
+	deviceName := r.UserAgent()
+
+	authResult, err := h.authService.Login(ctx, &loginRequest, deviceId, deviceName)
 	if err != nil {
 		if apiErr, ok := errs.IsApiError(err); ok {
 			render.Status(r, apiErr.HttpCode)

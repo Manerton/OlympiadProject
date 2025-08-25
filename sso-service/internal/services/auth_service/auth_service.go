@@ -67,7 +67,7 @@ func New(log *slog.Logger, orm orm.ORM, jwtManager *jwttoken.JWTManager,
 	}
 }
 
-func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO, deviceId string) (*login_dto.AuthResultDTO, error) {
+func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO, deviceId string, deviceName string) (*login_dto.AuthResultDTO, error) {
 	const op = "services.AuthService.Login"
 
 	log := s.log.With(
@@ -100,6 +100,7 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 
 	var refreshToken string
 	var deviceUid uuid.UUID
+	var oldRefreshTokenId uuid.UUID
 	if deviceId != "" {
 		// update refresh token
 		deviceUid, err = uuid.Parse(deviceId)
@@ -109,21 +110,25 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 		}
 
 		oldRefreshToken, err := s.refreshRepository.GetByDeviceId(ctx, s.db, deviceUid)
-		if err != nil {
+		if !s.db.IsNotFound(err) {
 			log.Error("failed get refresh token by device id", slog.String("device id", deviceId), liblogger.Err(err))
 			return nil, errs.ErrInternalError.Wrap("failed get refresh token")
+		} else {
+			oldRefreshTokenId = oldRefreshToken.ID
 		}
+	}
 
-		refreshToken, err = s.updateRefreshToken(ctx, oldRefreshToken.ID, userResult)
+	if oldRefreshTokenId != uuid.Nil {
+		refreshToken, err = s.updateRefreshToken(ctx, oldRefreshTokenId, userResult)
 		if err != nil {
-			log.Error("failed update refresh token", slog.String("token id", oldRefreshToken.ID.String()), liblogger.Err(err))
+			log.Error("failed update refresh token", slog.String("token id", oldRefreshTokenId.String()), liblogger.Err(err))
 			return nil, errs.ErrRefreshToken.Wrap("failed update refresh token")
 		}
 	} else {
 		// first login with this device
 		deviceUid = uuid.New()
 		// create refresh token
-		refreshToken, err = s.preparationRefreshToken(ctx, userResult, deviceUid, loginRequest.DeviceName)
+		refreshToken, err = s.preparationRefreshToken(ctx, userResult, deviceUid, deviceName)
 		if err != nil {
 			log.Error("failed when create refresh token", liblogger.Err(err))
 			return nil, errs.ErrRefreshToken
@@ -180,6 +185,7 @@ func (s *AuthService) preparationRefreshToken(ctx context.Context, userResult us
 		ID:         tokenId,
 		UserID:     userResult.ID,
 		Token:      refreshToken,
+		Status:     refresh_token.Active,
 		DeviceId:   deviceId,
 		DeviceName: deviceName,
 		ExpiresAt:  time.Now().Add(s.jwtManager.GetRefreshDuration()),
@@ -352,6 +358,8 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 	log := s.log.With(
 		slog.String("op", op),
 	)
+
+	log.Debug("token", refreshToken)
 
 	// check and get claims
 	tokenClaims, err := s.jwtManager.ParseRefreshTokenWithClaims(refreshToken)
