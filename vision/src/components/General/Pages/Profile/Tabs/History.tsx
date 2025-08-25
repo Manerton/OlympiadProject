@@ -92,6 +92,4 @@ const HistoryTab: React.FC<Props> = ({onSelectEvent}) => {
 };
 
 
-
-
 export default HistoryTab;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { use, useState } from "react";
 import { UserRole } from "../../../../dictionary/role";
 import ApplicationEventTab from "./Tabs/ApplicationEvents";
 import HistoryTab from "./Tabs/History";
@@ -6,16 +6,22 @@ import AppealTab from "./Tabs/Appeal/Appeal";
 import type { ApplicationEvent } from "../../../types/event";
 import ResultByEvent from "./Tabs/ResultByEvent";
 import ResultAppeal from "./Tabs/Appeal/ResultAppeal";
+import { useAuth } from "../../../Helpers/AuthContext";
+import AppealCreate from "./Tabs/Appeal/AppealCreate";
+import type { Appeal } from "../../../types/appeal";
 
 // общий тип для таба
 type TabItem = {
   label: string;
   component?: React.ComponentType<any>;
   detailComponent?: React.ComponentType<{ event: ApplicationEvent; onBack: () => void }>;
+  appealComponent?: React.ComponentType<{ appeal: Appeal; onBack: () => void }>; //
 };
 
 
 const ProfileMainPage: React.FC = () => {
+
+    const {user} = useAuth();
 
     const role = 2
 
@@ -23,7 +29,7 @@ const ProfileMainPage: React.FC = () => {
         [UserRole.Participant]: [
             { label: "Достжения" },
             { label: "Олимпиады", component: ApplicationEventTab},
-            { label: "История", component: HistoryTab, detailComponent: ResultByEvent},
+            { label: "История", component: HistoryTab, detailComponent: ResultByEvent, appealComponent: AppealCreate},
             { label: "Апелляции", component: AppealTab, detailComponent: ResultAppeal },
         ],
         [UserRole.Judge]: [
@@ -35,7 +41,7 @@ const ProfileMainPage: React.FC = () => {
     const tabs = tabsByRole[role] || []
     const [activeTab, setActiveTab] = useState(0)
     const [selectedEvent, setSelectedEvent] = useState<ApplicationEvent | null>(null);
-
+    const [appeal, setAppeal] = useState<Appeal | null>(null);
 
     const ActiveComponent = tabs[activeTab].component;
     const DetailsComponent = tabs[activeTab].detailComponent
@@ -47,7 +53,7 @@ const ProfileMainPage: React.FC = () => {
                 <img src="" alt="" className="roumded-circle me-3" width={80} height={80} />
                 <div>
                     <h4>Иванов Иван Иванович</h4>
-                    <p className="text-muted">ivanovivan@main.com</p>
+                    <p className="text-muted">{user?.Email}</p>
                 </div>
                 <button className="btn btn-primary ms-auto">Редактировать</button>
             </div>
@@ -70,13 +76,15 @@ const ProfileMainPage: React.FC = () => {
 
             {/* Содержимое */}
             <div className="tab-content p-3">
-                {DetailsComponent && selectedEvent ? (
+                {appeal ? (
+                    <AppealCreate appeal={appeal} onBack={() => setAppeal(null)} />
+                ) : DetailsComponent && selectedEvent ? (
                     <DetailsComponent event={selectedEvent} onBack={() => setSelectedEvent(null)} />
                 ) : ActiveComponent ? (
-                    // пробрасываем селектор события только туда, где он нужен
-                    <ActiveComponent onSelectEvent={setSelectedEvent} />
+                    <ActiveComponent onSelectEvent={setSelectedEvent} onSelectAppeal={setAppeal} />
                 ) : null}
             </div>
+
         </div>
     );
 };
