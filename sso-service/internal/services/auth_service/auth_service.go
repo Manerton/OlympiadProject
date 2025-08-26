@@ -110,12 +110,13 @@ func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRe
 		}
 
 		oldRefreshToken, err := s.refreshRepository.GetByDeviceId(ctx, s.db, deviceUid)
-		if !s.db.IsNotFound(err) {
-			log.Error("failed get refresh token by device id", slog.String("device id", deviceId), liblogger.Err(err))
-			return nil, errs.ErrInternalError.Wrap("failed get refresh token")
-		} else {
-			oldRefreshTokenId = oldRefreshToken.ID
+		if err != nil {
+			if !s.db.IsNotFound(err) {
+				log.Error("failed get refresh token by device id", slog.String("device id", deviceId), liblogger.Err(err))
+				return nil, errs.ErrInternalError.Wrap("failed get refresh token")
+			}
 		}
+		oldRefreshTokenId = oldRefreshToken.ID
 	}
 
 	if oldRefreshTokenId != uuid.Nil {
@@ -358,8 +359,6 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 	log := s.log.With(
 		slog.String("op", op),
 	)
-
-	log.Debug("token", refreshToken)
 
 	// check and get claims
 	tokenClaims, err := s.jwtManager.ParseRefreshTokenWithClaims(refreshToken)

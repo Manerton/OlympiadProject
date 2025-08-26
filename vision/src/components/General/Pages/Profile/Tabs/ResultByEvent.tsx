@@ -1,18 +1,15 @@
 import type React from "react";
 import type { ApplicationEvent } from "../../../../types/event";
+import { useParams } from "react-router-dom";
 
 
-type Props = {
-    event: ApplicationEvent
-    onBack: () => void
-}
 
-const ResultByEvent: React.FC<Props> = ({ event, onBack }) => {
+const ResultByEvent: React.FC = () => {
+    const {eventId} = useParams();
+    console.log(eventId)
+
     return (
         <div>
-            <button className="btn btn-link mb-3" onClick={onBack}>
-                Вернуться
-            </button>
             <div className="accordion">
                 <div className="accordion-item">
                     <h2 className="accordion-header" id="panelsStayOpen-headingOralPart">

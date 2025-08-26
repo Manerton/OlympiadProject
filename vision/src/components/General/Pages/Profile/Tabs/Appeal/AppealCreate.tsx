@@ -5,16 +5,12 @@ import AppealForm from "./AppealForm"
 import type { Task } from "../../../../../types/task"
 import type { Appeal } from "../../../../../types/appeal"
 
-type Props = {
-    onBack: () => void;
-}
 
-const AppealCreate: React.FC<Props> = ({onBack}) => {
+const AppealCreate: React.FC = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
 
     }
-
 
     const [selectType, setSelectType] = useState<number | "">("");
     const [tasks, setTasks] = useState<Task[]>([])
@@ -24,9 +20,6 @@ const AppealCreate: React.FC<Props> = ({onBack}) => {
 
     return (
         <div>
-            <button className="btn btn-link mb-3" onClick={onBack}>
-                Вернуться
-            </button>
             <form onSubmit={handleSubmit} className="p-3">
                 <AppealForm selectTask={selectTask} 
                 tasks={""}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import UserIndex from './components/olymp-admin/user/index.tsx';
 import UserShow from './components/olymp-admin/user/show.tsx';
 import UserCreate from './components/olymp-admin/user/create.tsx';
@@ -34,6 +34,13 @@ import RegionalStagesPage from './components/General/Pages/Events/RegionalStages
 import OlympiadsPage from './components/General/Pages/Events/OlympiadsPage'
 import ProfileMainPage from './components/General/Pages/Profile/Profile.tsx';
 import RequireAuth from './components/Helpers/RequireAuth.tsx';
+import ProfileLayout from './components/General/Layouts/Profile.tsx';
+import HistoryTab from './components/General/Pages/Profile/Tabs/History.tsx';
+import AppealTab from './components/General/Pages/Profile/Tabs/Appeal/Appeal.tsx';
+import ApplicationEventTab from './components/General/Pages/Profile/Tabs/ApplicationEvents.tsx';
+import ResultByEvent from './components/General/Pages/Profile/Tabs/ResultByEvent.tsx';
+import AppealCreate from './components/General/Pages/Profile/Tabs/Appeal/AppealCreate.tsx';
+import AppealView from './components/General/Pages/Profile/Tabs/Appeal/AppealView.tsx';
 
 
 function App() {
@@ -47,14 +54,14 @@ function App() {
                     <Route element={<Layout />}>
                         <Route path="/" element={<MainPage />} />
                         <Route path="/auth" element={<AuthPage />} />
-                        <Route
+                        {/* <Route
                             path="/profile"
                             element={
                                 <RequireAuth>
                                 <ProfileMainPage />
                                 </RequireAuth>
                             }
-                            />
+                            /> */}
                         <Route path="/RegionalStages" element={<RegionalStagesPage />} />
                         <Route path= "OlympiadsPage/:id" element={<OlympiadsPage />} />
                     </Route>
@@ -97,7 +104,21 @@ function App() {
                     <Route path="/olymp-admin/event/point/:id" element={<EventPoint />} />
                     </Route>
 
-                  
+                    <Route path="/profile" element={<ProfileLayout/>}>
+                        <Route index element={<Navigate to="history"/>}/>
+
+                        <Route path="history" element={<HistoryTab/>}/>
+                        <Route path="history/:eventId/result" element={<ResultByEvent/>}/>
+                        <Route path="history/:eventId/appeal-create" element={<AppealCreate/>}/>
+
+
+
+                        <Route path="appeals" element={<AppealTab/>}/>
+                        <Route path="applications" element={<ApplicationEventTab/>}/>
+                        <Route path="appeals/:appealId/appeal-view" element={<AppealView/>}/>
+
+
+                    </Route>
 
                 </Routes>
             </div>

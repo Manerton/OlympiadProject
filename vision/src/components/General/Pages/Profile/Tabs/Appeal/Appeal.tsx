@@ -3,14 +3,13 @@ import type { ApplicationEvent } from "../../../../../types/event";
 import ApplicationEventCart from "../EventCart";
 import { StatusIcon } from "../../../../../Helpers/StatusBlock";
 import { ApplicationStatus } from "../../../../../../dictionary/applicationStatus";
+import { useNavigate } from "react-router-dom";
 
-type Props = {
-  onSelectEvent?: (e: ApplicationEvent) => void;
-};
-
-const AppealTab:  React.FC<Props> = ({onSelectEvent}) => {
+const AppealTab:  React.FC = () => {
     const [events, setEvents] = useState<ApplicationEvent[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const navigate = useNavigate()
 
     const mockEvents: ApplicationEvent[] = [
         {
@@ -76,7 +75,7 @@ const AppealTab:  React.FC<Props> = ({onSelectEvent}) => {
     function footer(status: number, event: ApplicationEvent): ReactNode {
         return (
             <div className="d-flex flex-column justify-content-between h-100">
-                <button className="btn btn-primary mb-2" onClick={() => onSelectEvent?.(event)}>Результаты</button>
+                <button className="btn btn-primary mb-2" onClick={() => navigate(`/profile/appeals/${1}/appeal-view`)}>Результаты</button>
                 <div className="text-end">
                     <b>Статус апелляции  <StatusIcon status={status} /></b>
                 </div>

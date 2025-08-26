@@ -23,7 +23,7 @@ const ProfileMainPage: React.FC = () => {
 
     const {user} = useAuth();
 
-    const role = 2
+    const role = user?.role 
 
     const tabsByRole: Record<number, TabItem[]> = {
         [UserRole.Participant]: [
@@ -38,7 +38,7 @@ const ProfileMainPage: React.FC = () => {
         ]
     }
 
-    const tabs = tabsByRole[role] || []
+    const tabs = tabsByRole[role || 1] || []
     const [activeTab, setActiveTab] = useState(0)
     const [selectedEvent, setSelectedEvent] = useState<ApplicationEvent | null>(null);
     const [appeal, setAppeal] = useState<Appeal | null>(null);

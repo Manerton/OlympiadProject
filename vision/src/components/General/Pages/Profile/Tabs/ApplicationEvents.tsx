@@ -4,11 +4,8 @@ import ApplicationEventCart from "./EventCart";
 import { ApplicationStatus } from "../../../../../dictionary/applicationStatus";
 import { StatusIcon } from "../../../../Helpers/StatusBlock";
 
-type Props = {
-  onSelectEvent?: (e: ApplicationEvent) => void;
-};
 
-const ApplicationEventTab: React.FC<Props> = ({onSelectEvent}) => {
+const ApplicationEventTab: React.FC = () => {
     const [events, setEvents] = useState<ApplicationEvent[]>([]);
     const [loading, setLoading] = useState(true);
 

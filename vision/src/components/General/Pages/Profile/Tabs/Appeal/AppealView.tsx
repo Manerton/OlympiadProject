@@ -46,3 +46,5 @@ const AppealView: React.FC<Props> = () => {
 
    
 }
+
+export default AppealView

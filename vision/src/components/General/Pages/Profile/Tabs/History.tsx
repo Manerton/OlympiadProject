@@ -3,16 +3,14 @@ import type { ApplicationEvent } from "../../../../types/event";
 import ApplicationEventCart from "./EventCart";
 import { ApplicationStatus } from "../../../../../dictionary/applicationStatus";
 import type { Appeal } from "../../../../types/appeal";
-
-type Props = {
-    onSelectEvent?: (e: ApplicationEvent) => void;
-    onSelectAppeal?: () => void;
-};
+import { useNavigate } from "react-router-dom";
 
 
-const HistoryTab: React.FC<Props> = ({ onSelectEvent, onSelectAppeal }) => {
+const HistoryTab: React.FC = () => {
     const [events, setEvents] = useState<ApplicationEvent[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const navigate = useNavigate();
 
     const mockEvents: ApplicationEvent[] = [
         {
@@ -78,19 +76,19 @@ const HistoryTab: React.FC<Props> = ({ onSelectEvent, onSelectAppeal }) => {
     function footer(event: ApplicationEvent): ReactNode {
         return (
             <div className="d-flex flex-column justify-content-between h-100">
-                <button className="btn btn-primary mb-2" onClick={() => onSelectEvent?.(event)}>Результаты</button>
-                <button className="btn btn-danger mb-2" onClick={() => onSelectAppeal?.()}>Подать аппеляцию</button>
-               </div >
-           )
-       }
+                <button className="btn btn-primary mb-2" onClick={() => navigate(`/profile/history/${event.id}/result`)}>Результаты</button>
+                <button className="btn btn-danger mb-2" onClick={() => navigate(`/profile/history/${event.id}/appeal-create`)}>Подать аппеляцию</button>
+            </div >
+        )
+    }
 
-return (
-    <div>
-        {events.map((event) => (
-            <ApplicationEventCart key={event.id} event={event} footer={footer(event)} />
-        ))}
-    </div>
-);
+    return (
+        <div>
+            {events.map((event) => (
+                <ApplicationEventCart key={event.id} event={event} footer={footer(event)} />
+            ))}
+        </div>
+    );
 };
 
 
