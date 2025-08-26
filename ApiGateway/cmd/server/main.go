@@ -25,7 +25,6 @@ func CORSMiddleware(next http.Handler) http.Handler {
 		origin := r.Header.Get("Origin")
 		allowedOrigins := []string{
 			"http://172.16.0.196:5173",
-			"http://172.16.1.39:5173",
 		}
 
 		for _, o := range allowedOrigins {
@@ -50,15 +49,44 @@ func CORSMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func CORSMiddleware2(cfg *config.AdditionalAddressesConfig) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			origin := r.Header.Get("Origin")
+
+			for _, o := range cfg.AllowOrigins {
+				if origin == o {
+					w.Header().Set("Access-Control-Allow-Origin", origin)
+					w.Header().Set("Vary", "Origin") // важно при кэшировании
+					break
+				}
+			}
+
+			log.Println("ORIGIN", origin)
+
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+			if r.Method == http.MethodOptions {
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+
+			log.Printf("CORS Middleware: Passing %s %s to next handler", r.Method, r.URL.Path)
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
 func main() {
 	cfgPath := flag.String("config", getConfigPath(), "path to config file")
-	addr := "172.16.0.196:6611"
 	flag.Parse()
 
 	cfg := config.GetConfig(*cfgPath)
 	mux := http.NewServeMux()
 
-	for _, route := range cfg.HTTPServer.Routes {
+	for _, route := range cfg.HTTPServers.Routes {
 		var handler http.Handler
 
 		if route.Aggregate {
@@ -95,10 +123,10 @@ func main() {
 	})
 
 	// Применяем CORS middleware
-	corsHandler := CORSMiddleware(loggedMux)
+	corsHandler := CORSMiddleware2(&cfg.AdditionalAddressesConfig)(loggedMux)
 
-	log.Printf("API Gateway listening on %s", addr)
-	log.Fatal(http.ListenAndServe(addr, corsHandler))
+	log.Printf("API Gateway listening on %s", cfg.HTTPServerMain.GetAddress())
+	log.Fatal(http.ListenAndServe(cfg.HTTPServerMain.GetAddress(), corsHandler))
 }
 
 type loggingResponseWriter struct {

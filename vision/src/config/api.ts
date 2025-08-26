@@ -6,6 +6,23 @@ const API_CONFIG = {
     APPLICATION: "http://172.16.1.39:8082/applications",
 };
 
+// const API_CONFIG = {
+//     EVENTS: "http://localhost:8080/api/events",
+//     REGIONAL: "http:/localhost:8080/api/events/regional-stage",
+//     AUTH: "http://localhost:8181/api/users",
+//     JUREASSIGNMENTS: "http://localhost:8090/jury-assignments",
+//     APPLICATION: "http://localhost:8082/applications",
+// };
+
+// export const AUTH = {
+//     login: "http://localhost:6611/auth",
+//     logout: "http://localhost:6611/logout",
+//     refresh: "http://localhost:6611/refresh",
+//     register: "http://localhost:6611/register"
+// }
+
+
+
 export const AUTH = {
     login: "http://172.16.0.196:6611/auth",
     logout: "http://172.16.0.196:6611/logout",
