@@ -16,7 +16,7 @@ class EventScoreService
 
     public function create($eventId){
 
-        if ($this->eventScoreRepository->getByEventId($eventId)){
+        if (!$this->eventScoreRepository->getByEventId($eventId)){
             $this->eventScoreRepository->create($eventId, 0 , 0);
         }
         return $this->eventScoreRepository->getByEventId($eventId);

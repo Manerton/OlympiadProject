@@ -47,8 +47,12 @@ class SiteController extends Controller
         }
     }
     public function logout(){
+        $this->apiService->post(ApiHelper::LOGOUT_URL_API , [], [
+            'Authorization' => 'Bearer '.json_decode(Cookie::get('username'), true)['token']
+        ], true);
         Cookie::queue(Cookie::forget('username'));
         Cookie::queue(Cookie::forget('refresh_token'));
+
         return redirect('/');
     }
 }
