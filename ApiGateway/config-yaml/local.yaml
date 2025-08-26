@@ -1,0 +1,136 @@
+env: "local"
+
+HTTP_SERVERS_INFO:
+  routes:
+    - prefix: "/users"
+      aggregate: false
+      target: "http://localhost:8181/api/users"
+      skip_auth: false
+
+    - prefix: "/revoke-all"
+      aggregate: false
+      target: "http://localhost:8181/api/users/revoke-all"
+      skip_auth: false
+
+    - prefix: "/events/class"
+      aggregate: false
+      target: "http://localhost:8080/api/events/class"
+      skip_auth: false
+
+    - prefix: "/events"
+      aggregate: false
+      target: "http://localhost:8080/api/events"
+      skip_auth: false
+
+    - prefix: "/jury-assignments/event"
+      aggregate: false
+      target: "http://localhost:8090/api/jury-assignments/event"
+      skip_auth: false
+
+    - prefix: "/users/count"
+      aggregate: false
+      target: "http://localhost:8181/api/users/count"
+      skip_auth: false
+
+    - prefix: "/participants"
+      aggregate: false
+      target: "http://localhost:8181/api/participants"
+      skip_auth: false
+
+    - prefix: "/participants/count"
+      aggregate: false
+      target: "http://localhost:8181/api/participants/count"
+      skip_auth: false
+
+    - prefix: "/participants/byuser"
+      aggregate: false
+      target: "http://localhost:8181/api/participants/byuser"
+      skip_auth: false
+
+    - prefix: "/schools"
+      aggregate: false
+      target: "http://localhost:8181/api/schools"
+      skip_auth: false
+
+    - prefix: "/schools/count"
+      aggregate: false
+      target: "http://localhost:8181/api/schools/count"
+      skip_auth: false
+
+    - prefix: "/applications"
+      aggregate: false
+      target: "http://localhost:8082/applications"
+      skip_auth: false
+
+    - prefix: "/applications/event"
+      aggregate: false
+      target: "http://localhost:8082/applications/event"
+      skip_auth: false
+
+    - prefix: "/applications/count"
+      aggregate: false
+      target: "http://localhost:8082/applicationsCount"
+      skip_auth: false
+
+    - prefix: "/events/subjects"
+      aggregate: false
+      target: "http://localhost:8080/api/events/subjects"
+      skip_auth: false
+
+    - prefix: "/regional-stages"
+      aggregate: false
+      target: "http://localhost:8080/api/events/regional-stage"
+      skip_auth: false
+
+    - prefix: "/events-child"
+      aggregate: false
+      target: "http://localhost:8080/api/events/child"
+      skip_auth: false
+
+    - prefix: "/auth"
+      aggregate: false
+      target: "http://localhost:8181/api/users/login"
+      skip_auth: true
+
+    - prefix: "/register"
+      aggregate: false
+      target: "http://localhost:8181/api/users/register"
+      skip_auth: true
+
+    - prefix: "/refresh"
+      aggregate: false
+      target: "http://localhost:8181/api/users/refresh"
+      skip_auth: true  
+
+    - prefix: "/logout"
+      aggregate: false
+      target: "http://localhost:8181/api/users/logout"
+      skip_auth: false  
+
+    - prefix: "/aplicationevent"
+      aggregate: true
+      services:
+        - "http://localhost:8082/applications"
+        - "http://localhost:8080/api/events"
+      skip_auth: true
+      roles: []
+
+CORS_INFO:
+  allow_origins: [
+    http://localhost:5173,
+    http://172.19.0.1:5173
+  ]
+
+HTTP_SERVER_MAIN_INFO:
+  address: "localhost"
+  port: "6611"
+
+JWT_TEMP_INFO:
+  key: "lololololololololololololololololololololololololololololol"
+
+REDIS_INFO:
+  address_path: "redis:6379"
+
+RABBIT_INFO:
+  address_path: "amqp://app:test@localhost:5672/"
+  queue_name: "olymp_application"

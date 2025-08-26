@@ -22,20 +22,20 @@ func getConfigPath() string {
 // corsMiddleware добавляет заголовки CORS к ответам
 func CORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		origin := r.Header.Get("Origin")
-		allowedOrigins := []string{
-			"http://172.16.0.196:5173",
-			"http://172.16.1.39:5173",
-		}
+		// origin := r.Header.Get("Origin")
+		// allowedOrigins := []string{
+		// 	"http://172.16.0.196:5173",
+		// }
 
-		for _, o := range allowedOrigins {
-			if origin == o {
-				w.Header().Set("Access-Control-Allow-Origin", origin)
-				w.Header().Set("Vary", "Origin") // важно при кэшировании
-				break
-			}
-		}
-
+		// for _, o := range allowedOrigins {
+		// 	if origin == o {
+		// 		w.Header().Set("Access-Control-Allow-Origin", origin)
+		// 		w.Header().Set("Vary", "Origin") // важно при кэшировании
+		// 		break
+		// 	}
+		// }
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Vary", "Origin") // важно при кэшировании
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -50,15 +50,58 @@ func CORSMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func CORSMiddleware2(cfg *config.AdditionalAddressesConfig) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			origin := r.Header.Get("Origin")
+
+			for _, o := range cfg.AllowOrigins {
+				if origin == o {
+					w.Header().Set("Access-Control-Allow-Origin", origin)
+					w.Header().Set("Vary", "Origin") // важно при кэшировании
+					break
+				}
+			}
+
+			log.Println("ORIGIN", origin)
+
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+			if r.Method == http.MethodOptions {
+				w.WriteHeader(http.StatusNoContent)
+				return
+			}
+
+			log.Printf("CORS Middleware: Passing %s %s to next handler", r.Method, r.URL.Path)
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func getClientIP(r *http.Request) string {
+	// Проверяем X-Forwarded-For (может содержать список IP)
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		parts := strings.Split(xff, ",")
+		return strings.TrimSpace(parts[0])
+	}
+	// Проверяем X-Real-IP
+	if xrip := r.Header.Get("X-Real-IP"); xrip != "" {
+		return xrip
+	}
+	// Фоллбек: RemoteAddr
+	return r.RemoteAddr
+}
+
 func main() {
 	cfgPath := flag.String("config", getConfigPath(), "path to config file")
-	addr := "172.16.0.196:6611"
 	flag.Parse()
 
 	cfg := config.GetConfig(*cfgPath)
 	mux := http.NewServeMux()
 
-	for _, route := range cfg.HTTPServer.Routes {
+	for _, route := range cfg.HTTPServers.Routes {
 		var handler http.Handler
 
 		if route.Aggregate {
@@ -86,19 +129,19 @@ func main() {
 		// вызываем основной mux
 		mux.ServeHTTP(lrw, r)
 
-		// Логируем
-		log.Printf("➡️ Request: %s %s, Cookies: %+v, Body: %s",
-			r.Method, r.URL.Path, cookies, string(bodyBytes))
+		clientIP := getClientIP(r)
+
+		log.Printf("➡️ Request: %s %s, From: %s, Cookies: %+v, Body: %s",
+			r.Method, r.URL.Path, clientIP, cookies, string(bodyBytes))
 
 		log.Printf("⬅️ Response: %d, Body: %s",
 			lrw.statusCode, lrw.body.String())
 	})
 
 	// Применяем CORS middleware
-	corsHandler := CORSMiddleware(loggedMux)
-
-	log.Printf("API Gateway listening on %s", addr)
-	log.Fatal(http.ListenAndServe(addr, corsHandler))
+	corsHandler := CORSMiddleware2(&cfg.AdditionalAddressesConfig)(loggedMux)
+	log.Printf("API Gateway listening on %s", cfg.HTTPServerMain.GetAddress())
+	log.Fatal(http.ListenAndServe(cfg.HTTPServerMain.GetAddress(), corsHandler))
 }
 
 type loggingResponseWriter struct {

@@ -1,8 +1,8 @@
 env: "dev"
 
-HTTP_SERVER_INFO:
+HTTP_SERVERS_INFO:
   routes:
-    - prefix: "/users"
+    - prefix: "/users/"
       aggregate: false
       target: "http://172.16.1.39:8181/api/users"
       skip_auth: false
@@ -12,17 +12,17 @@ HTTP_SERVER_INFO:
       target: "http://172.16.1.39:8181/api/users/revoke-all"
       skip_auth: false
 
-    - prefix: "/events/class"
+    - prefix: "/events/class/"
       aggregate: false
       target: "http://172.16.1.39:8080/api/events/class"
       skip_auth: false
 
-    - prefix: "/events"
+    - prefix: "/events/"
       aggregate: false
       target: "http://172.16.1.39:8080/api/events"
       skip_auth: false
 
-    - prefix: "/jury-assignments/event"
+    - prefix: "/jury-assignments/event/"
       aggregate: false
       target: "http://172.16.1.39:8090/api/jury-assignments/event"
       skip_auth: false
@@ -32,7 +32,7 @@ HTTP_SERVER_INFO:
       target: "http://172.16.1.39:8181/api/users/count"
       skip_auth: false
 
-    - prefix: "/participants"
+    - prefix: "/participants/"
       aggregate: false
       target: "http://172.16.1.39:8181/api/participants"
       skip_auth: false
@@ -42,12 +42,12 @@ HTTP_SERVER_INFO:
       target: "http://172.16.1.39:8181/api/participants/count"
       skip_auth: false
 
-    - prefix: "/participants/byuser"
+    - prefix: "/participants/byuser/"
       aggregate: false
       target: "http://172.16.1.39:8181/api/participants/byuser"
       skip_auth: false
 
-    - prefix: "/schools"
+    - prefix: "/schools/"
       aggregate: false
       target: "http://172.16.1.39:8181/api/schools"
       skip_auth: false
@@ -57,12 +57,12 @@ HTTP_SERVER_INFO:
       target: "http://172.16.1.39:8181/api/schools/count"
       skip_auth: false
 
-    - prefix: "/applications"
+    - prefix: "/applications/"
       aggregate: false
       target: "http://172.16.0.196:8082/applications"
       skip_auth: false
 
-    - prefix: "/applications/event"
+    - prefix: "/applications/event/"
       aggregate: false
       target: "http://172.16.0.196:8082/applications/event"
       skip_auth: false
@@ -72,7 +72,7 @@ HTTP_SERVER_INFO:
       target: "http://172.16.0.196:8082/applicationsCount"
       skip_auth: false
 
-    - prefix: "/events/subjects"
+    - prefix: "/events/subjects/"
       aggregate: false
       target: "http://172.16.1.39:8080/api/events/subjects"
       skip_auth: false
@@ -114,6 +114,17 @@ HTTP_SERVER_INFO:
         - "http://172.16.1.39:8080/api/events"
       skip_auth: true
       roles: []
+
+CORS_INFO:
+  allow_origins: [
+    http://172.16.0.196:5173,
+    http://172.16.0.94:59871,
+    http://172.19.0.1:5173
+  ]
+
+HTTP_SERVER_MAIN_INFO:
+  address: "172.16.0.196"
+  port: "6611"
 
 JWT_TEMP_INFO:
   key: "lololololololololololololololololololololololololololololol"
