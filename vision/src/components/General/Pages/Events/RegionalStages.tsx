@@ -4,7 +4,8 @@ import { Container, Spinner, Alert } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
 import RegionalStageList from "./components/RegionalStageList";
 import axios from 'axios';
-
+import { useAuth } from "../../../Helpers/AuthContext";
+import {API_CONFIG} from "../../../../config/api.ts";
 interface MyEvent {
     id?: string;
     name: string;
@@ -19,20 +20,18 @@ interface MyEvent {
 }
 
 
-const API_URL = "http://172.16.0.196:6611/regional-stages";
-
 const RegionalStagesPage: React.FC = () => {
   const [stages, setStages] = useState<MyEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+  const { accessToken } = useAuth();
   const navigate = useNavigate();
   useEffect(() => {
     const fetchStages = async () => {
       try {
-        const res = await axios.get(API_URL, {
+        const res = await axios.get(API_CONFIG.REGIONAL, {
           headers: {
-              'Authorization': `Bearer ${token}`  // <- добавляем "Bearer " перед токеном
+              'Authorization': `Bearer ${accessToken}`  // <- добавляем "Bearer " перед токеном
           },
           withCredentials: true
       });

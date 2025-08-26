@@ -22,19 +22,20 @@ func getConfigPath() string {
 // corsMiddleware добавляет заголовки CORS к ответам
 func CORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		origin := r.Header.Get("Origin")
-		allowedOrigins := []string{
-			"http://172.16.0.196:5173",
-		}
+		// origin := r.Header.Get("Origin")
+		// allowedOrigins := []string{
+		// 	"http://172.16.0.196:5173",
+		// }
 
-		for _, o := range allowedOrigins {
-			if origin == o {
-				w.Header().Set("Access-Control-Allow-Origin", origin)
-				w.Header().Set("Vary", "Origin") // важно при кэшировании
-				break
-			}
-		}
-
+		// for _, o := range allowedOrigins {
+		// 	if origin == o {
+		// 		w.Header().Set("Access-Control-Allow-Origin", origin)
+		// 		w.Header().Set("Vary", "Origin") // важно при кэшировании
+		// 		break
+		// 	}
+		// }
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Vary", "Origin") // важно при кэшировании
 		w.Header().Set("Access-Control-Allow-Credentials", "true")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
@@ -79,6 +80,20 @@ func CORSMiddleware2(cfg *config.AdditionalAddressesConfig) func(next http.Handl
 	}
 }
 
+func getClientIP(r *http.Request) string {
+	// Проверяем X-Forwarded-For (может содержать список IP)
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		parts := strings.Split(xff, ",")
+		return strings.TrimSpace(parts[0])
+	}
+	// Проверяем X-Real-IP
+	if xrip := r.Header.Get("X-Real-IP"); xrip != "" {
+		return xrip
+	}
+	// Фоллбек: RemoteAddr
+	return r.RemoteAddr
+}
+
 func main() {
 	cfgPath := flag.String("config", getConfigPath(), "path to config file")
 	flag.Parse()
@@ -114,9 +129,10 @@ func main() {
 		// вызываем основной mux
 		mux.ServeHTTP(lrw, r)
 
-		// Логируем
-		log.Printf("➡️ Request: %s %s, Cookies: %+v, Body: %s",
-			r.Method, r.URL.Path, cookies, string(bodyBytes))
+		clientIP := getClientIP(r)
+
+		log.Printf("➡️ Request: %s %s, From: %s, Cookies: %+v, Body: %s",
+			r.Method, r.URL.Path, clientIP, cookies, string(bodyBytes))
 
 		log.Printf("⬅️ Response: %d, Body: %s",
 			lrw.statusCode, lrw.body.String())
@@ -124,7 +140,6 @@ func main() {
 
 	// Применяем CORS middleware
 	corsHandler := CORSMiddleware2(&cfg.AdditionalAddressesConfig)(loggedMux)
-
 	log.Printf("API Gateway listening on %s", cfg.HTTPServerMain.GetAddress())
 	log.Fatal(http.ListenAndServe(cfg.HTTPServerMain.GetAddress(), corsHandler))
 }

@@ -1,6 +1,6 @@
-const API_CONFIG = {
-    EVENTS: "http://172.16.1.39:8080/api/events",
-    REGIONAL: "http://172.16.1.39:8080/api/events/regional-stage",
+export const API_CONFIG = {
+    EVENTS: "http://172.16.0.196:6611/events",
+    REGIONAL: "http://172.16.0.196:6611/regional-stages",
     AUTH: "http://172.16.1.39:8181/api/users",
     JUREASSIGNMENTS: "http://172.16.1.39:8090/jury-assignments",
     APPLICATION: "http://172.16.1.39:8082/applications",

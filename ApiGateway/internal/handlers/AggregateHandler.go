@@ -73,10 +73,10 @@ func NewProxyHandler(route config.Route, jwtKey string) http.Handler {
 		Director: func(req *http.Request) {
 			req.URL.Scheme = target.Scheme
 			req.URL.Host = target.Host
-			req.URL.Path = singleJoiningSlash(
-				target.Path,
-				strings.TrimPrefix(req.URL.Path, route.Prefix),
-			)
+			// Извлекаем оставшуюся часть пути после префикса
+			path := strings.TrimPrefix(req.URL.Path, route.Prefix)
+			// Формируем новый путь, добавляя оставшуюся часть к target.Path
+			req.URL.Path = singleJoiningSlash(target.Path, path)
 			req.Host = target.Host
 			req.Header.Set("X-Forwarded-Host", req.Host)
 			req.Header.Set("X-Forwarded-For", req.RemoteAddr)
