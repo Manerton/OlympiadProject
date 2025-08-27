@@ -2,29 +2,35 @@ env: "dev"
 
 HTTP_SERVERS_INFO:
   routes:
-    - prefix: "/users/"
+    # ==================== AUTH SERVICE (8181) ====================
+    - prefix: "/auth"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/users"
+      target: "http://172.16.1.39:8181/api/users/login"
+      skip_auth: true
+
+    - prefix: "/logout"
+      aggregate: false
+      target: "http://172.16.1.39:8181/api/users/logout"
       skip_auth: false
+
+    - prefix: "/refresh"
+      aggregate: false
+      target: "http://172.16.1.39:8181/api/users/refresh"
+      skip_auth: true
+
+    - prefix: "/register"
+      aggregate: false
+      target: "http://172.16.1.39:8181/api/users/register"
+      skip_auth: true
 
     - prefix: "/revoke-all"
       aggregate: false
       target: "http://172.16.1.39:8181/api/users/revoke-all"
       skip_auth: false
 
-    - prefix: "/events/class/"
+    - prefix: "/users/"
       aggregate: false
-      target: "http://172.16.1.39:8080/api/events/class"
-      skip_auth: false
-
-    - prefix: "/events/"
-      aggregate: false
-      target: "http://172.16.1.39:8080/api/events"
-      skip_auth: false
-
-    - prefix: "/jury-assignments/event/"
-      aggregate: false
-      target: "http://172.16.1.39:8090/api/jury-assignments/event"
+      target: "http://172.16.1.39:8181/api/users"
       skip_auth: false
 
     - prefix: "/users/count"
@@ -32,19 +38,20 @@ HTTP_SERVERS_INFO:
       target: "http://172.16.1.39:8181/api/users/count"
       skip_auth: false
 
+    # ==================== PARTICIPANTS & SCHOOLS SERVICE (8181) ====================
     - prefix: "/participants/"
       aggregate: false
       target: "http://172.16.1.39:8181/api/participants"
       skip_auth: false
 
-    - prefix: "/participants/count"
-      aggregate: false
-      target: "http://172.16.1.39:8181/api/participants/count"
-      skip_auth: false
-
     - prefix: "/participants/byuser/"
       aggregate: false
       target: "http://172.16.1.39:8181/api/participants/byuser"
+      skip_auth: false
+
+    - prefix: "/participants/count"
+      aggregate: false
+      target: "http://172.16.1.39:8181/api/participants/count"
       skip_auth: false
 
     - prefix: "/schools/"
@@ -57,19 +64,20 @@ HTTP_SERVERS_INFO:
       target: "http://172.16.1.39:8181/api/schools/count"
       skip_auth: false
 
-    - prefix: "/applications/"
+    # ==================== EVENTS SERVICE (8080) ====================
+    - prefix: "/events/"
       aggregate: false
-      target: "http://172.16.0.196:8082/applications"
+      target: "http://172.16.1.39:8080/api/events"
       skip_auth: false
 
-    - prefix: "/applications/event/"
+    - prefix: "/events/child/"
       aggregate: false
-      target: "http://172.16.0.196:8082/applications/event"
-      skip_auth: false
+      target: "http://172.16.1.39:8080/api/events/child"
+      skip_auth: true
 
-    - prefix: "/applications/count"
+    - prefix: "/events/class/"
       aggregate: false
-      target: "http://172.16.0.196:8082/applicationsCount"
+      target: "http://172.16.1.39:8080/api/events/class"
       skip_auth: false
 
     - prefix: "/events/subjects/"
@@ -80,33 +88,31 @@ HTTP_SERVERS_INFO:
     - prefix: "/regional-stages"
       aggregate: false
       target: "http://172.16.1.39:8080/api/events/regional-stage"
-      skip_auth: false
-
-    - prefix: "/events-child"
-      aggregate: false
-      target: "http://172.16.1.39:8080/api/events/child"
-      skip_auth: false
-
-    - prefix: "/auth"
-      aggregate: false
-      target: "http://172.16.1.39:8181/api/users/login"
       skip_auth: true
 
-    - prefix: "/register"
+    # ==================== APPLICATIONS SERVICE (8082) ====================
+    - prefix: "/applications/"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/users/register"
-      skip_auth: true
+      target: "http://172.16.0.196:8082/applications"
+      skip_auth: false
 
-    - prefix: "/refresh"
+    - prefix: "/applications/count"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/users/refresh"
-      skip_auth: true  
+      target: "http://172.16.0.196:8082/applicationsCount"
+      skip_auth: false
 
-    - prefix: "/logout"
+    - prefix: "/applications/event/"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/users/logout"
-      skip_auth: false  
+      target: "http://172.16.0.196:8082/applications/event"
+      skip_auth: false
 
+    # ==================== JURY SERVICE (8090) ====================
+    - prefix: "/jury-assignments/event/"
+      aggregate: false
+      target: "http://172.16.1.39:8090/api/jury-assignments/event"
+      skip_auth: false
+
+    # ==================== AGGREGATE ROUTES ====================
     - prefix: "/aplicationevent"
       aggregate: true
       services:

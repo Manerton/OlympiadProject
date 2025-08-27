@@ -6,9 +6,9 @@ import OlympiadList from './components/OlympiadList';
 import axios from 'axios';
 import { useNavigate,useParams } from 'react-router-dom';
 import type { MyEvent } from '../../../types/event.ts';
+import { useAuth } from '../../../Helpers/AuthContext.tsx';
+import { fetchOlympiads } from '../../../../requests/EventsRequests.ts';
 
-const API_BASE = 'http://172.16.1.39:8080/api/events/child';
-const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
 
 const OlympiadsPage: React.FC = () => {
   const [olympiads, setOlympiads] = useState<MyEvent[]>([]);
@@ -23,35 +23,19 @@ const OlympiadsPage: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchOlympiads = async () => {
-      setLoading(true);
-      try {
-        let url = `${API_BASE}/${id}?page=${page}&limit=${limit}&order=${order}`;
-        if (search) {
-          url += `&name=${encodeURIComponent(search)}`;
-        }
-        if (selectedDate) {
-          const dateStr = selectedDate.toISOString().split('T')[0]; // формат YYYY-MM-DD
-          url += `&date=${dateStr}`; // предполагается, что API принимает параметр date
-        }
-        const res = await axios.get(url, {
-          headers: {
-              'Authorization': `Bearer ${token}`  // <- добавляем "Bearer " перед токеном
-          },
-          withCredentials: true
-      });
-        setOlympiads(res.data.data);
-        setTotal(res.data.metadata);
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchOlympiads();
-  }, [page, limit, order, search, selectedDate]);
+  useEffect(() => {
+    if (!id) return;
+
+    setLoading(true);
+    fetchOlympiads({ id, page, limit, order, search, selectedDate})
+      .then((res) => {
+        setOlympiads(res.data);
+        setTotal(res.metadata);
+      })
+      .catch((err) => setError((err as Error).message))
+      .finally(() => setLoading(false));
+  }, [id, page, limit, order, search, selectedDate]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
