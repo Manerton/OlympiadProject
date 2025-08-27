@@ -75,7 +75,7 @@ const AppealTab:  React.FC = () => {
     function footer(status: number, event: ApplicationEvent): ReactNode {
         return (
             <div className="d-flex flex-column justify-content-between h-100">
-                <button className="btn btn-primary mb-2" onClick={() => navigate(`/profile/appeals/${1}/appeal-view`)}>Результаты</button>
+                <button className="btn btn-primary mb-2" onClick={() => navigate(`/profile/appeals/${event.id}/list`)}>Подробнее</button>
                 <div className="text-end">
                     <b>Статус апелляции  <StatusIcon status={status} /></b>
                 </div>

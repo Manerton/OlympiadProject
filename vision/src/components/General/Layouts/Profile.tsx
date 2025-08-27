@@ -1,7 +1,7 @@
 import React from 'react';
 import AdminSidebar from '../../Admin/AdminComponents/AdminSidebar.tsx';
 import { Container } from 'react-bootstrap';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import Header from './header.tsx';
 import Footer from './Footer.tsx';
 import { UserRole } from '../../../dictionary/role.tsx';
@@ -27,6 +27,8 @@ const ProfileLayout: React.FC = () => {
     const role = UserRole.Participant; // например, из контекста или стора
     const tabs = tabsByRole[role];
 
+    const navigate = useNavigate()
+
     return (
         <div>
             <Header />
@@ -40,7 +42,7 @@ const ProfileLayout: React.FC = () => {
                             <h4>Иванов Иван Иванович</h4>
                             <p className="text-muted">{user?.Email}</p>
                         </div>
-                        <button className="btn btn-primary ms-auto">Редактировать</button>
+                        <button className="btn btn-primary ms-auto" onClick={() => navigate("/profile/edit")}>Редактировать</button>
                     </div>
 
                     <ul className="nav nav-tabs w-100">

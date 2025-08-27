@@ -9,3 +9,9 @@ export const taskTypes = [
   { label: "Практичекий", value: taskTypeDict.Practic },
   { label: "Тестирование", value: taskTypeDict.Testing }
 ] as const;
+
+export const taskTypeLabels: Record<number, string> = {
+  [taskTypeDict.Oral]: "Устный",
+  [taskTypeDict.Practic]: "Практический",
+  [taskTypeDict.Testing]: "Тестирование"
+};

@@ -32,7 +32,6 @@ import AdminLayout from './components/General/Layouts/AdminLayout'
 import AuthPage from './components/General/Pages/AuthForm.tsx'
 import RegionalStagesPage from './components/General/Pages/Events/RegionalStages'
 import OlympiadsPage from './components/General/Pages/Events/OlympiadsPage'
-import ProfileMainPage from './components/General/Pages/Profile/Profile.tsx';
 import RequireAuth from './components/Helpers/RequireAuth.tsx';
 import ProfileLayout from './components/General/Layouts/Profile.tsx';
 import HistoryTab from './components/General/Pages/Profile/Tabs/History.tsx';
@@ -41,6 +40,8 @@ import ApplicationEventTab from './components/General/Pages/Profile/Tabs/Applica
 import ResultByEvent from './components/General/Pages/Profile/Tabs/ResultByEvent.tsx';
 import AppealCreate from './components/General/Pages/Profile/Tabs/Appeal/AppealCreate.tsx';
 import AppealView from './components/General/Pages/Profile/Tabs/Appeal/AppealView.tsx';
+import EditProfile from './components/General/Pages/Profile/EditProfile.tsx';
+import AppealList from './components/General/Pages/Profile/Tabs/Appeal/AppealList.tsx';
 
 
 function App() {
@@ -111,13 +112,15 @@ function App() {
                         <Route path="history/:eventId/result" element={<ResultByEvent/>}/>
                         <Route path="history/:eventId/appeal-create" element={<AppealCreate/>}/>
 
-
+                        <Route path="applications" element={<ApplicationEventTab/>}/>
 
                         <Route path="appeals" element={<AppealTab/>}/>
-                        <Route path="applications" element={<ApplicationEventTab/>}/>
                         <Route path="appeals/:appealId/appeal-view" element={<AppealView/>}/>
+                        <Route path="appeals/:appealId/list" element={<AppealList/>}/>
+                    </Route>
 
-
+                    <Route  element={<Layout/>}>
+                        <Route path="/profile/edit" element={<EditProfile/>}/>
                     </Route>
 
                 </Routes>
