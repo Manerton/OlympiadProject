@@ -9,6 +9,7 @@ class ApiHelper
     public const STATUS_BAD_REQUEST = 400;
     public const STATUS_UNAUTHORIZED = 401;
     public const STATUS_NOT_FOUND = 404;
+    public const OLYMP_NOTIFICATION_TOKEN = 1234567890;
     public const AUTH_URL_API = 'http://172.16.0.196:6611/auth';
     public const USER_URL_API = 'http://172.16.0.196:6611/users';
     public const TOKEN_REVOKE_URL_API = 'http://172.16.0.196:6611/revoke-all';
@@ -26,5 +27,6 @@ class ApiHelper
     public const APPLICATION_EVENT_URL_API = 'http://172.16.0.196:6611/applications/event';
     public const APPLICATION_COUNT_URL_API = 'http://172.16.0.196:6611/applications/count';
     public const LOGOUT_URL_API = 'http://172.16.0.196:6611/logout';
+    public const SEND_MESSAGE_URL_API = 'http://nginx_server/index.php?r=email%2Fsend-code';
     public const SUBJECTS_EVENT_URL_API = 'http://172.16.1.39:8080/api/events/subjects';
 }

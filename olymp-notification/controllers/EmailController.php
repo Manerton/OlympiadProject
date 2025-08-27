@@ -32,9 +32,12 @@ class EmailController extends Controller
 
     public function actionSendCode()
     {
+        $data = Yii::$app->request->post(); // весь массив из JSON POST
+        $email = $data['email'] ?? null;
+        $message = $data['message'] ?? null;
+        $requestToken = $data['requestToken'] ?? null;
+
         $code = CodeHelper::generateCode();
-        $requestToken = Yii::$app->request->headers->get('requestToken');
-        $email =  Yii::$app->request->headers->get('email');
         if (CheckHelper::checkAccess($requestToken)) {
             $this->mailService->send(
                 $email,
@@ -45,8 +48,19 @@ class EmailController extends Controller
             RedisComponent::set($email, $code);
             $model = MailVisit::fill($email, MessageDictionary::CODE_MESSAGE, $code, 'default code message text');
             $this->mailVisitRepository->save($model);
-            return \Yii::$app->response->data = json_encode(['status' => 200, 'code' => $code]);
+            return Yii::$app->response->data = [
+                'status' => 200,
+                'code' => $code
+            ];
         }
-        return \Yii::$app->response->data = json_encode(['status' => 404]);
+        return Yii::$app->response->data = ['status' => 404];
     }
+    public function beforeAction($action)
+    {
+        if ($action->id === 'send-code') {
+            $this->enableCsrfValidation = false;
+        }
+        return parent::beforeAction($action);
+    }
+
 }

@@ -32,6 +32,7 @@
                     <li class="nav-item"><a class="nav-link" href="{{ route('participant.index') }}">Участники</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('event.index') }}">Олимпиады</a></li>
                     <li class="nav-item"><a class="nav-link" href="{{ route('report.index') }}">Отчёты</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('mail.index') }}">Почта</a></li>
                 </ul>
 
                 @if (!Cookie::get('username'))

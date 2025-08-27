@@ -37,7 +37,7 @@ class SchoolRepository
                 'Authorization' => "Bearer ". $token
             ]
         );
-        return $response['data']['data'] ? $response['data']['data'] : [];
+        return isset($response['data']['data']) ? $response['data']['data'] : [];
     }
     public function getByApiId($id)
     {
@@ -56,7 +56,7 @@ class SchoolRepository
                 'Authorization' => "Bearer ". $token
             ]
         );
-        return $response['data']['data'];
+        return isset($response['data']['data']) ? $response['data']['data'] : [];
     }
     public function getCount()
     {
@@ -75,6 +75,6 @@ class SchoolRepository
                 'Authorization' => "Bearer ". $token
             ]
         );
-        return $response['data']['data'];
+        return isset($response['data']['data']) ? $response['data']['data'] : 0;
     }
 }

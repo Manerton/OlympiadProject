@@ -34,7 +34,7 @@ class EventRepository
                 'Authorization' => "Bearer ". $token
             ]
         );
-        return $response['data']['data'];
+        return isset($response['data']['data']) ? $response['data']['data'] : [];
     }
     public function getByApiId($id)
     {
@@ -53,7 +53,7 @@ class EventRepository
                 'Authorization' => "Bearer ". $token
             ]
         );
-        return $response['data']['data'] ? $response['data']['data'] : [];
+        return isset($response['data']['data']) ? $response['data']['data'] : [];
     }
     public function getCount()
     {
@@ -72,6 +72,6 @@ class EventRepository
                 'Authorization' => "Bearer ". $token
             ]
         );
-        return $response['data']['metadata']['amount'];
+        return isset($response['data']['metadata']['amount']) ? $response['data']['metadata']['amount'] : 0;
     }
 }

@@ -324,6 +324,7 @@ services:
 
 networks:
   olympic:
+    driver: bridge
 
 volumes:
   loki-data:

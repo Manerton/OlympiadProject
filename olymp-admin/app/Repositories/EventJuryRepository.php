@@ -33,6 +33,6 @@ class EventJuryRepository
                 'Authorization' => "Bearer ". $token
             ]
         );
-        return $response['data']['data'];
+        return isset($response['data']['data']) ? $response['data']['data'] : [];
     }
 }

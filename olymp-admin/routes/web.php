@@ -1,7 +1,9 @@
 <?php
 
+use app\controllers\EmailController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\MailController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SchoolController;
@@ -80,6 +82,9 @@ Route::group(['middleware' => 'auth.custom'], function() {
 
     Route::get('/report/index', [ReportController::class, 'index'])->name('report.index');
     Route::get('/report/download/{id}', [ReportController::class, 'download'])->name('report.download');
+
+    Route::get('/email/index', [MailController::class, 'index'])->name('mail.index');
+    Route::post('/email/send', [MailController::class, 'send'])->name('mail.send');
 });
 Route::get('/metrics', function () {
     $adapter = new Redis([
