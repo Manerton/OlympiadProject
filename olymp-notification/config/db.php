@@ -2,7 +2,7 @@
 
 return [
     'class' => 'yii\db\Connection',
-    'dsn' => 'mysql:host=localhost;dbname=olymp_notification',
+    'dsn' => 'mysql:host=olymp-notification-db:3306;dbname=olymp_notification',
     'username' => 'root',
     'password' => 'root',
     'charset' => 'utf8',

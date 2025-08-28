@@ -12,7 +12,6 @@
       <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/olymp_notification/tests" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/olymp-notification/spec" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/olymp-notification/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/brick/math" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/carbonphp/carbon-doctrine-types" />
@@ -200,7 +199,6 @@
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/sebastian/resource-operations" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/sebastian/type" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/sebastian/version" />
-      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/swiftmailer/swiftmailer" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/symfony/browser-kit" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/symfony/console" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/symfony/css-selector" />
@@ -212,7 +210,6 @@
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/symfony/mailer" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/symfony/mime" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/symfony/polyfill-ctype" />
-      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/symfony/polyfill-iconv" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/symfony/polyfill-intl-grapheme" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/symfony/polyfill-intl-idn" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/symfony/polyfill-intl-normalizer" />
@@ -231,7 +228,6 @@
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/yiisoft/yii2-gii" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/yiisoft/yii2-httpclient" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/yiisoft/yii2-redis" />
-      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/yiisoft/yii2-swiftmailer" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/yiisoft/yii2-symfonymailer" />
     </content>
     <orderEntry type="inheritedJdk" />

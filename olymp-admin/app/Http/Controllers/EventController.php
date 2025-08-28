@@ -186,4 +186,8 @@ class EventController extends Controller
         $this->eventScoreService->fill($id, $data);
         return redirect()->route('event.show', ['id' => $id]);
     }
+    public function appeal($id)
+    {
+
+    }
 }

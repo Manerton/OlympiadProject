@@ -15,7 +15,7 @@ class MailService
     }
 
     public function sendMessage($email, $message){
-       $this->apiService->post(ApiHelper::SEND_MESSAGE_URL_API,
+       return $this->apiService->post(ApiHelper::SEND_MESSAGE_URL_API,
             [
                 'email' => $email,
                 'message' => $message,

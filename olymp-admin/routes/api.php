@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\api\AppealApiController;
 use App\Http\Controllers\api\ApplicationApiController;
 use App\Http\Controllers\api\EventApiController;
+use App\Http\Controllers\api\MailApiController;
 use App\Http\Controllers\api\ParticipantApiController;
 use App\Http\Controllers\api\ReportApiController;
 use App\Http\Controllers\api\SchoolApiController;
@@ -78,6 +80,12 @@ Route::group(['middleware' => 'prometheus'], function() {
     Route::post('/event/change-score', [EventApiController::class, 'changeScore'])->name('event-api.change-score');
     Route::get('/event/prize-score/{id}', [EventApiController::class, 'prizeScore'])->name('event-api.prize-score');
     Route::post('/event/set-prize-score/{id}', [EventApiController::class, 'setPrizeScore'])->name('event-api.set-prize-score');
+
+    Route::get('/email/index', [MailApiController::class, 'index'])->name('mail.index');
+    Route::post('/email/send', [MailApiController::class, 'send'])->name('mail.send');
+
+    Route::post('/appeal/store', [AppealApiController::class, 'store'])->name('appeal-api.store');
+    Route::post('/appeal/change-status/{id}', [AppealApiController::class, 'changeStatus'])->name('appeal-api.change-status');
 });
 Route::get('/metrics', function () {
     $adapter = new Redis([

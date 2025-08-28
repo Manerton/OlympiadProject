@@ -65,6 +65,9 @@
                     <a href="{{ route('event.point', $event->id) }}" class="btn btn-success">
                         <i class="fas fa-arrow-left"></i> Перейти к выставлению баллов
                     </a>
+                    <a href="{{ route('event.appeal', $event->id) }}" class="btn btn-danger">
+                        <i class="fas fa-arrow-left"></i> Перейти к апелляциям
+                    </a>
                     <div>
                         <form action="{{ route('event.delete', $event->id) }}" method="POST" class="d-inline">
                             @csrf
