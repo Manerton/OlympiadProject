@@ -42,12 +42,9 @@ import AppealView from './components/General/Pages/Profile/Tabs/Appeal/AppealVie
 import EditProfile from './components/General/Pages/Profile/EditProfile.tsx';
 import AppealList from './components/General/Pages/Profile/Tabs/Appeal/AppealList.tsx';
 import HistoryTab from './components/General/Pages/Profile/Tabs/History/History.tsx';
-<<<<<<< HEAD
 import AchievementTab from './components/General/Pages/Profile/Tabs/Achievement.tsx';
-
-=======
 import MailIndex from './components/olymp-admin/mail/index.tsx';
->>>>>>> 8211be96a2b357052c0817746bac511447376a84
+
 
 function App() {
     return (
@@ -102,23 +99,14 @@ function App() {
                         <Route path="/olymp-admin/application/show/:id" element={<ApplicationShow />} />
                         <Route path="/olymp-admin/application/edit/:id" element={<ApplicationEdit />} />
 
-<<<<<<< HEAD
                         <Route path="/olymp-admin/event/index" element={<EventIndex />} />
                         <Route path="/olymp-admin/event/show/:id" element={<EventShow />} />
                         <Route path="/olymp-admin/event/attendance/:id" element={<EventAttendance />} />
                         <Route path="/olymp-admin/event/prize-score/:id" element={<EventPrizeScore />} />
                         <Route path="/olymp-admin/event/task/:id" element={<EventTask />} />
                         <Route path="/olymp-admin/event/point/:id" element={<EventPoint />} />
-=======
-                    <Route path="/olymp-admin/event/index" element={<EventIndex />} />
-                    <Route path="/olymp-admin/event/show/:id" element={<EventShow />} />
-                    <Route path="/olymp-admin/event/attendance/:id" element={<EventAttendance />} />
-                    <Route path="/olymp-admin/event/prize-score/:id" element={<EventPrizeScore />} />
-                    <Route path="/olymp-admin/event/task/:id" element={<EventTask />} />
-                    <Route path="/olymp-admin/event/point/:id" element={<EventPoint />} />
 
-                     <Route path="/olymp-admin/mail/index" element={<MailIndex />} />
->>>>>>> 8211be96a2b357052c0817746bac511447376a84
+                          <Route path="/olymp-admin/mail/index" element={<MailIndex />} />
                     </Route>
 
                     <Route path="/profile" element={<ProfileLayout />}>
