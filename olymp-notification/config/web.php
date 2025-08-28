@@ -40,17 +40,8 @@ $config = [
             'database' => 0,
         ],
         'mailer' => [
-            'class' => 'yii\swiftmailer\Mailer',
-            'viewPath' => '@app/mail',
-            'useFileTransport' => false, // false — чтобы письма реально отправлялись
-            'transport' => [
-                'class' => 'Swift_SmtpTransport',
-                'host' => 'smtp.yandex.ru',
-                'username' => 'rkuzurgaliev@schooltech.ru', // полный email
-                'password' => 'Pass123$45', // пароль или пароль приложения
-                'port' => '465',
-                'encryption' => 'ssl',
-            ],
+            'class' => \app\services\MailSymfonyService::class,
+            'dsn' => 'smtp://rkuzurgaliev%40schooltech.ru:Pass123$45@smtp.yandex.ru:465?encryption=ssl',
         ],
 
         'apiService' => [

@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Builder\ApplicationBuilder;
 use App\Builder\EventBuilder;
 use App\Builder\UserBuilder;
-use App\Components\Dictionaries\ApplicationStatusDictionary;
+use App\Components\Dictionaries\StatusDictionary;
 use App\Repositories\ApplicationRepository;
 use App\Repositories\EventRepository;
 use App\Repositories\UserRepository;
@@ -75,7 +75,7 @@ class ApplicationService
     public function confirmedApplications($applications)
     {
         $array = array_filter($applications, function ($application) {
-            return $application->status == ApplicationStatusDictionary::APPROVED;
+            return $application->status == StatusDictionary::APPROVED;
         });
         return $array;
     }

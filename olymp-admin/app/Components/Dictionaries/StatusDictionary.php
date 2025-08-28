@@ -2,7 +2,7 @@
 
 namespace App\Components\Dictionaries;
 
-class ApplicationStatusDictionary
+class StatusDictionary
 {
     public const AWAITING = 1;
     public const APPROVED = 2;

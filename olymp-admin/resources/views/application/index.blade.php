@@ -31,12 +31,14 @@
                     <td>{{ $application->eventAPI->name . ' ' . $subjects[$application->eventAPI->subject] }}</td>
                     <td>{{ $statuses[$application->status] }}</td>
                     <td>
-                        @if($application->status == \App\Components\Dictionaries\ApplicationStatusDictionary::AWAITING)
-                            <form action="{{ route('application.confirm', $application->id) }}" method="POST" style="display: inline-block;">
+                        @if($application->status == \App\Components\Dictionaries\StatusDictionary::AWAITING)
+                            <form action="{{ route('application.confirm', $application->id) }}" method="POST"
+                                  style="display: inline-block;">
                                 @csrf
                                 <button type="submit" class="btn btn-sm btn-success">Подтвердить заявку</button>
                             </form>
-                            <form action="{{ route('application.reject', $application->id) }}" method="POST" style="display: inline-block;">
+                            <form action="{{ route('application.reject', $application->id) }}" method="POST"
+                                  style="display: inline-block;">
                                 @csrf
                                 <button type="submit" class="btn btn-sm btn-danger">Отклонить заявку</button>
                             </form>
@@ -45,10 +47,13 @@
                     <td>
                         <a href="{{ route('application.show', $application->id) }}" class="btn btn-sm btn-primary">Просмотр</a>
                         <a href="{{ route('application.edit', $application->id) }}" class="btn btn-sm btn-warning">Редактировать</a>
-                        <form action="{{ route('application.delete', $application->id) }}" method="POST" style="display: inline-block;">
+                        <form action="{{ route('application.delete', $application->id) }}" method="POST"
+                              style="display: inline-block;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Вы уверены, что хотите удалить этот элемент?')">Удалить</button>
+                            <button type="submit" class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Вы уверены, что хотите удалить этот элемент?')">Удалить
+                            </button>
                         </form>
                     </td>
                 </tr>

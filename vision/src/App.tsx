@@ -42,7 +42,7 @@ import AppealView from './components/General/Pages/Profile/Tabs/Appeal/AppealVie
 import EditProfile from './components/General/Pages/Profile/EditProfile.tsx';
 import AppealList from './components/General/Pages/Profile/Tabs/Appeal/AppealList.tsx';
 import HistoryTab from './components/General/Pages/Profile/Tabs/History/History.tsx';
-
+import MailIndex from './components/olymp-admin/mail/index.tsx';
 
 function App() {
     return (
@@ -103,6 +103,8 @@ function App() {
                     <Route path="/olymp-admin/event/prize-score/:id" element={<EventPrizeScore />} />
                     <Route path="/olymp-admin/event/task/:id" element={<EventTask />} />
                     <Route path="/olymp-admin/event/point/:id" element={<EventPoint />} />
+
+                     <Route path="/olymp-admin/mail/index" element={<MailIndex />} />
                     </Route>
 
                     <Route path="/profile" element={<ProfileLayout/>}>

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\api;
 
-use App\Components\Dictionaries\ApplicationStatusDictionary;
+use App\Components\Dictionaries\StatusDictionary;
 use App\Components\Dictionaries\ReasonParticipantDictionary;
 use App\Components\Dictionaries\SubjectDictionary;
 use App\Components\RabbitMQHelper;
@@ -39,7 +39,7 @@ class ApplicationApiController extends Controller
     public function index($page = 1){
         $applications = $this->applicationService->findAll($page);
         $applicationsAmount = $this->applicationRepository->getCount();
-        $statuses = ApplicationStatusDictionary::getList();
+        $statuses = StatusDictionary::getList();
         $subjects = SubjectDictionary::getList();
         return response()->json([
             'applications' => collect($applications)->map(function($application) {
@@ -67,7 +67,7 @@ class ApplicationApiController extends Controller
         ]);
     }
     public function create(){
-        $statuses = ApplicationStatusDictionary::getList();
+        $statuses = StatusDictionary::getList();
         $users = $this->userService->findAll();
         $events = $this->eventService->findAll();
         return response()->json([
@@ -89,7 +89,7 @@ class ApplicationApiController extends Controller
     }
     public function show($id){
         $application = $this->applicationService->find($id);
-        $statuses = ApplicationStatusDictionary::getList();
+        $statuses = StatusDictionary::getList();
         return response()->json([
             'application' => [
                 'id' => $application->id,
@@ -111,7 +111,7 @@ class ApplicationApiController extends Controller
     }
     public function edit($id){
         $application = $this->applicationService->find($id);
-        $statuses = ApplicationStatusDictionary::getList();
+        $statuses = StatusDictionary::getList();
         $users = $this->userService->findAll();
         $subjects = SubjectDictionary::getList();
         $reasons = ReasonParticipantDictionary::getList();
@@ -168,7 +168,7 @@ class ApplicationApiController extends Controller
             RabbitMQHelper::QUEUE_NAME,
             RabbitMQHelper::UPDATE,
             RabbitMQHelper::APPLICATION_TABLE,
-            ['status' => ApplicationStatusDictionary::APPROVED],
+            ['status' => StatusDictionary::APPROVED],
             ['id' => $id]
         );
         return response()->json([]);
@@ -179,7 +179,7 @@ class ApplicationApiController extends Controller
             RabbitMQHelper::QUEUE_NAME,
             RabbitMQHelper::UPDATE,
             RabbitMQHelper::APPLICATION_TABLE,
-            ['status' => ApplicationStatusDictionary::REJECTED],
+            ['status' => StatusDictionary::REJECTED],
             ['id' => $id]
         );
         return response()->json([]);

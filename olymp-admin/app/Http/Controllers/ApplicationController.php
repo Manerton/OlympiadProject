@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Components\Dictionaries\ApplicationStatusDictionary;
+use App\Components\Dictionaries\StatusDictionary;
 use App\Components\Dictionaries\ReasonParticipantDictionary;
 use App\Components\Dictionaries\SubjectDictionary;
 use App\Components\RabbitMQHelper;
@@ -37,12 +37,12 @@ class ApplicationController extends Controller
     public function index($page = 1){
         $applications = $this->applicationService->findAll($page);
         $applicationsAmount = $this->applicationRepository->getCount();
-        $statuses = ApplicationStatusDictionary::getList();
+        $statuses = StatusDictionary::getList();
         $subjects = SubjectDictionary::getList();
         return view('application.index', compact('applications', 'statuses', 'applicationsAmount', 'subjects'));
     }
     public function create(){
-        $statuses = ApplicationStatusDictionary::getList();
+        $statuses = StatusDictionary::getList();
         $users = $this->userService->findAll();
         $events = $this->eventService->findAll();
         return view('application.create')->with(compact('users', 'statuses', 'events'));
@@ -60,12 +60,12 @@ class ApplicationController extends Controller
     }
     public function show($id){
         $application = $this->applicationService->find($id);
-        $statuses = ApplicationStatusDictionary::getList();
+        $statuses = StatusDictionary::getList();
         return view('application.show', compact('application', 'statuses'));
     }
     public function edit($id){
         $application = $this->applicationService->find($id);
-        $statuses = ApplicationStatusDictionary::getList();
+        $statuses = StatusDictionary::getList();
         $users = $this->userService->findAll();
         $subjects = SubjectDictionary::getList();
         $reasons = ReasonParticipantDictionary::getList();
@@ -101,7 +101,7 @@ class ApplicationController extends Controller
             RabbitMQHelper::QUEUE_NAME,
             RabbitMQHelper::UPDATE,
             RabbitMQHelper::APPLICATION_TABLE,
-            ['status' => ApplicationStatusDictionary::APPROVED],
+            ['status' => StatusDictionary::APPROVED],
             ['id' => $id]
         );
         return redirect()->route('application.index');
@@ -112,7 +112,7 @@ class ApplicationController extends Controller
             RabbitMQHelper::QUEUE_NAME,
             RabbitMQHelper::UPDATE,
             RabbitMQHelper::APPLICATION_TABLE,
-            ['status' => ApplicationStatusDictionary::REJECTED],
+            ['status' => StatusDictionary::REJECTED],
             ['id' => $id]
         );
         return redirect()->route('application.index');

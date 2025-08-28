@@ -79,6 +79,7 @@ Route::group(['middleware' => 'auth.custom'], function() {
     Route::post('/event/change-score', [EventController::class, 'changeScore'])->name('event.change-score');
     Route::get('/event/prize-score/{id}', [EventController::class, 'prizeScore'])->name('event.prize-score');
     Route::post('/event/set-prize-score/{id}', [EventController::class, 'setPrizeScore'])->name('event.set-prize-score');
+    Route::get('/event/appeal/{id}', [EventController::class, 'appeal'])->name('event.appeal');
 
     Route::get('/report/index', [ReportController::class, 'index'])->name('report.index');
     Route::get('/report/download/{id}', [ReportController::class, 'download'])->name('report.download');

@@ -1,6 +1,6 @@
 <?php
 
-namespace components;
+namespace app\components;
 
 abstract class BaseDictionary
 {

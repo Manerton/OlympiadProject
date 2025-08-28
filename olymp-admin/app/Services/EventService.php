@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Builder\EventBuilder;
-use App\Components\Dictionaries\ApplicationStatusDictionary;
+use App\Components\Dictionaries\StatusDictionary;
 use App\Repositories\AttendanceRepository;
 use App\Repositories\EventRepository;
 
@@ -39,7 +39,7 @@ class EventService
     }
     public function synchronize($applications, $eventApplications){
         foreach ($applications as $application){
-            if (count($this->attendanceRepository->getByApplicationId($application->id)) == 0 && $application->status == ApplicationStatusDictionary::APPROVED){
+            if (count($this->attendanceRepository->getByApplicationId($application->id)) == 0 && $application->status == StatusDictionary::APPROVED){
                 $this->attendanceRepository->create($application->id);
             }
         }
