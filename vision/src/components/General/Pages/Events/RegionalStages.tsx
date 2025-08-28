@@ -35,13 +35,13 @@ const RegionalStagesPage: React.FC = () => {
 
 
   const handleStageClick = (id: string) => {
-  console.log("Переход к этапу:", id);
+  //console.log("Переход к этапу:", id);
   navigate(`/OlympiadsPage/${id}`);
 };
 
   return (
     <Container className="py-4">
-      <h2 className="mb-4">Региональные этапы</h2>
+      <h2 className="mb-5 text-center">Региональные этапы</h2>
 
       {loading && <Spinner animation="border" />}
       {error && <Alert variant="danger">{error}</Alert>}

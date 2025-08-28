@@ -19,6 +19,8 @@ func getStrategy(prefix string) strategy.AggregationStrategy {
 	switch prefix {
 	case "/aplicationevent":
 		return strategy.NewDefaultAggregationStrategy(5 * time.Second)
+	case "/ApplicationEvent/":
+		return strategy.NewApplicationEventStrategy(5 * time.Second)
 	default:
 		return nil
 	}

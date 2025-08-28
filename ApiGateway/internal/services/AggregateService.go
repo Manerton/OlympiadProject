@@ -2,6 +2,7 @@ package services
 
 import (
 	"main/internal/config"
+	"main/internal/responcetypes"
 	"main/internal/strategy"
 	"net/http"
 	"time"
@@ -23,11 +24,11 @@ func (s *AggregateService) Aggregate(
 	route config.Route,
 	origReq *http.Request,
 	strategy strategy.AggregationStrategy, // опциональная стратегия
-) ([]interface{}, error) {
+) (*responcetypes.ApiResponse, error) {
 	aggStrategy := s.defaultStrategy
 	if strategy != nil {
 		aggStrategy = strategy
 	}
 
-	return aggStrategy.Aggregate(route.Services, origReq)
+	return aggStrategy.Aggregate(route.Targets, origReq)
 }

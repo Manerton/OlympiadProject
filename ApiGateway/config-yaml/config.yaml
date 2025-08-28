@@ -113,13 +113,33 @@ HTTP_SERVERS_INFO:
       skip_auth: false
 
     # ==================== AGGREGATE ROUTES ====================
-    - prefix: "/aplicationevent"
+    - prefix: "/AplicationEvent"
       aggregate: true
       services:
         - "http://172.16.0.196:8082/applications"
         - "http://172.16.1.39:8080/api/events"
       skip_auth: true
       roles: []
+
+    - prefix: "/ApplicationEventtest/"
+      aggregate: true
+      targets:
+        - url: "http://172.16.0.196:8082/applications/user/"
+          fields: ["id", "status"]
+        - url: "http://172.16.0.196:8082/api/events/list/"
+          fields: ["id", "name", "start_date", "end_date", "previous_event_id", "subject", "class_number", "additional_info"]
+      skip_auth: false
+      roles: []  
+    - prefix: "/ApplicationEvent/"
+      aggregate: true
+      targets:
+        - url: "http://172.16.0.196:8082/applications/user/"
+          fields: [""]
+        - url: "http://172.16.1.39:8080/api/events/list"
+          fields: [""]
+      skip_auth: false
+      roles: []  
+
 
 CORS_INFO:
   allow_origins: [

@@ -8,13 +8,18 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+type Target struct {
+	URL    string   `yaml:"url"`
+	Fields []string `yaml:"fields"`
+}
+
 type Route struct {
 	Prefix    string   `yaml:"prefix"`
 	Target    string   `yaml:"target"`
 	SkipAuth  bool     `yaml:"skip_auth"`
 	Aggregate bool     `yaml:"aggregate"`
-	Services  []string `yaml:"services"` // список URL-ов для агрегации
-	Roles     []int    `yaml:"roles"`    // ← ДОБАВИЛИ
+	Targets   []Target `yaml:"targets"` // список URL-ов для агрегации
+	Roles     []int    `yaml:"roles"`   // ← ДОБАВИЛИ
 }
 
 type HTTPServers struct {

@@ -2,19 +2,8 @@
 import React from "react";
 
 import RegionalStageCard from "./RegionalStageCard";
+import type { MyEvent } from "../../../../types/event";
 
-interface MyEvent {
-    id?: string;
-    name: string;
-    start_date: string;
-    end_date: string;
-    previous_event_id?: string;
-    event_type: string;
-    subject?: number;
-    class_number?: number;
-    additional_info?: string;
-    events?: MyEvent[];
-}
 
 interface Props {
   stages: MyEvent[];
