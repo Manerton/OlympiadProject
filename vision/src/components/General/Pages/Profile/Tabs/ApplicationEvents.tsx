@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import type { ApplicationEvent } from "../../../../types/event";
-import ApplicationEventCart from "./EventCart";
 import { ApplicationStatus } from "../../../../../dictionary/applicationStatus";
 import { StatusIcon } from "../../../../Helpers/StatusBlock";
+import EventCart from "./EventCart";
 
 
 const ApplicationEventTab: React.FC = () => {
@@ -83,7 +83,7 @@ const ApplicationEventTab: React.FC = () => {
     return (
         <div>
             {events.map((event) => (
-                <ApplicationEventCart key={event.id} event={event} footer={footer(event.status)} />
+                <EventCart key={event.id} event={event} footer={footer(event.status)} />
             ))}
         </div>
     );

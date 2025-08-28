@@ -1,9 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
-import type { ApplicationEvent } from "../../../../types/event";
-import ApplicationEventCart from "./EventCart";
-import { ApplicationStatus } from "../../../../../dictionary/applicationStatus";
-import type { Appeal } from "../../../../types/appeal";
+
 import { useNavigate } from "react-router-dom";
+import type { ApplicationEvent } from "../../../../../types/event";
+import { ApplicationStatus } from "../../../../../../dictionary/applicationStatus";
+import EventCart from "../EventCart";
 
 
 const HistoryTab: React.FC = () => {
@@ -85,7 +85,7 @@ const HistoryTab: React.FC = () => {
     return (
         <div>
             {events.map((event) => (
-                <ApplicationEventCart key={event.id} event={event} footer={footer(event)} />
+                <EventCart key={event.id} event={event} footer={footer(event)} />
             ))}
         </div>
     );

@@ -1,6 +1,7 @@
 import React from "react";
 import { useAuth } from "../../../Helpers/AuthContext";
 import { useNavigate } from "react-router-dom";
+import UserInfoBlock from "../../../Common/UserInfo";
 
 const EditProfile: React.FC = () => {
 
@@ -34,24 +35,18 @@ const EditProfile: React.FC = () => {
         navigate("/profile")
     }
 
+    const actions = (
+        <>
+            <button className="btn btn-primary" onClick={handleSave}>Сохранить</button>
+            <button className="btn btn-secondary" onClick={() => navigate("/profile")}>Отмена</button>
+        </>
+    )
+
     return (
         <div className="d-flex flex-column min-vh-100">
             <div className="container">
                 {/* Информация о пользователе */}
-                <div className="d-flex m-4 justify-content-between">
-                    <div className="d-flex align-items-center">
-                        <img src="" alt="" className="rounded-circle me-3" width={80} height={80} />
-                        <div>
-                            <h4>{profile.surname} {profile.firstname} {profile.patronymic}</h4>
-                            <p className="text-muted">{profile.email}</p>
-                        </div>
-                    </div>
-                    <div className="d-flex align-items-center gap-2">
-                        <button className="btn btn-primary ms-auto" onClick={handleSave}>Сохранить</button>
-                        <button className="btn btn-secondary ms-auto" onClick={() => navigate("/profile")}>Отмена</button>
-                    </div>
-                </div>
-
+                <UserInfoBlock email={user?.Email} actions={actions} />
                 <form className="mt-3" onSubmit={e => { e.preventDefault(); handleSave(); }}>
                     <div className="row g-3">
                         <div className="col-md-4">
@@ -95,5 +90,5 @@ const EditProfile: React.FC = () => {
         </div>
     )
 }
-    
+
 export default EditProfile

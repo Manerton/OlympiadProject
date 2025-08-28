@@ -1,5 +1,5 @@
 import type React from "react";
-import type { ApplicationEvent } from "../../../../types/event";
+import type { ApplicationEvent } from "../../../../../types/event";
 import { useParams } from "react-router-dom";
 
 

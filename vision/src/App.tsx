@@ -34,14 +34,14 @@ import RegionalStagesPage from './components/General/Pages/Events/RegionalStages
 import OlympiadsPage from './components/General/Pages/Events/OlympiadsPage'
 import RequireAuth from './components/Helpers/RequireAuth.tsx';
 import ProfileLayout from './components/General/Layouts/Profile.tsx';
-import HistoryTab from './components/General/Pages/Profile/Tabs/History.tsx';
 import AppealTab from './components/General/Pages/Profile/Tabs/Appeal/Appeal.tsx';
 import ApplicationEventTab from './components/General/Pages/Profile/Tabs/ApplicationEvents.tsx';
-import ResultByEvent from './components/General/Pages/Profile/Tabs/ResultByEvent.tsx';
+import ResultByEvent from './components/General/Pages/Profile/Tabs/History/Result.tsx';
 import AppealCreate from './components/General/Pages/Profile/Tabs/Appeal/AppealCreate.tsx';
 import AppealView from './components/General/Pages/Profile/Tabs/Appeal/AppealView.tsx';
 import EditProfile from './components/General/Pages/Profile/EditProfile.tsx';
 import AppealList from './components/General/Pages/Profile/Tabs/Appeal/AppealList.tsx';
+import HistoryTab from './components/General/Pages/Profile/Tabs/History/History.tsx';
 
 
 function App() {

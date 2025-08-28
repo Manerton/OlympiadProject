@@ -6,6 +6,8 @@ import Header from './header.tsx';
 import Footer from './Footer.tsx';
 import { UserRole } from '../../../dictionary/role.tsx';
 import { useAuth } from '../../Helpers/AuthContext.tsx';
+import { FaUserGraduate } from 'react-icons/fa';
+import UserInfoBlock from '../../Common/UserInfo.tsx';
 
 const ProfileLayout: React.FC = () => {
 
@@ -29,6 +31,12 @@ const ProfileLayout: React.FC = () => {
 
     const navigate = useNavigate()
 
+    const actions = (
+        <>
+            <button className="btn btn-primary" onClick={() => navigate("/profile/edit")}>Редактировать</button>
+        </>
+    );
+
     return (
         <div>
             <Header />
@@ -36,15 +44,9 @@ const ProfileLayout: React.FC = () => {
             <div className="d-flex flex-column min-vh-100">
                 <div className="container">
                     {/* Информация о пользователе */}
-                    <div className="d-flex align-items-center m-4">
-                        <img src="" alt="" className="roumded-circle me-3" width={80} height={80} />
-                        <div>
-                            <h4>Иванов Иван Иванович</h4>
-                            <p className="text-muted">{user?.Email}</p>
-                        </div>
-                        <button className="btn btn-primary ms-auto" onClick={() => navigate("/profile/edit")}>Редактировать</button>
-                    </div>
+                    <UserInfoBlock email={user?.Email} actions={actions}/>
 
+                    {/* Навигационные вкладки */}
                     <ul className="nav nav-tabs w-100">
                         {tabs.map((tab) => (
                             <li key={tab.path} className="nav-item flex-fill text-center">

@@ -8,7 +8,7 @@ interface Props {
     footer?: React.ReactNode; // сюда передаем либо статус, либо кнопки
 }
 
-const EventCard: React.FC<Props> = ({ event, footer }) => {
+const EventCart: React.FC<Props> = ({ event, footer }) => {
 
     const startDate = new Date(event.start_date).toLocaleDateString();
     const endDate = new Date(event.end_date).toLocaleDateString();
@@ -54,4 +54,4 @@ const DefaultFooter: React.FC<{ event: ApplicationEvent }> = ({ event }) => {
     )
 }
 
-export default EventCard;
+export default EventCart;

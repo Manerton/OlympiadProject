@@ -9,13 +9,13 @@ interface StatusIconProps {
 export const StatusIcon: React.FC<StatusIconProps> = ({ status }) => {
   switch (status) {
     case ApplicationStatus.Approved:
-      return <FaCheckCircle size={20} className="text-success" />;
+      return <FaCheckCircle size={20} title="Одобренно" className="text-success" />;
 
     case ApplicationStatus.Rejected:
-      return <FaTimesCircle size={20} className="text-danger" />;
+      return <FaTimesCircle size={20} title="Отклонено" className="text-danger" />;
 
     case ApplicationStatus.Pending:
-      return <FaQuestionCircle size={20} className="text-warning" />;
+      return <FaQuestionCircle size={20} title="На рассмотрении" className="text-warning" />;
 
     default:
       return <Button variant="primary">Результаты</Button>;
