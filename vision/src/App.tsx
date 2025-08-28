@@ -42,16 +42,17 @@ import AppealView from './components/General/Pages/Profile/Tabs/Appeal/AppealVie
 import EditProfile from './components/General/Pages/Profile/EditProfile.tsx';
 import AppealList from './components/General/Pages/Profile/Tabs/Appeal/AppealList.tsx';
 import HistoryTab from './components/General/Pages/Profile/Tabs/History/History.tsx';
+import AchievementTab from './components/General/Pages/Profile/Tabs/Achievement.tsx';
 
 
 function App() {
     return (
-        
-        
+
+
         <Router>
             <div className="App">
                 <Routes>
-                    
+
                     <Route element={<Layout />}>
                         <Route path="/" element={<MainPage />} />
                         <Route path="/auth" element={<AuthPage />} />
@@ -64,63 +65,65 @@ function App() {
                             }
                             /> */}
                         <Route path="/RegionalStages" element={<RegionalStagesPage />} />
-                        <Route path= "OlympiadsPage/:id" element={<OlympiadsPage />} />
+                        <Route path="OlympiadsPage/:id" element={<OlympiadsPage />} />
                     </Route>
 
                     <Route
-                    element={
-                        <RequireAuth allowedRoles={[1]}>
-                        <AdminLayout />
-                        </RequireAuth>
-                    }
+                        element={
+                            <RequireAuth allowedRoles={[1]}>
+                                <AdminLayout />
+                            </RequireAuth>
+                        }
                     >
-                    <Route path="/AdminPanel" element={<AdminPanel />} />
-                    <Route path="/olymp-admin/user/index" element={<UserIndex />} />
-                    <Route path="/olymp-admin/user/show/:id" element={<UserShow />} />
-                    <Route path="/olymp-admin/user/create" element={<UserCreate />} />
-                    <Route path="/olymp-admin/user/edit/:id" element={<UserEdit />} />
-                    <Route path="/attendance" element={<AttendancePage />} />
+                        <Route path="/AdminPanel" element={<AdminPanel />} />
+                        <Route path="/olymp-admin/user/index" element={<UserIndex />} />
+                        <Route path="/olymp-admin/user/show/:id" element={<UserShow />} />
+                        <Route path="/olymp-admin/user/create" element={<UserCreate />} />
+                        <Route path="/olymp-admin/user/edit/:id" element={<UserEdit />} />
+                        <Route path="/attendance" element={<AttendancePage />} />
 
-                    <Route path="/olymp-admin/participant/index" element={<ParticipantIndex />} />
-                    <Route path="/olymp-admin/participant/show/:id" element={<ParticipantShow />} />
-                    <Route path="/olymp-admin/participant/create" element={<ParticipantCreate />} />
-                    <Route path="/olymp-admin/participant/edit/:id" element={<ParticipantEdit />} />
+                        <Route path="/olymp-admin/participant/index" element={<ParticipantIndex />} />
+                        <Route path="/olymp-admin/participant/show/:id" element={<ParticipantShow />} />
+                        <Route path="/olymp-admin/participant/create" element={<ParticipantCreate />} />
+                        <Route path="/olymp-admin/participant/edit/:id" element={<ParticipantEdit />} />
 
-                    <Route path="/olymp-admin/school/index" element={<SchoolIndex />} />
-                    <Route path="/olymp-admin/school/show/:id" element={<SchoolShow />} />
-                    <Route path="/olymp-admin/school/create" element={<SchoolCreate />} />
-                    <Route path="/olymp-admin/school/edit/:id" element={<SchoolEdit />} />
-                    <Route path="/olymp-admin/report/index" element={<ReportIndex />} />
+                        <Route path="/olymp-admin/school/index" element={<SchoolIndex />} />
+                        <Route path="/olymp-admin/school/show/:id" element={<SchoolShow />} />
+                        <Route path="/olymp-admin/school/create" element={<SchoolCreate />} />
+                        <Route path="/olymp-admin/school/edit/:id" element={<SchoolEdit />} />
+                        <Route path="/olymp-admin/report/index" element={<ReportIndex />} />
 
-                    <Route path="/olymp-admin/application/index" element={<ApplicationIndex />} />
-                    <Route path="/olymp-admin/application/create" element={<ApplicationCreate />} />
-                    <Route path="/olymp-admin/application/show/:id" element={<ApplicationShow />} />
-                    <Route path="/olymp-admin/application/edit/:id" element={<ApplicationEdit />} />
+                        <Route path="/olymp-admin/application/index" element={<ApplicationIndex />} />
+                        <Route path="/olymp-admin/application/create" element={<ApplicationCreate />} />
+                        <Route path="/olymp-admin/application/show/:id" element={<ApplicationShow />} />
+                        <Route path="/olymp-admin/application/edit/:id" element={<ApplicationEdit />} />
 
-                    <Route path="/olymp-admin/event/index" element={<EventIndex />} />
-                    <Route path="/olymp-admin/event/show/:id" element={<EventShow />} />
-                    <Route path="/olymp-admin/event/attendance/:id" element={<EventAttendance />} />
-                    <Route path="/olymp-admin/event/prize-score/:id" element={<EventPrizeScore />} />
-                    <Route path="/olymp-admin/event/task/:id" element={<EventTask />} />
-                    <Route path="/olymp-admin/event/point/:id" element={<EventPoint />} />
+                        <Route path="/olymp-admin/event/index" element={<EventIndex />} />
+                        <Route path="/olymp-admin/event/show/:id" element={<EventShow />} />
+                        <Route path="/olymp-admin/event/attendance/:id" element={<EventAttendance />} />
+                        <Route path="/olymp-admin/event/prize-score/:id" element={<EventPrizeScore />} />
+                        <Route path="/olymp-admin/event/task/:id" element={<EventTask />} />
+                        <Route path="/olymp-admin/event/point/:id" element={<EventPoint />} />
                     </Route>
 
-                    <Route path="/profile" element={<ProfileLayout/>}>
-                        <Route index element={<Navigate to="history"/>}/>
+                    <Route path="/profile" element={<ProfileLayout />}>
+                        <Route index element={<Navigate to="history" />} />
 
-                        <Route path="history" element={<HistoryTab/>}/>
-                        <Route path="history/:eventId/result" element={<ResultByEvent/>}/>
-                        <Route path="history/:eventId/appeal-create" element={<AppealCreate/>}/>
+                        <Route path="achievements" element={<AchievementTab />} />
 
-                        <Route path="applications" element={<ApplicationEventTab/>}/>
+                        <Route path="history" element={<HistoryTab />} />
+                        <Route path="history/:eventId/result" element={<ResultByEvent />} />
+                        <Route path="history/:eventId/appeal-create" element={<AppealCreate />} />
 
-                        <Route path="appeals" element={<AppealTab/>}/>
-                        <Route path="appeals/:appealId/appeal-view" element={<AppealView/>}/>
-                        <Route path="appeals/:appealId/list" element={<AppealList/>}/>
+                        <Route path="applications" element={<ApplicationEventTab />} />
+
+                        <Route path="appeals" element={<AppealTab />} />
+                        <Route path="appeals/:appealId/appeal-view" element={<AppealView />} />
+                        <Route path="appeals/:appealId/list" element={<AppealList />} />
                     </Route>
 
-                    <Route  element={<Layout/>}>
-                        <Route path="/profile/edit" element={<EditProfile/>}/>
+                    <Route element={<Layout />}>
+                        <Route path="/profile/edit" element={<EditProfile />} />
                     </Route>
 
                 </Routes>

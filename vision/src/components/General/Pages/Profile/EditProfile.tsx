@@ -1,13 +1,29 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "../../../Helpers/AuthContext";
 import { useNavigate } from "react-router-dom";
 import UserInfoBlock from "../../../Common/UserInfo";
+import { axiosSSOUserInfo, axiosSSOUserParticipantInfo } from "../../../../requests/SSORequests";
+import { UserRole } from "../../../../dictionary/role";
 
 const EditProfile: React.FC = () => {
 
-    const { user } = useAuth()
+    const { accessToken, user } = useAuth()
 
     const navigate = useNavigate()
+
+    useEffect(() => {
+        try
+        {
+            if (user?.role === UserRole.Participant){
+                const userInfo = axiosSSOUserParticipantInfo(accessToken!, user?.id!);
+            } else {
+                const userInfo = axiosSSOUserInfo(accessToken!, user?.id!);
+            }
+
+        } catch (err) {
+            console.error(err)
+        }
+    }, [])
 
 
     // Пример начальных значений, заменить на реальные из user
@@ -37,7 +53,7 @@ const EditProfile: React.FC = () => {
 
     const actions = (
         <>
-            <button className="btn btn-primary" onClick={handleSave}>Сохранить</button>
+            {/* <button className="btn btn-primary" onClick={handleSave}>Сохранить</button> */}
             <button className="btn btn-secondary" onClick={() => navigate("/profile")}>Отмена</button>
         </>
     )

@@ -17,3 +17,29 @@ export interface RegisterForm {
     school: string
     classnumber: number
 }
+
+export interface User {
+    firstname: string
+    surname: string
+    patronymic: string
+    phone_number: string
+    birthdate: string
+    email: string
+    gender: number
+    role: number
+}
+
+export interface UserParticipant {
+    firstname: string
+    surname: string
+    patronymic: string
+    phone_number: string
+    birthdate: string
+    email: string
+    gender: number
+    role: number
+    school: string
+    disability: number
+    classnumber: number
+    citezenship: number
+}

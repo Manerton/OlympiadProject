@@ -31,6 +31,16 @@ export const AUTH = {
     register: "http://172.16.0.196:6611/register"
 }
 
+export const USER = {
+    info: "http://172.16.0.196:6611/sso/user",
+    
+}
+
+export const PARTICIPANT = {
+    info: "http://172.16.0.196:6611/sso/user-participant",
+}
+
+
 const LOCAL_CONFIG = {
     EVENTS: "http://localhost:8080/events",
     JUREASSIGNMENTS: "http://localhost:8090/jury-assignments",

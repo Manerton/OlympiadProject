@@ -33,7 +33,7 @@ const ProfileLayout: React.FC = () => {
 
     const actions = (
         <>
-            <button className="btn btn-primary" onClick={() => navigate("/profile/edit")}>Редактировать</button>
+            <button className="btn btn-primary" onClick={() => navigate("/profile/edit")}>Подробнее</button>
         </>
     );
 

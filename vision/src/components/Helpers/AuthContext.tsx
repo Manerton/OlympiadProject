@@ -2,19 +2,20 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { RegisterForm, UserAuth } from "../types/user";
 import axios from "axios";
 import { AUTH } from "../../config/api";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
+import { axiosSSOLogin, axiosSSOLogout, axiosSSORefresh, axiosSSORegister } from "../../requests/SSORequests";
 interface JwtPayload {
-  sub: string;
-  email: string;
-  role: number;
-  // добавь свои поля
+    sub: string;
+    email: string;
+    role: number;
+    // добавь свои поля
 }
 
 interface AuthContextType {
     user: UserAuth | null
     accessToken: string | null
-    initialized: boolean 
+    initialized: boolean
     login: (email: string, password: string) => Promise<void>
     register: (data: RegisterForm) => Promise<void>
     logout: () => void
@@ -23,59 +24,58 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<UserAuth | null>(null);
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(true); // флаг загрузки авторизации
     const [initialized, setInitialized] = useState(false);
 
     const register = async (data: RegisterForm) => {
-        const response = await axios.post(AUTH.register, data, {withCredentials: true});
-        if (response.status === 200) {
-            console.log("success register");
-        } else {
-            console.log("failed register");
+        try {
+            await axiosSSORegister(data);
+        } catch (error) {
+            console.error("Registration failed:", error);
         }
     };
 
     const login = async (email: string, password: string) => {
-        const response = await axios.post(AUTH.login, {email, password}, {withCredentials: true});
-        const token = response.data.data.access_token;
-        setAccessToken(token);
-        const decoded = jwtDecode<JwtPayload>(token);
-        setUser({
-            id: decoded.sub,
-            Email: decoded.email,
-            role: Number(decoded.role),
-        });
-    };
-
-    const logout = async () => {
-        const token = accessToken; // берем текущий accessToken из состояния
-        console.log(token)
-        setAccessToken(null);
-        setUser(null);
-
         try {
-            await axios.post(
-                AUTH.logout,
-                {}, // тело запроса
-                {
-                    withCredentials: true,
-                    headers: {
-                        Authorization: `Bearer ${token}` // добавляем токен
-                    }
-                }
-            );
+            const token = await axiosSSOLogin(email, password);
+            setAccessToken(token);
+
+            const decoded = jwtDecode<JwtPayload>(token);
+            setUser({
+                id: decoded.sub,
+                Email: decoded.email,
+                role: Number(decoded.role),
+            });
         } catch (err) {
-            console.error("Failed to logout:", err);
+            console.error("Login failed:", err);
+            setUser(null);
         }
     };
+
+
+    const logout = async () => {
+        try {
+            const token = accessToken; // берем текущий accessToken из состояния
+            console.log(token)
+
+            setAccessToken(null);
+            setUser(null);
+            await axiosSSOLogout(token!);
+        }
+        catch (err) {
+            console.error("Logout failed:", err);
+        }
+
+    };
+
     const refresh = async (): Promise<UserAuth | null> => {
         try {
-            const response = await axios.post(AUTH.refresh, {}, { withCredentials: true });
-            const token = response.data.data.access_token;
+            const token = await axiosSSORefresh()
             setAccessToken(token);
+
             const decoded = jwtDecode<JwtPayload>(token);
             const newUser = { id: decoded.sub, Email: decoded.email, role: Number(decoded.role) };
             setUser(newUser);
@@ -99,7 +99,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
     // }
 
     return (
-        <AuthContext.Provider value={{user, accessToken, login, register, logout, refresh, initialized}}>
+        <AuthContext.Provider value={{ user, accessToken, login, register, logout, refresh, initialized }}>
             {children}
         </AuthContext.Provider>
     );
@@ -108,7 +108,7 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({children}) 
 
 export const useAuth = () => {
     const ctx = useContext(AuthContext);
-    if (!ctx) 
+    if (!ctx)
         throw new Error("useAuth must be used within AuthProvider")
     return ctx
 }
