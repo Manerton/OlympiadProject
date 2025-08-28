@@ -31,4 +31,8 @@ class TaskRepository
         $this->save($task);
         return $task->id;
     }
+    public function getByEventIdType($eventId, $type)
+    {
+        return Task::where(['event_id' => $eventId, 'type' => $type])->get();
+    }
 }

@@ -15,4 +15,7 @@ class Task extends Model
     public function taskAttendances(){
         return $this->hasMany(TaskAttendance::class);
     }
+    public function appeals(){
+        return $this->hasMany(Appeal::class);
+    }
 }

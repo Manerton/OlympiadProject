@@ -6,6 +6,7 @@ use App\Http\Controllers\api\EventApiController;
 use App\Http\Controllers\api\MailApiController;
 use App\Http\Controllers\api\ParticipantApiController;
 use App\Http\Controllers\api\ReportApiController;
+use App\Http\Controllers\api\ResultApiController;
 use App\Http\Controllers\api\SchoolApiController;
 use App\Http\Controllers\api\UserApiController;
 use Illuminate\Http\Request;
@@ -86,6 +87,12 @@ Route::group(['middleware' => 'prometheus'], function() {
 
     Route::post('/appeal/store', [AppealApiController::class, 'store'])->name('appeal-api.store');
     Route::post('/appeal/change-status/{id}', [AppealApiController::class, 'changeStatus'])->name('appeal-api.change-status');
+    Route::get('/appeal/appeal-by-event/{id}', [AppealApiController::class, 'appealByEvent'])->name('appeal-api.appeal-by-event');
+    Route::get('/appeal/appeal-by-user/{id}', [AppealApiController::class, 'appealByUser'])->name('appeal-api.appeal-by-user');
+
+    Route::get('/result/result-by-attendance/{id}', [ResultApiController::class, 'resultByAttendance'])->name('result-api.result-by-attendance');
+    Route::get('/result/result-by-user/{id}', [ResultApiController::class, 'resultByUser'])->name('result-api.result-by-user');
+    Route::get('/result/result-by-user-type-event/{userId}/{typeId}/{eventId}', [ResultApiController::class, 'resultByUserTypeEvent'])->name('result-api.result-by-user-type-event');
 });
 Route::get('/metrics', function () {
     $adapter = new Redis([
