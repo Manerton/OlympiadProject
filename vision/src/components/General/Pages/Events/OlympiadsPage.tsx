@@ -43,7 +43,7 @@ const OlympiadsPage: React.FC = () => {
   };
 
   const handleOlympiadClick = (id: string) => {
-    navigate(`/stages/${id}`);
+    navigate(`/OlympiadDetails/${id}`);
   };
 
  const totalPages = Math.ceil(total / limit);

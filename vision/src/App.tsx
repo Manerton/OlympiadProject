@@ -44,6 +44,7 @@ import AppealList from './components/General/Pages/Profile/Tabs/Appeal/AppealLis
 import HistoryTab from './components/General/Pages/Profile/Tabs/History/History.tsx';
 import AchievementTab from './components/General/Pages/Profile/Tabs/Achievement.tsx';
 import MailIndex from './components/olymp-admin/mail/index.tsx';
+import OlympiadDetails from './components/General/Pages/Events/OlympiadDetails.tsx';
 
 
 function App() {
@@ -67,6 +68,7 @@ function App() {
                             /> */}
                         <Route path="/RegionalStages" element={<RegionalStagesPage />} />
                         <Route path="OlympiadsPage/:id" element={<OlympiadsPage />} />
+                        <Route path="OlympiadDetails/:id" element={<OlympiadDetails />} />
                     </Route>
 
                     <Route

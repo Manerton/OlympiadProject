@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-    EVENTS: "http://172.16.0.196:6611/events",
+    EVENT: "http://172.16.0.196:6611/events/",
     CHILD: "http://172.16.0.196:6611/events/child",
     REGIONAL: "http://172.16.0.196:6611/regional-stages",
     AUTH: "http://172.16.1.39:8181/api/users",

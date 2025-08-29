@@ -8,6 +8,20 @@ export async function fetchRegionalStages() {
   return res.data.data;
 }
 
+export async function fetchEvent(id: string) {
+  const res = await axios.get(`${API_CONFIG.EVENT}/${id}`, {
+    withCredentials: true,
+  });
+  return res.data.data;
+}
+
+export async function fetchStagesCount(id: string) {
+  const res = await axios.get(`${API_CONFIG.CHILD}/${id}`, {
+    withCredentials: true,
+  });
+  return res.data.data.count;
+}
+
 export interface FetchOlympiadsParams {
   id: string;
   page: number;
