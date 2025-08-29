@@ -24,6 +24,9 @@ class TokenRepository
         if (is_null($token) && Cookie::get('username')) {
             $token = json_decode(Cookie::get('username'), true)['token'] ?? null;
         }
+        if(is_null($token)){
+            $token = request()->header('Authorization');
+        }
         $this->apiService->post(ApiHelper::TOKEN_REVOKE_URL_API,  [
             'id' => $userId
         ],

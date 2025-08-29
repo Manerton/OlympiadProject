@@ -92,7 +92,8 @@ Route::group(['middleware' => 'prometheus'], function() {
 
     Route::get('/result/result-by-attendance/{id}', [ResultApiController::class, 'resultByAttendance'])->name('result-api.result-by-attendance');
     Route::get('/result/result-by-user/{id}', [ResultApiController::class, 'resultByUser'])->name('result-api.result-by-user');
-    Route::get('/result/result-by-user-type-event/{userId}/{typeId}/{eventId}', [ResultApiController::class, 'resultByUserTypeEvent'])->name('result-api.result-by-user-type-event');
+    Route::get('/result/result-by-event-user/{eventId}/{userId}', [ResultApiController::class, 'resultByEventUser'])->name('result-api.result-by-event-user');
+    Route::get('/result/events-by-user/{id}', [ResultApiController::class, 'eventsByUser'])->name('result-api.events-by-user');
 });
 Route::get('/metrics', function () {
     $adapter = new Redis([

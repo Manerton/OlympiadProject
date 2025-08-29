@@ -1,6 +1,5 @@
 <?php
 
-use app\controllers\EmailController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\MailController;

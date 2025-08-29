@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Components\Dictionaries\TaskTypeDictionary;
 use App\Models\Task;
 
 class TaskRepository
@@ -28,6 +29,7 @@ class TaskRepository
         $task->event_id = $eventId;
         $task->number = $number;
         $task->max_points = $points;
+        $task->type = TaskTypeDictionary::READING;
         $this->save($task);
         return $task->id;
     }

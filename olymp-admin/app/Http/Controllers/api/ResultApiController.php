@@ -4,15 +4,19 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use App\Repositories\AttendanceRepository;
+use App\Services\ApplicationService;
 
 class ResultApiController extends Controller
 {
     private AttendanceRepository $attendanceRepository;
+    private ApplicationService $applicationService;
     public function __construct(
-        AttendanceRepository $attendanceRepository
+        AttendanceRepository $attendanceRepository,
+        ApplicationService $applicationService
     )
     {
         $this->attendanceRepository = $attendanceRepository;
+        $this->applicationService = $applicationService;
     }
     public function resultByAttendance($id){
         $attendance = $this->attendanceRepository->get($id);
@@ -21,10 +25,51 @@ class ResultApiController extends Controller
         ]);
     }
     public function resultByUser($id){
-
-        return response()->json([]);
+        $applications = $this->applicationService->findByUserId($id);
+        $data = [];
+        foreach ($applications as $application){
+            $data[] = [
+                'application' => $application,
+                'attendance' => $application->attendances[0],
+                'result' => $application->attendances[0]->taskAttendances
+            ];
+        }
+        return response()->json([
+            'data' => $data
+        ]);
     }
-    public function resultByUserTypeEvent($userId, $type, $eventId){
-
+    public function resultByEventUser($eventId, $userId){
+        $applications = $this->applicationService->findByUserId($userId);
+        $applications = array_filter($applications, function($application) use ($eventId){
+            return $application->event_id == $eventId;
+        });
+        $data = [];
+        foreach ($applications as $application){
+            $attendance = $this->attendanceRepository->getByApplicationId($application->id)[0];
+            foreach ($attendance->taskAttendances as $taskAttendance){
+                $data[] = [
+                    'task_id' => $taskAttendance->task_id,
+                    'task_number' => $taskAttendance->task->number,
+                    'points' => $taskAttendance->points,
+                    'type' => $taskAttendance->task->type,
+                ];
+            }
+        }
+        return response()->json([
+            'data' => $data
+        ]);
+    }
+    public function eventsByUser($id){
+        $applications = $this->applicationService->findByUserId($id);
+        $events = [];
+        foreach ($applications as $application){
+            $attendance = $this->attendanceRepository->getByApplicationId($application->id)[0];
+            if (isset($attendance->taskAttendances)){
+                $events[] = $application->event_id;
+            }
+        }
+        return response()->json([
+            'data' => $events
+        ]);
     }
 }

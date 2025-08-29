@@ -72,6 +72,20 @@ class ApplicationService
         }
         return $applications;
     }
+    public function findByUserId($userId)
+    {
+        $applications = [];
+        $data = $this->applicationRepository->getByUserId($userId);
+        foreach ($data as $item) {
+            $application = $this->applicationBuilder->build($item);
+            $event = $this->eventBuilder->build($this->eventRepository->getByApiId($application->event_id));
+            $user = $this->userBuilder->build($this->userRepository->getByApiId($application->user_id));
+            $this->applicationBuilder->buildUser($application, $user);
+            $this->applicationBuilder->buildEvent($application, $event);
+            $applications[] = $application;
+        }
+        return $applications;
+    }
     public function confirmedApplications($applications)
     {
         $array = array_filter($applications, function ($application) {

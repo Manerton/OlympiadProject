@@ -4,25 +4,24 @@ namespace App\Repositories;
 
 use App\Components\ApiHelper;
 use App\Services\ApiService;
+use App\Services\TokenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 
 class ApplicationRepository
 {
     private ApiService $apiService;
-    public function __construct(ApiService $apiService){
+    private TokenService $tokenService;
+    public function __construct(
+        ApiService $apiService,
+        TokenService $tokenService
+    ){
         $this->apiService = $apiService;
+        $this->tokenService = $tokenService;
     }
     public function getByApiAll($page = 1, $limit = 10)
     {
-        $token = null;
-        if (isset(Cookie::getQueuedCookies()[0])) {
-            $queuedCookie = Cookie::getQueuedCookies()[0];
-            $token = json_decode($queuedCookie->getValue(), true)['token'] ?? null;
-        }
-        if (is_null($token) && Cookie::get('username')) {
-            $token = json_decode(Cookie::get('username'), true)['token'] ?? null;
-        }
+        $token = $this->tokenService->getToken();
         $response = $this->apiService->get(
             ApiHelper::APPLICATION_URL_API,
             [
@@ -37,14 +36,7 @@ class ApplicationRepository
     }
     public function getByEventId($id)
     {
-        $token = null;
-        if (isset(Cookie::getQueuedCookies()[0])) {
-            $queuedCookie = Cookie::getQueuedCookies()[0];
-            $token = json_decode($queuedCookie->getValue(), true)['token'] ?? null;
-        }
-        if (is_null($token) && Cookie::get('username')) {
-            $token = json_decode(Cookie::get('username'), true)['token'] ?? null;
-        }
+        $token = $this->tokenService->getToken();
         $response = $this->apiService->get(
             ApiHelper::APPLICATION_EVENT_URL_API . '/' . $id,
             [],
@@ -54,16 +46,21 @@ class ApplicationRepository
         );
         return isset($response['data']['data']) ? $response['data']['data'] : [];
     }
+    public function getByUserId($id)
+    {
+        $token = $this->tokenService->getToken();
+        $response = $this->apiService->get(
+            ApiHelper::APPLICATION_USER_URL_API . '/' . $id,
+            [],
+            [
+                'Authorization' => "Bearer ". $token
+            ]
+        );
+        return isset($response['data']['data']) ? $response['data']['data'] : [];
+    }
     public function getByApiId($id)
     {
-        $token = null;
-        if (isset(Cookie::getQueuedCookies()[0])) {
-            $queuedCookie = Cookie::getQueuedCookies()[0];
-            $token = json_decode($queuedCookie->getValue(), true)['token'] ?? null;
-        }
-        if (is_null($token) && Cookie::get('username')) {
-            $token = json_decode(Cookie::get('username'), true)['token'] ?? null;
-        }
+        $token = $this->tokenService->getToken();
         $response = $this->apiService->get(
             ApiHelper::APPLICATION_URL_API . '/' . $id,
             [],
@@ -75,14 +72,7 @@ class ApplicationRepository
     }
     public function getCount()
     {
-        $token = null;
-        if (isset(Cookie::getQueuedCookies()[0])) {
-            $queuedCookie = Cookie::getQueuedCookies()[0];
-            $token = json_decode($queuedCookie->getValue(), true)['token'] ?? null;
-        }
-        if (is_null($token) && Cookie::get('username')) {
-            $token = json_decode(Cookie::get('username'), true)['token'] ?? null;
-        }
+        $token = $this->tokenService->getToken();
         $response = $this->apiService->get(
             ApiHelper::APPLICATION_COUNT_URL_API,
             [],

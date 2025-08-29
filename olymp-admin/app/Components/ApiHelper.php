@@ -25,6 +25,7 @@ class ApiHelper
     public const SCHOOL_COUNT_URL_API = 'http://172.16.0.196:6611/schools/count';
     public const APPLICATION_URL_API = 'http://172.16.0.196:6611/applications';
     public const APPLICATION_EVENT_URL_API = 'http://172.16.0.196:6611/applications/event';
+    public const APPLICATION_USER_URL_API = 'http://172.16.0.196:6611/applications/user';
     public const APPLICATION_COUNT_URL_API = 'http://172.16.0.196:6611/applications/count';
     public const LOGOUT_URL_API = 'http://172.16.0.196:6611/logout';
     public const SEND_CODE_URL_API = 'http://nginx_server/index.php?r=email%2Fsend-code';

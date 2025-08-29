@@ -4,25 +4,24 @@ namespace App\Repositories;
 
 use App\Components\ApiHelper;
 use App\Services\ApiService;
+use App\Services\TokenService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 
 class ParticipantRepository
 {
     private ApiService $apiService;
-    public function __construct(ApiService $apiService){
+    private TokenService $tokenService;
+    public function __construct(
+        ApiService $apiService,
+        TokenService $tokenService
+    ){
         $this->apiService = $apiService;
+        $this->tokenService = $tokenService;
     }
     public function getByApiAll($page = 1, $limit = 10)
     {
-        $token = null;
-        if (isset(Cookie::getQueuedCookies()[0])) {
-            $queuedCookie = Cookie::getQueuedCookies()[0];
-            $token = json_decode($queuedCookie->getValue(), true)['token'] ?? null;
-        }
-        if (is_null($token) && Cookie::get('username')) {
-            $token = json_decode(Cookie::get('username'), true)['token'] ?? null;
-        }
+        $token = $this->tokenService->getToken();
         $response = $this->apiService->get(
             ApiHelper::PARTICIPANT_URL_API,
             [
@@ -37,14 +36,7 @@ class ParticipantRepository
     }
     public function getByApiId($id)
     {
-        $token = null;
-        if (isset(Cookie::getQueuedCookies()[0])) {
-            $queuedCookie = Cookie::getQueuedCookies()[0];
-            $token = json_decode($queuedCookie->getValue(), true)['token'] ?? null;
-        }
-        if (is_null($token) && Cookie::get('username')) {
-            $token = json_decode(Cookie::get('username'), true)['token'] ?? null;
-        }
+        $token = $this->tokenService->getToken();
         $response =  $this->apiService->get(
             ApiHelper::PARTICIPANT_URL_API . '/' . $id,
             [],
@@ -56,14 +48,7 @@ class ParticipantRepository
     }
     public function getByApiUserId($id)
     {
-        $token = null;
-        if (isset(Cookie::getQueuedCookies()[0])) {
-            $queuedCookie = Cookie::getQueuedCookies()[0];
-            $token = json_decode($queuedCookie->getValue(), true)['token'] ?? null;
-        }
-        if (is_null($token) && Cookie::get('username')) {
-            $token = json_decode(Cookie::get('username'), true)['token'] ?? null;
-        }
+        $token = $this->tokenService->getToken();
         $response = $this->apiService->get(
             ApiHelper::PARTICIPANT_BY_USER_URL_API . '/' . $id,
             [],
@@ -75,14 +60,7 @@ class ParticipantRepository
     }
     public function getCount()
     {
-        $token = null;
-        if (isset(Cookie::getQueuedCookies()[0])) {
-            $queuedCookie = Cookie::getQueuedCookies()[0];
-            $token = json_decode($queuedCookie->getValue(), true)['token'] ?? null;
-        }
-        if (is_null($token) && Cookie::get('username')) {
-            $token = json_decode(Cookie::get('username'), true)['token'] ?? null;
-        }
+        $token = $this->tokenService->getToken();
         $response = $this->apiService->get(
             ApiHelper::PARTICIPANT_COUNT_URL_API,
             [],
