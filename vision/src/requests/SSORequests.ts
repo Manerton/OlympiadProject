@@ -1,6 +1,7 @@
 import axios from "axios";
-import { AUTH, USER } from "../config/api";
-import type { RegisterForm } from "../components/types/user";
+import { AUTH, PARTICIPANT, SCHOOLS, USER } from "../config/api";
+import type { RegisterForm, User, UserParticipant } from "../components/types/user";
+import type { School } from "../components/types/schools";
 
 export async function axiosSSORegister(data: RegisterForm) {
     const res = await axios.post(AUTH.register, data, { withCredentials: true });
@@ -35,7 +36,7 @@ export async function axiosSSORefresh() {
 
 export async function axiosSSOUserInfo(token: string, userId: string) {
     const res = await axios.get(
-        USER.info + `/${userId}`,
+        USER.info + `${userId}`,
         {
             withCredentials: true,
             headers: {
@@ -43,12 +44,12 @@ export async function axiosSSOUserInfo(token: string, userId: string) {
             }
         }
     );
-    return res.data.data
+    return res.data.data as User;
 }
 
 export async function axiosSSOUserParticipantInfo(token: string, userId: string) {
     const res = await axios.get(
-        USER.info + `/${userId}`,
+        PARTICIPANT.info + `${userId}`,
         {
             withCredentials: true,
             headers: {
@@ -56,5 +57,27 @@ export async function axiosSSOUserParticipantInfo(token: string, userId: string)
             }
         }
     );
-    return res.data.data
+    const data = res.data.data;
+
+    return {
+        User: {
+            email: data.email,
+            firstname: data.firstname,
+            surname: data.surname,
+            patronymic: data.patronymic,
+            phone_number: data.phone_number,
+            birthdate: data.birthdate,
+            gender: data.gender,
+            role: data.role,
+        },
+        school: data.school_id,
+        disability: Number(data.disability),
+        classnumber: Number(data.class_number),
+        citezenship: Number(data.citizenship),
+    };
+}
+
+export async function axiosSSOAllSchools(): Promise<School[]> {
+    const res = await axios.get(SCHOOLS.all);
+    return res.data.data as School[]; // data → []SchoolResponseDTO
 }

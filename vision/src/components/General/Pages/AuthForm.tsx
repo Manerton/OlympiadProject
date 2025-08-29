@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Container,
   Row,
@@ -13,6 +13,8 @@ import { useAuth } from "../../Helpers/AuthContext";
 import type { RegisterForm } from "../../types/user";
 import { useNavigate } from "react-router-dom";
 import { useMask } from "@react-input/mask";
+import { axiosSSOAllSchools } from "../../../requests/SSORequests";
+import type { School } from "../../types/schools";
 
 const mockSchools = [
   "Школа №1",
@@ -44,8 +46,12 @@ const AuthForm: React.FC = () => {
   const [schoolQuery, setSchoolQuery] = useState("");
 
   // Состояния для поиска школы
-  const [filteredSchools, setFilteredSchools] = useState<string[]>([]);
   const [showList, setShowList] = useState(false);
+
+  const [allSchools, setAllSchools] = useState<School[]>([]);
+  const [filteredSchools, setFilteredSchools] = useState<School[]>([]);
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>("");
+
 
   // State авторизации
   const { login, register } = useAuth();
@@ -59,21 +65,25 @@ const AuthForm: React.FC = () => {
 
   const handleSchoolChange = (value: string) => {
     setSchoolQuery(value);
+
     if (value.trim() === "") {
       setFilteredSchools([]);
       setShowList(false);
       return;
     }
-    const results = mockSchools.filter((school) =>
-      school.toLowerCase().includes(value.toLowerCase())
+
+    const results = allSchools.filter((school) =>
+      school.name.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredSchools(results);
     setShowList(true);
   };
 
-  const selectSchool = (school: string) => {
-    setSchoolQuery(school);
+  const selectSchool = (school: School) => {
+    setSchoolQuery(school.name);  // показываем название
     setShowList(false);
+    // если нужно сохранять id для регистрации
+    setSelectedSchoolId(school.id);
   };
 
   // Проверка совпадения паролей
@@ -100,10 +110,11 @@ const AuthForm: React.FC = () => {
         email: email,
         password: password,
         phone_number: phoneNumber,
-        gender: gender,
-        school: schoolQuery,
+        gender: gender.toString(),
+        school_id: selectedSchoolId,
         birthdate: birthdate,
-        classnumber: classNumber,
+        classnumber: classNumber.toString(),
+        disability: "1",
       };
 
       try {
@@ -120,6 +131,17 @@ const AuthForm: React.FC = () => {
       }
     }
   };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const schools = await axiosSSOAllSchools();
+        setAllSchools(schools);
+      } catch (err) {
+        console.error("Ошибка загрузки школ:", err);
+      }
+    })();
+  }, []);
 
   return (
     <Container fluid className="vh-100 d-flex align-items-center">
@@ -153,9 +175,8 @@ const AuthForm: React.FC = () => {
           {/* Заголовок */}
           <div className="d-flex justify-content-center align-items-center mb-4">
             <h4
-              className={`fw-bold m-0 px-2 ${
-                !isRegister ? "text-primary" : "text-secondary"
-              }`}
+              className={`fw-bold m-0 px-2 ${!isRegister ? "text-primary" : "text-secondary"
+                }`}
               style={{ cursor: "pointer" }}
               onClick={() => setIsRegister(false)}
             >
@@ -168,9 +189,8 @@ const AuthForm: React.FC = () => {
               /
             </span>
             <h4
-              className={`fw-bold m-0 px-2 ${
-                isRegister ? "text-primary" : "text-secondary"
-              }`}
+              className={`fw-bold m-0 px-2 ${isRegister ? "text-primary" : "text-secondary"
+                }`}
               style={{ cursor: "pointer" }}
               onClick={() => setIsRegister(true)}
             >
@@ -228,8 +248,8 @@ const AuthForm: React.FC = () => {
                     value={gender}
                     onChange={(e) => setGender(Number(e.target.value))}
                   >
-                    <option value={0}>Мужской</option>
-                    <option value={1}>Женский</option>
+                    <option value={1}>Мужской</option>
+                    <option value={2}>Женский</option>
                   </Form.Select>
                 </Form.Group>
 
@@ -265,13 +285,13 @@ const AuthForm: React.FC = () => {
                         overflowY: "auto",
                       }}
                     >
-                      {filteredSchools.map((school, idx) => (
+                      {filteredSchools.map((school) => (
                         <ListGroup.Item
-                          key={idx}
+                          key={school.id}
                           action
                           onClick={() => selectSchool(school)}
                         >
-                          {school}
+                          {school.name} (регион {school.region})
                         </ListGroup.Item>
                       ))}
                     </ListGroup>

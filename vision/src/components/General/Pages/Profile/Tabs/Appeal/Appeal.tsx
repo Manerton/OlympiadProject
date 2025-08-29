@@ -5,7 +5,7 @@ import { StatusIcon } from "../../../../../Helpers/StatusBlock";
 import { ApplicationStatus } from "../../../../../../dictionary/applicationStatus";
 import { useNavigate } from "react-router-dom";
 
-const AppealTab:  React.FC = () => {
+const AppealTab: React.FC = () => {
     const [events, setEvents] = useState<ApplicationEvent[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -13,41 +13,53 @@ const AppealTab:  React.FC = () => {
 
     const mockEvents: ApplicationEvent[] = [
         {
-            id: "1",
-            name: "Региональный этап по математике",
-            start_date: "2025-09-01T09:00:00Z",
-            end_date: "2025-09-05T15:00:00Z",
-            previous_event_id: "",
-            subject: 1,
-            class_number: 10,
-            additional_info: "Проходит в онлайн-формате",
+            MainEvent: {
+                id: "1",
+                name: "Региональный этап по математике",
+                start_date: "2025-09-01T09:00:00Z",
+                end_date: "2025-09-05T15:00:00Z",
+                previous_event_id: "",
+                subject: 1,
+                class_number: 10,
+                additional_info: "Проходит в онлайн-формате"
+            },
             status: ApplicationStatus.Pending,
         },
         {
-            id: "2",
-            name: "Олимпиада по физике",
-            start_date: "2025-10-10T09:00:00Z",
-            end_date: "2025-10-12T14:00:00Z",
-            previous_event_id: "1",
-            subject: 2,
-            class_number: 11,
-            additional_info: "Очный тур в Санкт-Петербурге",
+            MainEvent: {
+                id: "2",
+                name: "Олимпиада по физике",
+                start_date: "2025-10-10T09:00:00Z",
+                end_date: "2025-10-12T14:00:00Z",
+                previous_event_id: "1",
+                subject: 2,
+                class_number: 11,
+                additional_info: "Очный тур в Санкт-Петербурге"
+            },
             status: ApplicationStatus.Approved,
         },
         {
-            id: "3",
-            name: "Этап апелляции по информатике",
-            start_date: "2025-11-15T10:00:00Z",
-            end_date: "2025-11-15T13:00:00Z",
-            previous_event_id: "2",
-            subject: 3,
-            class_number: 9,
-            additional_info: "Подача заявлений до 14 ноября",
+            MainEvent: {
+                id: "3",
+                name: "Этап апелляции по информатике",
+                start_date: "2025-11-15T10:00:00Z",
+                end_date: "2025-11-15T13:00:00Z",
+                previous_event_id: "2",
+                subject: 3,
+                class_number: 9,
+                additional_info: "Подача заявлений до 14 ноября"
+            },
             status: ApplicationStatus.Rejected,
         },
     ];
 
     useEffect(() => {
+        try {
+            
+        } catch (err) {
+            console.error(err)
+        }
+
         async function fetchAppeal(userId: string) {
             try {
                 const result = await fetch("");
@@ -72,12 +84,12 @@ const AppealTab:  React.FC = () => {
 
     if (events.length === 0) return <div>Вы не подавали аппеляции</div>
 
-    function footer(status: number, event: ApplicationEvent): ReactNode {
+    function footer(event: ApplicationEvent): ReactNode {
         return (
             <div className="d-flex flex-column justify-content-between h-100">
-                <button className="btn btn-primary mb-2" onClick={() => navigate(`/profile/appeals/${event.id}/list`)}>Подробнее</button>
+                <button className="btn btn-primary mb-2" onClick={() => navigate(`/profile/appeals/${event.MainEvent.id}/list`)}>Подробнее</button>
                 <div className="text-end">
-                    <b>Статус апелляции  <StatusIcon status={status} /></b>
+                    <b>Статус апелляции  <StatusIcon status={event.status} /></b>
                 </div>
             </div>
         )
@@ -86,7 +98,7 @@ const AppealTab:  React.FC = () => {
     return (
         <div>
             {events.map((event) => (
-                <ApplicationEventCart key={event.id} event={event} footer={footer(event.status, event)} />
+                <ApplicationEventCart key={event.MainEvent.id} event={event.MainEvent} footer={footer(event)} />
             ))}
         </div>
     );

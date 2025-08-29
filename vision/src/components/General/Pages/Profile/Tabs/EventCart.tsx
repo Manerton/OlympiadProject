@@ -1,10 +1,9 @@
 import { Card, Col, Row } from "react-bootstrap";
-import type { ApplicationEvent } from "../../../../types/event"
+import type { MainEvent } from "../../../../types/event"
 import CardImage from "../../Events/components/CardImage";
-import { StatusIcon } from "../../../../Helpers/StatusBlock";
 
 interface Props {
-    event: ApplicationEvent;
+    event: MainEvent;
     footer?: React.ReactNode; // сюда передаем либо статус, либо кнопки
 }
 
@@ -33,7 +32,7 @@ const EventCart: React.FC<Props> = ({ event, footer }) => {
                         </Card.Text>
                     </Col>
                     <Col md={2} className="">
-                        {footer ? footer : <DefaultFooter event={event} />}
+                        {footer ? footer : <DefaultFooter />}
                     </Col>
                 </Row>
             </Card.Body>
@@ -42,14 +41,13 @@ const EventCart: React.FC<Props> = ({ event, footer }) => {
 }
 
 // Можно вынести дефолтный футер
-const DefaultFooter: React.FC<{ event: ApplicationEvent }> = ({ event }) => {
+const DefaultFooter: React.FC = () => {
     return (
         <div className="align-items-center">
             <small className="text-muted">
                 *Правила проведения олимпиады смотрите*
                 <a href="" className="text-decoration-underline">здесь</a>
             </small>
-            <StatusIcon status={event.status} />
         </div>
     )
 }

@@ -1,12 +1,19 @@
 import type React from "react";
 import type { ApplicationEvent } from "../../../../../types/event";
 import { useParams } from "react-router-dom";
+import { useAuth } from "../../../../../Helpers/AuthContext";
+import { useEffect } from "react";
+import { axiosResultGetByEventUser } from "../../../../../../requests/ResultRequests";
 
 
 
 const ResultByEvent: React.FC = () => {
     const {eventId} = useParams();
-    console.log(eventId)
+
+    // const {accessToken, user} = useAuth();
+
+
+  
 
     return (
         <div>

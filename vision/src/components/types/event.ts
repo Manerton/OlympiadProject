@@ -11,7 +11,7 @@ export interface MyEvent {
     events?: MyEvent[];
 }
 
-export interface ApplicationEvent {
+export interface MainEvent {
     id: string
     name: string
     start_date: string
@@ -20,5 +20,9 @@ export interface ApplicationEvent {
     subject: number;
     class_number: number
     additional_info: string
+}
+
+export interface ApplicationEvent {
+    MainEvent: MainEvent
     status: number
 }

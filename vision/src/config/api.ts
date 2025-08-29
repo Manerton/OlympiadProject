@@ -31,13 +31,23 @@ export const AUTH = {
     register: "http://172.16.0.196:6611/register"
 }
 
+export const SCHOOLS = {
+    all: "http://172.16.0.196:6611/schools",
+    byId: "http://172.16.0.196:6611/schools/"
+}
+
 export const USER = {
-    info: "http://172.16.0.196:6611/sso/user",
-    
+    info: "http://172.16.0.196:6611/users/all-info/",
+
+}
+
+export const RESULT = {
+    allEventsByUserId: "http://172.16.0.196:6611/history/event/",
+    allByEventIdUserId: ""
 }
 
 export const PARTICIPANT = {
-    info: "http://172.16.0.196:6611/sso/user-participant",
+    info: "http://172.16.0.196:6611/users/participant/all-info/",
 }
 
 

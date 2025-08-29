@@ -6,16 +6,17 @@ export interface UserAuth {
 
 
 export interface RegisterForm {
-    email: string  
+    email: string
     password: string
     firstname: string
     surname: string
     patronymic: string
     phone_number: string
     birthdate: string
-    gender: number
-    school: string
-    classnumber: number
+    gender: string
+    school_id: string
+    classnumber: string
+    disability: string
 }
 
 export interface User {
@@ -30,14 +31,7 @@ export interface User {
 }
 
 export interface UserParticipant {
-    firstname: string
-    surname: string
-    patronymic: string
-    phone_number: string
-    birthdate: string
-    email: string
-    gender: number
-    role: number
+    User: User
     school: string
     disability: number
     classnumber: number

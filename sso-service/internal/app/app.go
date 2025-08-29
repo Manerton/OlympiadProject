@@ -110,6 +110,8 @@ func (a *App) initRoutes(router *chi.Mux,
 	router.Post("/api/users/register", authHandler.Register)
 	router.Post("/api/users/refresh", authHandler.Refresh)
 
+	router.Get("/api/schools", schoolHandler.GetAll)
+
 	router.With(base_access.BaseAccess(jwtManager)).Group(func(r chi.Router) {
 		// participant GET
 		r.Get("/api/participants", participantHandler.GetAllParticipants)
@@ -126,7 +128,7 @@ func (a *App) initRoutes(router *chi.Mux,
 		r.Get("/api/users/all-info/{id}", userHandler.GetUserParticipantById)
 
 		// schools GET
-		r.Get("/api/schools", schoolHandler.GetAll)
+		// r.Get("/api/schools", schoolHandler.GetAll)
 		r.Get("/api/schools/count", schoolHandler.GetCount)
 		r.Get("/api/schools/{id}", schoolHandler.GetById)
 
