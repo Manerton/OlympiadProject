@@ -21,7 +21,9 @@
         "yiisoft/yii2-httpclient": "^2.0",
         "yiisoft/yii2-redis": "^2.0",
         "symfony/mailer": "^5.4",
-        "symfony/mime": "^5.4"
+        "symfony/mime": "^5.4",
+        "cboden/ratchet": "^0.4.4",
+        "textalk/websocket": "^1.5"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",
