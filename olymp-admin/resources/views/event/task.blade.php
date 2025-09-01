@@ -14,16 +14,22 @@
                 $widget = new DynamicFormWidget();
                 $widget->attributes = [
                     'attributes' => [
-                       [
-                           'name' => 'number',
-                           'label' => 'Номер задания',
-                           'type' => 'text'
-                       ],
-                       [
-                           'name' => 'point',
-                           'label' => 'Количество баллов',
-                           'type' => 'text'
-                       ]
+                        [
+                            'name' => 'number',
+                            'label' => 'Номер задания',
+                            'type' => 'text'
+                        ],
+                        [
+                            'name' => 'point',
+                            'label' => 'Количество баллов',
+                            'type' => 'text'
+                        ],
+                        [
+                            'name' => 'type',
+                            'label' => 'Тип задания',
+                            'type' => 'list',
+                            'elements' => $types
+                        ]
                     ]
                 ];
                 echo $widget->render();
@@ -37,6 +43,7 @@
                 <th>#</th>
                 <th>Номер задания</th>
                 <th>Максимальное количество баллов</th>
+                <th>Тип задания</th>
                 <th>Действия</th>
             </tr>
             </thead>
@@ -46,6 +53,7 @@
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $task->number }}</td>
                     <td>{{ $task->max_points }}</td>
+                    <td>{{ $types[$task->type] }}</td>
                     <td>
                         <form action="{{ route('event.delete-task', $task->id) }}" method="POST" style="display:inline;">
                             @csrf

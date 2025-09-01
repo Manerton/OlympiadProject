@@ -1,16 +1,42 @@
 <div class="dynamic-form">
     <div id="dynamic-fields-wrapper">
         <div class="dynamic-field row align-items-end mb-2">
-            @foreach($attributes as $attribute)
-                @foreach($attribute as $item)
-                    <div class="col-md-6">
-                        <label class="form-label">{{ $item['label'] }}</label>
-                        <input type="{{ $item['type'] }}"
-                               class="form-control"
-                               name="{{ $item['name'] }}[]" required>
-                    </div>
+            <div class="row g-4">
+                @foreach($attributes as $attribute)
+                    @foreach($attribute as $item)
+                        <div class="col-12">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <label class="form-label fw-semibold text-dark">
+                                        {{ $item['label'] }}
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    @if($item['type'] != 'list')
+                                        <input type="{{ $item['type'] }}"
+                                               class="form-control"
+                                               name="{{ $item['name'] }}[]"
+                                               required>
+                                    @else
+                                        <select name="{{ $item['name'] }}[]"
+                                                class="form-select">
+                                            @foreach($item['elements'] as $index => $element)
+                                                <option value="{{$index}}">{{$element}}</option>
+                                            @endforeach
+                                        </select>
+                                    @endif
+                                </div>
+                                <div class="col-md-3">
+                        <span class="text-muted small">
+                            <i class="bi bi-asterisk text-danger"></i> Обязательно
+                        </span>
+                                </div>
+                            </div>
+                            <hr class="my-3">
+                        </div>
+                    @endforeach
                 @endforeach
-            @endforeach
+            </div>
             <div class="col-md-2">
                 <button type="button" class="btn btn-danger remove-field">−</button>
             </div>

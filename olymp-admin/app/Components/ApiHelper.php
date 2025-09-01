@@ -31,4 +31,12 @@ class ApiHelper
     public const SEND_CODE_URL_API = 'http://nginx_server/index.php?r=email%2Fsend-code';
     public const SEND_MESSAGE_URL_API = 'http://nginx_server/index.php?r=email%2Fsend-message';
     public const SUBJECTS_EVENT_URL_API = 'http://172.16.1.39:8080/api/events/subjects';
+    public static function prepareResponse($data)
+    {
+        return [
+            'status' => 'success',
+            'status_code' => 200,
+            'data' => $data
+        ];
+    }
 }

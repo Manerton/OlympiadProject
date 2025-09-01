@@ -25,7 +25,8 @@ class TaskRequest extends FormRequest
     {
         return [
             'number' => 'required',
-            'point' => 'required'
+            'point' => 'required',
+            'type' => 'required'
         ];
     }
 }

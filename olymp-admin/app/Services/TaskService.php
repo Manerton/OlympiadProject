@@ -30,7 +30,7 @@ class TaskService
         $applications = $this->applicationService->confirmedApplications($applications);
         $attendances = $this->attendanceRepository->getAttendances(array_column($applications, 'id'));
         foreach ($data['number'] as $key => $number) {
-            $taskId = $this->taskRepository->create($eventId, $number, $data['point'][$key]);
+            $taskId = $this->taskRepository->create($eventId, $number, $data['point'][$key], $data['type'][$key]);
             foreach ($attendances as $attendance) {
                 $this->taskAttendanceRepository->create($attendance->id, $taskId, 0);
             }

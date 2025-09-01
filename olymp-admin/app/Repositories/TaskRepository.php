@@ -23,13 +23,13 @@ class TaskRepository
     public function getByEventId($eventId){
         return Task::where(['event_id' => $eventId])->get();
     }
-    public function create($eventId, $number, $points)
+    public function create($eventId, $number, $points, $type)
     {
         $task = new Task();
         $task->event_id = $eventId;
         $task->number = $number;
         $task->max_points = $points;
-        $task->type = TaskTypeDictionary::READING;
+        $task->type = $type;
         $this->save($task);
         return $task->id;
     }

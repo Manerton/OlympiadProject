@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Components\Dictionaries\AttendanceDictionary;
 use App\Components\Dictionaries\SubjectDictionary;
+use App\Components\Dictionaries\TaskTypeDictionary;
 use App\Http\Requests\EventScoreRequest;
 use App\Http\Requests\TaskRequest;
 use App\Repositories\AttendanceRepository;
@@ -71,7 +72,8 @@ class EventController extends Controller
     {
         $event = $this->eventService->find($id);
         $tasks = $this->taskRepository->getByEventId($id);
-        return view('event/task', compact('event', 'tasks'));
+        $types = TaskTypeDictionary::getList();
+        return view('event/task', compact('event', 'tasks', 'types'));
     }
     public function attendance($id)
     {

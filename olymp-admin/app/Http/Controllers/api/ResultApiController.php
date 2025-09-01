@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Components\ApiHelper;
 use App\Http\Controllers\Controller;
 use App\Repositories\AttendanceRepository;
 use App\Services\ApplicationService;
@@ -21,7 +22,7 @@ class ResultApiController extends Controller
     public function resultByAttendance($id){
         $attendance = $this->attendanceRepository->get($id);
         return response()->json([
-            'result' => $attendance->taskAttendances
+            ApiHelper::prepareResponse($attendance->taskAttendances)
         ]);
     }
     public function resultByUser($id){
@@ -34,9 +35,7 @@ class ResultApiController extends Controller
                 'result' => $application->attendances[0]->taskAttendances
             ];
         }
-        return response()->json([
-            'data' => $data
-        ]);
+        return response()->json(ApiHelper::prepareResponse($data));
     }
     public function resultByEventUser($eventId, $userId){
         $applications = $this->applicationService->findByUserId($userId);
@@ -55,9 +54,7 @@ class ResultApiController extends Controller
                 ];
             }
         }
-        return response()->json([
-            'data' => $data
-        ]);
+        return response()->json(ApiHelper::prepareResponse($data));
     }
     public function eventsByUser($id){
         $applications = $this->applicationService->findByUserId($id);
@@ -68,8 +65,6 @@ class ResultApiController extends Controller
                 $events[] = $application->event_id;
             }
         }
-        return response()->json([
-            'data' => $events
-        ]);
+        return response()->json(ApiHelper::prepareResponse($events));
     }
 }
