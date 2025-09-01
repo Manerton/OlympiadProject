@@ -21,7 +21,7 @@ func getStrategy(prefix string) strategy.AggregationStrategy {
 		return strategy.NewDefaultAggregationStrategy(5 * time.Second)
 	case "/ApplicationEvent/":
 		return strategy.NewApplicationEventStrategy(5 * time.Second)
-	case "/result/events-by-user/":
+	case "/history-event/":
 		return strategy.NewHistoryEventStrategy(5 * time.Second)
 	default:
 		return nil

@@ -204,10 +204,10 @@ HTTP_SERVERS_INFO:
       skip_auth: false
       roles: []
 
-    - prefix: "/history/event/"
+    - prefix: "/history-event/"
       aggregate: true
       targets:
-        - url: "https://172.16.0.94:443/api/result/events-by-user"
+        - url: "http://172.16.0.94:80/api/result/events-by-user/"
           fields: [""]
         - url: "http://172.16.1.39:8080/api/events/list"
           fields: [""]
@@ -221,7 +221,9 @@ CORS_INFO:
     http://172.16.0.196:5173,
     http://172.16.0.94:59871,
     http://172.19.0.1:5173,
-    http://172.16.1.39:5173
+    http://172.16.1.39:5173,
+    http://172.16.1.39:55819,
+    http://172.16.0.94:5173
   ]
 
 HTTP_SERVER_MAIN_INFO:
