@@ -28,7 +28,9 @@ $config = [
         'errorHandler' => [
             'errorAction' => 'site/error',
         ],
-
+        'websocket' => [
+            'class' => \app\services\WebSocketService::class
+        ],
         'mailService' => [
             'class' => 'app\services\MailService',
             'fromEmail' => 'rkuzurgaliev@schooltech.ru', // этот адрес должен совпадать с SMTP-логином
@@ -77,7 +79,7 @@ if (YII_ENV_DEV) {
     $config['modules']['debug'] = [
         'class' => 'yii\debug\Module',
         // uncomment the following to add your IP if you are not connecting from localhost.
-        //'allowedIPs' => ['127.0.0.1', '::1'],
+        'allowedIPs' => ['*'],
     ];
 
     $config['bootstrap'][] = 'gii';

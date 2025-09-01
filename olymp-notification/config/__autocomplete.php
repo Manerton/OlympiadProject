@@ -21,6 +21,7 @@ class Yii {
 /**
  * @property yii\rbac\DbManager $authManager 
  * @property \yii\web\User|__WebUser $user
+ * @property \app\services\WebSocketService $websocket
  * 
  */
 class __Application {

@@ -1,7 +1,11 @@
 <?php
+
+use Ratchet\Http\HttpServer;
 use Ratchet\MessageComponentInterface;
 use Ratchet\ConnectionInterface;
 use Ratchet\App;
+use Ratchet\Server\IoServer;
+use Ratchet\WebSocket\WsServer;
 
 require __DIR__ . '/vendor/autoload.php';
 
@@ -34,6 +38,13 @@ class NotifyServer implements MessageComponentInterface {
     }
 }
 
-$app = new App('0.0.0.0', 8090);
-$app->route('/notify', new NotifyServer, ['*']);
-$app->run();
+$server = IoServer::factory(
+    new HttpServer(
+        new WsServer(
+            new NotifyServer()
+        )
+    ),
+    8095
+);
+
+$server->run();

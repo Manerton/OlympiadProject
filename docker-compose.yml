@@ -137,7 +137,20 @@ services:
       - olymp-admin-db
     networks:
       - olympic
-
+  websocket-server:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile   # тот же PHP-образ, что и у olymp-admin
+    container_name: olymp_websocket
+    command: php /var/www/olymp-notification/websocket-server.php
+    volumes:
+      - ./olymp-notification:/var/www/olymp-notification
+    networks:
+      - olympic
+    ports:
+      - "8095:8095"   # пробрасываем наружу
+    depends_on:
+      - olymp-notification-db
   nginx:
     image: nginx:alpine
     container_name: nginx_server

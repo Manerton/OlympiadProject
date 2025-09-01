@@ -45,12 +45,13 @@ import HistoryTab from './components/General/Pages/Profile/Tabs/History/History.
 import AchievementTab from './components/General/Pages/Profile/Tabs/Achievement.tsx';
 import MailIndex from './components/olymp-admin/mail/index.tsx';
 import OlympiadDetails from './components/General/Pages/Events/OlympiadDetails.tsx';
-
+import { ToastContainer } from "react-toastify";
+import { NotificationProvider } from "./components/General/Helpers/NotificationProvider.tsx";
 
 function App() {
     return (
 
-
+        <NotificationProvider>
         <Router>
             <div className="App">
                 <Routes>
@@ -132,8 +133,18 @@ function App() {
                     </Route>
 
                 </Routes>
+                <ToastContainer
+                    position="bottom-right"
+                    autoClose={5000}
+                    hideProgressBar={false}
+                    newestOnTop
+                    closeOnClick
+                    pauseOnHover
+                    draggable
+                />
             </div>
         </Router>
+        </NotificationProvider>
     );
 }
 export default App;
