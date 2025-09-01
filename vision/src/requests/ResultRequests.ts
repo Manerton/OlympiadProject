@@ -13,7 +13,10 @@ export async function axiosGetHistoryEventsByUser(token: string, userId: string)
             }
         }
     );
-    return res.data.data as MainEvent[];
+    const raw = res.data.data.data;
+
+    console.log("Raw events data:", raw);
+    return raw
 }
 
 export async function axiosResultGetByEventUser(token: string, eventId: string, userId: string) {

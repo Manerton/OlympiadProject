@@ -16,10 +16,12 @@ export interface MainEvent {
     name: string
     start_date: string
     end_date: string
-    previous_event_id: string;
-    subject: number;
+    previous_event_id: string | null   // может быть null
+    subject: number
     class_number: number
     additional_info: string
+    event_type: string                 // есть в API
+    events: MainEvent[] | null         // если внутри может быть список событий
 }
 
 export interface ApplicationEvent {

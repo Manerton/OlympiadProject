@@ -15,7 +15,7 @@ type EventDTOResponse struct {
 	EventType       event.EventType     `json:"event_type"`
 	ClassNumber     int                 `json:"class_number"`
 	PreviousEventID *uuid.UUID          `json:"previous_event_id"`
-	Subject         string              `json:"subject"`
+	Subject         int                 `json:"subject"`
 	AdditionalInfo  string              `json:"additional_info"`
 	Events          *[]EventDTOResponse `json:"events"`
 }

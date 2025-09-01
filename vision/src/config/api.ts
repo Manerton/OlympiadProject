@@ -42,7 +42,7 @@ export const USER = {
 }
 
 export const RESULT = {
-    allEventsByUserId: "http://172.16.0.196:6611/history/event/",
+    allEventsByUserId: "http://172.16.0.196:6611/history-event/",
     allByEventIdUserId: ""
 }
 

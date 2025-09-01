@@ -59,14 +59,14 @@ func FromUpdateToModel(updateDTO event_dto.UpdateEventDTORequest, id uuid.UUID) 
 
 func ToDTO(eventModel event.Event) event_dto.EventDTOResponse {
 
-	subjectStr := strconv.Itoa(eventModel.Subject)
+	// subjectStr := strconv.Itoa(eventModel.Subject)
 
 	return event_dto.EventDTOResponse{
 		ID:              eventModel.ID,
 		Name:            eventModel.Name,
 		StartDate:       eventModel.StartDate,
 		EndDate:         eventModel.EndDate,
-		Subject:         subjectStr,
+		Subject:         eventModel.Subject,
 		ClassNumber:     eventModel.ClassNumber,
 		AdditionalInfo:  eventModel.AdditionalInfo,
 		PreviousEventID: eventModel.PreviousEventID,

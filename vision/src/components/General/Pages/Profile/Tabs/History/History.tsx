@@ -25,6 +25,7 @@ const HistoryTab: React.FC = () => {
                     user?.id!
                 );
                 setEvents(resEvents);
+                console.log("История событий:", events);
             } catch (err) {
                 console.error("Ошибка загрузки истории:", err);
             } finally {
