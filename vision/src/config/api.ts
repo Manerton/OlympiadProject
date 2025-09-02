@@ -46,6 +46,11 @@ export const RESULT = {
     allByEventIdUserId: ""
 }
 
+export const APPEAL = {
+    create: "http://172.16.0.196:6611/appeal/store",
+    get: ""
+}
+
 export const PARTICIPANT = {
     info: "http://172.16.0.196:6611/users/participant/all-info/",
 }

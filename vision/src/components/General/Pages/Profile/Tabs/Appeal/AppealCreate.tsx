@@ -3,22 +3,42 @@ import { useEffect, useState } from "react";
 import AppealForm from "./AppealForm";
 import type { Task } from "../../../../../types/task";
 import { useAuth } from "../../../../../Helpers/AuthContext";
-import { axiosResultGetByEventUser } from "../../../../../../requests/ResultRequests";
-import { useParams } from "react-router-dom";
+import { axiosCreateAppeal, axiosResultGetByEventUser } from "../../../../../../requests/ResultRequests";
+import { data, useParams } from "react-router-dom";
 import type { Result } from "../../../../../types/result";
+import type { CreateAppealRequest } from "../../../../../types/appeal";
 
 
 const AppealCreate: React.FC = () => {
-    const handleSubmit = (e: React.FormEvent) => {
+
+    const { accessToken, user } = useAuth();
+
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // TODO: отправка апелляции на сервер
-        console.log({
-            selectType,
-            selectTask,
-            taskScore,
-            reasonAppeal
-        });
+
+        const appealData: CreateAppealRequest = {
+            reason: reasonAppeal,
+            taskId: selectTask as number,
+            userId: user?.id as string,
+        };
+
+        try {
+            await axiosCreateAppeal(accessToken!, appealData);
+            alert("Апелляция отправлена");
+
+            // сброс формы
+            setSelectType("");
+            setSelectTask("");
+            setTaskScore(0);
+            setReasonAppeal("");
+        } catch (err) {
+            console.error("Ошибка отправки апелляции", err);
+        } finally {
+            console.log("Отправленные данные:", appealData);
+        }
     };
+
 
     const [allTasks, setAllTasks] = useState<Result[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -27,7 +47,6 @@ const AppealCreate: React.FC = () => {
     const [taskScore, setTaskScore] = useState<number>(0);
     const [reasonAppeal, setReasonAppeal] = useState<string>("");
 
-    const { accessToken, user } = useAuth();
     const { eventId } = useParams();
 
     useEffect(() => {

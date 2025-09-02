@@ -9,11 +9,11 @@ import { AuthProvider } from './components/Helpers/AuthContext.tsx';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    
-    <ThemeProvider> 
+
+    <ThemeProvider>
       <AuthProvider>
-      <App />
+        <App />
       </AuthProvider>
-     </ThemeProvider>
+    </ThemeProvider>
   </StrictMode>,
 )

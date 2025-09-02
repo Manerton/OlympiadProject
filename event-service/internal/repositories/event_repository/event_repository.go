@@ -55,10 +55,13 @@ func (r *EventRepository) GetEventByID(ctx context.Context, orm orm.ORM, id uuid
 func (r *EventRepository) GetEventsByListID(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]event.Event, error) {
 	const op = "repositories.event_repository.GetEventsByListID"
 
+	if len(ids) == 0 {
+		return []event.Event{}, nil
+	}
+
 	eventRes := []event.Event{}
 
 	// orderByName := "name"
-
 	if err := orm.Find(ctx, event.Event{}, nil, nil, nil, nil, &eventRes, ids); err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
