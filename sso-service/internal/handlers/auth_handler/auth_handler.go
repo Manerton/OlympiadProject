@@ -83,7 +83,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Value:    authResult.DeviceId,
 		HttpOnly: true,
 		Secure:   false,
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Now().Add(time.Duration(authResult.ExpiresInRefresh) * time.Second),
 	})
 
@@ -94,7 +94,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		Secure:   false,
 		// Domain:   "172.16.1.39",
-		SameSite: http.SameSiteDefaultMode,
+		SameSite: http.SameSiteLaxMode,
 		Path:     "/",
 		Expires:  time.Now().Add(time.Duration(authResult.ExpiresInRefresh) * time.Second), // Match the token expiration
 	})
