@@ -21,6 +21,7 @@
     "npm:react-icons@^5.5.0": "5.5.0_react@19.1.1",
     "npm:react-router-bootstrap@~0.26.3": "0.26.3_react@19.1.1_react-router-dom@7.7.1__react@19.1.1__react-dom@19.1.1___react@19.1.1_react-dom@19.1.1__react@19.1.1",
     "npm:react-router-dom@^7.7.1": "7.7.1_react@19.1.1_react-dom@19.1.1__react@19.1.1",
+    "npm:react-toastify@^11.0.5": "11.0.5_react@19.1.1_react-dom@19.1.1__react@19.1.1",
     "npm:react@^19.1.0": "19.1.1",
     "npm:typescript-eslint@^8.35.1": "8.38.0_eslint@9.32.0_typescript@5.8.3_@typescript-eslint+parser@8.38.0__eslint@9.32.0__typescript@5.8.3",
     "npm:typescript@~5.8.3": "5.8.3",
@@ -1597,6 +1598,14 @@
         "react-dom"
       ]
     },
+    "react-toastify@11.0.5_react@19.1.1_react-dom@19.1.1__react@19.1.1": {
+      "integrity": "sha512-EpqHBGvnSTtHYhCPLxML05NLY2ZX0JURbAdNYa6BUkk+amz4wbKBQvoKQAB0ardvSarUBuY4Q4s1sluAzZwkmA==",
+      "dependencies": [
+        "clsx",
+        "react",
+        "react-dom"
+      ]
+    },
     "react-transition-group@4.4.5_react@19.1.1_react-dom@19.1.1__react@19.1.1": {
       "integrity": "sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g==",
       "dependencies": [
@@ -1826,6 +1835,7 @@
         "npm:react-icons@^5.5.0",
         "npm:react-router-bootstrap@~0.26.3",
         "npm:react-router-dom@^7.7.1",
+        "npm:react-toastify@^11.0.5",
         "npm:react@^19.1.0",
         "npm:typescript-eslint@^8.35.1",
         "npm:typescript@~5.8.3",

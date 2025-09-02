@@ -137,37 +137,37 @@ HTTP_SERVERS_INFO:
 
     - prefix: "/appeal/store"
       aggregate: false
-      target: "https://172.16.0.94:443/api/appeal/store"
+      target: "https://172.16.0.94:80/api/appeal/store"
       skip_auth: false
 
     - prefix: "/appeal/change-status/"
       aggregate: false
-      target: "https://172.16.0.94:443/api/appeal/change-status"
+      target: "https://172.16.0.94:80/api/appeal/change-status"
       skip_auth: false
 
     - prefix: "/appeal/appeal-by-event/"
       aggregate: false
-      target: "https://172.16.0.94:443/api/appeal/appeal-by-event"
+      target: "https://172.16.0.94:80/api/appeal/appeal-by-event"
       skip_auth: false
 
     - prefix: "/appeal/appeal-by-user/"
       aggregate: false
-      target: "https://172.16.0.94:443/api/appeal/appeal-by-user"
+      target: "https://172.16.0.94:80/api/appeal/appeal-by-user"
       skip_auth: false
 
     - prefix: "/result/result-by-attendance/"
       aggregate: false
-      target: "https://172.16.0.94:443/api/result/result-by-attendance"
+      target: "https://172.16.0.94:80/api/result/result-by-attendance"
       skip_auth: false
 
     - prefix: "/result/result-by-user/"
       aggregate: false
-      target: "https://172.16.0.94:443/api/result/result-by-user"
+      target: "https://172.16.0.94:80/api/result/result-by-user"
       skip_auth: false
 
     - prefix: "/result/result-by-user-type-event/"
       aggregate: false
-      target: "https://172.16.0.94:443/api/result/result-by-user-type-event"
+      target: "https://172.16.0.94:80/api/result/result-by-user-type-event"
       skip_auth: false
     
     - prefix: "/result/result-by-user-event/"

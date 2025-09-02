@@ -13,7 +13,6 @@ type AggregationStrategy interface {
 	Aggregate(services []config.Target, origReq *http.Request) (*responcetypes.ApiResponse, error)
 }
 
-
 func buildTargetURL(targetURL string, id string) string {
 	if strings.Contains(targetURL, "{id}") {
 		return strings.Replace(targetURL, "{id}", id, 1)
@@ -30,8 +29,8 @@ func extractIDFromPath(r *http.Request, prefix string) (string, error) {
 	normPrefix := strings.TrimSuffix(prefix, "/")
 
 	// Если path имеет префикс (когда StripPrefix НЕ использовался в main.go)
-	if strings.HasPrefix(path, normPrefix) {
-		path = strings.TrimPrefix(path, normPrefix)
+	if after, ok := strings.CutPrefix(path, normPrefix); ok {
+		path = after
 	}
 
 	// Убираем ведущие "/"
