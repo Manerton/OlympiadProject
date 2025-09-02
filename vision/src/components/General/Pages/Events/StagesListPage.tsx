@@ -3,10 +3,10 @@ import React, { use, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Container, Row, Col, Card, Button, Spinner, Alert } from "react-bootstrap";
 import type { MyEvent } from "../../../types/event.ts";
-import CardImage from "./components/CardImage"; 
+import CardImage from "./components/CardImage.tsx"; 
 import { fetchEvent,fetchStagesCount} from "../../../../requests/EventsRequests.ts";
 
-const OlympiadDetails: React.FC = () => {
+const StagesListPage: React.FC = () => {
   const { id } = useParams();
   const [olympiad, setOlympiad] = useState<MyEvent | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,9 +58,6 @@ const OlympiadDetails: React.FC = () => {
               <Button variant="primary" className="w-100 mb-3">
                 Подать заявку
               </Button>
-              <Button variant="secondary" className="w-100 mb-3">
-                Подробнее
-              </Button>
               <p><strong>Дата начала:</strong> {olympiad.start_date}</p>
               <p><strong>Время:</strong> {olympiad.end_date}</p>
                <strong>Количество этапов:</strong>{" "}
@@ -75,4 +72,4 @@ const OlympiadDetails: React.FC = () => {
   );
 };
 
-export default OlympiadDetails;
+export default StagesListPage;

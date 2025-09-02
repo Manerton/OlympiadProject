@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 
-// Импорты изображений (пути могут отличаться в зависимости от твоей структуры)
+// Импорты изображений (пути могут отличаться )
 import logoVOSh from '../../../assets/images/v51_9.png';
 import logoRSH from '../../../assets/images/v49_8.png';
 import iconVK from '../../../assets/images/v51_12.png';
@@ -15,7 +15,7 @@ const Footer: React.FC = () => (
         {/* Информация */}
         <Col md={4}>
           <h6 className="text-uppercase fw-bold mb-3 text-center">Информация</h6>
-          <p className="small">
+          <p className="small text-justify">
             Система для проведения Всероссийской олимпиады школьников. Она создана для упрощения процессов, помочь талантливым школьникам раскрыть свой потенциал. <br />
             С помощью этой системы можно зарегистрироваться, подать заявку на участие, узнать результаты и получить всю необходимую информацию в одном месте.
           </p>
@@ -33,18 +33,21 @@ const Footer: React.FC = () => (
         {/* Контактная информация */}
         <Col md={4}>
           <h6 className="text-uppercase fw-bold mb-3 text-center">Контактная информация</h6>
-          <address className="small mb-3">
-            <strong>г. Москва</strong><br />
-            ул. Жуковского, д.16<br />
-            Телефон: <a href="tel:+74956255980">8 (495) 625-59-80</a><br />
-            <a href="mailto:Fcod@edu.gov.ru">Fcod@edu.gov.ru</a>
-          </address>
-          <address className="small">
-            <strong>г. Астрахань</strong><br />
-            ул. Анри Барбюса, 7<br />
-            Телефон: <a href="tel:+78512442428">+7 8512 442-428</a><br />
-            <a href="mailto:schooltech@astrobI.ru">schooltech@astrobI.ru</a>
-          </address>
+          <div className="text-justify">
+            <address className="small mb-3">
+              <strong>г. Москва</strong><br />
+              ул. Жуковского, д.16<br />
+              Телефон: <a href="tel:+74956255980">8 (495) 625-59-80</a><br />
+              <a href="mailto:Fcod@edu.gov.ru">Fcod@edu.gov.ru</a>
+            </address>
+            <address className="small">
+              <strong>г. Астрахань</strong><br />
+              ул. Анри Барбюса, 7<br />
+              Телефон: <a href="tel:+78512442428">+7 8512 442-428</a><br />
+              <a href="mailto:schooltech@astrobI.ru">schooltech@astrobI.ru</a>
+            </address>
+          </div>
+          
         </Col>
       </Row>
 

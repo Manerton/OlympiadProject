@@ -59,3 +59,10 @@ export async function fetchOlympiads({
 
   return res.data; // { data, metadata }
 }
+
+export async function fetchOlympiadChildren(id: string) {
+  const res = await axios.get(`${API_CONFIG.CHILD}/${id}`, {
+    withCredentials: true,
+  });
+  return res.data.data; // массив событий (с class_number)
+}

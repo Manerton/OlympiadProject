@@ -35,12 +35,6 @@ function Header() {
               <Nav.Link>Олимпиады</Nav.Link>
             </LinkContainer>
 
-            {isAuthenticated && (
-              <LinkContainer to={`/applications/user/${user?.id}`}>
-                <Nav.Link>Статус заявки</Nav.Link>
-              </LinkContainer>
-            )}
-
             {/* Админские ссылки, показываются только для админов */}
             {user?.role === 1 && (
               <LinkContainer to="/AdminPanel">
