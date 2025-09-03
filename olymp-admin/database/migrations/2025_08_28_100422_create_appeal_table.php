@@ -15,7 +15,7 @@ class CreateAppealTable extends Migration
     {
         Schema::create('appeal', function (Blueprint $table) {
             $table->id();
-            $table->string('attendance_id')->constrained('attendance')->onDelete('restrict');
+            $table->string('user_id');
             $table->integer('task_id')->constrained('task')->onDelete('restrict');
             $table->text('reason')->nullable();
             $table->integer('status');

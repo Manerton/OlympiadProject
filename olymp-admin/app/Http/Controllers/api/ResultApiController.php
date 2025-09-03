@@ -26,7 +26,7 @@ class ResultApiController extends Controller
         ]);
     }
     public function resultByUser($id){
-        $applications = $this->applicationService->findByUserId($id);
+        $applications = $this->applicationService->apiFindByUserId($id);
         $data = [];
         foreach ($applications as $application){
             $data[] = [
@@ -38,7 +38,7 @@ class ResultApiController extends Controller
         return response()->json(ApiHelper::prepareResponse($data));
     }
     public function resultByEventUser($eventId, $userId){
-        $applications = $this->applicationService->findByUserId($userId);
+        $applications = $this->applicationService->apiFindByUserId($userId);
         $applications = array_filter($applications, function($application) use ($eventId){
             return $application->event_id == $eventId;
         });
@@ -57,7 +57,7 @@ class ResultApiController extends Controller
         return response()->json(ApiHelper::prepareResponse($data));
     }
     public function eventsByUser($id){
-        $applications = $this->applicationService->findByUserId($id);
+        $applications = $this->applicationService->apiFindByUserId($id);
         $events = [];
         foreach ($applications as $application){
             $attendance = $this->attendanceRepository->getByApplicationId($application->id)[0];

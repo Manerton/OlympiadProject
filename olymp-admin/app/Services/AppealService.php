@@ -17,7 +17,10 @@ class AppealService
         $this->appealRepository = $appealRepository;
         $this->taskRepository = $taskRepository;
     }
-
+    public function get($id)
+    {
+        return $this->appealRepository->get($id);
+    }
     public function create($data)
     {
         $this->appealRepository->create($data['user_id'], $data['task_id'], $data['reason']);
@@ -34,5 +37,21 @@ class AppealService
     public function getByUserId($id)
     {
         return $this->appealRepository->getByUserId($id);
+    }
+    public function getAppealEvents($appeals){
+        $data = [];
+        foreach ($appeals as $appeal){
+            $data[] = $appeal->task->event_id;
+        }
+        return $data;
+    }
+    public function getAppealEventUser($appeals, $eventId){
+        $data = [];
+        foreach ($appeals as $appeal){
+            if ($appeal->task->event_id == $eventId) {
+                $data[] = $appeal;
+            }
+        }
+        return $data;
     }
 }

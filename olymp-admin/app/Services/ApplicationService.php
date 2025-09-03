@@ -93,4 +93,14 @@ class ApplicationService
         });
         return $array;
     }
+    public function apiFindByUserId($userId)
+    {
+        $applications = [];
+        $data = $this->applicationRepository->getByUserId($userId);
+        foreach ($data as $item) {
+            $application = $this->applicationBuilder->build($item);
+            $applications[] = $application;
+        }
+        return $applications;
+    }
 }

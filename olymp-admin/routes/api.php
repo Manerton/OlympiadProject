@@ -85,10 +85,13 @@ Route::group(['middleware' => 'prometheus'], function() {
     Route::get('/email/index', [MailApiController::class, 'index'])->name('mail.index');
     Route::post('/email/send', [MailApiController::class, 'send'])->name('mail.send');
 
+    Route::get('/appeal/{id}', [AppealApiController::class, 'get'])->name('appeal-api.appeal');
     Route::post('/appeal/store', [AppealApiController::class, 'store'])->name('appeal-api.store');
     Route::post('/appeal/change-status/{id}', [AppealApiController::class, 'changeStatus'])->name('appeal-api.change-status');
     Route::get('/appeal/appeal-by-event/{id}', [AppealApiController::class, 'appealByEvent'])->name('appeal-api.appeal-by-event');
     Route::get('/appeal/appeal-by-user/{id}', [AppealApiController::class, 'appealByUser'])->name('appeal-api.appeal-by-user');
+    Route::get('/appeal/events-appeal/{id}', [AppealApiController::class, 'eventsAppealUser'])->name('appeal-api.events-appeal-user');
+    Route::get('/appeal/appeal-event-user/{eventId}/{userId}', [AppealApiController::class, 'appealEventUser'])->name('appeal-api.appeal-event-user');
 
     Route::get('/result/result-by-attendance/{id}', [ResultApiController::class, 'resultByAttendance'])->name('result-api.result-by-attendance');
     Route::get('/result/result-by-user/{id}', [ResultApiController::class, 'resultByUser'])->name('result-api.result-by-user');

@@ -33,7 +33,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         socket.onerror = (err) => console.log("⚠️ WebSocket error", err);
 
         return () => socket.close();
-    }, []);
+    }, [user]);
 
     return <>{children}</>;
 };
