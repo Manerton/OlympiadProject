@@ -1,19 +1,30 @@
 import React, { createContext, useContext, useEffect } from "react";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import {useAuth} from "../../Helpers/AuthContext.tsx";
 
 const WS_URL = "ws://notification.olymp.local:8095";
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const {
+        user
+    } = useAuth();
     useEffect(() => {
         const socket = new WebSocket(WS_URL);
-
         socket.onopen = () => console.log("✅ WebSocket connected");
         socket.onmessage = (event) => {
             try {
-                const message = JSON.parse(event.data);
-                // Показываем toast уведомление
-                toast.info(message.data, { position: "bottom-right" });
+                if(user != null){
+                    const message = JSON.parse(event.data);
+                    if(message.to == 'ALL') {
+                        toast.info(message.to + user.id, { position: "bottom-right" });
+                    }
+                    else {
+                        if(message.to == user.id){
+                            toast.info(message.to + user.id, { position: "bottom-right" });
+                        }
+                    }
+                }
             } catch (err) {
                 console.error("Ошибка разбора WS сообщения", err);
             }

@@ -16,4 +16,10 @@ class NotificationController extends Controller
 
         return $this->render('index');
     }
+    public function actionSendTo($id)
+    {
+        $message = 'Hello';
+        Yii::$app->websocket->sendTo($message, $id);
+        return $this->render('index');
+    }
 }

@@ -31,8 +31,8 @@ class ResultApiController extends Controller
         foreach ($applications as $application){
             $data[] = [
                 'application' => $application,
-                'attendance' => $application->attendances[0],
-                'result' => $application->attendances[0]->taskAttendances
+                'attendance' =>  $this->attendanceRepository->getByApplicationId($application->id)[0],
+                'result' =>  $this->attendanceRepository->getByApplicationId($application->id)[0]->taskAttendances
             ];
         }
         return response()->json(ApiHelper::prepareResponse($data));
