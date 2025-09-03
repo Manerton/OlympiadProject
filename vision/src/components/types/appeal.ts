@@ -6,7 +6,7 @@ export interface Appeal {
 }
 
 export interface CreateAppealRequest {
-    userId: string;
-    taskId: number;
+    user_id: string;
+    task_id: number;
     reason: string;
 }

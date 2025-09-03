@@ -2,34 +2,38 @@ import type React from "react";
 import AppealCart from "./AppealCart";
 import type { Appeal } from "../../../../../types/appeal";
 import { taskTypeDict } from "../../../../../../dictionary/taskType";
+import { useEffect, useState } from "react";
+import { useAuth } from "../../../../../Helpers/AuthContext";
+import { axiosGetAppealsByEventUser } from "../../../../../../requests/ResultRequests";
+import { useParams } from "react-router-dom";
 
 const AppealList: React.FC = () => {
 
-    const AppealData: Appeal[] = [
-        {
-            TaskType: taskTypeDict.Testing,
-            TaskID: 101,
-            Reason: "Ошибочный балл",
-            Status: 3
-        },
-        {
-            TaskType: taskTypeDict.Practic,
-            TaskID: 202,
-            Reason: "Недочет в оценке",
-            Status: 1
-        },
-        {
-            TaskType: taskTypeDict.Oral,
-            TaskID: 303,
-            Reason: "Разнообразный и богатый опыт дальнейшее развитие различных форм деятельности влечет за собой процесс внедрения и модернизации системы обучения кадров, соответствует насущным потребностям. Равным образом начало повседневной работы по формированию позиции в значительной степени обуславливает создание модели развития. Товарищи! новая модель организационной деятельности обеспечивает широкому кругу (специалистов) участие в формировании форм развития. Равным образом укрепление и развитие структуры требуют определения и уточнения соответствующий условий активизации. Не следует, однако забывать, что новая модель организационной деятельности в значительной степени обуславливает создание новых предложений. С другой стороны сложившаяся структура организации представляет собой интересный эксперимент проверки системы обучения кадров, соответствует насущным потребностям",
-            Status: 2
+    const [appeals, setAppeals] = useState<Appeal[]>([])
+
+    const { accessToken, user } = useAuth()
+
+    const { eventId } = useParams();
+
+    useEffect(() => {
+        async function fetchAppeal() {
+            try {
+                const result = await axiosGetAppealsByEventUser(accessToken!, eventId!, user?.id!);
+                console.log("Events with APPEAL", result)
+                setAppeals(result);
+            } catch (err) {
+                console.error(err)
+            } finally {
+            }
         }
-    ];
+
+        fetchAppeal()
+    }, [])
 
     return (
         <div>
-            {AppealData.map((appeal) => (
-               <AppealCart key={appeal.TaskID} appeal={appeal}/>
+            {appeals.map((appeal) => (
+                <AppealCart key={appeal.TaskID} appeal={appeal} />
             ))}
         </div>
     )

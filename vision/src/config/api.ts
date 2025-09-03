@@ -43,11 +43,13 @@ export const USER = {
 
 export const RESULT = {
     allEventsByUserId: "http://172.16.0.196:6611/history-event/",
-    allByEventIdUserId: ""
+    allByEventIdUserId: "http://172.16.0.196:6611/result/result-by-event-user/",
+    allEventsWithAppealByUserId: "http://172.16.0.196:6611/events-appeal/"
 }
 
 export const APPEAL = {
     create: "http://172.16.0.196:6611/appeal/store",
+    getAppealsByEventUser: "http://172.16.0.196:6611/result/appeal-event-user/",
     get: ""
 }
 

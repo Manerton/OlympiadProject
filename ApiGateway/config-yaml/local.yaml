@@ -1,95 +1,21 @@
-env: "local"
+env: "dev"
 
 HTTP_SERVERS_INFO:
   routes:
-    - prefix: "/users"
-      aggregate: false
-      target: "http://localhost:8181/api/users"
-      skip_auth: false
-
-    - prefix: "/revoke-all"
-      aggregate: false
-      target: "http://localhost:8181/api/users/revoke-all"
-      skip_auth: false
-
-    - prefix: "/events/class"
-      aggregate: false
-      target: "http://localhost:8080/api/events/class"
-      skip_auth: false
-
-    - prefix: "/events"
-      aggregate: false
-      target: "http://localhost:8080/api/events"
-      skip_auth: false
-
-    - prefix: "/jury-assignments/event"
-      aggregate: false
-      target: "http://localhost:8090/api/jury-assignments/event"
-      skip_auth: false
-
-    - prefix: "/users/count"
-      aggregate: false
-      target: "http://localhost:8181/api/users/count"
-      skip_auth: false
-
-    - prefix: "/participants"
-      aggregate: false
-      target: "http://localhost:8181/api/participants"
-      skip_auth: false
-
-    - prefix: "/participants/count"
-      aggregate: false
-      target: "http://localhost:8181/api/participants/count"
-      skip_auth: false
-
-    - prefix: "/participants/byuser"
-      aggregate: false
-      target: "http://localhost:8181/api/participants/byuser"
-      skip_auth: false
-
-    - prefix: "/schools"
-      aggregate: false
-      target: "http://localhost:8181/api/schools"
-      skip_auth: false
-
-    - prefix: "/schools/count"
-      aggregate: false
-      target: "http://localhost:8181/api/schools/count"
-      skip_auth: false
-
-    - prefix: "/applications"
-      aggregate: false
-      target: "http://localhost:8082/applications"
-      skip_auth: false
-
-    - prefix: "/applications/event"
-      aggregate: false
-      target: "http://localhost:8082/applications/event"
-      skip_auth: false
-
-    - prefix: "/applications/count"
-      aggregate: false
-      target: "http://localhost:8082/applicationsCount"
-      skip_auth: false
-
-    - prefix: "/events/subjects"
-      aggregate: false
-      target: "http://localhost:8080/api/events/subjects"
-      skip_auth: false
-
-    - prefix: "/regional-stages"
-      aggregate: false
-      target: "http://localhost:8080/api/events/regional-stage"
-      skip_auth: false
-
-    - prefix: "/events-child"
-      aggregate: false
-      target: "http://localhost:8080/api/events/child"
-      skip_auth: false
-
+    # ==================== AUTH SERVICE (8181) ====================
     - prefix: "/auth"
       aggregate: false
       target: "http://localhost:8181/api/users/login"
+      skip_auth: true
+
+    - prefix: "/logout"
+      aggregate: false
+      target: "http://localhost:8181/api/users/logout"
+      skip_auth: false
+
+    - prefix: "/refresh"
+      aggregate: false
+      target: "http://localhost:8181/api/users/refresh"
       skip_auth: true
 
     - prefix: "/register"
@@ -97,17 +23,158 @@ HTTP_SERVERS_INFO:
       target: "http://localhost:8181/api/users/register"
       skip_auth: true
 
-    - prefix: "/refresh"
+    - prefix: "/revoke-all"
       aggregate: false
-      target: "http://localhost:8181/api/users/refresh"
-      skip_auth: true  
+      target: "http://localhost:8181/api/users/revoke-all"
+      skip_auth: false
 
-    - prefix: "/logout"
+    - prefix: "/users/"
       aggregate: false
-      target: "http://localhost:8181/api/users/logout"
-      skip_auth: false  
+      target: "http://localhost:8181/api/users"
+      skip_auth: false
 
-    - prefix: "/aplicationevent"
+    - prefix: "/users/count"
+      aggregate: false
+      target: "http://localhost:8181/api/users/count"
+      skip_auth: false
+
+    - prefix: "/users/all-info/"
+      aggregate: false
+      target: "http://localhost:8181/api/users/"
+      skip_auth: false
+
+    - prefix: "/users/participant/all-info/"
+      aggregate: false
+      target: "http://localhost:8181/api/users/all-info/"
+      skip_auth: false
+
+    # ==================== PARTICIPANTS & SCHOOLS SERVICE (8181) ====================
+    - prefix: "/participants/"
+      aggregate: false
+      target: "http://localhost:8181/api/participants"
+      skip_auth: false
+
+    - prefix: "/participants/byuser/"
+      aggregate: false
+      target: "http://localhost:8181/api/participants/byuser"
+      skip_auth: false
+
+    - prefix: "/participants/count"
+      aggregate: false
+      target: "http://localhost:8181/api/participants/count"
+      skip_auth: false
+
+    - prefix: "/schools/"
+      aggregate: false
+      target: "http://localhost:8181/api/schools"
+      skip_auth: false
+
+    - prefix: "/schools"
+      aggregate: false
+      target: "http://localhost:8181/api/schools"
+      skip_auth: true
+
+    - prefix: "/schools/count"
+      aggregate: false
+      target: "http://localhost:8181/api/schools/count"
+      skip_auth: false
+
+    # ==================== EVENTS SERVICE (8080) ====================
+    - prefix: "/events/"
+      aggregate: false
+      target: "http://localhost:8080/api/events"
+      skip_auth: true
+
+    - prefix: "/events/child/"
+      aggregate: false
+      target: "http://localhost:8080/api/events/child"
+      skip_auth: true
+
+    - prefix: "/events/class/"
+      aggregate: false
+      target: "http://localhost:8080/api/events/class"
+      skip_auth: false
+
+    - prefix: "/events/subjects/"
+      aggregate: false
+      target: "http://localhost:8080/api/events/subjects"
+      skip_auth: false
+
+    - prefix: "/regional-stages"
+      aggregate: false
+      target: "http://localhost:8080/api/events/regional-stage"
+      skip_auth: true
+
+    # ==================== APPLICATIONS SERVICE (8082) ====================
+    - prefix: "/applications/"
+      aggregate: false
+      target: "http://localhost:8082/applications"
+      skip_auth: false
+
+    - prefix: "/applications/count"
+      aggregate: false
+      target: "http://localhost:8082/applicationsCount"
+      skip_auth: false
+
+    - prefix: "/applications/event/"
+      aggregate: false
+      target: "http://localhost:8082/applications/event/"
+      skip_auth: false
+
+    - prefix: "/applications/user/"
+      aggregate: false
+      target: "http://localhost:8082/applications/user/"
+      skip_auth: false
+
+    # ==================== JURY SERVICE (8090) ====================
+    - prefix: "/jury-assignments/event/"
+      aggregate: false
+      target: "http://localhost:8090/api/jury-assignments/event"
+      skip_auth: false
+
+    # ==================== Olimp-admin SERVICE (80) ====================
+    - prefix: "/appeal/store"
+      aggregate: false
+      target: "https://localhost:80/api/appeal/store"
+      skip_auth: false
+
+    - prefix: "/appeal/change-status/"
+      aggregate: false
+      target: "https://localhost:80/api/appeal/change-status"
+      skip_auth: false
+
+    - prefix: "/appeal/appeal-by-event/"
+      aggregate: false
+      target: "https://localhost:80/api/appeal/appeal-by-event"
+      skip_auth: false
+
+    - prefix: "/appeal/appeal-by-user/"
+      aggregate: false
+      target: "https://localhost:80/api/appeal/appeal-by-user"
+      skip_auth: false
+
+    - prefix: "/result/result-by-attendance/"
+      aggregate: false
+      target: "https://localhost:80/api/result/result-by-attendance"
+      skip_auth: false
+
+    - prefix: "/result/result-by-user/"
+      aggregate: false
+      target: "https://localhost:80/api/result/result-by-user"
+      skip_auth: false
+
+    - prefix: "/result/result-by-user-type-event/"
+      aggregate: false
+      target: "https://localhost:80/api/result/result-by-user-type-event"
+      skip_auth: false
+
+    - prefix: "/result/result-by-user-event/"
+      aggregate: false
+      target: "https://localhost/api/result/result-by-user-event"
+      skip_auth: false
+
+    # ==================== AGGREGATE ROUTES ====================
+    - prefix: "/AplicationEvent"
       aggregate: true
       services:
         - "http://localhost:8082/applications"
@@ -115,10 +182,44 @@ HTTP_SERVERS_INFO:
       skip_auth: true
       roles: []
 
+    - prefix: "/ApplicationEventtest/"
+      aggregate: true
+      targets:
+        - url: "http://localhost:8082/applications/user/"
+          fields: ["id", "status"]
+        - url: "http://localhost:8082/api/events/list/"
+          fields: ["id", "name", "start_date", "end_date", "previous_event_id", "subject", "class_number", "additional_info"]
+      skip_auth: false
+      roles: []
+
+    - prefix: "/ApplicationEvent/"
+      aggregate: true
+      targets:
+        - url: "http://localhost:8082/applications/user/"
+          fields: [""]
+        - url: "http://localhost:8080/api/events/list"
+          fields: [""]
+      skip_auth: false
+      roles: []
+
+    - prefix: "/history-event/"
+      aggregate: true
+      targets:
+        - url: "http://localhost:80/api/result/events-by-user/"
+          fields: [""]
+        - url: "http://localhost:8080/api/events/list"
+          fields: [""]
+      skip_auth: false
+      roles: []
+
 CORS_INFO:
   allow_origins: [
     http://localhost:5173,
-    http://172.19.0.1:5173
+    http://localhost:59871,
+    http://localhost:5173,
+    http://localhost:5173,
+    http://localhost:55819,
+    http://localhost:5173
   ]
 
 HTTP_SERVER_MAIN_INFO:

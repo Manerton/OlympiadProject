@@ -30,7 +30,33 @@ export async function axiosResultGetByEventUser(token: string, eventId: string, 
             }
         }
     );
-    return res.data.data as Result[];
+    return res.data.data;
+}
+
+export async function axiosGetEventsWithAppealByUser(token: string, userId: string) {
+    const res = await axios.get(
+        RESULT.allEventsWithAppealByUserId + `${userId}`,
+        {
+            withCredentials: true,
+            headers: {
+                Authorization: `Bearer ${token}` // добавляем токен
+            }
+        }
+    );
+    return res.data.data.data;
+}
+
+export async function axiosGetAppealsByEventUser(token: string, eventId: string, userId: string) {
+     const res = await axios.get(
+        APPEAL.getAppealsByEventUser + `${eventId}/` + `${userId}`,
+        {
+            withCredentials: true,
+            headers: {
+                Authorization: `Bearer ${token}` // добавляем токен
+            }
+        }
+    );
+    return res.data.data.data;
 }
 
 export async function axiosCreateAppeal(token: string, data: CreateAppealRequest) {
@@ -44,7 +70,7 @@ export async function axiosCreateAppeal(token: string, data: CreateAppealRequest
             }
         }
     );
-    return res.data.data.status;
+    return res.data;
 
 }
 

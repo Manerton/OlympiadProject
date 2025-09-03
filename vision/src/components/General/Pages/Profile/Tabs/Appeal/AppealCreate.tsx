@@ -19,11 +19,12 @@ const AppealCreate: React.FC = () => {
 
         const appealData: CreateAppealRequest = {
             reason: reasonAppeal,
-            taskId: selectTask as number,
-            userId: user?.id as string,
+            task_id: selectTask as number,
+            user_id: user?.id as string,
         };
 
         try {
+            console.log("Отправка апелляции с данными:", appealData);
             await axiosCreateAppeal(accessToken!, appealData);
             alert("Апелляция отправлена");
 
@@ -48,25 +49,39 @@ const AppealCreate: React.FC = () => {
     const [reasonAppeal, setReasonAppeal] = useState<string>("");
 
     const { eventId } = useParams();
-
     useEffect(() => {
         async function fetchResult() {
             try {
-                const result = await axiosResultGetByEventUser(accessToken!, eventId!, user?.id!);
-                setAllTasks(result);
+                const result = await axiosResultGetByEventUser(
+                    accessToken!,
+                    eventId!,
+                    user?.id!
+                );
+                console.log("Ответ от сервера (result):", result);
+
+                setAllTasks(result); // обновляем состояние
             } catch (err) {
                 console.error("Ошибка загрузки задач", err);
             }
         }
+
         fetchResult();
     }, [accessToken, user, eventId]);
+
+    // 👇 этот эффект сработает каждый раз, когда allTasks обновится
+    useEffect(() => {
+        if (allTasks.length > 0) {
+            console.log("Обновлённое состояние allTasks:", allTasks);
+        }
+    }, [allTasks]);
+
 
     // когда выбран тип — фильтруем список заданий
     useEffect(() => {
         if (selectType !== "") {
             const filtered = allTasks
-                .filter(t => t.taskType === selectType)
-                .map(t => ({ id: t.taskId, name: `Задание ${t.taskName}` }));
+                .filter(t => t.type === selectType)
+                .map(t => ({ id: t.task_id, name: `Задание ${t.task_number}` }));
             setTasks(filtered);
             setSelectTask(""); // сбрасываем выбранное задание
             setTaskScore(0);   // сбрасываем балл
@@ -76,7 +91,7 @@ const AppealCreate: React.FC = () => {
     // когда выбрано задание — подставляем баллы
     useEffect(() => {
         if (selectTask !== "") {
-            const found = allTasks.find(t => t.taskId === selectTask);
+            const found = allTasks.find(t => t.task_id === selectTask);
             if (found) setTaskScore(found.points);
         }
     }, [selectTask, allTasks]);

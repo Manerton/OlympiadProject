@@ -1,6 +1,6 @@
 export interface Result {
-    taskId: number;
-    taskType: number;
-    taskName: string;
+    task_id: number;
+    type: number;
+    task_number: string;
     points: number;
 }

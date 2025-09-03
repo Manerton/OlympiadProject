@@ -125,7 +125,7 @@ function App() {
 
                         <Route path="appeals" element={<AppealTab />} />
                         <Route path="appeals/:appealId/appeal-view" element={<AppealView />} />
-                        <Route path="appeals/:appealId/list" element={<AppealList />} />
+                        <Route path="appeals/:eventId/list" element={<AppealList />} />
                     </Route>
 
                     <Route element={<Layout />}>
