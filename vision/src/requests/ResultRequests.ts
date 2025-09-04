@@ -2,7 +2,7 @@ import axios from "axios";
 import { APPEAL, RESULT } from "../config/api";
 import type { Result } from "../components/types/result";
 import type { MainEvent } from "../components/types/event";
-import type { CreateAppealRequest } from "../components/types/appeal";
+import type { Appeal, CreateAppealRequest } from "../components/types/appeal";
 
 export async function axiosGetHistoryEventsByUser(token: string, userId: string) {
     const res = await axios.get(
@@ -56,7 +56,15 @@ export async function axiosGetAppealsByEventUser(token: string, eventId: string,
             }
         }
     );
-    return res.data.data.data;
+
+     const mapped: Appeal[] = res.data.data.map((item: any) => ({
+        TaskID: item.task_id,
+        TaskType: item.task.type,
+        Reason: item.reason,
+        Status: item.status,
+      }));
+
+    return mapped;
 }
 
 export async function axiosCreateAppeal(token: string, data: CreateAppealRequest) {

@@ -49,7 +49,7 @@ export const RESULT = {
 
 export const APPEAL = {
     create: "http://172.16.0.196:6611/appeal/store",
-    getAppealsByEventUser: "http://172.16.0.196:6611/result/appeal-event-user/",
+    getAppealsByEventUser: "http://172.16.0.196:6611/appeal/appeal-event-user/",
     get: ""
 }
 

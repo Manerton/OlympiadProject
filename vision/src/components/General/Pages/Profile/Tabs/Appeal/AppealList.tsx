@@ -21,6 +21,8 @@ const AppealList: React.FC = () => {
                 const result = await axiosGetAppealsByEventUser(accessToken!, eventId!, user?.id!);
                 console.log("Events with APPEAL", result)
                 setAppeals(result);
+                console.log("Appeals",appeals)
+
             } catch (err) {
                 console.error(err)
             } finally {
