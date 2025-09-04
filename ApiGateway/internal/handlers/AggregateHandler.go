@@ -23,6 +23,8 @@ func getStrategy(prefix string) strategy.AggregationStrategy {
 		return strategy.NewApplicationEventStrategy(5 * time.Second)
 	case "/history-event/":
 		return strategy.NewHistoryEventStrategy(5 * time.Second)
+	case "/events-appeal/":
+		return strategy.NewHistoryEventStrategy(5 * time.Second)
 	default:
 		return nil
 	}

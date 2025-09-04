@@ -19,7 +19,7 @@ export async function fetchStagesCount(id: string) {
   const res = await axios.get(`${API_CONFIG.CHILD}/${id}`, {
     withCredentials: true,
   });
-  return res.data.data.count;
+  return res.data.metadata;
 }
 
 export interface FetchOlympiadsParams {

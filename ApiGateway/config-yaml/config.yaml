@@ -137,42 +137,47 @@ HTTP_SERVERS_INFO:
 
     - prefix: "/appeal/store"
       aggregate: false
-      target: "https://172.16.0.94:80/api/appeal/store"
+      target: "http://172.16.0.94:80/api/appeal/store"
       skip_auth: false
 
     - prefix: "/appeal/change-status/"
       aggregate: false
-      target: "https://172.16.0.94:80/api/appeal/change-status"
+      target: "http://172.16.0.94:80/api/appeal/change-status"
       skip_auth: false
 
     - prefix: "/appeal/appeal-by-event/"
       aggregate: false
-      target: "https://172.16.0.94:80/api/appeal/appeal-by-event"
+      target: "http://172.16.0.94:80/api/appeal/appeal-by-event"
       skip_auth: false
 
     - prefix: "/appeal/appeal-by-user/"
       aggregate: false
-      target: "https://172.16.0.94:80/api/appeal/appeal-by-user"
+      target: "http://172.16.0.94:80/api/appeal/appeal-by-user"
       skip_auth: false
 
     - prefix: "/result/result-by-attendance/"
       aggregate: false
-      target: "https://172.16.0.94:80/api/result/result-by-attendance"
+      target: "http://172.16.0.94:80/api/result/result-by-attendance"
       skip_auth: false
 
     - prefix: "/result/result-by-user/"
       aggregate: false
-      target: "https://172.16.0.94:80/api/result/result-by-user"
+      target: "http://172.16.0.94:80/api/result/result-by-user"
       skip_auth: false
 
     - prefix: "/result/result-by-user-type-event/"
       aggregate: false
-      target: "https://172.16.0.94:80/api/result/result-by-user-type-event"
+      target: "http://172.16.0.94:80/api/result/result-by-user-type-event"
       skip_auth: false
     
-    - prefix: "/result/result-by-user-event/"
+    - prefix: "/result/result-by-event-user/"
       aggregate: false
-      target: "https://172.16.0.94/api/result/result-by-user-event"
+      target: "http://172.16.0.94/api/result/result-by-event-user"
+      skip_auth: false
+
+    - prefix: "/result/appeal-event-user/"
+      aggregate: false
+      target: "http://172.16.0.94/api/result/appeal-event-user"
       skip_auth: false
 
     # ==================== AGGREGATE ROUTES ====================
@@ -213,6 +218,17 @@ HTTP_SERVERS_INFO:
           fields: [""]
       skip_auth: false
       roles: []
+    
+    - prefix: "/events-appeal/"
+      aggregate: true
+      targets:
+        - url: "http://172.16.0.94:80/api/appeal/events-appeal/"
+          fields: [""]
+        - url: "http://172.16.1.39:8080/api/events/list"
+          fields: [""]
+      skip_auth: false
+      roles: []
+
     
 
 

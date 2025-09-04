@@ -16,7 +16,7 @@ const OlympiadDetails: React.FC = () => {
   useEffect(() => {
   if (!id) return;
     setLoading(true);
-    fetchEvent(id)   // ✅ вот здесь
+    fetchEvent(id)   
         .then((res) => setOlympiad(res))
         .catch((err) => setError((err as Error).message))
         .finally(() => setLoading(false));
@@ -57,9 +57,6 @@ const OlympiadDetails: React.FC = () => {
             <Card.Body>
               <Button variant="primary" className="w-100 mb-3">
                 Подать заявку
-              </Button>
-              <Button variant="secondary" className="w-100 mb-3">
-                Подробнее
               </Button>
               <p><strong>Дата начала:</strong> {olympiad.start_date}</p>
               <p><strong>Время:</strong> {olympiad.end_date}</p>

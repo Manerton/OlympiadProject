@@ -10,7 +10,7 @@ function Header() {
   const { user, logout, initialized } = useAuth();
 
 
-   console.log(user);
+   //console.log(user);
   
   if (!initialized) {
      return <Navbar><Container>Загрузка...</Container></Navbar>;
