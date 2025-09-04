@@ -8,11 +8,12 @@
       <sourceFolder url="file://$MODULE_DIR$/olymp-admin/tests" isTestSource="true" packagePrefix="Tests\" />
       <sourceFolder url="file://$MODULE_DIR$/olymp-admin/tests/Feature" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/olymp-admin/tests/Unit" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/olymp-admin/spec" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/olymp_notification/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/olymp-notification/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/olymp-notification/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/olymp_notification/spec" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/brick/math" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/carbonphp/carbon-doctrine-types" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/composer" />
@@ -229,6 +230,17 @@
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/yiisoft/yii2-httpclient" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/yiisoft/yii2-redis" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/yiisoft/yii2-symfonymailer" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/symfony/process" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/yiisoft/yii2-queue" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/enqueue/amqp-lib" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/enqueue/amqp-tools" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/enqueue/dsn" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/paragonie/constant_time_encoding" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/php-amqplib/php-amqplib" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/phpseclib/phpseclib" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/queue-interop/amqp-interop" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/queue-interop/queue-interop" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/vladimir-yuldashev/laravel-queue-rabbitmq" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

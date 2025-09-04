@@ -16,8 +16,13 @@
       "tags": "administrator"
     },
     {
-      "name": "olymp-service",
-      "password": "olymp-password",
+      "name": "admin-service",
+      "password": "admin-password",
+      "tags": "administrator"
+    },
+    {
+      "name": "notification-service",
+      "password": "notification-password",
       "tags": "administrator"
     }
   ],
@@ -47,7 +52,14 @@
       "read": ".*"
     },
     {
-      "user": "olymp-service",
+      "user": "admin-service",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "notification-service",
       "vhost": "/",
       "configure": ".*",
       "write": ".*",
@@ -78,6 +90,13 @@
     },
     {
       "name": "olymp_admin",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "olymp_notification",
       "vhost": "/",
       "durable": true,
       "auto_delete": false,

@@ -6,7 +6,7 @@ $db = require __DIR__ . '/db.php';
 $config = [
     'id' => 'basic-console',
     'basePath' => dirname(__DIR__),
-    'bootstrap' => ['log'],
+    'bootstrap' => ['log', 'queue'],
     'controllerNamespace' => 'app\commands',
     'aliases' => [
         '@bower' => '@vendor/bower-asset',
@@ -32,6 +32,16 @@ $config = [
             ],
         ],
         'db' => $db,
+        'queue' => [
+            'class' => \yii\queue\amqp_interop\Queue::class,
+            'as log' => \yii\queue\LogBehavior::class,
+            'driver' => 'enqueue/amqp-lib',
+            'dsn' => 'amqp://notification-service:notification-password@rabbitmq:5672/%2f',
+            'queueName' => 'olymp_notification',
+        ],
+        'websocket' => [
+            'class' => \app\services\WebSocketService::class
+        ],
     ],
     'params' => $params,
     /*

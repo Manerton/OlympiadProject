@@ -262,7 +262,6 @@
       <path value="$PROJECT_DIR$/olymp-notification/vendor/symfony/polyfill-intl-idn" />
       <path value="$PROJECT_DIR$/olymp-notification/vendor/symfony/polyfill-php73" />
       <path value="$PROJECT_DIR$/olymp-notification/vendor/symfony/polyfill-mbstring" />
-      <path value="$PROJECT_DIR$/olymp-notification/vendor/yiisoft/yii2-debug" />
       <path value="$PROJECT_DIR$/olymp-notification/vendor/yiisoft/yii2-composer" />
       <path value="$PROJECT_DIR$/olymp-notification/vendor/yiisoft/yii2-gii" />
       <path value="$PROJECT_DIR$/olymp-notification/vendor/yiisoft/yii2-faker" />
@@ -290,7 +289,6 @@
       <path value="$PROJECT_DIR$/olymp-notification/vendor/sebastian/complexity" />
       <path value="$PROJECT_DIR$/olymp-notification/vendor/sebastian/version" />
       <path value="$PROJECT_DIR$/olymp-notification/vendor/sebastian/type" />
-      <path value="$PROJECT_DIR$/olymp-notification/vendor/bower-asset/bootstrap" />
       <path value="$PROJECT_DIR$/olymp-notification/vendor/guzzlehttp/psr7" />
       <path value="$PROJECT_DIR$/olymp-notification/vendor/sebastian/object-reflector" />
       <path value="$PROJECT_DIR$/olymp-notification/vendor/sebastian/object-enumerator" />
@@ -319,6 +317,33 @@
       <path value="$PROJECT_DIR$/olymp-notification/vendor/psr/event-dispatcher" />
       <path value="$PROJECT_DIR$/olymp-notification/vendor/psr/log" />
       <path value="$PROJECT_DIR$/olymp-notification/vendor/psr/http-message" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/react/dns" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/react/cache" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/react/promise" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/react/event-loop" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/phrity/net-uri" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/textalk/websocket" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/evenement/evenement" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/phrity/util-errorhandler" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/react/stream" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/react/socket" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/ratchet/rfc6455" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/cboden/ratchet" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/symfony/http-foundation" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/symfony/routing" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/yiisoft/yii2-queue" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/paragonie/constant_time_encoding" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/phpseclib/phpseclib" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/queue-interop/amqp-interop" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/queue-interop/queue-interop" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/enqueue/amqp-lib" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/enqueue/amqp-tools" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/enqueue/dsn" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/php-amqplib/php-amqplib" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/yiisoft/yii2-debug" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/bower-asset/bootstrap" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/symfony/process" />
+      <path value="$PROJECT_DIR$/olymp-admin/vendor/vladimir-yuldashev/laravel-queue-rabbitmq" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="7.4" />

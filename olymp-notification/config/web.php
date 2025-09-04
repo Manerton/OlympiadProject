@@ -37,7 +37,7 @@ $config = [
         ],
         'redis' => [
             'class' => 'yii\redis\Connection',
-            'hostname' => '172.16.0.94',
+            'hostname' => 'redis',
             'port' => 6379,
             'database' => 0,
         ],
@@ -61,6 +61,13 @@ $config = [
             ],
         ],
         'db' => $db,
+        'queue' => [
+            'class' => \yii\queue\amqp_interop\Queue::class,
+            'as log' => \yii\queue\LogBehavior::class,
+            'driver' => 'enqueue/amqp-lib',
+            'dsn' => 'amqp://notification-service:notification-password@rabbitmq:5672/%2f',
+            'queueName' => 'olymp_notification',
+        ],
         /*
         'urlManager' => [
             'enablePrettyUrl' => true,
