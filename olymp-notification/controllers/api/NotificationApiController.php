@@ -1,12 +1,12 @@
 <?php
 
-namespace app\controllers;
+namespace app\controllers\api;
 
 use app\jobs\SendNotificationJob;
 use Yii;
 use yii\web\Controller;
 
-class NotificationController extends Controller
+class NotificationApiController extends Controller
 {
     public function beforeAction($action)
     {
@@ -23,12 +23,16 @@ class NotificationController extends Controller
                 $message
             ));
         }
-        return $this->render('index');
+        return Yii::$app->response->data = json_encode([
+            'status' => 200
+        ]);
     }
     public function actionSendTo($id)
     {
         $message = Yii::$app->request->post('message') ?: 'MESSAGE';
         Yii::$app->websocket->sendTo($message, $id);
-        return $this->render('index');
+        return Yii::$app->response->data = json_encode([
+            'status' => 200
+        ]);
     }
 }
