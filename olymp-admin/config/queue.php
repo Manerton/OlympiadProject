@@ -73,24 +73,11 @@ return [
 
         'rabbitmq' => [
             'driver' => 'rabbitmq',
-            'queue' => env('RABBITMQ_QUEUE', 'default'),
-            'connection' => PhpAmqpLib\Connection\AMQPStreamConnection::class,
-            'hosts' => [
-                [
-                    'host' => env('RABBITMQ_HOST', 'rabbitmq'),
-                    'port' => env('RABBITMQ_PORT', 5672),
-                    'user' => env('RABBITMQ_USERNAME', 'admin-service'),
-                    'password' => env('RABBITMQ_PASSWORD', 'admin-password'),
-                    'vhost' => env('RABBITMQ_VHOST', '/'),
-                ],
-            ],
-            'options' => [
-                'exchange' => [
-                    'name' => env('RABBITMQ_EXCHANGE_NAME', 'exchange-name'),
-                    'type' => env('RABBITMQ_EXCHANGE_TYPE', 'direct'),
-                    'durable' => true,
-                ],
-            ],
+            'host' => env('RABBITMQ_HOST', 'rabbitmq'),
+            'port' => env('RABBITMQ_PORT', 5672),
+            'user' => env('RABBITMQ_USER', 'admin-service'),
+            'password' => env('RABBITMQ_PASSWORD', 'admin-password'),
+            'vhost' => env('RABBITMQ_VHOST', '/'),
         ],
     ],
 

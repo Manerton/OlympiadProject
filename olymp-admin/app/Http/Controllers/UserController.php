@@ -46,7 +46,7 @@ class UserController extends Controller
         $data = $request->validated();
         $this->rabbitMQService->publish(
             [RabbitMQHelper::AUTH_QUEUE_NAME],
-            RabbitMQHelper::QUEUE_NAME,
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
             RabbitMQHelper::CREATE,
             RabbitMQHelper::USER_TABLE,
             array_diff_key($data, ['id' => null]),
@@ -69,7 +69,7 @@ class UserController extends Controller
         $data = $request->validated();
         $this->rabbitMQService->publish(
             [RabbitMQHelper::AUTH_QUEUE_NAME],
-            RabbitMQHelper::QUEUE_NAME,
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
             RabbitMQHelper::UPDATE,
             RabbitMQHelper::USER_TABLE,
             array_diff_key($data, ['id' => null]),
@@ -80,7 +80,7 @@ class UserController extends Controller
     public function delete($id){
         $this->rabbitMQService->publish(
             [RabbitMQHelper::AUTH_QUEUE_NAME],
-            RabbitMQHelper::QUEUE_NAME,
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
             RabbitMQHelper::DELETE,
             RabbitMQHelper::USER_TABLE,
             [],

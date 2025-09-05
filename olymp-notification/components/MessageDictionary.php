@@ -8,6 +8,7 @@ class MessageDictionary extends BaseDictionary
 {
     const CODE_MESSAGE = 1;
     const TEXT_MESSAGE = 2;
+    const ONLINE_NOTIFICATION = 3;
 
     public function __construct()
     {
@@ -15,6 +16,7 @@ class MessageDictionary extends BaseDictionary
         $this->list = [
             self::CODE_MESSAGE => 'Сообщение с кодом',
             self::TEXT_MESSAGE => 'Текстовое сообщение',
+            self::ONLINE_NOTIFICATION => 'Онлайн-уведомление'
         ];
     }
 
@@ -23,6 +25,7 @@ class MessageDictionary extends BaseDictionary
         return [
             $this->list[self::CODE_MESSAGE],
             $this->list[self::TEXT_MESSAGE],
+            $this->list[self::ONLINE_NOTIFICATION]
         ];
     }
 }

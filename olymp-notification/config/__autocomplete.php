@@ -23,6 +23,7 @@ class Yii {
  * @property \yii\web\User|__WebUser $user
  * @property \app\services\WebSocketService $websocket
  * @property \yii\queue\amqp_interop\Queue::class $queue
+ * @property \app\components\RabbitMQComponent $rabbitmq
  * 
  */
 class __Application {

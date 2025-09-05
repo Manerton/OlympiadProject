@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Components;
+namespace app\components;
 
 class RabbitMQHelper
 {

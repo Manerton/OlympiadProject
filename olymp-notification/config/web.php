@@ -66,7 +66,15 @@ $config = [
             'as log' => \yii\queue\LogBehavior::class,
             'driver' => 'enqueue/amqp-lib',
             'dsn' => 'amqp://notification-service:notification-password@rabbitmq:5672/%2f',
-            'queueName' => 'olymp_notification',
+            'queueName' => 'olymp_notification_message',
+        ],
+        'rabbitmq' => [
+            'class' => 'app\components\RabbitMQComponent',
+            'host' => 'rabbitmq',
+            'port' => 5672,
+            'user' => 'admin-service',
+            'password' => 'admin-password',
+            'vhost' => '/',
         ],
         /*
         'urlManager' => [
@@ -93,7 +101,7 @@ if (YII_ENV_DEV) {
     $config['modules']['gii'] = [
         'class' => 'yii\gii\Module',
         // uncomment the following to add your IP if you are not connecting from localhost.
-        //'allowedIPs' => ['127.0.0.1', '::1'],
+        'allowedIPs' => ['*'],
     ];
 }
 

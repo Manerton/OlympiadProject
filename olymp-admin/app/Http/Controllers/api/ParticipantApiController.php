@@ -93,7 +93,7 @@ class ParticipantApiController extends Controller
         $data = $request->validated();
         $this->rabbitMQService->publish(
             [RabbitMQHelper::AUTH_QUEUE_NAME],
-            RabbitMQHelper::QUEUE_NAME,
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
             RabbitMQHelper::CREATE,
             RabbitMQHelper::PARTICIPANT_TABLE,
             array_diff_key($data, ['id' => null]),
@@ -168,7 +168,7 @@ class ParticipantApiController extends Controller
         $data = $request->validated();
         $this->rabbitMQService->publish(
             [RabbitMQHelper::AUTH_QUEUE_NAME],
-            RabbitMQHelper::QUEUE_NAME,
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
             RabbitMQHelper::UPDATE,
             RabbitMQHelper::PARTICIPANT_TABLE,
             array_diff_key($data, ['id' => null]),
@@ -180,7 +180,7 @@ class ParticipantApiController extends Controller
     public function delete($id){
         $this->rabbitMQService->publish(
             [RabbitMQHelper::AUTH_QUEUE_NAME],
-            RabbitMQHelper::QUEUE_NAME,
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
             RabbitMQHelper::DELETE,
             RabbitMQHelper::PARTICIPANT_TABLE,
             [],

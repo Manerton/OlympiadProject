@@ -42,6 +42,14 @@ $config = [
         'websocket' => [
             'class' => \app\services\WebSocketService::class
         ],
+        'rabbitmq' => [
+            'class' => 'app\components\RabbitMQComponent',
+            'host' => 'rabbitmq',
+            'port' => 5672,
+            'user' => 'admin-service',
+            'password' => 'admin-password',
+            'vhost' => '/',
+        ],
     ],
     'params' => $params,
     /*

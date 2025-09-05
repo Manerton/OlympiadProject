@@ -51,7 +51,7 @@ class ApplicationController extends Controller
         $data = $request->validated();
         $this->rabbitMQService->publish(
             [RabbitMQHelper::APPLICATION_QUEUE_NAME],
-            RabbitMQHelper::QUEUE_NAME,
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
             RabbitMQHelper::CREATE,
             RabbitMQHelper::APPLICATION_TABLE,
             array_diff_key($data, ['id' => null]),
@@ -76,7 +76,7 @@ class ApplicationController extends Controller
         $data = $request->validated();
         $this->rabbitMQService->publish(
             [RabbitMQHelper::APPLICATION_QUEUE_NAME],
-            RabbitMQHelper::QUEUE_NAME,
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
             RabbitMQHelper::UPDATE,
             RabbitMQHelper::APPLICATION_TABLE,
             array_diff_key($data, ['id' => null]),
@@ -87,7 +87,7 @@ class ApplicationController extends Controller
     public function destroy($id){
         $this->rabbitMQService->publish(
             [RabbitMQHelper::APPLICATION_QUEUE_NAME],
-            RabbitMQHelper::QUEUE_NAME,
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
             RabbitMQHelper::DELETE,
             RabbitMQHelper::APPLICATION_TABLE,
             [],
@@ -98,7 +98,7 @@ class ApplicationController extends Controller
     public function confirm($id){
         $this->rabbitMQService->publish(
             [RabbitMQHelper::APPLICATION_QUEUE_NAME],
-            RabbitMQHelper::QUEUE_NAME,
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
             RabbitMQHelper::UPDATE,
             RabbitMQHelper::APPLICATION_TABLE,
             ['status' => StatusDictionary::APPROVED],
@@ -109,7 +109,7 @@ class ApplicationController extends Controller
     public function reject($id){
         $this->rabbitMQService->publish(
             [RabbitMQHelper::APPLICATION_QUEUE_NAME],
-            RabbitMQHelper::QUEUE_NAME,
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
             RabbitMQHelper::UPDATE,
             RabbitMQHelper::APPLICATION_TABLE,
             ['status' => StatusDictionary::REJECTED],
