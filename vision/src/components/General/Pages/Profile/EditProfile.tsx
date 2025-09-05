@@ -19,6 +19,7 @@ const EditProfile: React.FC = () => {
     gender: 0,
     school: "",
     classnumber: 0,
+    citezenship: 0,
     email: user?.Email || "",
   });
 
@@ -42,6 +43,7 @@ const EditProfile: React.FC = () => {
             school: data.school,
             classnumber: data.classnumber,
             email: data.User.email,
+            citezenship: data.citezenship,
           });
         } else {
           const data: User = await axiosSSOUserInfo(accessToken, user.id);
@@ -56,6 +58,7 @@ const EditProfile: React.FC = () => {
             school: "", // нет в User, оставляем пустым
             classnumber: 0, // нет в User
             email: data.email,
+            citezenship: 0
           });
         }
       } catch (err) {
@@ -95,38 +98,42 @@ const EditProfile: React.FC = () => {
             {/* поля формы */}
             <div className="col-md-4">
               <label className="form-label">Фамилия</label>
-              <input type="text" className="form-control" name="surname" value={profile.surname} disabled />
+              <input type="text" className="form-control" name="surname" value={profile.surname} readOnly />
             </div>
             <div className="col-md-4">
               <label className="form-label">Имя</label>
-              <input type="text" className="form-control" name="firstname" value={profile.firstname} disabled />
+              <input type="text" className="form-control" name="firstname" value={profile.firstname} readOnly />
             </div>
             <div className="col-md-4">
               <label className="form-label">Отчество</label>
-              <input type="text" className="form-control" name="patronymic" value={profile.patronymic} disabled />
+              <input type="text" className="form-control" name="patronymic" value={profile.patronymic} readOnly />
             </div>
             <div className="col-md-4">
               <label className="form-label">Телефон</label>
-              <input type="text" className="form-control" name="phone_number" value={profile.phone_number} onChange={handleChange} />
+              <input type="text" className="form-control" name="phone_number" value={profile.phone_number} onChange={handleChange} readOnly/>
             </div>
             <div className="col-md-4">
               <label className="form-label">Дата рождения</label>
-              <input type="date" className="form-control" name="birthdate" value={profile.birthdate} onChange={handleChange} />
+              <input type="date" className="form-control" name="birthdate" value={profile.birthdate} onChange={handleChange}  readOnly/>
             </div>
             <div className="col-md-4">
               <label className="form-label">Пол</label>
-              <select className="form-select" name="gender" value={profile.gender} onChange={handleChange}>
+              <select className="form-select" name="gender" value={profile.gender} onChange={handleChange} >
                 <option value={1}>Мужской</option>
                 <option value={2}>Женский</option>
               </select>
             </div>
-            <div className="col-md-6">
+            <div className="col-md-6" hidden={user?.role !== UserRole.Participant}>
               <label className="form-label">Школа</label>
-              <input type="text" className="form-control" name="school" value={profile.school} onChange={handleChange} disabled={user?.role !== UserRole.Participant} />
+              <input type="text" className="form-control" name="school" value={profile.school} onChange={handleChange}  />
             </div>
-            <div className="col-md-6">
+            <div className="col-md-3" hidden={user?.role !== UserRole.Participant}>
               <label className="form-label">Класс</label>
-              <input type="number" className="form-control" name="classnumber" value={profile.classnumber} onChange={handleChange} disabled={user?.role !== UserRole.Participant} />
+              <input type="number" className="form-control" name="classnumber" value={profile.classnumber} onChange={handleChange} />
+            </div>
+             <div className="col-md-3" hidden={user?.role !== UserRole.Participant}>
+              <label className="form-label">Гражданство</label>
+              <input type="number" className="form-control" name="classnumber" value={profile.citezenship} onChange={handleChange}/>
             </div>
           </div>
         </form>

@@ -1,8 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
-import type { ApplicationEvent, MainEvent } from "../../../../../types/event";
+import type { MainEvent } from "../../../../../types/event";
 import ApplicationEventCart from "../EventCart";
-import { StatusIcon } from "../../../../../Helpers/StatusBlock";
-import { ApplicationStatus } from "../../../../../../dictionary/applicationStatus";
 import { useNavigate } from "react-router-dom";
 import { axiosGetEventsWithAppealByUser } from "../../../../../../requests/ResultRequests";
 import { useAuth } from "../../../../../Helpers/AuthContext";
@@ -14,9 +12,6 @@ const AppealTab: React.FC = () => {
     const navigate = useNavigate()
 
     const {accessToken, user} = useAuth()
-
-
-    
 
     useEffect(() => {
         async function fetchAppeal() {
@@ -43,9 +38,6 @@ const AppealTab: React.FC = () => {
         return (
             <div className="d-flex flex-column justify-content-between h-100">
                 <button className="btn btn-primary mb-2" onClick={() => navigate(`/profile/appeals/${event.id}/list`)}>Подробнее</button>
-                {/* <div className="text-end">
-                    <b>Статус апелляции  <StatusIcon status={event.status} /></b>
-                </div> */}
             </div>
         )
     }

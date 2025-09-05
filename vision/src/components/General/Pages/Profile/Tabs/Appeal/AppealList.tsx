@@ -1,7 +1,6 @@
 import type React from "react";
 import AppealCart from "./AppealCart";
 import type { Appeal } from "../../../../../types/appeal";
-import { taskTypeDict } from "../../../../../../dictionary/taskType";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../../../../Helpers/AuthContext";
 import { axiosGetAppealsByEventUser } from "../../../../../../requests/ResultRequests";

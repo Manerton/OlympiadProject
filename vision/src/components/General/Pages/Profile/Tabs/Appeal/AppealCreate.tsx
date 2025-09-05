@@ -4,7 +4,7 @@ import AppealForm from "./AppealForm";
 import type { Task } from "../../../../../types/task";
 import { useAuth } from "../../../../../Helpers/AuthContext";
 import { axiosCreateAppeal, axiosResultGetByEventUser } from "../../../../../../requests/ResultRequests";
-import { data, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import type { Result } from "../../../../../types/result";
 import type { CreateAppealRequest } from "../../../../../types/appeal";
 

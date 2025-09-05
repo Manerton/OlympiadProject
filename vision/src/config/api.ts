@@ -41,6 +41,10 @@ export const USER = {
 
 }
 
+export const APPLICATION = {
+    getByUser: "http://172.16.0.196:6611/ApplicationEvent/"
+}
+
 export const RESULT = {
     allEventsByUserId: "http://172.16.0.196:6611/history-event/",
     allByEventIdUserId: "http://172.16.0.196:6611/result/result-by-event-user/",

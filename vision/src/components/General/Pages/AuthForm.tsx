@@ -16,15 +16,6 @@ import { useMask } from "@react-input/mask";
 import { axiosSSOAllSchools } from "../../../requests/SSORequests";
 import type { School } from "../../types/schools";
 
-const mockSchools = [
-  "Школа №1",
-  "Школа №2",
-  "Лицей №3",
-  "Гимназия №4",
-  "Школа-интернат №5",
-  "Лицей №6",
-];
-
 const AuthForm: React.FC = () => {
   const navigate = useNavigate();
   const [isRegister, setIsRegister] = useState(false);

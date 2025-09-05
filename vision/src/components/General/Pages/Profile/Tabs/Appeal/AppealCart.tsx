@@ -1,6 +1,6 @@
 import React from "react";
 import type { Appeal } from "../../../../../types/appeal";
-import { taskTypeLabels, taskTypes } from "../../../../../../dictionary/taskType";
+import { taskTypeLabels } from "../../../../../../dictionary/taskType";
 import { StatusIcon } from "../../../../../Helpers/StatusBlock";
 
 interface AppealCartProps {

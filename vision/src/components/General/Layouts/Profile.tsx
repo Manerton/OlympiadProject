@@ -1,12 +1,9 @@
 import React from 'react';
-import AdminSidebar from '../../Admin/AdminComponents/AdminSidebar.tsx';
-import { Container } from 'react-bootstrap';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import Header from './header.tsx';
 import Footer from './Footer.tsx';
 import { UserRole } from '../../../dictionary/role.tsx';
 import { useAuth } from '../../Helpers/AuthContext.tsx';
-import { FaUserGraduate } from 'react-icons/fa';
 import UserInfoBlock from '../../Common/UserInfo.tsx';
 
 const ProfileLayout: React.FC = () => {

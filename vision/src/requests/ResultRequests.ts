@@ -1,7 +1,5 @@
 import axios from "axios";
 import { APPEAL, RESULT } from "../config/api";
-import type { Result } from "../components/types/result";
-import type { MainEvent } from "../components/types/event";
 import type { Appeal, CreateAppealRequest } from "../components/types/appeal";
 
 export async function axiosGetHistoryEventsByUser(token: string, userId: string) {
