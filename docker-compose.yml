@@ -1,6 +1,73 @@
 # version: '3.9'
 
 services:
+
+  vision:
+  image: node:20
+  container_name: vision_app
+  working_dir: /app
+  volumes:
+    - ./vision:/app
+    - ./vision/.env:/app/.env  # Монтируем .env файл
+  command: sh -c "npm install && npm run dev"
+  ports:
+    - "5173:5173"
+  networks:
+    - olympic
+  environment:
+    - CHOKIDAR_USEPOLLING=true  # Для горячей перезагрузки в Docker
+    - WATCHPACK_POLLING=true
+
+  application-db:
+    image: postgres:16
+    container_name: application-db
+    environment:
+      POSTGRES_USER: application_user
+      POSTGRES_PASSWORD: application_pass
+      POSTGRES_DB: ApplicationServiceDB
+    ports:
+      - "5430:5432"
+    networks:
+      - olympic
+    volumes:
+      - application-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U application_user -d ApplicationServiceDB"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  application-service:
+    build:
+      context: ./ApplicationService
+    container_name: application-service
+    depends_on:
+      application-db:
+        condition: service_healthy
+    environment:
+      # DSN: "postgres://event_user:event_pass@event-db:5432/EventServiceDB?sslmode=disable"
+      # MIGRATION_PATH: "/app/migrations"
+      CONFIG_PATH: "/app/config-yaml/docker.yaml"
+    networks:
+      - olympic
+    ports:
+      - "8072:8082"
+    entrypoint: ["./application-service"]
+
+  apigateway-service:
+    build:
+      context: ./ApiGateway
+    container_name: apigateway-service
+    environment:
+      CONFIG_PATH: "/app/config-yaml/docker.yaml"
+    networks:
+      - olympic
+    ports:
+      - "6611:6611"
+    entrypoint: ["./api-gateway"]
+
+   # /bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up &&
+
   event-db:
     image: postgres:16
     container_name: event-db
@@ -199,18 +266,6 @@ services:
     networks:
       - olympic
 
-  vision:
-    image: node:20
-    container_name: vision_app
-    working_dir: /app
-    volumes:
-      - ./vision:/app
-    command: sh -c "npm install && npm run dev"
-    ports:
-      - "5173:5173"
-    networks:
-      - olympic
-
   phpmyadmin-admin:
     image: phpmyadmin:latest
     container_name: olymp_admin_phpmyadmin
@@ -340,6 +395,7 @@ networks:
     driver: bridge
 
 volumes:
+  application-db-data:
   loki-data:
   event-db-data:
   sso-db-data:

@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func NewPostgreSQL(connectStr string) (*gorm.DB, error) {
@@ -59,7 +60,7 @@ func NewPostgreSQL(connectStr string) (*gorm.DB, error) {
 	}
 
 	// Add fixed data after migration
-	//seedData(db)
+	seedData(db)
 
 	return db, nil
 }
@@ -125,7 +126,7 @@ func seedData(db *gorm.DB) error {
 	}
 
 	// Создаем заявки в базе данных
-	if err := db.Create(&applications).Error; err != nil {
+	if err := db.Clauses(clause.OnConflict{DoNothing: true}).Create(&applications).Error; err != nil {
 		return fmt.Errorf("failed to seed applications: %w", err)
 	}
 

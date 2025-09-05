@@ -1,202 +1,198 @@
-env: "dev"
+env: "docker"
 
 HTTP_SERVERS_INFO:
   routes:
     # ==================== AUTH SERVICE (8181) ====================
     - prefix: "/auth"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/users/login"
+      target: "http://sso-service:8181/api/users/login"
       skip_auth: true
 
     - prefix: "/logout"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/users/logout"
+      target: "http://sso-service:8181/api/users/logout"
       skip_auth: false
 
     - prefix: "/refresh"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/users/refresh"
+      target: "http://sso-service:8181/api/users/refresh"
       skip_auth: true
 
     - prefix: "/register"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/users/register"
+      target: "http://sso-service:8181/api/users/register"
       skip_auth: true
 
     - prefix: "/revoke-all"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/users/revoke-all"
+      target: "http://sso-service:8181/api/users/revoke-all"
       skip_auth: false
 
     - prefix: "/users/"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/users"
+      target: "http://sso-service:8181/api/users"
       skip_auth: false
 
     - prefix: "/users/count"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/users/count"
+      target: "http://sso-service:8181/api/users/count"
       skip_auth: false
 
     - prefix: "/users/all-info/"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/users/"
+      target: "http://sso-service:8181/api/users/"
       skip_auth: false
 
     - prefix: "/users/participant/all-info/"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/users/all-info/"
+      target: "http://sso-service:8181/api/users/all-info/"
       skip_auth: false
 
     # ==================== PARTICIPANTS & SCHOOLS SERVICE (8181) ====================
     - prefix: "/participants/"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/participants"
+      target: "http://sso-service:8181/api/participants"
       skip_auth: false
 
     - prefix: "/participants/byuser/"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/participants/byuser"
+      target: "http://sso-service:8181/api/participants/byuser"
       skip_auth: false
 
     - prefix: "/participants/count"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/participants/count"
+      target: "http://sso-service:8181/api/participants/count"
       skip_auth: false
 
     - prefix: "/schools/"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/schools"
+      target: "http://sso-service:8181/api/schools"
       skip_auth: false
 
     - prefix: "/schools"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/schools"
+      target: "http://sso-service:8181/api/schools"
       skip_auth: true
 
     - prefix: "/schools/count"
       aggregate: false
-      target: "http://172.16.1.39:8181/api/schools/count"
+      target: "http://sso-service:8181/api/schools/count"
       skip_auth: false
 
     # ==================== EVENTS SERVICE (8080) ====================
     - prefix: "/events/"
       aggregate: false
-      target: "http://172.16.1.39:8080/api/events"
+      target: "http://event-service:8080/api/events"
       skip_auth: true
 
     - prefix: "/events/child/"
       aggregate: false
-      target: "http://172.16.1.39:8080/api/events/child"
+      target: "http://event-service:8080/api/events/child"
       skip_auth: true
 
     - prefix: "/events/class/"
       aggregate: false
-      target: "http://172.16.1.39:8080/api/events/class"
+      target: "http://event-service:8080/api/events/class"
       skip_auth: false
 
     - prefix: "/events/subjects/"
       aggregate: false
-      target: "http://172.16.1.39:8080/api/events/subjects"
+      target: "http://event-service:8080/api/events/subjects"
       skip_auth: false
 
     - prefix: "/regional-stages"
       aggregate: false
-      target: "http://172.16.1.39:8080/api/events/regional-stage"
+      target: "http://event-service:8080/api/events/regional-stage"
       skip_auth: true
 
     # ==================== APPLICATIONS SERVICE (8082) ====================
     - prefix: "/applications/"
       aggregate: false
-      target: "http://172.16.0.196:8082/applications"
+      target: "http://application-service:8082/applications"
       skip_auth: false
 
     - prefix: "/applications/count"
       aggregate: false
-      target: "http://172.16.0.196:8082/applicationsCount"
+      target: "http://application-service:8082/applicationsCount"
       skip_auth: false
 
     - prefix: "/applications/event/"
       aggregate: false
-      target: "http://172.16.0.196:8082/applications/event/"
+      target: "http://application-service:8082/applications/event/"
       skip_auth: false
 
     - prefix: "/applications/user/"
       aggregate: false
-      target: "http://172.16.0.196:8082/applications/user/"
+      target: "http://application-service:8082/applications/user/"
       skip_auth: false
-
 
     # ==================== JURY SERVICE (8090) ====================
     - prefix: "/jury-assignments/event/"
       aggregate: false
-      target: "http://172.16.1.39:8090/api/jury-assignments/event"
+      target: "http://jury-service:8090/api/jury-assignments/event"
       skip_auth: false
 
-    # ==================== Olimp-admin SERVICE (8090) ====================
-
+    # ==================== Olimp-admin SERVICE ====================
     - prefix: "/appeal/store"
       aggregate: false
-      target: "http://172.16.0.94:80/api/appeal/store"
+      target: "http://olymp-admin/api/appeal/store"
       skip_auth: false
 
     - prefix: "/appeal/change-status/"
       aggregate: false
-      target: "http://172.16.0.94:80/api/appeal/change-status"
+      target: "http://olymp-admin/api/appeal/change-status"
       skip_auth: false
 
     - prefix: "/appeal/appeal-by-event/"
       aggregate: false
-      target: "http://172.16.0.94:80/api/appeal/appeal-by-event"
+      target: "http://olymp-admin/api/appeal/appeal-by-event"
       skip_auth: false
 
     - prefix: "/appeal/appeal-by-user/"
       aggregate: false
-      target: "http://172.16.0.94:80/api/appeal/appeal-by-user"
+      target: "http://olymp-admin/api/appeal/appeal-by-user"
       skip_auth: false
 
     - prefix: "/appeal/appeal-event-user/"
       aggregate: false
-      target: "http://172.16.0.94/api/appeal/appeal-event-user"
+      target: "http://olymp-admin/api/appeal/appeal-event-user"
       skip_auth: false
 
     - prefix: "/result/result-by-attendance/"
       aggregate: false
-      target: "http://172.16.0.94:80/api/result/result-by-attendance"
+      target: "http://olymp-admin/api/result/result-by-attendance"
       skip_auth: false
 
     - prefix: "/result/result-by-user/"
       aggregate: false
-      target: "http://172.16.0.94:80/api/result/result-by-user"
+      target: "http://olymp-admin/api/result/result-by-user"
       skip_auth: false
 
     - prefix: "/result/result-by-user-type-event/"
       aggregate: false
-      target: "http://172.16.0.94:80/api/result/result-by-user-type-event"
+      target: "http://olymp-admin/api/result/result-by-user-type-event"
       skip_auth: false
     
     - prefix: "/result/result-by-event-user/"
       aggregate: false
-      target: "http://172.16.0.94/api/result/result-by-event-user"
+      target: "http://olymp-admin/api/result/result-by-event-user"
       skip_auth: false
-
-    
 
     # ==================== AGGREGATE ROUTES ====================
     - prefix: "/AplicationEvent"
       aggregate: true
       services:
-        - "http://172.16.0.196:8082/applications"
-        - "http://172.16.1.39:8080/api/events"
+        - "http://application-service:8082/applications"
+        - "http://event-service:8080/api/events"
       skip_auth: true
       roles: []
 
     - prefix: "/ApplicationEventtest/"
       aggregate: true
       targets:
-        - url: "http://172.16.0.196:8082/applications/user/"
+        - url: "http://application-service:8082/applications/user/"
           fields: ["id", "status"]
-        - url: "http://172.16.0.196:8082/api/events/list/"
+        - url: "http://event-service:8080/api/events/list/"
           fields: ["id", "name", "start_date", "end_date", "previous_event_id", "subject", "class_number", "additional_info"]
       skip_auth: false
       roles: []
@@ -204,9 +200,9 @@ HTTP_SERVERS_INFO:
     - prefix: "/ApplicationEvent/"
       aggregate: true
       targets:
-        - url: "http://172.16.0.196:8082/applications/user/"
+        - url: "http://application-service:8082/applications/user/"
           fields: [""]
-        - url: "http://172.16.1.39:8080/api/events/list"
+        - url: "http://event-service:8080/api/events/list"
           fields: [""]
       skip_auth: false
       roles: []
@@ -214,9 +210,9 @@ HTTP_SERVERS_INFO:
     - prefix: "/history-event/"
       aggregate: true
       targets:
-        - url: "http://172.16.0.94:80/api/result/events-by-user/"
+        - url: "http://olymp-admin/api/result/events-by-user/"
           fields: [""]
-        - url: "http://172.16.1.39:8080/api/events/list"
+        - url: "http://event-service:8080/api/events/list"
           fields: [""]
       skip_auth: false
       roles: []
@@ -224,28 +220,21 @@ HTTP_SERVERS_INFO:
     - prefix: "/events-appeal/"
       aggregate: true
       targets:
-        - url: "http://172.16.0.94:80/api/appeal/events-appeal/"
+        - url: "http://olymp-admin/api/appeal/events-appeal/"
           fields: [""]
-        - url: "http://172.16.1.39:8080/api/events/list"
+        - url: "http://event-service:8080/api/events/list"
           fields: [""]
       skip_auth: false
       roles: []
 
-    
-
-
 CORS_INFO:
   allow_origins: [
-    http://172.16.0.196:5173,
-    http://172.16.0.94:59871,
-    http://172.19.0.1:5173,
-    http://172.16.1.39:5173,
-    http://172.16.1.39:55819,
-    http://172.16.0.94:5173
+    http://localhost:5173,
+    http://vision:5173
   ]
 
 HTTP_SERVER_MAIN_INFO:
-  address: "172.16.0.196"
+  address: "0.0.0.0"
   port: "6611"
 
 JWT_TEMP_INFO:
@@ -255,5 +244,5 @@ REDIS_INFO:
   address_path: "redis:6379"
 
 RABBIT_INFO:
-  address_path: "amqp://app:test@172.16.0.94:5672/"
+  address_path: "amqp://guest:guest@rabbitmq:5672/"
   queue_name: "olymp_application"

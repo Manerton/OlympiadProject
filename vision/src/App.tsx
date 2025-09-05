@@ -47,6 +47,7 @@ import MailIndex from './components/olymp-admin/mail/index.tsx';
 import OlympiadDetails from './components/General/Pages/Events/OlympiadDetails.tsx';
 import { ToastContainer } from "react-toastify";
 import { NotificationProvider } from "./components/General/Helpers/NotificationProvider.tsx";
+import StagesListPage from './components/General/Pages/Events/StagesListPage.tsx';
 
 function App() {
     return (
@@ -70,6 +71,7 @@ function App() {
                         <Route path="/RegionalStages" element={<RegionalStagesPage />} />
                         <Route path="OlympiadsPage/:id" element={<OlympiadsPage />} />
                         <Route path="OlympiadDetails/:id" element={<OlympiadDetails />} />
+                        <Route path="StagesList/:id" element={<StagesListPage />} />
                     </Route>
 
                     <Route

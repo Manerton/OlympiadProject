@@ -1,72 +1,78 @@
-// src/pages/OlympiadDetails.tsx
-import React, { use, useEffect, useState } from "react";
+// src/pages/StagesListPage.tsx
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Container, Row, Col, Card, Button, Spinner, Alert } from "react-bootstrap";
 import type { MyEvent } from "../../../types/event.ts";
-import CardImage from "./components/CardImage.tsx"; 
-import { fetchEvent,fetchStagesCount} from "../../../../requests/EventsRequests.ts";
+import { fetchOlympiadChildren } from "../../../../requests/EventsRequests.ts";
+import { useAuth } from "../../../Helpers/AuthContext.tsx";
+
+interface JuryMember {
+  name: string;
+  role: string;
+}
 
 const StagesListPage: React.FC = () => {
   const { id } = useParams();
-  const [olympiad, setOlympiad] = useState<MyEvent | null>(null);
+  const [stages, setStages] = useState<MyEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [stagesCount, setStagesCount] = useState<number | null>(null);
-
+  const { user } = useAuth();
   useEffect(() => {
-  if (!id) return;
+    if (!id) return;
     setLoading(true);
-    fetchEvent(id)   // ✅ вот здесь
-        .then((res) => setOlympiad(res))
-        .catch((err) => setError((err as Error).message))
-        .finally(() => setLoading(false));
-
-        fetchStagesCount(id)
-        .then((count) => setStagesCount(count))
-        .catch((err) => console.error("Ошибка загрузки этапов:", err));
-
-    }, [id]);
+    fetchOlympiadChildren(id)
+      .then((res) => {
+        setStages(res ?? []);
+      })
+      .catch((err) => setError((err as Error).message))
+      .finally(() => setLoading(false));
+  }, [id]);
 
   if (loading) return <Spinner animation="border" />;
   if (error) return <Alert variant="danger">{error}</Alert>;
-  if (!olympiad) return <Alert variant="warning">Олимпиада не найдена</Alert>;
+  if (!stages || stages.length === 0) return <Alert variant="warning">Этапы не найдены</Alert>;
 
   return (
     <Container className="py-4">
+      <h3 className="fw-bold mb-4">Этапы олимпиады</h3>
       <Row>
-        {/* Левая часть */}
-        <Col md={8} className="shadow-sm border-1">
-          <CardImage
-            subjectId={olympiad.subject ?? 0}
-            width={800}
-            height={300}
-          />
-          <h3 className="fw-bold mt-3">{olympiad.name}</h3>
-          <h6 className="text-uppercase text-secondary fw-bold">Описание</h6>
-          <p>{olympiad.additional_info}</p>
-        </Col>
+        {stages.map((stage) => {
+          // пока моки для жюри, можно будет заменить на stage.jury
+          const jury: JuryMember[] = [
+            { name: "Иван Иванов", role: "Председатель" },
+            { name: "Мария Петрова", role: "Член жюри" },
+            { name: "Сергей Кузнецов", role: "Член жюри" },
+          ];
 
-        {/* Правая карточка */}
-        <Col md={4}>
-          <Card className="shadow-sm">
-            <CardImage
-              subjectId={olympiad.subject ?? 0}
-              width={400}
-              height={150}
-            />
-            <Card.Body>
-              <Button variant="primary" className="w-100 mb-3">
-                Подать заявку
-              </Button>
-              <p><strong>Дата начала:</strong> {olympiad.start_date}</p>
-              <p><strong>Время:</strong> {olympiad.end_date}</p>
-               <strong>Количество этапов:</strong>{" "}
-                {stagesCount !== null ? stagesCount : "Загрузка..."}
-              <p><strong>Предмет:</strong> {olympiad.subject}</p>
-              <p><strong>Место проведения:</strong>???</p>
-            </Card.Body>
-          </Card>
-        </Col>
+          return (
+            <Col md={12} key={stage.id} className="mb-4">
+              <Card className="shadow-sm">
+                <Card.Body>
+                  <h5 className="fw-bold">{stage.name}</h5>
+                  <p className="fs-5">{stage.additional_info}</p>
+                  <p className="text-muted">
+                    {stage.start_date} — {stage.end_date}
+                  </p>
+
+                  <h6 className="mt-3 fw-bold">Жюри</h6>
+                  {jury.map((member, idx) => (
+                    <p key={idx} className="mb-1">
+                      <strong>{member.name}</strong> — {member.role}
+                    </p>
+                  ))}
+                  
+                  {user?.role === 1 && (
+                  <Button variant="primary" className="w-100 mt-3">
+                    Назначить жюри
+                  </Button>
+                )}
+
+                  
+                </Card.Body>
+              </Card>
+            </Col>
+          );
+        })}
       </Row>
     </Container>
   );

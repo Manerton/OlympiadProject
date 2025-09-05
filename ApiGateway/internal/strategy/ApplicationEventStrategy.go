@@ -132,7 +132,7 @@ func (s *ApplicationEventStrategy) Aggregate(
 			StartDate:      getString(ev["start_date"]),
 			EndDate:        getString(ev["end_date"]),
 			PreviousEvent:  getString(ev["previous_event_id"]),
-			Subject:        getString(ev["subject"]),
+			Subject:        int(ev["subject"].(float64)),
 			ClassNumber:    int(ev["class_number"].(float64)),
 			AdditionalInfo: getString(ev["additional_info"]),
 			Status:         eventStatuses[getString(ev["id"])],

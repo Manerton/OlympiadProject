@@ -15,7 +15,7 @@ type ApplicationEvent struct {
 	StartDate      string `json:"start_date"`
 	EndDate        string `json:"end_date"`
 	PreviousEvent  string `json:"previous_event_id"`
-	Subject        string `json:"subject"`
+	Subject        int    `json:"subject"`
 	ClassNumber    int    `json:"class_number"`
 	AdditionalInfo string `json:"additional_info"`
 	Status         int    `json:"status"`

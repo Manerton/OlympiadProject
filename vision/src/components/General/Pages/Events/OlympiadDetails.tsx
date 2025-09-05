@@ -1,46 +1,74 @@
-// src/pages/OlympiadDetails.tsx
-import React, { use, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Button, Spinner, Alert } from "react-bootstrap";
+import axios from "axios";
 import type { MyEvent } from "../../../types/event.ts";
-import CardImage from "./components/CardImage"; 
-import { fetchEvent,fetchStagesCount} from "../../../../requests/EventsRequests.ts";
+import CardImage from "./components/CardImage";
+import { fetchEvent, fetchStagesCount } from "../../../../requests/EventsRequests.ts";
 
 const OlympiadDetails: React.FC = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const [olympiad, setOlympiad] = useState<MyEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stagesCount, setStagesCount] = useState<number | null>(null);
 
   useEffect(() => {
-  if (!id) return;
+    if (!id) return;
     setLoading(true);
-    fetchEvent(id)   
-        .then((res) => setOlympiad(res))
-        .catch((err) => setError((err as Error).message))
-        .finally(() => setLoading(false));
 
-        fetchStagesCount(id)
-        .then((count) => setStagesCount(count))
-        .catch((err) => console.error("Ошибка загрузки этапов:", err));
+    fetchEvent(id)
+      .then((res) => setOlympiad(res))
+      .catch((err) => setError((err as Error).message))
+      .finally(() => setLoading(false));
 
-    }, [id]);
+    fetchStagesCount(id)
+      .then((count) => setStagesCount(count))
+      .catch((err) => console.error("Ошибка загрузки этапов:", err));
+  }, [id]);
+
+  // Отправка заявки через axios
+  const handleApply = async () => {
+    if (!id) return;
+    try {
+      console.log("Отправка заявки на олимпиаду:", id);
+
+      // TODO: заменить URL и userId на реальные
+      const response = await axios.post(`/api/applications`, {
+        olympiadId: id,
+        userId: 123, // пока мок
+      });
+
+      console.log("Заявка успешно отправлена:", response.data);
+      alert("Заявка успешно отправлена!");
+    } catch (err) {
+      console.error("Ошибка при отправке заявки:", err);
+      alert("Ошибка при отправке заявки.");
+    }
+  };
+
+  // Переход к списку этапов
+  const handleGoToStages = () => {
+    if (!id) return;
+    navigate(`/StagesList/${id}`);
+  };
 
   if (loading) return <Spinner animation="border" />;
   if (error) return <Alert variant="danger">{error}</Alert>;
   if (!olympiad) return <Alert variant="warning">Олимпиада не найдена</Alert>;
+
+  const startDate = new Date(olympiad.start_date).toLocaleDateString();
+  const endDate = new Date(olympiad.end_date).toLocaleDateString();
+
 
   return (
     <Container className="py-4">
       <Row>
         {/* Левая часть */}
         <Col md={8} className="shadow-sm border-1">
-          <CardImage
-            subjectId={olympiad.subject ?? 0}
-            width={800}
-            height={300}
-          />
+          <CardImage subjectId={olympiad.subject ?? 0} width={800} height={300} />
           <h3 className="fw-bold mt-3">{olympiad.name}</h3>
           <h6 className="text-uppercase text-secondary fw-bold">Описание</h6>
           <p>{olympiad.additional_info}</p>
@@ -49,21 +77,23 @@ const OlympiadDetails: React.FC = () => {
         {/* Правая карточка */}
         <Col md={4}>
           <Card className="shadow-sm">
-            <CardImage
-              subjectId={olympiad.subject ?? 0}
-              width={400}
-              height={150}
-            />
+            <CardImage subjectId={olympiad.subject ?? 0} width={400} height={150} />
             <Card.Body>
-              <Button variant="primary" className="w-100 mb-3">
+              <Button variant="primary" className="w-100 mb-3" onClick={handleApply}>
                 Подать заявку
               </Button>
-              <p><strong>Дата начала:</strong> {olympiad.start_date}</p>
-              <p><strong>Время:</strong> {olympiad.end_date}</p>
-               <strong>Количество этапов:</strong>{" "}
+              <Button variant="secondary" className="w-100 mb-3" onClick={handleGoToStages}>
+                Список этапов
+              </Button>
+
+              <p><strong>Дата начала:</strong> {startDate}</p>
+              <p><strong>Время:</strong> {endDate}</p>
+              <p>
+                <strong>Количество этапов:</strong>{" "}
                 {stagesCount !== null ? stagesCount : "Загрузка..."}
+              </p>
               <p><strong>Предмет:</strong> {olympiad.subject}</p>
-              <p><strong>Место проведения:</strong>???</p>
+              <p><strong>Место проведения:</strong> ???</p>
             </Card.Body>
           </Card>
         </Col>

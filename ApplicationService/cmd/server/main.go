@@ -1,15 +1,12 @@
 package main
 
 import (
-	"context"
 	"log/slog"
 	"main/internal/config"
 	ApplicationHandler "main/internal/handlers"
 	"main/internal/lib/liblogger"
 	"main/internal/middleware/auth"
 	"main/internal/middleware/midlogger"
-	rabbit "main/internal/rabbitmq"
-	"main/internal/rabbitmq/consumer"
 	ApplicationRepository "main/internal/repositories"
 	ApplicationService "main/internal/services"
 	"main/internal/storage/orm"
@@ -110,14 +107,14 @@ func main() {
 	})
 
 	// init rabbitMQ
-	rabbitConnect := rabbit.MustConnect(cfg.AddressRabbitPath)
-	rabbitChannel, err := rabbitConnect.Channel()
-	if err != nil {
-		log.Error("failed create channel for RabbitMQ")
-	}
-	rabbitConsumer := consumer.New(log, rabbitChannel, applicationService)
-	rabbitConsumer.Start(context.Background(), cfg.QueueName)
-	log.Info("rabbit started")
+	// rabbitConnect := rabbit.MustConnect(cfg.AddressRabbitPath)
+	// rabbitChannel, err := rabbitConnect.Channel()
+	// if err != nil {
+	// 	log.Error("failed create channel for RabbitMQ")
+	// }
+	// rabbitConsumer := consumer.New(log, rabbitChannel, applicationService)
+	// rabbitConsumer.Start(context.Background(), cfg.QueueName)
+	// log.Info("rabbit started")
 
 	// init server
 	server := &http.Server{

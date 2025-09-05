@@ -1,0 +1,21 @@
+env: "docker"
+
+DB_INFO:
+  host: "application-db"
+  user: "application_user"
+  pass: "application_pass"
+  name: "ApplicationServiceDB"
+  port: "5432"
+  ssl_model: "disable"
+
+
+HTTP_SERVER_INFO:
+  host: "0.0.0.0"
+  port: "8082"
+
+JWT_TEMP_INFO:
+  key: "lololololololololololololololololololololololololololololol"
+
+
+ADDITIONAL_ADDRESSES:
+  react: "http://localhost:5173"
