@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Components\Dictionaries\NotificationTypeDictionary;
 use App\Components\Dictionaries\StatusDictionary;
 use App\Components\Dictionaries\ReasonParticipantDictionary;
 use App\Components\Dictionaries\SubjectDictionary;
@@ -96,6 +97,7 @@ class ApplicationController extends Controller
         return redirect()->route('application.index');
     }
     public function confirm($id){
+        $application = $this->applicationService->find($id);
         $this->rabbitMQService->publish(
             [RabbitMQHelper::APPLICATION_QUEUE_NAME],
             RabbitMQHelper::ADMIN_QUEUE_NAME,
@@ -104,9 +106,21 @@ class ApplicationController extends Controller
             ['status' => StatusDictionary::APPROVED],
             ['id' => $id]
         );
+        $this->rabbitMQService->publish(
+            [RabbitMQHelper::NOTIFICATION_QUEUE_NAME],
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
+            RabbitMQHelper::CREATE,
+            RabbitMQHelper::NOTIFICATION_TABLE,
+            [
+                'user_id' => $application->user_id,
+                'message' => NotificationTypeDictionary::APPLICATION_CONFIRM,
+                'status' => NotificationTypeDictionary::ONLINE_NOTIFICATION
+            ]
+        );
         return redirect()->route('application.index');
     }
     public function reject($id){
+        $application = $this->applicationService->find($id);
         $this->rabbitMQService->publish(
             [RabbitMQHelper::APPLICATION_QUEUE_NAME],
             RabbitMQHelper::ADMIN_QUEUE_NAME,
@@ -114,6 +128,17 @@ class ApplicationController extends Controller
             RabbitMQHelper::APPLICATION_TABLE,
             ['status' => StatusDictionary::REJECTED],
             ['id' => $id]
+        );
+        $this->rabbitMQService->publish(
+            [RabbitMQHelper::NOTIFICATION_QUEUE_NAME],
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
+            RabbitMQHelper::CREATE,
+            RabbitMQHelper::NOTIFICATION_TABLE,
+            [
+                'user_id' => $application->user_id,
+                'message' => NotificationTypeDictionary::APPLICATION_REJECT,
+                'status' => NotificationTypeDictionary::ONLINE_NOTIFICATION
+            ]
         );
         return redirect()->route('application.index');
     }

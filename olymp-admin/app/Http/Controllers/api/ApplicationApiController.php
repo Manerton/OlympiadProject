@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Components\Dictionaries\NotificationTypeDictionary;
 use App\Components\Dictionaries\StatusDictionary;
 use App\Components\Dictionaries\ReasonParticipantDictionary;
 use App\Components\Dictionaries\SubjectDictionary;
@@ -163,6 +164,7 @@ class ApplicationApiController extends Controller
         return response()->json([]);
     }
     public function confirm($id){
+        $application = $this->applicationService->find($id);
         $this->rabbitMQService->publish(
             [RabbitMQHelper::APPLICATION_QUEUE_NAME],
             RabbitMQHelper::ADMIN_QUEUE_NAME,
@@ -171,9 +173,21 @@ class ApplicationApiController extends Controller
             ['status' => StatusDictionary::APPROVED],
             ['id' => $id]
         );
+        $this->rabbitMQService->publish(
+            [RabbitMQHelper::NOTIFICATION_QUEUE_NAME],
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
+            RabbitMQHelper::CREATE,
+            RabbitMQHelper::NOTIFICATION_TABLE,
+            [
+                'user_id' => $application->user_id,
+                'message' => NotificationTypeDictionary::APPLICATION_CONFIRM,
+                'status' => NotificationTypeDictionary::ONLINE_NOTIFICATION
+            ]
+        );
         return response()->json([]);
     }
     public function reject($id){
+        $application = $this->applicationService->find($id);
         $this->rabbitMQService->publish(
             [RabbitMQHelper::APPLICATION_QUEUE_NAME],
             RabbitMQHelper::ADMIN_QUEUE_NAME,
@@ -181,6 +195,17 @@ class ApplicationApiController extends Controller
             RabbitMQHelper::APPLICATION_TABLE,
             ['status' => StatusDictionary::REJECTED],
             ['id' => $id]
+        );
+        $this->rabbitMQService->publish(
+            [RabbitMQHelper::NOTIFICATION_QUEUE_NAME],
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
+            RabbitMQHelper::CREATE,
+            RabbitMQHelper::NOTIFICATION_TABLE,
+            [
+                'user_id' => $application->user_id,
+                'message' => NotificationTypeDictionary::APPLICATION_REJECT,
+                'status' => NotificationTypeDictionary::ONLINE_NOTIFICATION
+            ]
         );
         return response()->json([]);
     }

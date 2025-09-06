@@ -3,6 +3,7 @@
 namespace app\commands;
 
 use app\components\RabbitMQHelper;
+use app\jobs\SendNotificationJob;
 use Yii;
 use yii\console\Controller;
 
@@ -11,6 +12,7 @@ class RabbitmqController extends Controller
     public function actionListen(){
         Yii::$app->rabbitmq->consume(RabbitMQHelper::NOTIFICATION_QUEUE_NAME, function ($message) use (&$data) {
             $this->message([json_decode($message)]);
+            Yii::$app->queue->push(new SendNotificationJob($message, json_decode($message)['user_id']));
             return $message;
         });
 

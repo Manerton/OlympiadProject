@@ -19,7 +19,7 @@ $config = [
         ],
         'redis' => [ // Добавьте Redis-компонент
             'class' => 'yii\redis\Connection',
-            'hostname' => '172.16.0.94',
+            'hostname' => 'redis',
             'port' => 6379,
             'database' => 0,
         ],
@@ -37,7 +37,7 @@ $config = [
             'as log' => \yii\queue\LogBehavior::class,
             'driver' => 'enqueue/amqp-lib',
             'dsn' => 'amqp://notification-service:notification-password@rabbitmq:5672/%2f',
-            'queueName' => 'olymp_notification',
+            'queueName' => 'olymp_notification_message',
         ],
         'websocket' => [
             'class' => \app\services\WebSocketService::class

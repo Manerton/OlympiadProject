@@ -266,4 +266,6 @@ class EventApiController extends Controller
         $this->eventScoreService->fill($id, $data);
         return response()->json([]);
     }
+    public function publish($id){
+    }
 }

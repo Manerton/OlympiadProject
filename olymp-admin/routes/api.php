@@ -81,6 +81,7 @@ Route::group(['middleware' => 'prometheus'], function() {
     Route::post('/event/change-score', [EventApiController::class, 'changeScore'])->name('event-api.change-score');
     Route::get('/event/prize-score/{id}', [EventApiController::class, 'prizeScore'])->name('event-api.prize-score');
     Route::post('/event/set-prize-score/{id}', [EventApiController::class, 'setPrizeScore'])->name('event-api.set-prize-score');
+    Route::get('/event/publish/{id}', [EventApiController::class, 'publish'])->name('event-api.publish');
 
     Route::get('/email/index', [MailApiController::class, 'index'])->name('mail.index');
     Route::post('/email/send', [MailApiController::class, 'send'])->name('mail.send');
