@@ -8,6 +8,7 @@ import (
 	"main/internal/config"
 	handlers "main/internal/handlers"
 	"net/http"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -64,10 +65,16 @@ func getClientIP(r *http.Request) string {
 }
 
 func main() {
-	cfgPath := flag.String("config", getConfigPath(), "path to config file")
-	flag.Parse()
-
-	cfg := config.GetConfig(*cfgPath)
+	cfgPath := os.Getenv("CONFIG_PATH") // Проверяем переменную окружения
+	if cfgPath == "" {
+		log.Printf("CONFIG_PATH from env is empty, falling back to flag")
+		flag.StringVar(&cfgPath, "config", getConfigPath(), "path to config file")
+		flag.Parse()
+	}
+	if cfgPath == "" {
+		log.Fatal("Error: cfgPath is empty")
+	}
+	cfg := config.GetConfig(cfgPath)
 	mux := http.NewServeMux()
 
 	for _, route := range cfg.HTTPServers.Routes {

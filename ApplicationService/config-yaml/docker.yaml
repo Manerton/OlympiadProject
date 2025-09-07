@@ -1,4 +1,4 @@
-env: "docker"
+env: "dev"
 
 DB_INFO:
   host: "application-db"

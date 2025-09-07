@@ -3,20 +3,20 @@
 services:
 
   vision:
-  image: node:20
-  container_name: vision_app
-  working_dir: /app
-  volumes:
-    - ./vision:/app
-    - ./vision/.env:/app/.env  # Монтируем .env файл
-  command: sh -c "npm install && npm run dev"
-  ports:
-    - "5173:5173"
-  networks:
-    - olympic
-  environment:
-    - CHOKIDAR_USEPOLLING=true  # Для горячей перезагрузки в Docker
-    - WATCHPACK_POLLING=true
+    image: node:20
+    container_name: vision_app
+    working_dir: /app
+    volumes:
+      - ./vision:/app
+      - ./vision/.env:/app/.env  # Монтируем .env файл
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "5173:5173"
+    networks:
+      - olympic
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # Для горячей перезагрузки в Docker
+      - WATCHPACK_POLLING=true
 
   application-db:
     image: postgres:16
@@ -64,7 +64,8 @@ services:
       - olympic
     ports:
       - "6611:6611"
-    entrypoint: ["./api-gateway"]
+    entrypoint: ["/bin/sh", "-c", "./api-gateway -config \"$CONFIG_PATH\""]
+
 
    # /bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up &&
 

@@ -2,6 +2,7 @@ package postgresql
 
 import (
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -12,6 +13,25 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
+
+func MustPosgreSQL(connectStr string) *gorm.DB {
+	const op = "storage.postgresql.MustPosgreSQL"
+	// try to connect posgresql
+	db, err := gorm.Open(postgres.Open(connectStr), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("%s: failed connect to db %s", op, connectStr)
+	}
+
+	// migration models
+	err = db.AutoMigrate(&models.Application{})
+	if err != nil {
+		log.Fatalf("%s: failed auto migrate", op)
+	}
+
+	// Add fixed data after migration
+	seedData(db)
+	return db
+}
 
 func NewPostgreSQL(connectStr string) (*gorm.DB, error) {
 
@@ -37,6 +57,9 @@ func NewPostgreSQL(connectStr string) (*gorm.DB, error) {
 
 	// Create the base connection string without dbname
 	baseDSN := strings.Join(baseDSNParts, " ")
+	log.Println("connectStr", connectStr)
+	log.Println("dbName", dbName)
+	log.Println("baseDSN", baseDSN)
 
 	// Connect to PostgreSQL server without specifying a database
 	db, err := gorm.Open(postgres.Open(baseDSN), &gorm.Config{})

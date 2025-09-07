@@ -31,12 +31,14 @@ func main() {
 	log.Debug("debug messages are enabled")
 
 	// Init storage
-	storage, err := postgresql.NewPostgreSQL(cfg.GetDataSourceName())
-	if err != nil {
-		log.Error("failed to init storage", liblogger.Err(err))
-	} else {
-		log.Info("storage is enabled")
-	}
+	// storage, err := postgresql.NewPostgreSQL(cfg.GetDataSourceName())
+	// if err != nil {
+	// 	log.Error("failed to init storage", liblogger.Err(err))
+	// } else {
+	// 	log.Info("storage is enabled")
+	// }
+
+	storage := postgresql.MustPosgreSQL(cfg.GetDataSourceName())
 
 	// init orm
 	gormORM := orm.NewGormORM(storage)

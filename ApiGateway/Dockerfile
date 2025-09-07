@@ -28,5 +28,5 @@ COPY --from=builder /app/config-yaml /app/config-yaml
 # Открываем порт (замени на тот, который слушает твой Gateway)
 EXPOSE 6611
 
-# Запускаем бинарь
-CMD ["./api-gateway"]
+# # Запускаем бинарь
+# CMD ["./api-gateway"]
