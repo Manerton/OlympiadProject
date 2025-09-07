@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Button, Spinner, Alert } from "react-bootstrap";
 import axios from "axios";
 import type { MyEvent } from "../../../types/event.ts";
 import CardImage from "./components/CardImage";
-import { fetchEvent, fetchStagesCount } from "../../../../requests/EventsRequests.ts";
+import { fetchEvent, fetchStagesCount } from "../../../../requests/EventsRequests";
 
 const OlympiadDetails: React.FC = () => {
   const { id } = useParams();

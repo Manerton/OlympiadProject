@@ -1,4 +1,3 @@
-import React from "react";
 import { taskTypes } from "../../../../../../dictionary/taskType";
 
 type Task = {

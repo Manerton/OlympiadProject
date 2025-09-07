@@ -6,7 +6,11 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
+.vite
+node_modules/.deno
+.env
+dist
+deno_dir
 node_modules
 dist
 dist-ssr

@@ -1,4 +1,3 @@
-import type React from "react";
 import AppealForm from "./AppealForm";
 import { useEffect, useState } from "react";
 import type { Task } from "../../../../../types/task";

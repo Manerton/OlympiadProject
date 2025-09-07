@@ -1,5 +1,4 @@
 // components/RegionalStageList.tsx
-import React from "react";
 
 import RegionalStageCard from "./RegionalStageCard";
 import type { MyEvent } from "../../../../types/event";

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { HOSTS } from '../../../config/api.ts';
+import { HOSTS } from '../../../config/api';
 
 interface Task {
     id: string;

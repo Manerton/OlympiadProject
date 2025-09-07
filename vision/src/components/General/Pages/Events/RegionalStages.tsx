@@ -1,10 +1,10 @@
 // pages/RegionalStagesPage.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Container, Spinner, Alert } from "react-bootstrap";
 import { useNavigate } from 'react-router-dom';
 import RegionalStageList from "./components/RegionalStageList";
 import { useAuth } from "../../../Helpers/AuthContext";
-import { fetchRegionalStages } from "../../../../requests/EventsRequests.ts";
+import { fetchRegionalStages } from "../../../../requests/EventsRequests";
 
 interface MyEvent {
     id?: string;

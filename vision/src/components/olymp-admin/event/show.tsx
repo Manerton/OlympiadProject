@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import { HOSTS } from '../../../config/api.ts';
+import { HOSTS } from '../../../config/api';
 interface Event {
     id: string;
     name: string;
@@ -112,7 +112,7 @@ const EventShow: React.FC = () => {
             <h1>{event.name}</h1>
 
             <div className="card mt-4">
-                <div className="card-body">deno 
+                <div className="card-body">deno
                     <div className="row">
                         <div className="col-md-6">
                             <h5 className="card-title">Основная информация</h5>
@@ -154,64 +154,64 @@ const EventShow: React.FC = () => {
 
                 <div className="card-footer">
                     <div className="d-flex flex-wrap justify-content-between gap-2">
-                        <button 
+                        <button
                             className="btn btn-secondary"
                             onClick={() => navigate('/olymp-admin/event/index')}
                         >
                             Назад к списку
                         </button>
-                        
-                        <button 
+
+                        <button
                             className="btn btn-danger"
                             onClick={() => navigate(`/olymp-admin/event/prize-score/${event.id}`)}
                         >
                             Перейти к определению баллов
                         </button>
-                        
-                        <button 
+
+                        <button
                             className="btn btn-success"
                             onClick={async () => {
-                                    try {
-                                        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
-                                        await axios.get(HOSTS['OLYMP_ADMIN'] + `/api/event/synchronize/${event.id}`, {
-                                            headers: {
-                                                'Authorization': token,
-                                                'Content-Type': 'application/json'
-                                            },
-                                            withCredentials: true
-                                        });
-                                    } 
-                                    catch {
-
-                                    }
+                                try {
+                                    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+                                    await axios.get(HOSTS['OLYMP_ADMIN'] + `/api/event/synchronize/${event.id}`, {
+                                        headers: {
+                                            'Authorization': token,
+                                            'Content-Type': 'application/json'
+                                        },
+                                        withCredentials: true
+                                    });
                                 }
+                                catch {
+
+                                }
+                            }
                             }
                         >
                             Синхронизировать
                         </button>
-                        
-                        <button 
+
+                        <button
                             className="btn btn-primary"
                             onClick={() => navigate(`/olymp-admin/event/attendance/${event.id}`)}
                         >
                             Перейти к явкам
                         </button>
-                        
-                        <button 
+
+                        <button
                             className="btn btn-warning"
                             onClick={() => navigate(`/olymp-admin/event/task/${event.id}`)}
                         >
                             Перейти к заданиям
                         </button>
-                        
-                        <button 
+
+                        <button
                             className="btn btn-success"
                             onClick={() => navigate(`/olymp-admin/event/point/${event.id}`)}
                         >
                             Перейти к выставлению баллов
                         </button>
-                        
-                        <button 
+
+                        <button
                             className="btn btn-danger"
                             onClick={handleDelete}
                         >

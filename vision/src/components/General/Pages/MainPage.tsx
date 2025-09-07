@@ -1,7 +1,5 @@
 // MainPage.tsx
-import React from 'react';
 import { Container, Row, Col, Button, Form, Accordion } from 'react-bootstrap';
-import Layout from '../Layouts/Layout.tsx'
 const MainPage: React.FC = () => {
   return (
     <>

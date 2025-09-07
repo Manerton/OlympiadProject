@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useEffect } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import {useAuth} from "../../Helpers/AuthContext.tsx";
+import {useAuth} from "../../Helpers/AuthContext";
 
 const WS_URL = "ws://notification.olymp.local:8095";
 

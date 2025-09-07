@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { Container, Spinner, Alert, Form, Button, Pagination } from 'react-bootstrap';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -6,8 +6,8 @@ import OlympiadList from './components/OlympiadList';
 import axios from 'axios';
 import { useNavigate,useParams } from 'react-router-dom';
 import type { MyEvent } from '../../../types/event.ts';
-import { useAuth } from '../../../Helpers/AuthContext.tsx';
-import { fetchOlympiads } from '../../../../requests/EventsRequests.ts';
+import { useAuth } from '../../../Helpers/AuthContext';
+import { fetchOlympiads } from '../../../../requests/EventsRequests';
 
 
 const OlympiadsPage: React.FC = () => {

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Row, Col } from 'react-bootstrap';
 import OlympiadCard from './OlympiadCard';
 import type  { MyEvent } from '../../../../types/event.ts'; 

@@ -1,4 +1,3 @@
-import type React from "react"
 import { taskTypes } from "../../../../../../dictionary/taskType"
 import { useState } from "react"
 import AppealForm from "./AppealForm"

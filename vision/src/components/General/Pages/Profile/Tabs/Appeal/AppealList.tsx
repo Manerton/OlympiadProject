@@ -1,4 +1,3 @@
-import type React from "react";
 import AppealCart from "./AppealCart";
 import type { Appeal } from "../../../../../types/appeal";
 import { useEffect, useState } from "react";

@@ -1,10 +1,10 @@
 // src/pages/StagesListPage.tsx
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Container, Row, Col, Card, Button, Spinner, Alert } from "react-bootstrap";
 import type { MyEvent } from "../../../types/event.ts";
-import { fetchOlympiadChildren } from "../../../../requests/EventsRequests.ts";
-import { useAuth } from "../../../Helpers/AuthContext.tsx";
+import { fetchOlympiadChildren } from "../../../../requests/EventsRequests";
+import { useAuth } from "../../../Helpers/AuthContext";
 
 interface JuryMember {
   name: string;

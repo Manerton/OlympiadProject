@@ -1,4 +1,3 @@
-import React from "react";
 import { FaUserGraduate } from "react-icons/fa";
 
 interface UserInfoBlockProps {

@@ -1,5 +1,4 @@
 // components/RegionalStageCard.tsx
-import React from "react";
 import { Card } from "react-bootstrap";
 import type { MyEvent } from "../../../../types/event";
 

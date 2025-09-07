@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { Button } from 'react-bootstrap';
 import { Moon, Sun } from 'react-bootstrap-icons';
 import { ThemeContext } from './ThemeContext'; // скорректируй путь при необходимости

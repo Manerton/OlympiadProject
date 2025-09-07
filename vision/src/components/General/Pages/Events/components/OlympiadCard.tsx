@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, Button, Spinner, Row, Col } from 'react-bootstrap';
 import type { MyEvent } from '../../../../types/event.ts';
-import CardImage from './CardImage.tsx';
-import { fetchOlympiadChildren } from '../../../../../requests/EventsRequests.ts';
+import CardImage from './CardImage';
+import { fetchOlympiadChildren } from '../../../../../requests/EventsRequests';
 
 const OlympiadCard: React.FC<{ olympiad: MyEvent; onClick?: (id: string) => void }> = ({ olympiad, onClick }) => {
   const [children, setChildren] = useState<MyEvent[]>([]);
