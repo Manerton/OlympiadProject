@@ -17,6 +17,7 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
       - WATCHPACK_POLLING=true
+      - HOST=0.0.0.0
 
   application-db:
     image: postgres:16
