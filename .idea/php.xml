@@ -344,6 +344,9 @@
       <path value="$PROJECT_DIR$/olymp-notification/vendor/bower-asset/bootstrap" />
       <path value="$PROJECT_DIR$/olymp-notification/vendor/symfony/process" />
       <path value="$PROJECT_DIR$/olymp-admin/vendor/vladimir-yuldashev/laravel-queue-rabbitmq" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/symfony/polyfill-iconv" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/yiisoft/yii2-swiftmailer" />
+      <path value="$PROJECT_DIR$/olymp-notification/vendor/swiftmailer/swiftmailer" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="7.4" />
