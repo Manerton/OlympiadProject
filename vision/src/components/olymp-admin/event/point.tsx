@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { HOSTS } from '../../../config/api';
+import { useAuth } from "../../Helpers/AuthContext";
 interface Task {
     id: string;
     number: string;
@@ -37,8 +38,8 @@ const EventPoint: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const navigate = useNavigate();
 
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc";
-
+    const {accessToken} = useAuth()
+    
     const fetchData = async () => {
         try {
             setLoading(true);
@@ -46,7 +47,7 @@ const EventPoint: React.FC = () => {
                 HOSTS['OLYMP_ADMIN'] +`/api/event/point/${id}`,
                 {
                     headers: {
-                        Authorization: token,
+                        Authorization: accessToken,
                     },
                     withCredentials: true,
                 }
@@ -83,7 +84,7 @@ const EventPoint: React.FC = () => {
                 },
                 {
                     headers: {
-                        Authorization: token,
+                        Authorization: accessToken,
                         "Content-Type": "application/json",
                     },
                     withCredentials: true,

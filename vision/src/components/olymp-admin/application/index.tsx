@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { HOSTS } from '../../../config/api';
+import { useAuth } from '../../Helpers/AuthContext';
 interface Application {
     id: string;
     code: string;
@@ -39,13 +40,14 @@ const ApplicationIndex: React.FC = () => {
     const [perPage, setPerPage] = useState<number>(10);
     const navigate = useNavigate();
 
+    const {accessToken} = useAuth()
+    
+
     const fetchApplications = (page: number = 1) => {
         setLoading(true);
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
-        
         axios.get<ApplicationResponse>(HOSTS['OLYMP_ADMIN'] + `/api/application/index/${page}`, {
             headers: {
-                'Authorization': token
+                'Authorization': accessToken
             },
             withCredentials: true
         })
@@ -65,11 +67,10 @@ const ApplicationIndex: React.FC = () => {
     };
 
     const handleConfirm = async (applicationId: string) => {
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
         try {
             await axios.post(HOSTS['OLYMP_ADMIN'] + `/api/application/confirm/${applicationId}`, {}, {
                 headers: {
-                    'Authorization': token,
+                    'Authorization': accessToken,
                     'Content-Type': 'application/json'
                 },
                 withCredentials: true
@@ -82,11 +83,10 @@ const ApplicationIndex: React.FC = () => {
     };
 
     const handleReject = async (applicationId: string) => {
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
         try {
             await axios.post(HOSTS['OLYMP_ADMIN'] + `/api/application/reject/${applicationId}`, {}, {
                 headers: {
-                    'Authorization': token,
+                    'Authorization': accessToken,
                     'Content-Type': 'application/json'
                 },
                 withCredentials: true
@@ -102,11 +102,10 @@ const ApplicationIndex: React.FC = () => {
         if (!window.confirm('Вы уверены, что хотите удалить этот элемент?')) {
             return;
         }
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
         try {
             await axios.delete(HOSTS['OLYMP_ADMIN'] + `/api/application/delete/${applicationId}`, {
                 headers: {
-                    'Authorization': token,
+                    'Authorization': accessToken,
                     'Content-Type': 'application/json'
                 },
                 withCredentials: true

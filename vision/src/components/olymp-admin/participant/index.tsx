@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { HOSTS } from '../../../config/api';
+import { useAuth } from '../../Helpers/AuthContext';
 interface Participant {
     id: string;
     userAPI: {
@@ -35,11 +36,13 @@ const handleDelete = async (participantId: string) => {
     if (!window.confirm('Вы уверены, что хотите удалить этого участника?')) {
         return;
     }
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+
+    const {accessToken} = useAuth()
+
     try {
         const response = await axios.delete(HOSTS['OLYMP_ADMIN'] + `/api/participant/delete/${participantId}`, {
             headers: {
-                'Authorization': token,
+                'Authorization': accessToken,
                 'Content-Type': 'application/json'
             },
             withCredentials: true
@@ -68,11 +71,12 @@ const ParticipantIndex: React.FC = () => {
 
     const fetchParticipants = (page: number = 1) => {
         setLoading(true);
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+
+        const {accessToken} = useAuth()
         
         axios.get<ParticipantResponse>(HOSTS['OLYMP_ADMIN'] + `/api/participant/index/${page}`, {
             headers: {
-                'Authorization': token
+                'Authorization': accessToken
             },
             withCredentials: true
         })

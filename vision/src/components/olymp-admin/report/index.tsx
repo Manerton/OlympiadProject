@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { HOSTS } from '../../../config/api';
+import { useAuth } from '../../Helpers/AuthContext';
 interface ReportIndexProps {}
 
 interface Subject {
@@ -13,14 +14,16 @@ const ReportIndex: React.FC<ReportIndexProps> = () => {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+
+  const {accessToken} = useAuth()
+
 
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
         const response = await axios.get(HOSTS['OLYMP_ADMIN'] + '/api/report/index', {
           headers: {
-            'Authorization': token
+            'Authorization': accessToken
           },
           withCredentials: true
         });
@@ -55,7 +58,7 @@ const ReportIndex: React.FC<ReportIndexProps> = () => {
       setLoading(true);
       const response = await axios.get(HOSTS['OLYMP_ADMIN'] + `/api/report/download/${subjectId}`, {
         headers: {
-          'Authorization': token
+          'Authorization': accessToken
         },
         responseType: 'blob',
         withCredentials: true

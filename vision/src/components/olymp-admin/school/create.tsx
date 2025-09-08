@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
-import { HOSTS } from '../../../config/api.ts';
+import { HOSTS } from '../../../config/api';
+import { useAuth } from '../../Helpers/AuthContext.js';
 interface SchoolFormData {
   name: string;
   region: string;
@@ -27,14 +28,15 @@ const SchoolCreate: React.FC = () => {
   const [regions, setRegions] = useState<Dictionary>({});
   const [loading, setLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+
+  const {accessToken} = useAuth()
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch regions
         const regionsResponse = await axios.get(HOSTS['OLYMP_ADMIN'] + '/api/school/create', {
-          headers: { 'Authorization': token },
+          headers: { 'Authorization': accessToken },
           withCredentials: true
         });
         setRegions(regionsResponse.data.regions || {});
@@ -43,7 +45,7 @@ const SchoolCreate: React.FC = () => {
         if (id) {
           setIsEditMode(true);
           const schoolResponse = await axios.get(HOSTS['OLYMP_ADMIN'] + `/api/school/show/${id}`, {
-            headers: { 'Authorization': token },
+            headers: { 'Authorization': accessToken },
             withCredentials: true
           });
           setFormData({
@@ -77,7 +79,7 @@ const SchoolCreate: React.FC = () => {
         // Update existing school
         await axios.put(HOSTS['OLYMP_ADMIN'] + `/api/school/update/${id}`, formData, {
           headers: {
-            'Authorization': token,
+            'Authorization': accessToken,
             'Content-Type': 'application/json'
           },
           withCredentials: true
@@ -86,7 +88,7 @@ const SchoolCreate: React.FC = () => {
         // Create new school
         await axios.post(HOSTS['OLYMP_ADMIN'] + '/api/school/store', formData, {
           headers: {
-            'Authorization': token,
+            'Authorization': accessToken,
             'Content-Type': 'application/json'
           },
           withCredentials: true

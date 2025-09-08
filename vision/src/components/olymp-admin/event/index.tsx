@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { HOSTS } from '../../../config/api';
+import { useAuth } from '../../Helpers/AuthContext';
 interface Event {
     id: string;
     name: string;
@@ -24,13 +25,14 @@ const EventIndex: React.FC = () => {
     const [perPage] = useState<number>(10);
     const navigate = useNavigate();
 
+    const {accessToken} = useAuth()
+    
+
     const fetchEvents = (page: number = 1) => {
         setLoading(true);
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
-        
         axios.get(HOSTS['OLYMP_ADMIN'] + `/api/event/index/${page}`, {
             headers: {
-                'Authorization': token
+                'Authorization': accessToken
             },
             withCredentials: true
         })
@@ -51,12 +53,10 @@ const EventIndex: React.FC = () => {
         if (!window.confirm('Вы уверены, что хотите удалить этот элемент?')) {
             return;
         }
-        
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
         try {
             await axios.delete(HOSTS['OLYMP_ADMIN'] + `/api/event/delete/${eventId}`, {
                 headers: {
-                    'Authorization': token,
+                    'Authorization': accessToken,
                     'Content-Type': 'application/json'
                 },
                 withCredentials: true

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { HOSTS } from '../../../config/api.ts';
+import { HOSTS } from '../../../config/api';
+import { useAuth } from '../../Helpers/AuthContext';
 const UserShow = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -10,11 +11,14 @@ const UserShow = () => {
   const [roles, setRoles] = useState({});
   const [genders, setGenders] = useState({});
   const [loading, setLoading] = useState(true);
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
-    useEffect(() => {
+
+  const {accessToken} = useAuth()
+  
+
+  useEffect(() => {
     axios.get(HOSTS['OLYMP_ADMIN'] + `/api/user/show/${id}`, {
       headers: {
-        'Authorization': token
+        'Authorization': accessToken
       },
       withCredentials: true
     })
@@ -28,36 +32,35 @@ const UserShow = () => {
         console.error("Ошибка при получении пользователя:", error);
         setLoading(false);
       });
-  }, [id, token]);
+  }, [id, accessToken]);
 
   const getFullFio = () => {
     return `${user.firstname || ''} ${user.surname || ''} ${user.patronymic || ''}`.trim();
   };
 
-  const handleDelete = async (userId: string) => {
-  if (!window.confirm('Вы уверены, что хотите удалить этого пользователя?')) {
-    return;
-  }
-const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
-  try {
-    const response = await axios.delete(HOSTS['OLYMP_ADMIN'] + `/api/user/delete/${userId}`, {
-      headers: {
-        'Authorization': token,
-        'Content-Type': 'application/json'
-      },
-      withCredentials: true
-    });
-    const navigate = useNavigate();
-    if (response.status === 200) {
-      navigate("/olymp-admin/user/index");
-    } else {
-      throw new Error('Ошибка при удалении');
+  const handleDelete = async (userId: string, token: string) => {
+    if (!window.confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+      return;
     }
-  } catch (error) {
-    console.error('Delete error:', error);
-    alert('Не удалось удалить пользователя');
-  }
-};
+    try {
+      const response = await axios.delete(HOSTS['OLYMP_ADMIN'] + `/api/user/delete/${userId}`, {
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
+      const navigate = useNavigate();
+      if (response.status === 200) {
+        navigate("/olymp-admin/user/index");
+      } else {
+        throw new Error('Ошибка при удалении');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Не удалось удалить пользователя');
+    }
+  };
 
   if (loading) {
     return <p>Загрузка...</p>;
@@ -79,14 +82,14 @@ const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwu
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1>Просмотр пользователя {getFullFio()}</h1>
         <div>
-          <Link 
-            to={`/olymp-admin/user/edit/${user.id}`} 
+          <Link
+            to={`/olymp-admin/user/edit/${user.id}`}
             className="btn btn-primary me-2"
           >
             Редактировать
           </Link>
-          <button 
-            onClick={() => handleDelete(user.id)}
+          <button
+            onClick={() => handleDelete(user.id, accessToken!)}
             className="btn btn-danger"
           >
             Удалить

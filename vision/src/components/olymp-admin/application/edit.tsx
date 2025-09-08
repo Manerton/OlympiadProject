@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { HOSTS } from '../../../config/api';
+import { useAuth } from '../../Helpers/AuthContext';
 interface Application {
     id: string;
     code: string;
@@ -51,13 +52,14 @@ const ApplicationEdit: React.FC = () => {
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const token ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+    const {accessToken} = useAuth()
+    
 
+    useEffect(() => {
         const fetchData = async () => {
             try {
                 const response = await axios.get(HOSTS['OLYMP_ADMIN'] + `/api/application/edit/${id}`, {
-                    headers: { 'Authorization': token }
+                    headers: { 'Authorization': accessToken }
                 });
 
                 const data = response.data;
@@ -96,12 +98,10 @@ const ApplicationEdit: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
-
         try {
             await axios.put(HOSTS['OLYMP_ADMIN'] + `/api/application/update/${id}`, formData, {
                 headers: {
-                    'Authorization': token,
+                    'Authorization': accessToken,
                     'Content-Type': 'application/json'
                 },
                 withCredentials: true

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link, useParams } from 'react-router-dom';
-import { HOSTS } from '../../../config/api.ts';
+import { HOSTS } from '../../../config/api';
+import { useAuth } from '../../Helpers/AuthContext.js';
 interface Dictionary {
   [key: string]: string; // Ключи также должны быть строками
 }
@@ -48,18 +49,19 @@ const UserEdit: React.FC = () => {
     birthdate: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
 
+  const {accessToken} = useAuth()
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [dictionariesResponse, userResponse] = await Promise.all([
           axios.get(HOSTS['OLYMP_ADMIN'] + '/api/user/create', {
-            headers: { 'Authorization': token },
+            headers: { 'Authorization': accessToken },
             withCredentials: true
           }),
           axios.get(HOSTS['OLYMP_ADMIN'] + `/api/user/show/${id}`, {
-            headers: { 'Authorization': token },
+            headers: { 'Authorization': accessToken },
             withCredentials: true
           })
         ]);
@@ -107,7 +109,7 @@ const UserEdit: React.FC = () => {
 
       const response = await axios.put(HOSTS['OLYMP_ADMIN'] + `/api/user/update/${id}`, dataToSend, {
         headers: {
-          'Authorization': token,
+          'Authorization': accessToken,
           'Content-Type': 'application/json'
         },
         withCredentials: true

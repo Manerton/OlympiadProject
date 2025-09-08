@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
-import { HOSTS } from '../../../config/api.ts';
+import { HOSTS } from '../../../config/api';
+import { useAuth } from '../../Helpers/AuthContext.js';
 interface Dictionary {
   [key: string]: string; // Ключи теперь строки
 }
@@ -47,14 +48,15 @@ const UserCreate: React.FC = () => {
     birthdate: ''
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+  const {accessToken} = useAuth()
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(HOSTS['OLYMP_ADMIN'] + '/api/user/create', {
           headers: {
-            'Authorization': token
+            'Authorization': accessToken
           },
           withCredentials: true
         });
@@ -82,7 +84,7 @@ const UserCreate: React.FC = () => {
     try {
       const response = await axios.post(HOSTS['OLYMP_ADMIN'] + '/api/user/store', formData, {
         headers: {
-          'Authorization': token,
+          'Authorization': accessToken,
           'Content-Type': 'application/json'
         },
         withCredentials: true

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { HOSTS } from '../../../config/api';
+import { useAuth } from "../../Helpers/AuthContext";
 
 interface Task {
     id: string;
@@ -37,16 +38,15 @@ const EventTask: React.FC = () => {
     ]);
     const [loading, setLoading] = useState<boolean>(true);
 
-    const token =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc";
-
+    const {accessToken} = useAuth()
+  
     const fetchTasks = async () => {
         try {
             setLoading(true);
             const response = await axios.get(
                 HOSTS['OLYMP_ADMIN'] + `/api/event/task/${id}`,
                 {
-                    headers: { Authorization: token },
+                    headers: { Authorization: accessToken },
                     withCredentials: true,
                 }
             );
@@ -57,7 +57,7 @@ const EventTask: React.FC = () => {
             const typesResponse = await axios.get(
                 HOSTS['OLYMP_ADMIN'] + `/api/event/task-types`,
                 {
-                    headers: { Authorization: token },
+                    headers: { Authorization: accessToken },
                     withCredentials: true,
                 }
             );
@@ -109,7 +109,7 @@ const EventTask: React.FC = () => {
                 requestData,
                 {
                     headers: {
-                        Authorization: token,
+                        Authorization: accessToken,
                         "Content-Type": "application/json",
                     },
                     withCredentials: true,
@@ -130,7 +130,7 @@ const EventTask: React.FC = () => {
             await axios.delete(
                 HOSTS['OLYMP_ADMIN'] + `/api/event/delete-task/${taskId}`,
                 {
-                    headers: { Authorization: token },
+                    headers: { Authorization: accessToken },
                     withCredentials: true,
                 }
             );

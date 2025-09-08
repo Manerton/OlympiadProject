@@ -1,23 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { HOSTS } from '../../../config/api.ts';
+import { HOSTS } from '../../../config/api';
+import { useAuth } from '../../Helpers/AuthContext';
 interface User {
-    id: string;
-    full_name: string;
-    email: string;
-    phone_number: string;
+  id: string;
+  full_name: string;
+  email: string;
+  phone_number: string;
 }
 interface UserResponse {
-    users: User[];
-    usersAmount: number;
-    perPage: number;
+  users: User[];
+  usersAmount: number;
+  perPage: number;
 }
- const handleDelete = async (userId: string) => {
+const handleDelete = async (userId: string, token: string) => {
   if (!window.confirm('Вы уверены, что хотите удалить этого пользователя?')) {
     return;
   }
-const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+
+
   try {
     const response = await axios.delete(HOSTS['OLYMP_ADMIN'] + `/api/user/delete/${userId}`, {
       headers: {
@@ -38,11 +40,11 @@ const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwu
   }
 };
 
- const handleRevoke = async (userId: string) => {
+const handleRevoke = async (userId: string, token: string) => {
   if (!window.confirm('Вы уверены, что хотите отозвать токены этого пользователя?')) {
     return;
   }
-const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+
   try {
     const response = await axios.delete(HOSTS['OLYMP_ADMIN'] + `/api/user/revoke/${userId}`, {
       headers: {
@@ -64,115 +66,117 @@ const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwu
 };
 
 const UserIndex: React.FC = () => {
-    const [users, setUsers] = useState<User[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const [totalUsers, setTotalUsers] = useState<number>(0);
-    const [perPage, setPerPage] = useState<number>(10);
-    const navigate = useNavigate();
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [totalUsers, setTotalUsers] = useState<number>(0);
+  const [perPage, setPerPage] = useState<number>(10);
+  const navigate = useNavigate();
 
-    const fetchUsers = (page: number = 1) => {
-        setLoading(true);
-        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
-        
-        axios.get<UserResponse>(HOSTS['OLYMP_ADMIN'] + `/api/user/index/${page}`, {
-            headers: {
-                'Authorization': token
-            },
-            withCredentials: true
-        })
-        .then(response => {
-            setUsers(response.data.users);
-            setTotalUsers(response.data.usersAmount);
-            setPerPage(response.data.perPage);
-            setCurrentPage(page);
-            setLoading(false);
-        })
-        .catch(error => {
-            console.error("Ошибка при получении пользователей:", error);
-            setLoading(false);
-        });
-    };
-    
-    useEffect(() => {
-        fetchUsers(currentPage);
-    }, [currentPage]);
+  const {accessToken} = useAuth()
+  
 
-    if (loading) return <p>Загрузка...</p>;
+  const fetchUsers = (page: number = 1) => {
+    setLoading(true);
 
-    const totalPages = Math.ceil(totalUsers / perPage);
+    axios.get<UserResponse>(HOSTS['OLYMP_ADMIN'] + `/api/user/index/${page}`, {
+      headers: {
+        'Authorization': accessToken
+      },
+      withCredentials: true
+    })
+      .then(response => {
+        setUsers(response.data.users);
+        setTotalUsers(response.data.usersAmount);
+        setPerPage(response.data.perPage);
+        setCurrentPage(page);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error("Ошибка при получении пользователей:", error);
+        setLoading(false);
+      });
+  };
 
-    return (
-        <div className="user-index">
-            <h2>Список пользователей</h2>
-            <button 
-                 onClick={() => navigate(`/olymp-admin/user/create`)}
-                className="btn btn-success"
-            >
-                Добавить пользователя
-            </button>
+  useEffect(() => {
+    fetchUsers(currentPage);
+  }, [currentPage]);
 
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>ФИО</th>
-                        <th>Эл.почта</th>
-                        <th>Номер телефона</th>
-                        <th>Действия</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {users.map((user, index) => (
-                        <tr key={user.id}>
-                            <td>{(currentPage - 1) * perPage + index + 1}</td>
-                            <td>{`${user.firstname || ''} ${user.surname || ''} ${user.patronymic || ''}`.trim()}</td>
-                            <td>{user.email}</td>
-                            <td>{user.phone_number}</td>
-                            <td>
-                               <button 
-                                    className="btn btn-primary btn-sm"
-                                    onClick={() => navigate(`/olymp-admin/user/show/${user.id}`)}
-                                >
-                                    Просмотр
-                                </button>
-                                <button 
-                                    className="btn btn-primary btn-sm"
-                                    onClick={() => navigate(`/olymp-admin/user/edit/${user.id}`)}
-                                >
-                                    Редактирование
-                                </button>
-                                <button 
-                                    className="btn btn-info btn-sm"
-                                    onClick={() => handleRevoke(user.id)}
-                                >
-                                    Отозвать токены
-                                </button>
-                                <button 
-                                    className="btn btn-primary btn-sm"
-                                    onClick={() => handleDelete(user.id)}
-                                >
-                                    Удалить
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <div className="pagination">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <button
-                        key={page}
-                        className={`btn btn-sm ${currentPage === page ? 'btn-primary' : 'btn-light'}`}
-                        onClick={() => setCurrentPage(page)}
-                        disabled={currentPage === page}
-                    >
-                        {page}
-                    </button>
-                ))}
-            </div>
-        </div>
-    );
+  if (loading) return <p>Загрузка...</p>;
+
+  const totalPages = Math.ceil(totalUsers / perPage);
+
+  return (
+    <div className="user-index">
+      <h2>Список пользователей</h2>
+      <button
+        onClick={() => navigate(`/olymp-admin/user/create`)}
+        className="btn btn-success"
+      >
+        Добавить пользователя
+      </button>
+
+      <table className="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>ФИО</th>
+            <th>Эл.почта</th>
+            <th>Номер телефона</th>
+            <th>Действия</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map((user, index) => (
+            <tr key={user.id}>
+              <td>{(currentPage - 1) * perPage + index + 1}</td>
+              <td>{`${user.firstname || ''} ${user.surname || ''} ${user.patronymic || ''}`.trim()}</td>
+              <td>{user.email}</td>
+              <td>{user.phone_number}</td>
+              <td>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={() => navigate(`/olymp-admin/user/show/${user.id}`)}
+                >
+                  Просмотр
+                </button>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={() => navigate(`/olymp-admin/user/edit/${user.id}`)}
+                >
+                  Редактирование
+                </button>
+                <button
+                  className="btn btn-info btn-sm"
+                  onClick={() => handleRevoke(user.id, accessToken!)}
+                >
+                  Отозвать токены
+                </button>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={() => handleDelete(user.id, accessToken!)}
+                >
+                  Удалить
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="pagination">
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+          <button
+            key={page}
+            className={`btn btn-sm ${currentPage === page ? 'btn-primary' : 'btn-light'}`}
+            onClick={() => setCurrentPage(page)}
+            disabled={currentPage === page}
+          >
+            {page}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default UserIndex;

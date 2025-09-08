@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
-import { HOSTS } from '../../../config/api.ts';
+import { HOSTS } from '../../../config/api';
+import { useAuth } from '../../Helpers/AuthContext.js';
 interface School {
   id: string;
   name: string;
@@ -21,14 +22,15 @@ const SchoolIndex: React.FC = () => {
   const [perPage] = useState<number>(10);
   const navigate = useNavigate();
 
-  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
+  const {accessToken} = useAuth()
+  
 
   const fetchSchools = (page: number = 1) => {
     setLoading(true);
     
     axios.get(HOSTS['OLYMP_ADMIN'] + `/api/school/index/${page}`, {
       headers: {
-        'Authorization': token
+        'Authorization': accessToken
       },
       withCredentials: true
     })
@@ -53,7 +55,7 @@ const SchoolIndex: React.FC = () => {
     try {
       const response = await axios.delete(HOSTS['OLYMP_ADMIN'] + `/api/school/delete/${schoolId}`, {
         headers: {
-          'Authorization': token,
+          'Authorization': accessToken,
           'Content-Type': 'application/json'
         },
         withCredentials: true
