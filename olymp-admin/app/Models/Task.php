@@ -10,7 +10,7 @@ class Task extends Model
     use HasFactory;
     protected $table = 'task';
     protected $fillable = [
-        'event_id', 'max_points', 'number'
+        'event_id', 'max_points', 'number', 'type'
     ];
     public function taskAttendances(){
         return $this->hasMany(TaskAttendance::class);
