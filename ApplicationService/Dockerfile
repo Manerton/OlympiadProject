@@ -10,7 +10,8 @@ RUN go mod download && go mod verify
 # Копируем весь исходный код
 COPY . .
 
-# Сборка только API Gateway
+# Сборка приложения
+RUN go build -o migrator ./cmd/migrator/main.go
 RUN go build -o application-service ./cmd/server/main.go
 
 # Второй этап: минимальный образ для запуска
@@ -22,11 +23,13 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates
 
 # Копируем только бинарь и конфиг
+COPY --from=builder /app/migrator /app/migrator
 COPY --from=builder /app/application-service /app/application-service
 COPY --from=builder /app/config-yaml /app/config-yaml
+COPY --from=builder /app/migrations /app/migrations
 
 # Открываем порт 
 EXPOSE 8082
 
-# Запускаем бинарь
-CMD ["./application-service"]
+# # Запускаем бинарь
+# CMD ["./application-service"]

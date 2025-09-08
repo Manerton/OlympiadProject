@@ -47,14 +47,14 @@ services:
       application-db:
         condition: service_healthy
     environment:
-      # DSN: "postgres://event_user:event_pass@event-db:5432/EventServiceDB?sslmode=disable"
-      # MIGRATION_PATH: "/app/migrations"
+      DSN: "postgres://application_user:application_pass@application-db:5432/ApplicationServiceDB?sslmode=disable"
+      MIGRATION_PATH: "/app/migrations"
       CONFIG_PATH: "/app/config-yaml/docker.yaml"
     networks:
       - olympic
     ports:
       - "8072:8082"
-    entrypoint: ["./application-service"]
+    entrypoint: [ "/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./application-service" ]
 
   apigateway-service:
     build:
