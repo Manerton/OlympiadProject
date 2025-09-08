@@ -24,6 +24,11 @@
       "name": "notification-service",
       "password": "notification-password",
       "tags": "administrator"
+    },
+    {
+      "name": "application-service",
+      "password": "application-password",
+      "tags": "administrator"
     }
   ],
   "vhosts": [
@@ -60,6 +65,13 @@
     },
     {
       "user": "notification-service",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "application-service",
       "vhost": "/",
       "configure": ".*",
       "write": ".*",

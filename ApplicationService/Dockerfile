@@ -10,7 +10,7 @@ RUN go mod download && go mod verify
 # Копируем весь исходный код
 COPY . .
 
-# Сборка только API Gateway
+# Сборка только
 RUN go build -o application-service ./cmd/server/main.go
 
 # Второй этап: минимальный образ для запуска
