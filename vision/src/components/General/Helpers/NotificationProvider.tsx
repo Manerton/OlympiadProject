@@ -16,7 +16,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             try {
                 if(user != null){
                     const message = JSON.parse(event.data);
-                    if(messageexit.to == 'ALL') {
+                    if(message.to == 'ALL') {
                         toast.info(message.data, { position: "bottom-right" });
                     }
                     else {
