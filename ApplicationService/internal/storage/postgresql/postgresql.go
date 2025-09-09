@@ -22,14 +22,14 @@ func MustPosgreSQL(connectStr string) *gorm.DB {
 		log.Fatalf("%s: failed connect to db %s", op, connectStr)
 	}
 
-	// migration models
-	err = db.AutoMigrate(&models.Application{})
-	if err != nil {
-		log.Fatalf("%s: failed auto migrate", op)
-	}
+	// // migration models
+	// err = db.AutoMigrate(&models.Application{})
+	// if err != nil {
+	// 	log.Fatalf("%s: failed auto migrate", op)
+	// }
 
 	// Add fixed data after migration
-	seedData(db)
+	// seedData(db)
 	return db
 }
 

@@ -39,12 +39,15 @@ services:
       timeout: 3s
       retries: 5
 
+
   application-service:
     build:
       context: ./ApplicationService
     container_name: application-service
     depends_on:
       application-db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     environment:
       DSN: "postgres://application_user:application_pass@application-db:5432/ApplicationServiceDB?sslmode=disable"
@@ -54,7 +57,7 @@ services:
       - olympic
     ports:
       - "8072:8082"
-    entrypoint: [ "/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./application-service" ]
+    entrypoint: ["/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./application-service"]
 
   apigateway-service:
     build:
@@ -319,13 +322,18 @@ services:
       RABBITMQ_DEFAULT_PASS: guest
       RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_management load_definitions \"/etc/rabbitmq/definitions.json\""
     ports:
-      - "5672:5672"  # AMQP protocol port
-      - "15672:15672"  # Management UI port
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # UI
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
       - ./rabbitmq-definitions.json:/etc/rabbitmq/definitions.json:ro
     networks:
       - olympic
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
