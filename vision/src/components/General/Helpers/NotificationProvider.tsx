@@ -16,12 +16,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
             try {
                 if(user != null){
                     const message = JSON.parse(event.data);
-                    if(message.to == 'ALL') {
-                        toast.info(message.to + user.id, { position: "bottom-right" });
+                    if(messageexit.to == 'ALL') {
+                        toast.info(message.data, { position: "bottom-right" });
                     }
                     else {
                         if(message.to == user.id){
-                            toast.info(message.to + user.id, { position: "bottom-right" });
+                            toast.info(message.data, { position: "bottom-right" });
                         }
                     }
                 }
