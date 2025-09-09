@@ -22,7 +22,7 @@ REDIS_INFO:
   address_path: "redis:6379"
 
 RABBIT_INFO:
-  address_path: "amqp://sso-service:sso-password@olymp_rabbitmq:5672/"
+  address_path: "amqp://sso-service:sso-password@rabbitmq:5672/"
   queue_name: "olymp_sso"
 
 ADDITIONAL_ADDRESSES:

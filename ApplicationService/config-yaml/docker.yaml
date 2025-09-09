@@ -17,7 +17,7 @@ JWT_TEMP_INFO:
   key: "lololololololololololololololololololololololololololololol"
 
 RABBIT_INFO:
-  address_path: "amqp://application-service:application-password@olymp_rabbitmq:5672/"
+  address_path: "amqp://application-service:application-password@rabbitmq:5672/"
   queue_name: "olymp_admin"
 
 ADDITIONAL_ADDRESSES:
