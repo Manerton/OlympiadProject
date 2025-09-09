@@ -66,3 +66,10 @@ export async function fetchOlympiadChildren(id: string) {
   });
   return res.data.data; // массив событий (с class_number)
 }
+
+export async function fetchOlympiadStages(id: string) {
+  const res = await axios.get(`${API_CONFIG.STAGES}/${id}`, {
+    withCredentials: true,
+  });
+  return res.data.data; // массив событий (с class_number)
+}

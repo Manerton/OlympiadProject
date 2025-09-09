@@ -90,6 +90,11 @@ HTTP_SERVERS_INFO:
       target: "http://event-service:8080/api/events/child"
       skip_auth: true
 
+    - prefix: "/events/stages/"
+      aggregate: false
+      target: "http://event-service:8080/api/events/stages"
+      skip_auth: true
+
     - prefix: "/events/class/"
       aggregate: false
       target: "http://event-service:8080/api/events/class"

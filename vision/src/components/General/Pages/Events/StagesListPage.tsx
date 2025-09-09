@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Container, Row, Col, Card, Button, Spinner, Alert } from "react-bootstrap";
 import type { MyEvent } from "../../../types/event.ts";
-import { fetchOlympiadChildren } from "../../../../requests/EventsRequests";
+import { fetchOlympiadStages } from "../../../../requests/EventsRequests";
 import { useAuth } from "../../../Helpers/AuthContext";
 
 interface JuryMember {
@@ -11,18 +11,52 @@ interface JuryMember {
   role: string;
 }
 
+// helper: находит ближайшее событие в будущем
+const findNextEventId = (stage: MyEvent): string | null => {
+  const now = new Date();
+
+  // Собираем этап + его дочерние события
+  const allEvents = [stage, ...(stage.events ?? [])];
+
+  // Парсим даты и фильтруем только будущие
+  const futureEvents = allEvents
+    .map((e) => ({
+      ...e,
+      start: new Date(e.start_date),
+    }))
+    .filter((e) => e.start >= now);
+
+  if (futureEvents.length === 0) return null;
+
+  // Берём ближайшее
+  futureEvents.sort((a, b) => a.start.getTime() - b.start.getTime());
+  return futureEvents[0].id!
+};
+
+const formatDateTime = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("ru-RU", {
+    day: "2-digit",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 const StagesListPage: React.FC = () => {
   const { id } = useParams();
   const [stages, setStages] = useState<MyEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    fetchOlympiadChildren(id)
+    fetchOlympiadStages(id)
       .then((res) => {
         setStages(res ?? []);
+        // setStages(mockEvents); // TODO: удалить после подключения бэка
       })
       .catch((err) => setError((err as Error).message))
       .finally(() => setLoading(false));
@@ -37,39 +71,115 @@ const StagesListPage: React.FC = () => {
       <h3 className="fw-bold mb-4">Этапы олимпиады</h3>
       <Row>
         {stages.map((stage) => {
+
+          const nextEventId = findNextEventId(stage);
           // пока моки для жюри, можно будет заменить на stage.jury
           const jury: JuryMember[] = [
             { name: "Иван Иванов", role: "Председатель" },
             { name: "Мария Петрова", role: "Член жюри" },
             { name: "Сергей Кузнецов", role: "Член жюри" },
+            { name: "Сергей Кузнецов", role: "Член жюри" },
           ];
 
           return (
             <Col md={12} key={stage.id} className="mb-4">
-              <Card className="shadow-sm">
-                <Card.Body>
-                  <h5 className="fw-bold">{stage.name}</h5>
-                  <p className="fs-5">{stage.additional_info}</p>
-                  <p className="text-muted">
-                    {stage.start_date} — {stage.end_date}
-                  </p>
+              <div className="shadow-sm mb-4">
+                <div className="row">
+                  <div className="col-8">
+                    <div className="d-flex align-items-center gap-3 mt-3 flex-wrap">
+                      {/* Этап */}
+                      <div
+                        className={`p-3 border rounded text-center card-stage ${nextEventId === stage.id ? "border-primary border-3 shadow" : ""
+                          }`}
+                      >
+                        <h6 className="fw-bold mb-3">{stage.name}</h6>
+                        <div className="justify-content-between">
+                          <div>
+                            <span className="badge bg-success mb-1">Начало</span>
+                            <p className="mb-0 fw-semibold">{formatDateTime(stage.start_date)}</p>
+                          </div>
+                          <div>
+                            <span className="badge bg-danger mb-1">Конец</span>
+                            <p className="mb-0 fw-semibold">{formatDateTime(stage.end_date)}</p>
+                          </div>
+                        </div>
+                      </div>
 
-                  <h6 className="mt-3 fw-bold">Жюри</h6>
-                  {jury.map((member, idx) => (
-                    <p key={idx} className="mb-1">
-                      <strong>{member.name}</strong> — {member.role}
-                    </p>
-                  ))}
-                  
+                      {/* ➝ если есть просмотр */}
+                      {stage.events?.some((c) => c.event_type === "VIEW_WORKS") && (
+                        <span className="fs-3">➝</span>
+                      )}
+
+                      {/* Просмотр работ */}
+                      {stage.events
+                        ?.filter((c) => c.event_type === "VIEW_WORKS")
+                        .map((view) => (
+                          <div
+                            key={view.id}
+                            className={`p-3 border rounded text-center card-stage ${nextEventId === view.id ? "border-primary border-3 shadow" : ""
+                              }`}
+                          >
+                            <h6 className="fw-bold mb-3">Просмотр работ</h6>
+                            <div className="justify-content-between">
+                              <div>
+                                <span className="badge bg-success mb-1">Начало</span>
+                                <p className="mb-0 fw-semibold">{formatDateTime(view.start_date)}</p>
+                              </div>
+                              <div>
+                                <span className="badge bg-danger mb-1">Конец</span>
+                                <p className="mb-0 fw-semibold">{formatDateTime(view.end_date)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+
+                      {/* ➝ если есть апелляция */}
+                      {stage.events?.some((c) => c.event_type === "APPEAL") && (
+                        <span className="fs-3">➝</span>
+                      )}
+
+                      {/* Апелляция */}
+                      {stage.events
+                        ?.filter((c) => c.event_type === "APPEAL")
+                        .map((appeal) => (
+                          <div
+                            key={appeal.id}
+                            className={`p-3 border rounded text-center card-stage ${nextEventId === appeal.id ? "border-primary border-3 shadow" : ""
+                              }`}
+                          >
+                            <h6 className="fw-bold mb-3">Апелляция</h6>
+                            <div className="justify-content-between">
+                              <div>
+                                <span className="badge bg-success mb-1">Начало</span>
+                                <p className="mb-0 fw-semibold">{formatDateTime(appeal.start_date)}</p>
+                              </div>
+                              <div>
+                                <span className="badge bg-danger mb-1">Конец</span>
+                                <p className="mb-0 fw-semibold">{formatDateTime(appeal.end_date)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+
+                  </div>
+                  <div className="col-4">
+                    <h6 className="mt-3 fw-bold">Список жюри</h6>
+                    {jury.map((member, idx) => (
+                      <p key={idx} className="mb-1">
+                        <strong>{member.name}</strong> — {member.role}
+                      </p>
+                    ))}
+                  </div>
                   {user?.role === 1 && (
-                  <Button variant="primary" className="w-100 mt-3">
-                    Назначить жюри
-                  </Button>
-                )}
+                    <Button variant="primary" className="w-100 mt-3">
+                      Назначить жюри
+                    </Button>
+                  )}
+                </div>
 
-                  
-                </Card.Body>
-              </Card>
+              </div>
+              <hr />
             </Col>
           );
         })}
