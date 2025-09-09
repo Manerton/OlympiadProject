@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { HOSTS } from '../../../config/api';
 import { useAuth } from '../../Helpers/AuthContext';
-import { format } from 'date-fns';
 interface Event {
     id: string;
     name: string;

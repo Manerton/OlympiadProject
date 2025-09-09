@@ -7,7 +7,12 @@ use Illuminate\Database\Seeder;
 
 class EventScoreSeeder extends Seeder
 {
-    private const EVENTS = ['1', '2', '3' ,'4' ,'5' ,'6' ,'7' ,'8' ,'9', '10', '11', '12'];
+    private const EVENTS = [
+        '55555555-5555-5555-5555-555555555571',
+        '55555555-5555-5555-5555-555555555572',
+        '55555555-5555-5555-5555-555555555573',
+        '55555555-5555-5555-5555-555555555574'
+    ];
     /**
      * Run the database seeds.
      *
