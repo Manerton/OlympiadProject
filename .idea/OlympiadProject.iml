@@ -14,6 +14,7 @@
       <sourceFolder url="file://$MODULE_DIR$/olymp-notification/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/olymp-notification/spec" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/olymp_notification/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/olymp-admin/spec" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/brick/math" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/carbonphp/carbon-doctrine-types" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/composer" />
@@ -241,6 +242,20 @@
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/queue-interop/amqp-interop" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/queue-interop/queue-interop" />
       <excludeFolder url="file://$MODULE_DIR$/olymp-admin/vendor/vladimir-yuldashev/laravel-queue-rabbitmq" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/cboden/ratchet" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/evenement/evenement" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/phrity/net-uri" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/phrity/util-errorhandler" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/ratchet/rfc6455" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/react/cache" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/react/dns" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/react/event-loop" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/react/promise" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/react/socket" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/react/stream" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/symfony/http-foundation" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/symfony/routing" />
+      <excludeFolder url="file://$MODULE_DIR$/olymp-notification/vendor/textalk/websocket" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

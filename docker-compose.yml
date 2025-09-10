@@ -187,6 +187,7 @@ services:
       context: .
       dockerfile: ./docker/php/Dockerfile
     container_name: olymp-admin
+    command: /var/www//olymp-admin/entrypoint.sh
     volumes:
       - ./olymp-admin:/var/www/olymp-admin
     environment:
@@ -202,18 +203,20 @@ services:
       context: .
       dockerfile: ./docker/php/Dockerfile
     container_name: olympic-notification
+    command: /var/www/olymp-notification/entrypoint.sh
     volumes:
       - ./olymp-notification:/var/www/olymp-notification
     environment:
-      - DB_HOST=olymp-admin-db
+      - DB_HOST=olymp-notification-db
     depends_on:
-      - olymp-admin-db
+      - olymp-notification-db
+      - rabbitmq
     networks:
       - olympic
   websocket-server:
     build:
       context: .
-      dockerfile: ./docker/php/Dockerfile   # тот же PHP-образ, что и у olymp-admin
+      dockerfile: ./docker/php/Dockerfile
     container_name: olymp_websocket
     command: php /var/www/olymp-notification/websocket-server.php
     volumes:

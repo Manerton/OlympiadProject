@@ -3,9 +3,9 @@
   <component name="PHPUnit">
     <option name="directories">
       <list>
-        <option value="$PROJECT_DIR$/olymp-notification/tests" />
         <option value="$PROJECT_DIR$/olymp-admin/tests/Unit" />
         <option value="$PROJECT_DIR$/olymp-admin/tests/Feature" />
+        <option value="$PROJECT_DIR$/olymp-notification/tests" />
       </list>
     </option>
   </component>

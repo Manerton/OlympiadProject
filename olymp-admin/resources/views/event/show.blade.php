@@ -65,9 +65,6 @@
                     <a href="{{ route('event.point', $event->id) }}" class="btn btn-success">
                         <i class="fas fa-arrow-left"></i> Перейти к выставлению баллов
                     </a>
-                    <a href="{{ route('event.appeal', $event->id) }}" class="btn btn-danger">
-                        <i class="fas fa-arrow-left"></i> Перейти к апелляциям
-                    </a>
                     <a href="{{ route('event.publish', $event->id) }}" class="btn btn-primary">
                         <i class="fas fa-arrow-left"></i> Опубликовать результаты
                     </a>
