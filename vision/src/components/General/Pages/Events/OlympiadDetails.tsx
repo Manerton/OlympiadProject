@@ -5,6 +5,8 @@ import axios from "axios";
 import type { MyEvent } from "../../../types/event.ts";
 import CardImage from "./components/CardImage";
 import { fetchEvent, fetchStagesCount } from "../../../../requests/EventsRequests";
+import { useAuth } from "../../../Helpers/AuthContext.js";
+import { UserRole } from "../../../../dictionary/role.js";
 
 const OlympiadDetails: React.FC = () => {
   const { id } = useParams();
@@ -14,6 +16,8 @@ const OlympiadDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stagesCount, setStagesCount] = useState<number | null>(null);
+
+  const {user} = useAuth()
 
   useEffect(() => {
     if (!id) return;
@@ -32,6 +36,13 @@ const OlympiadDetails: React.FC = () => {
   // Отправка заявки через axios
   const handleApply = async () => {
     if (!id) return;
+
+    if (!user) {
+      alert("Пожалуйста, войдите в систему, чтобы подать заявку.");
+      navigate('/auth');
+      return;
+    }
+
     try {
       console.log("Отправка заявки на олимпиаду:", id);
 
@@ -85,6 +96,10 @@ const OlympiadDetails: React.FC = () => {
               <Button variant="secondary" className="w-100 mb-3" onClick={handleGoToStages}>
                 Список этапов
               </Button>
+              {user?.role === UserRole.Admin && (
+              <Button variant="secondary" className="w-100 mb-3" onClick={() => navigate(`/EditEvent/${id}`)}>
+                Редактировать
+              </Button>)}
 
               <p><strong>Дата начала:</strong> {startDate}</p>
               <p><strong>Время:</strong> {endDate}</p>

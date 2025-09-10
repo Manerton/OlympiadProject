@@ -1,5 +1,6 @@
 import axios from "axios";
 import { API_CONFIG } from "../config/api";
+import { MyEvent } from "../components/types/event";
 
 export async function fetchRegionalStages() {
   const res = await axios.get(API_CONFIG.REGIONAL, {
@@ -72,4 +73,15 @@ export async function fetchOlympiadStages(id: string) {
     withCredentials: true,
   });
   return res.data.data; // массив событий (с class_number)
+}
+
+export async function axiosUpdateEvent(token: string, event: MyEvent) {
+  const res = await axios.put(
+    `${API_CONFIG.EVENT}/${event.id}`,
+    event, {
+    headers: {
+      Authorization: `Bearer ${token}` // добавляем токен
+    }
+  })
+
 }
