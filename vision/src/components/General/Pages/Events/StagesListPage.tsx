@@ -5,6 +5,8 @@ import { Container, Row, Col, Card, Button, Spinner, Alert } from "react-bootstr
 import type { MyEvent } from "../../../types/event.ts";
 import { fetchOlympiadStages } from "../../../../requests/EventsRequests";
 import { useAuth } from "../../../Helpers/AuthContext";
+import { UserRole } from "../../../../dictionary/role.js";
+import { EventType } from "../../../../dictionary/eventType.js";
 
 interface JuryMember {
   name: string;
@@ -56,7 +58,6 @@ const StagesListPage: React.FC = () => {
     fetchOlympiadStages(id)
       .then((res) => {
         setStages(res ?? []);
-        // setStages(mockEvents); // TODO: удалить после подключения бэка
       })
       .catch((err) => setError((err as Error).message))
       .finally(() => setLoading(false));
@@ -93,6 +94,7 @@ const StagesListPage: React.FC = () => {
                           }`}
                       >
                         <h6 className="fw-bold mb-3">{stage.name}</h6>
+                        <hr />
                         <div className="justify-content-between">
                           <div>
                             <span className="badge bg-success mb-1">Начало</span>
@@ -106,13 +108,13 @@ const StagesListPage: React.FC = () => {
                       </div>
 
                       {/* ➝ если есть просмотр */}
-                      {stage.events?.some((c) => c.event_type === "VIEW_WORKS") && (
+                      {stage.events?.some((c) => c.event_type === EventType.ViewWorks) && (
                         <span className="fs-3">➝</span>
                       )}
 
                       {/* Просмотр работ */}
                       {stage.events
-                        ?.filter((c) => c.event_type === "VIEW_WORKS")
+                        ?.filter((c) => c.event_type === EventType.ViewWorks)
                         .map((view) => (
                           <div
                             key={view.id}
@@ -120,6 +122,8 @@ const StagesListPage: React.FC = () => {
                               }`}
                           >
                             <h6 className="fw-bold mb-3">Просмотр работ</h6>
+                            <hr />
+
                             <div className="justify-content-between">
                               <div>
                                 <span className="badge bg-success mb-1">Начало</span>
@@ -134,13 +138,13 @@ const StagesListPage: React.FC = () => {
                         ))}
 
                       {/* ➝ если есть апелляция */}
-                      {stage.events?.some((c) => c.event_type === "APPEAL") && (
+                      {stage.events?.some((c) => c.event_type === EventType.Appeal) && (
                         <span className="fs-3">➝</span>
                       )}
 
                       {/* Апелляция */}
                       {stage.events
-                        ?.filter((c) => c.event_type === "APPEAL")
+                        ?.filter((c) => c.event_type === EventType.Appeal)
                         .map((appeal) => (
                           <div
                             key={appeal.id}
@@ -148,6 +152,8 @@ const StagesListPage: React.FC = () => {
                               }`}
                           >
                             <h6 className="fw-bold mb-3">Апелляция</h6>
+                            <hr />
+
                             <div className="justify-content-between">
                               <div>
                                 <span className="badge bg-success mb-1">Начало</span>
@@ -171,7 +177,7 @@ const StagesListPage: React.FC = () => {
                       </p>
                     ))}
                   </div>
-                  {user?.role === 1 && (
+                  {user?.role === UserRole.Admin && (
                     <Button variant="primary" className="w-100 mt-3">
                       Назначить жюри
                     </Button>
