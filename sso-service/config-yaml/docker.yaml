@@ -30,3 +30,6 @@ ADDITIONAL_ADDRESSES:
   jure-assignments: "http://172.16.1.39:8090"
   olymp-result: "http://172.16.0.94:8080"
   event: "http://172.16.1.39:8080"
+
+ADDITIONAL_SERVICE_ADDRESSES:
+  notification_path: "https://olympic-notification/olymp_notification/web/index.php?r=email%2Fsend-code"

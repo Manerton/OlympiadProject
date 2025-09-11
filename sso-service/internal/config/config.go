@@ -9,13 +9,14 @@ import (
 )
 
 type Config struct {
-	Env                       string `yaml:"env"`
-	DatabaseConfig            `yaml:"DB_INFO"`
-	HTTPServerConfig          `yaml:"HTTP_SERVER_INFO"`
-	AdditionalAddressesConfig `yaml:"ADDITIONAL_ADDRESSES"`
-	JwtConfig                 `yaml:"JWT_INFO"`
-	RedisConfig               `yaml:"REDIS_INFO"`
-	RabbitConfig              `yaml:"RABBIT_INFO"`
+	Env                        string `yaml:"env"`
+	DatabaseConfig             `yaml:"DB_INFO"`
+	HTTPServerConfig           `yaml:"HTTP_SERVER_INFO"`
+	AdditionalAddressesConfig  `yaml:"ADDITIONAL_ADDRESSES"`
+	AdditionalServiceAddresses `yaml:"ADDITIONAL_SERVICE_ADDRESSES"`
+	JwtConfig                  `yaml:"JWT_INFO"`
+	RedisConfig                `yaml:"REDIS_INFO"`
+	RabbitConfig               `yaml:"RABBIT_INFO"`
 }
 
 type DatabaseConfig struct {
@@ -44,6 +45,10 @@ type RedisConfig struct {
 type RabbitConfig struct {
 	AddressRabbitPath string `yaml:"address_path"`
 	QueueName         string `yaml:"queue_name"`
+}
+
+type AdditionalServiceAddresses struct {
+	NotificationService string `yaml:"notification_path"`
 }
 
 type AdditionalAddressesConfig struct {
