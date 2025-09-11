@@ -176,12 +176,13 @@ const StagesListPage: React.FC = () => {
                         <strong>{member.name}</strong> — {member.role}
                       </p>
                     ))}
+                    {user?.role === UserRole.Admin && (
+                      <Button variant="primary" className="w-100 mt-3">
+                        Назначить жюри
+                      </Button>
+                    )}
                   </div>
-                  {user?.role === UserRole.Admin && (
-                    <Button variant="primary" className="w-100 mt-3">
-                      Назначить жюри
-                    </Button>
-                  )}
+
                 </div>
 
               </div>

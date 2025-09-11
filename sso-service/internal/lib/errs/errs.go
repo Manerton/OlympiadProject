@@ -52,7 +52,7 @@ var (
 
 // User errors
 var (
-	ErrUserNotFound      = &ApiError{Code: "USER_NOT_FOUND", HttpCode: http.StatusNotFound}
+	ErrUserNotFound      = &ApiError{Code: "USER_NOT_FOUND", HttpCode: http.StatusNotFound, Message: "User not found"}
 	ErrUserNotFoundEmail = &ApiError{Code: "USER_NOT_FOUND_EMAIL", HttpCode: http.StatusNotFound}
 )
 
