@@ -82,13 +82,12 @@ class ElasticsearchService
                 'index' => $index
             ]);
 
-            return true; // Успех
+            return true;
         } catch (\Elastic\Elasticsearch\Exception\ClientResponseException $e) {
             if ($e->getCode() === 404) {
-                // Индекс не найден
                 return false;
             }
-            throw $e; // пробрасываем остальные ошибки
+            throw $e;
         }
     }
     public function decode($response){

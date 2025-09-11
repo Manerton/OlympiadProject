@@ -18,9 +18,9 @@ class ApiService
 
         try {
             $response = $client->request('GET', $url, [
-                'query' => $params,  // Параметры GET-запроса
-                'headers' => array_merge($this->defaultHeaders, $headers), // Объединяем с дефолтными заголовками
-                'http_errors' => false // Чтобы не выбрасывать исключения при HTTP ошибках
+                'query' => $params,
+                'headers' => array_merge($this->defaultHeaders, $headers),
+                'http_errors' => false
             ]);
 
             return $this->handleResponse($response);

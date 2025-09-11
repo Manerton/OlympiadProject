@@ -27,49 +27,55 @@ class EmailApiController extends Controller
     }
     public function actionSendCode()
     {
-        $data = Yii::$app->request->post(); // весь массив из JSON POST
-        $email = $data['email'] ?? null;
-        $requestToken = $data['requestToken'] ?? null;
-        $code = CodeHelper::generateCode();
-        if (CheckHelper::checkAccess($requestToken)) {
-            $mail = (new Email())
-                ->from(Yii::$app->params['adminEmail'])
-                ->to($email)
-                ->subject('Письмо с кодом доступа')
-                ->text('Код: ')
-                ->html($code);
-            Yii::$app->mailer->send($mail);
-            RedisComponent::set($email, $code);
-            $model = MailVisit::fill($email, MessageDictionary::CODE_MESSAGE, $code, 'default code message text');
-            $this->mailVisitRepository->save($model);
-            return Yii::$app->response->data = json_encode([
-                'status' => 200,
-                'code' => $code
-            ]);
+        if (Yii::$app->request->isPost) {
+            $data = Yii::$app->request->post();
+            $email = $data['email'] ?? null;
+            $requestToken = $data['requestToken'] ?? null;
+            $code = CodeHelper::generateCode();
+            if (CheckHelper::checkAccess($requestToken)) {
+                $mail = (new Email())
+                    ->from(Yii::$app->params['adminEmail'])
+                    ->to($email)
+                    ->subject('Письмо с кодом доступа')
+                    ->text('Код: ')
+                    ->html($code);
+                Yii::$app->mailer->send($mail);
+                RedisComponent::set($email, $code);
+                $model = MailVisit::fill($email, MessageDictionary::CODE_MESSAGE, $code, 'default code message text');
+                $this->mailVisitRepository->save($model);
+                return Yii::$app->response->data = json_encode([
+                    'status' => 200,
+                    'code' => $code
+                ]);
+            }
+            return Yii::$app->response->data = json_encode(['status' => 404]);
         }
-        return Yii::$app->response->data = json_encode(['status' => 404]);
+        return Yii::$app->response->data = json_encode(['status' => 403]);
     }
     public function actionSendMessage()
     {
-        $data = Yii::$app->request->post();
-        $email = $data['email'] ?? null;
-        $message = $data['message'] ?? null;
-        $requestToken = $data['requestToken'] ?? null;
-        if (CheckHelper::checkAccess($requestToken)) {
-            $mail = (new Email())
-                ->from(Yii::$app->params['adminEmail'])
-                ->to($email)
-                ->subject('Письмо. ВСоШ')
-                ->text('Код: ')
-                ->html($message);
-            Yii::$app->mailer->send($mail);
-            $model = MailVisit::fill($email, MessageDictionary::TEXT_MESSAGE, NULL, $message);
-            $this->mailVisitRepository->save($model);
-            return Yii::$app->response->data = json_encode([
-                'status' => 200,
-            ]);
+        if(Yii::$app->request->isPost){
+            $data = Yii::$app->request->post();
+            $email = $data['email'] ?? null;
+            $message = $data['message'] ?? null;
+            $requestToken = $data['requestToken'] ?? null;
+            if (CheckHelper::checkAccess($requestToken)) {
+                $mail = (new Email())
+                    ->from(Yii::$app->params['adminEmail'])
+                    ->to($email)
+                    ->subject('Письмо. ВСоШ')
+                    ->text('Код: ')
+                    ->html($message);
+                Yii::$app->mailer->send($mail);
+                $model = MailVisit::fill($email, MessageDictionary::TEXT_MESSAGE, NULL, $message);
+                $this->mailVisitRepository->save($model);
+                return Yii::$app->response->data = json_encode([
+                    'status' => 200,
+                ]);
+            }
+            return Yii::$app->response->data = json_encode(['status' => 404]);
         }
-        return Yii::$app->response->data = json_encode(['status' => 404]);
+        return Yii::$app->response->data = json_encode(['status' => 403]);
     }
     public function beforeAction($action)
     {

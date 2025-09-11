@@ -29,8 +29,10 @@ class NotificationApiController extends Controller
     }
     public function actionSendTo($id)
     {
-        $message = Yii::$app->request->post('message') ?: 'MESSAGE';
-        Yii::$app->websocket->sendTo($message, $id);
+        if (Yii::$app->request->isPost) {
+            $message = Yii::$app->request->post('message') ?: 'MESSAGE';
+            Yii::$app->websocket->sendTo($message, $id);
+        }
         return Yii::$app->response->data = json_encode([
             'status' => 200
         ]);

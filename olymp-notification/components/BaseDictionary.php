@@ -2,6 +2,8 @@
 
 namespace app\components;
 
+use InvalidArgumentException;
+
 abstract class BaseDictionary
 {
     protected $list;

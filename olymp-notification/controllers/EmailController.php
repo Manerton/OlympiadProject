@@ -27,7 +27,7 @@ class EmailController extends Controller
     }
     public function actionSendCode()
     {
-        $data = Yii::$app->request->post(); // весь массив из JSON POST
+        $data = Yii::$app->request->post();
         $email = $data['email'] ?? null;
         $requestToken = $data['requestToken'] ?? null;
         $code = CodeHelper::generateCode();
