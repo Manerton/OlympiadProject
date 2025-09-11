@@ -187,7 +187,14 @@ services:
       context: .
       dockerfile: ./docker/php/Dockerfile
     container_name: olymp-admin
-    command: /var/www//olymp-admin/entrypoint.sh
+    command:
+      - /bin/sh
+      - -c
+      - |
+        cd /var/www/olymp-admin
+        composer install --no-interaction --optimize-autoloader
+        php-fpm -F -R &
+        exec php artisan rabbitmq-handler
     volumes:
       - ./olymp-admin:/var/www/olymp-admin
     environment:
@@ -203,7 +210,20 @@ services:
       context: .
       dockerfile: ./docker/php/Dockerfile
     container_name: olympic-notification
-    command: /var/www/olymp-notification/entrypoint.sh
+    command:
+      - /bin/sh
+      - -c
+      - |
+        cd /var/www/olymp-notification
+        composer install --no-interaction --optimize-autoloader
+        php-fpm -F -R &
+        until nc -z rabbitmq 5672; do
+          echo "Жду RabbitMQ..."
+          sleep 2
+        done
+        php yii queue/listen &
+        php yii rabbitmq/listen &
+        tail -f /dev/null
     volumes:
       - ./olymp-notification:/var/www/olymp-notification
     environment:
