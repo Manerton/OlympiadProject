@@ -2,8 +2,6 @@ basePath: /
 definitions:
   login_dto.LoginRequestDTO:
     properties:
-      device_name:
-        type: string
       email:
         type: string
       password:
@@ -43,6 +41,22 @@ definitions:
       disability:
         type: string
       school_id:
+        type: string
+    type: object
+  recover_dto.ChangePasswordDTORequest:
+    properties:
+      new_password:
+        type: string
+      old_password:
+        type: string
+    type: object
+  recover_dto.ForgotPasswordDTORequest:
+    properties:
+      code:
+        type: string
+      mail:
+        type: string
+      password:
         type: string
     type: object
   register_dto.RegisterParticipantRequestDTO:
@@ -234,7 +248,7 @@ definitions:
       surname:
         type: string
     type: object
-host: 172.16.1.39:8181
+host: localhost:8181
 info:
   contact: {}
   description: Документация к микросервису авторизации
@@ -693,6 +707,36 @@ paths:
       - BearerAuth: []
       tags:
       - users
+  /api/users/change-password/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Изменение пароля пользователя
+      parameters:
+      - description: Данные для изменения пароля
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/recover_dto.ChangePasswordDTORequest'
+      - description: id пользователя
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      tags:
+      - users
   /api/users/count:
     get:
       description: Получение количества пользователей
@@ -748,6 +792,33 @@ paths:
       - BearerAuth: []
       tags:
       - users
+  /api/users/forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Восстановление забытого пароля
+      parameters:
+      - description: Данные для востоновления забытого пароля
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/recover_dto.ForgotPasswordDTORequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - auth
   /api/users/list:
     post:
       consumes:

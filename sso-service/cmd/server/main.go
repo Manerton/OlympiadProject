@@ -21,7 +21,7 @@ const AbsolutePath = "C:/Users/Admin/goProject/OlympiadProject/sso-service/confi
 // @title SSO Service API
 // @version 1.0
 // @description Документация к микросервису авторизации
-// @host 172.16.1.39:8181
+// @host localhost:8181
 // @BasePath /
 // @securityDefinitions.apikey BearerAuth
 // @in header
