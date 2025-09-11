@@ -52,6 +52,7 @@ import { UserRole } from './dictionary/role';
 import ProtectedRoute from './components/Helpers/ProtectionGuard';
 import NotFoundPage from './components/General/Pages/ServicePages/NotFoundPage';
 import ForbiddenPage from './components/General/Pages/ServicePages/ForbiddenPage';
+import ForgotPasswordPage from './components/General/Helpers/RecoverPassword';
 
 function App() {
     return (
@@ -146,6 +147,7 @@ function App() {
 
                             <Route path="*" element={<NotFoundPage/>}/>
                             <Route path="/forbidden" element={<ForbiddenPage/>}/>
+                            <Route path="/recover-password" element={<ForgotPasswordPage/>}/>
                         </Route>
 
                     </Routes>

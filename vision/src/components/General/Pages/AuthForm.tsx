@@ -334,6 +334,18 @@ const AuthForm: React.FC = () => {
               </InputGroup>
             </Form.Group>
 
+            {!isRegister && (
+              <div className="d-flex justify-content-end">
+                <button
+                  type="button"
+                  className="btn btn-link pb-3"
+                  onClick={() => navigate("/recover-password")}
+                >
+                  Забыл пароль?
+                </button>
+              </div>
+            )}
+
             {isRegister && (
               <Form.Group className="mb-3">
                 <InputGroup>
