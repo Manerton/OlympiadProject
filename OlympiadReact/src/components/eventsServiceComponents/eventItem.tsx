@@ -141,7 +141,17 @@ function EventItem({ event, onDelete, isSubmitApplication }: EventItemProps) {
               </Button>
             </Link>
           )}
-
+          {role === UserRoles.Organaizer || role === UserRoles.Admin && (
+            <Link to={`/EditEvent/${event.id}`}>
+              <Button
+                variant="outline-primary"
+                className="mb-2"
+                style={{ display: "flex", alignItems: "center" }}
+              >
+                Редактировать
+              </Button>
+            </Link>
+          )}
         </div>
       </Card.Body>
       {event.events && event.events.length > 0 && (
