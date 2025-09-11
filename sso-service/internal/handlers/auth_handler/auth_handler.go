@@ -3,6 +3,7 @@ package auth_handler
 import (
 	"context"
 	login_dto "main/internal/dto/auth/login"
+	recover_dto "main/internal/dto/auth/recover"
 	register_dto "main/internal/dto/auth/register"
 	"main/internal/lib/errs"
 	"main/internal/lib/response"
@@ -23,6 +24,8 @@ type AuthService interface {
 	Refresh(ctx context.Context, refershToken string) (*login_dto.AuthResultDTO, error)
 	RevokeAllUserTokens(ctx context.Context, userId string) error
 	RevokeToken(ctx context.Context, id string) error
+
+	RecoveryPassword(ctx context.Context, recoverDTO recover_dto.ForgotPasswordDTORequest) error
 }
 
 type AuthHandler struct {
@@ -284,6 +287,46 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 }
+
+// @Summery Password recovery
+// @Security BearerAuth
+// @Description Восстановление забытого пароля
+// @Tags auth
+// @Accept json
+// @Produce json
+// @Param credentials body recover_dto.ForgotPasswordDTORequest true "Данные для востоновления забытого пароля"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users/forgot-password [post]
+func (h *AuthHandler) RecoveryPassword(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	recoverPassword := &recover_dto.ForgotPasswordDTORequest{}
+
+	err := render.DecodeJSON(r.Body, recoverPassword)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body")))
+		return
+	}
+
+	err = h.authService.RecoveryPassword(ctx, *recoverPassword)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+
+	render.JSON(w, r, response.SuccessResponse("Password success recovered"))
+}
+
+func (h *AuthHandler) ChangePassword() {}
 
 // @Summery Revoke token
 // @Security BearerAuth

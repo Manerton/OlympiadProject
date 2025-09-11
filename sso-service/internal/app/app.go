@@ -9,6 +9,7 @@ import (
 	"main/internal/handlers/participant_handler"
 	"main/internal/handlers/school_handler"
 	"main/internal/handlers/user_handler"
+	"main/internal/lib/helpers/notification_client"
 	"main/internal/lib/jwttoken"
 	"main/internal/lib/liblogger"
 	"main/internal/middleware/base_access"
@@ -55,11 +56,15 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	schoolRepository := &school_repository.SchoolRepository{}
 	refreshRepository := &refresh_repository.RefreshRepository{}
 
+	// init notify client
+	notifyClient := notification_client.New(cfg.NotificationService)
+
 	// init services
-	authService := auth_service.New(log, gormORM, jwtManager, userRepository, participantRepository, refreshRepository)
+	authService := auth_service.New(log, gormORM, jwtManager, userRepository, participantRepository, refreshRepository, notifyClient)
 	userService := user_service.New(log, gormORM, userRepository, participantRepository)
 	schoolService := school_service.New(log, gormORM, schoolRepository)
 	participantService := participant_service.New(log, gormORM, participantRepository)
+
 	// init handlers
 	userHandler := user_handler.New(userService)
 	authHandler := auth_handler.New(authService)
@@ -67,8 +72,6 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	schoolHandler := school_handler.New(schoolService)
 
 	// init rabbitMQ
-	// rabbitConnect := rabbitmq.MustConnect(cfg.AddressRabbitPath)
-
 	rabbitConsumer := consumer.New(log, cfg.AddressRabbitPath, userService, participantService, authService, schoolService)
 	rabbitConsumer.Start(context.Background(), cfg.QueueName)
 	log.Info("rabbit started")
@@ -107,6 +110,7 @@ func (a *App) initRoutes(router *chi.Mux,
 	router.Post("/api/byadmin/register", authHandler.AdminRegister)
 	router.Post("/api/users/login", authHandler.Login)
 	router.Post("/api/users/logout", authHandler.Logout)
+	router.Post("/api/users/forgot-password", authHandler.RecoveryPassword)
 	router.Post("/api/users/register", authHandler.Register)
 	router.Post("/api/users/refresh", authHandler.Refresh)
 
@@ -136,6 +140,7 @@ func (a *App) initRoutes(router *chi.Mux,
 		r.Post("/api/schools/create", schoolHandler.Create)
 
 		// users POST
+		r.Post("/api/users/change-password/{id}", userHandler.ChangePassword)
 		r.Post("/api/users/revoke/{id}", authHandler.RevokeToken)
 		r.Post("/api/users/revoke-all/{id}", authHandler.RevokeAllUserTokens)
 

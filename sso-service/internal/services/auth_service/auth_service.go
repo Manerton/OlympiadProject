@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log/slog"
 	login_dto "main/internal/dto/auth/login"
+	recover_dto "main/internal/dto/auth/recover"
 	register_dto "main/internal/dto/auth/register"
 	"main/internal/lib/crypt"
 	"main/internal/lib/errs"
+	"main/internal/lib/helpers/notification_client"
 	"main/internal/lib/jwttoken"
 	"main/internal/lib/liblogger"
 	paricipant_mapper "main/internal/lib/mapper/participant_mapper"
@@ -15,7 +17,6 @@ import (
 	"main/internal/models/participant"
 	"main/internal/models/refresh_token"
 	"main/internal/models/user"
-	"main/internal/services/another_service"
 	"main/internal/storage/orm"
 	redisdb "main/internal/storage/redis"
 	"time"
@@ -50,10 +51,13 @@ type AuthService struct {
 	userRepository        UserRepository
 	participantRepository ParticipantRepository
 	refreshRepository     RefreshRepository
+
+	notifyClient notification_client.NotificationClient
 }
 
 func New(log *slog.Logger, orm orm.ORM, jwtManager *jwttoken.JWTManager,
-	userRepository UserRepository, participantRepository ParticipantRepository, refreshRepository RefreshRepository) *AuthService {
+	userRepository UserRepository, participantRepository ParticipantRepository, refreshRepository RefreshRepository,
+	notifyClien notification_client.NotificationClient) *AuthService {
 
 	alog := log.With("owner", "AuthService")
 
@@ -64,6 +68,7 @@ func New(log *slog.Logger, orm orm.ORM, jwtManager *jwttoken.JWTManager,
 		userRepository:        userRepository,
 		participantRepository: participantRepository,
 		refreshRepository:     refreshRepository,
+		notifyClient:          notifyClien,
 	}
 }
 
@@ -304,10 +309,60 @@ func (s *AuthService) RegisterParticipant(ctx context.Context, registerRequst *r
 
 	transaction.TransactionCommit()
 
-	err = another_service.SendNotifyAcceptAccount(userModel.Email)
+	err = s.notifyClient.SendNotifyAcceptAccount(userModel.Email)
 	if err != nil {
 		log.Error("failed send notify on email: %w", liblogger.Err(err))
 		return errs.ErrInternalError.Wrap("failed to send notify on email")
+	}
+
+	return nil
+}
+
+func (s *AuthService) RecoveryPassword(ctx context.Context, recoverDTO recover_dto.ForgotPasswordDTORequest) error {
+	const op = "service.AuthService.RecoveryPassword"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	trustCode, err := redisdb.GetActivationCode(recoverDTO.Email)
+	if err != nil {
+		log.Error("failed get trust code", liblogger.Err(err), slog.String("email", recoverDTO.Email))
+		return errs.ErrActivationCodeNotFound
+	}
+
+	if trustCode != recoverDTO.Code {
+		log.Error("user code incorrent", slog.String("user code", recoverDTO.Code), slog.String("trust code", trustCode))
+		return errs.ErrInvalidActivationCode
+	}
+
+	userResult, err := s.userRepository.GetByEmail(ctx, s.db, recoverDTO.Email)
+	if s.db.IsNotFound(err) {
+		log.Error("failed user not fount", slog.String("email", recoverDTO.Email), liblogger.Err(err))
+		return errs.ErrAuthFailed.Wrap("email not found")
+	}
+
+	if err != nil {
+		log.Error("failed to get user by email", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed get user by email")
+	}
+
+	// // check password hash
+	// if !crypt.CheckPasswordHash(recoverDTO.Password, userResult.PasswordHash) {
+	// 	log.Error("uncorrect password")
+	// 	return errs.ErrAuthFailed.Wrap("uncorrect password")
+	// }
+
+	userResult.PasswordHash, err = crypt.HashPassword(recoverDTO.Password)
+	if err != nil {
+		log.Error("failed to hash password", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed to hash password")
+	}
+
+	err = s.userRepository.Update(ctx, s.db, userResult)
+	if err != nil {
+		log.Error("failed update user of new password", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed update user password")
 	}
 
 	return nil
@@ -390,15 +445,6 @@ func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_
 		log.Error("Token was be revoked")
 		return nil, errs.ErrRevokedToken
 	}
-
-	// // delete old token
-	// go func() {
-	// 	gctx := context.Background()
-	// 	err := s.refreshRepository.Delete(gctx, s.db, tokenUid)
-	// 	if err != nil {
-	// 		log.Error("failed delete refresh token", liblogger.Err(err))
-	// 	}
-	// }()
 
 	// parse user id to uuid
 	userUid, err := uuid.Parse(tokenClaims.Subject)

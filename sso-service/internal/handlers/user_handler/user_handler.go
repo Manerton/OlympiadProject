@@ -2,6 +2,7 @@ package user_handler
 
 import (
 	"context"
+	recover_dto "main/internal/dto/auth/recover"
 	user_dto "main/internal/dto/user"
 	"main/internal/lib/errs"
 	"main/internal/lib/parser"
@@ -21,6 +22,8 @@ type UserService interface {
 	GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error)
 
 	GetCount(ctx context.Context) (int64, error)
+
+	ChangePassword(ctx context.Context, id string, changePasswordDTO recover_dto.ChangePasswordDTORequest) error
 
 	Update(ctx context.Context, id string, userDto user_dto.UpdateUserRequestDTO) error
 	Delete(ctx context.Context, id string) error
@@ -262,6 +265,45 @@ func (h *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Summery Change password
+// @Description Изменение пароля пользователя
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param credentials body recover_dto.ChangePasswordDTORequest true "Данные для изменения пароля"
+// @Param id path string true "id пользователя"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users/change-password/{id} [put]
+func (h *UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	id := chi.URLParam(r, "id")
+	changePasswordDTO := recover_dto.ChangePasswordDTORequest{}
+
+	err := render.DecodeJSON(r.Body, &changePasswordDTO)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body")))
+		return
+	}
+
+	err = h.UserService.ChangePassword(ctx, id, changePasswordDTO)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+
+	render.JSON(w, r, response.SuccessResponse("success password change"))
+}
+
 // @Summery Update user
 // @Security BearerAuth
 // @Description Обновление пользователя
@@ -299,7 +341,7 @@ func (h *UserHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	render.JSON(w, r, response.SuccessResponse("user update success"))
+	render.JSON(w, r, response.SuccessResponse("success user update"))
 }
 
 // @Summery Delete user

@@ -3,6 +3,7 @@ package user_service
 import (
 	"context"
 	"log/slog"
+	recover_dto "main/internal/dto/auth/recover"
 	user_dto "main/internal/dto/user"
 	"main/internal/lib/crypt"
 	"main/internal/lib/errs"
@@ -51,7 +52,7 @@ func New(log *slog.Logger, orm orm.ORM, userRepository UserRepository, participa
 }
 
 func (s *UserService) GetCount(ctx context.Context) (int64, error) {
-	const op = "services.user_services.GetCount"
+	const op = "services.UserService.GetCount"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -67,7 +68,7 @@ func (s *UserService) GetCount(ctx context.Context) (int64, error) {
 }
 
 func (s *UserService) GetAll(ctx context.Context, page *int, limit *int) ([]user_dto.UserResponseDTO, error) {
-	const op = "services.user_services.GetAll"
+	const op = "services.UserService.GetAll"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -93,7 +94,7 @@ func (s *UserService) GetAll(ctx context.Context, page *int, limit *int) ([]user
 }
 
 func (s *UserService) GetByFilter(ctx context.Context, userDTO user_dto.SearchAttributesUserDTO) (user_dto.UserResponseDTO, error) {
-	const op = "services.user_services.GetByFilter"
+	const op = "services.UserService.GetByFilter"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -115,7 +116,7 @@ func (s *UserService) GetByFilter(ctx context.Context, userDTO user_dto.SearchAt
 }
 
 func (s *UserService) GetById(ctx context.Context, id string) (user_dto.UserResponseDTO, error) {
-	const op = "services.user_services.GetById"
+	const op = "services.UserService.GetById"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -142,7 +143,7 @@ func (s *UserService) GetById(ctx context.Context, id string) (user_dto.UserResp
 }
 
 func (s *UserService) GetUserParticipantById(ctx context.Context, id string) (user_dto.UserParticipantResponseDTO, error) {
-	const op = "services.user_services.GetUserParticipantById"
+	const op = "services.UserService.GetUserParticipantById"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -184,7 +185,7 @@ func (s *UserService) GetUserParticipantById(ctx context.Context, id string) (us
 }
 
 func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error) {
-	const op = "services.user_handler.GetByListId"
+	const op = "services.UserService.GetByListId"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -213,8 +214,53 @@ func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto
 	return usersDTO, nil
 }
 
+func (s *UserService) ChangePassword(ctx context.Context, id string, changePasswordDTO recover_dto.ChangePasswordDTORequest) error {
+	const op = "services.UserService.ChangePassword"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error("failed parse id", slog.String("id", id), liblogger.Err(err))
+		return errs.ErrBadRequest.Wrap("failed parse uuid")
+	}
+
+	userResult, err := s.userRepository.GetById(ctx, s.db, uid)
+	if s.db.IsNotFound(err) {
+		log.Error("failed user not fount", slog.String("id", id), liblogger.Err(err))
+		return errs.ErrAuthFailed.Wrap("user not found")
+	}
+
+	if err != nil {
+		log.Error("failed to get user by id", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed get user by id")
+	}
+
+	// check password hash
+	if !crypt.CheckPasswordHash(changePasswordDTO.OldPassword, userResult.PasswordHash) {
+		log.Error("uncorrect password")
+		return errs.ErrAuthFailed.Wrap("uncorrect password")
+	}
+
+	userResult.PasswordHash, err = crypt.HashPassword(changePasswordDTO.NewPassword)
+	if err != nil {
+		log.Error("failed to hash password", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed to hash password")
+	}
+
+	err = s.userRepository.Update(ctx, s.db, userResult)
+	if err != nil {
+		log.Error("failed update user of new password", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed update user password")
+	}
+
+	return nil
+}
+
 func (s *UserService) Update(ctx context.Context, id string, userDto user_dto.UpdateUserRequestDTO) error {
-	const op = "services.user_sevice.Update"
+	const op = "services.UserService.Update"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -245,7 +291,7 @@ func (s *UserService) Update(ctx context.Context, id string, userDto user_dto.Up
 }
 
 func (s *UserService) Delete(ctx context.Context, id string) error {
-	const op = "services.user_service.Delete"
+	const op = "services.UserService.Delete"
 
 	log := s.log.With(
 		slog.String("op", op),
