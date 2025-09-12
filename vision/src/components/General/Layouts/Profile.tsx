@@ -1,10 +1,10 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import Header from './header.tsx';
-import Footer from './Footer.tsx';
-import { UserRole } from '../../../dictionary/role.tsx';
-import { useAuth } from '../../Helpers/AuthContext.tsx';
-import UserInfoBlock from '../../Common/UserInfo.tsx';
+import Header from './header';
+import Footer from './footer';
+import { UserRole } from '../../../dictionary/role';
+import { useAuth } from '../../Helpers/AuthContext';
+import UserInfoBlock from '../../Common/UserInfo';
 
 const ProfileLayout: React.FC = () => {
 

@@ -5,6 +5,8 @@ import UserInfoBlock from "../../../Common/UserInfo";
 import { axiosSSOUserInfo, axiosSSOUserParticipantInfo } from "../../../../requests/SSORequests";
 import { UserRole } from "../../../../dictionary/role";
 import type { User, UserParticipant } from "../../../types/user";
+import formatDateForInput from "../../../Helpers/DateFormater";
+import ChangePasswordBlock from "./ChangePasswordPage";
 
 const EditProfile: React.FC = () => {
   const { accessToken, user } = useAuth();
@@ -31,14 +33,12 @@ const EditProfile: React.FC = () => {
         if (user.role === UserRole.Participant) {
           const data: UserParticipant = await axiosSSOUserParticipantInfo(accessToken, user.id);
 
-          console.log(data);
-
           setProfile({
             surname: data.User.surname,
             firstname: data.User.firstname,
             patronymic: data.User.patronymic,
             phone_number: data.User.phone_number,
-            birthdate: data.User.birthdate,
+            birthdate: formatDateForInput(data.User.birthdate),
             gender: data.User.gender,
             school: data.school,
             classnumber: data.classnumber,
@@ -53,12 +53,12 @@ const EditProfile: React.FC = () => {
             firstname: data.firstname,
             patronymic: data.patronymic,
             phone_number: data.phone_number,
-            birthdate: data.birthdate,
+            birthdate: formatDateForInput(data.birthdate),
             gender: data.gender,
-            school: "", // нет в User, оставляем пустым
-            classnumber: 0, // нет в User
+            school: "",
+            classnumber: 0,
             email: data.email,
-            citezenship: 0
+            citezenship: 0,
           });
         }
       } catch (err) {
@@ -69,23 +69,10 @@ const EditProfile: React.FC = () => {
     fetchUser();
   }, [accessToken, user]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setProfile((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSave = () => {
-    // TODO: реализовать сохранение профиля
-    navigate("/profile");
-  };
-
   const actions = (
-    <>
-      {/* <button className="btn btn-primary" onClick={handleSave}>Сохранить</button> */}
-      <button className="btn btn-secondary" onClick={() => navigate("/profile")}>
-        Отмена
-      </button>
-    </>
+    <button className="btn btn-secondary" onClick={() => navigate("/profile")}>
+      Назад
+    </button>
   );
 
   return (
@@ -93,50 +80,76 @@ const EditProfile: React.FC = () => {
       <div className="container">
         <UserInfoBlock email={user?.Email} actions={actions} />
 
-        <form className="mt-3" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-          <div className="row g-3">
-            {/* поля формы */}
-            <div className="col-md-4">
-              <label className="form-label">Фамилия</label>
-              <input type="text" className="form-control" name="surname" value={profile.surname} readOnly />
-            </div>
-            <div className="col-md-4">
-              <label className="form-label">Имя</label>
-              <input type="text" className="form-control" name="firstname" value={profile.firstname} readOnly />
-            </div>
-            <div className="col-md-4">
-              <label className="form-label">Отчество</label>
-              <input type="text" className="form-control" name="patronymic" value={profile.patronymic} readOnly />
-            </div>
-            <div className="col-md-4">
-              <label className="form-label">Телефон</label>
-              <input type="text" className="form-control" name="phone_number" value={profile.phone_number} onChange={handleChange} readOnly/>
-            </div>
-            <div className="col-md-4">
-              <label className="form-label">Дата рождения</label>
-              <input type="date" className="form-control" name="birthdate" value={profile.birthdate} onChange={handleChange}  readOnly/>
-            </div>
-            <div className="col-md-4">
-              <label className="form-label">Пол</label>
-              <select className="form-select" name="gender" value={profile.gender} onChange={handleChange} >
-                <option value={1}>Мужской</option>
-                <option value={2}>Женский</option>
-              </select>
-            </div>
-            <div className="col-md-6" hidden={user?.role !== UserRole.Participant}>
-              <label className="form-label">Школа</label>
-              <input type="text" className="form-control" name="school" value={profile.school} onChange={handleChange}  />
-            </div>
-            <div className="col-md-3" hidden={user?.role !== UserRole.Participant}>
-              <label className="form-label">Класс</label>
-              <input type="number" className="form-control" name="classnumber" value={profile.classnumber} onChange={handleChange} />
-            </div>
-             <div className="col-md-3" hidden={user?.role !== UserRole.Participant}>
-              <label className="form-label">Гражданство</label>
-              <input type="number" className="form-control" name="classnumber" value={profile.citezenship} onChange={handleChange}/>
+        {/* Карточки профиля */}
+        <div className="row g-3 mt-3">
+              <h5>Информация о вас</h5>
+          <div className="col-md-4">
+            <div className="card p-3 h-100 shadow-sm">
+              <h6 className="text-muted">Фамилия</h6>
+              <p className="fs-5 fw-semibold mb-0">{profile.surname}</p>
             </div>
           </div>
-        </form>
+          <div className="col-md-4">
+            <div className="card p-3 h-100 shadow-sm">
+              <h6 className="text-muted">Имя</h6>
+              <p className="fs-5 fw-semibold mb-0">{profile.firstname}</p>
+            </div>
+          </div>
+          <div className="col-md-4">
+            <div className="card p-3 h-100 shadow-sm">
+              <h6 className="text-muted">Отчество</h6>
+              <p className="fs-5 fw-semibold mb-0">{profile.patronymic}</p>
+            </div>
+          </div>
+          <div className="col-md-4">
+            <div className="card p-3 h-100 shadow-sm">
+              <h6 className="text-muted">Телефон</h6>
+              <p className="fs-5 fw-semibold mb-0">{profile.phone_number}</p>
+            </div>
+          </div>
+          <div className="col-md-4">
+            <div className="card p-3 h-100 shadow-sm">
+              <h6 className="text-muted">Дата рождения</h6>
+              <p className="fs-5 fw-semibold mb-0">{profile.birthdate}</p>
+            </div>
+          </div>
+          <div className="col-md-4">
+            <div className="card p-3 h-100 shadow-sm">
+              <h6 className="text-muted">Пол</h6>
+              <p className="fs-5 fw-semibold mb-0">
+                {profile.gender === 1 ? "Мужской" : profile.gender === 2 ? "Женский" : ""}
+              </p>
+            </div>
+          </div>
+
+          {user?.role === UserRole.Participant && (
+            <>
+              <div className="col-md-6">
+                <div className="card p-3 h-100 shadow-sm">
+                  <h6 className="text-muted">Школа</h6>
+                  <p className="fs-5 fw-semibold mb-0">{profile.school}</p>
+                </div>
+              </div>
+              <div className="col-md-3">
+                <div className="card p-3 h-100 shadow-sm">
+                  <h6 className="text-muted">Класс</h6>
+                  <p className="fs-5 fw-semibold mb-0">{profile.classnumber}</p>
+                </div>
+              </div>
+              <div className="col-md-3">
+                <div className="card p-3 h-100 shadow-sm">
+                  <h6 className="text-muted">Гражданство</h6>
+                  <p className="fs-5 fw-semibold mb-0">{profile.citezenship}</p>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Блок смены пароля */}
+        <div className="mt-5">
+          <ChangePasswordBlock />
+        </div>
       </div>
     </div>
   );
