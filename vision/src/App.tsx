@@ -53,6 +53,7 @@ import ProtectedRoute from './components/Helpers/ProtectionGuard';
 import NotFoundPage from './components/General/Pages/ServicePages/NotFoundPage';
 import ForbiddenPage from './components/General/Pages/ServicePages/ForbiddenPage';
 import ForgotPasswordPage from './components/General/Helpers/RecoverPassword';
+import ChangePasswordBlock from './components/General/Pages/Profile/ChangePasswordPage';
 
 function App() {
     return (
@@ -126,7 +127,11 @@ function App() {
                             <Route path="/olymp-admin/mail/index" element={<MailIndex />} />
                         </Route>
 
-                        <Route path="/profile" element={<ProfileLayout />}>
+                        <Route path="/profile" element={
+                            <ProtectedRoute allowedRoles={[UserRole.Admin, UserRole.Organizer, UserRole.Judge, UserRole.Participant]}>
+                                <ProfileLayout />
+                            </ProtectedRoute>
+                        }>
                             <Route index element={<Navigate to="history" />} />
 
                             <Route path="achievements" element={<AchievementTab />} />
@@ -137,17 +142,20 @@ function App() {
 
                             <Route path="applications" element={<ApplicationEventTab />} />
 
+
+
                             <Route path="appeals" element={<AppealTab />} />
                             <Route path="appeals/:appealId/appeal-view" element={<AppealView />} />
                             <Route path="appeals/:eventId/list" element={<AppealList />} />
+
                         </Route>
 
                         <Route element={<Layout />}>
                             <Route path="/profile/edit" element={<EditProfile />} />
 
-                            <Route path="*" element={<NotFoundPage/>}/>
-                            <Route path="/forbidden" element={<ForbiddenPage/>}/>
-                            <Route path="/recover-password" element={<ForgotPasswordPage/>}/>
+                            <Route path="*" element={<NotFoundPage />} />
+                            <Route path="/forbidden" element={<ForbiddenPage />} />
+                            <Route path="/recover-password" element={<ForgotPasswordPage />} />
                         </Route>
 
                     </Routes>
