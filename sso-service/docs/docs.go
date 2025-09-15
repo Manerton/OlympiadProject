@@ -641,7 +641,12 @@ const docTemplate = `{
             }
         },
         "/api/users/change-password/{id}": {
-            "put": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Изменение пароля пользователя",
                 "consumes": [
                     "application/json"

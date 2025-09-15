@@ -708,7 +708,7 @@ paths:
       tags:
       - users
   /api/users/change-password/{id}:
-    put:
+    post:
       consumes:
       - application/json
       description: Изменение пароля пользователя
@@ -735,6 +735,8 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
       tags:
       - users
   /api/users/count:
