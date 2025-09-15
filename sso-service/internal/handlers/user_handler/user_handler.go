@@ -266,6 +266,7 @@ func (h *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) {
 }
 
 // @Summery Change password
+// @Security BearerAuth
 // @Description Изменение пароля пользователя
 // @Tags users
 // @Accept json
@@ -274,7 +275,7 @@ func (h *UserHandler) GetUsersByListId(w http.ResponseWriter, r *http.Request) {
 // @Param id path string true "id пользователя"
 // @Success 200 {object} response.ApiResponse
 // @Failure 400 {object} response.ApiResponse
-// @Router /api/users/change-password/{id} [put]
+// @Router /api/users/change-password/{id} [post]
 func (h *UserHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

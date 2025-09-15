@@ -38,6 +38,11 @@ HTTP_SERVERS_INFO:
       target: "http://sso-service:8181/api/users/count"
       skip_auth: false
 
+    - prefix: "/users/change-password/"
+      aggregate: false
+      target: "http://sso-service:8181/api/users/change-password/"
+      skip_auth: false
+
     - prefix: "/users/all-info/"
       aggregate: false
       target: "http://sso-service:8181/api/users/"

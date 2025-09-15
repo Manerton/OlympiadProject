@@ -83,7 +83,8 @@ export async function axiosSSOAllSchools(): Promise<School[]> {
 }
 
 export async function axiosSSOChangePassword(token: string, data: changePasswordForm) { 
-    const res = await axios.post(USER.changePassword,
+    const res = await axios.post(
+        USER.changePassword + data.user_id,
         data, {
             withCredentials: true,
             headers: {

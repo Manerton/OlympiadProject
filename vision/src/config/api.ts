@@ -24,7 +24,7 @@ export const SCHOOLS = {
 
 export const USER = {
     info: `${API_URL}/users/all-info/`,
-    changePassword: `${API_URL}/users/change-password`,
+    changePassword: `${API_URL}/users/change-password/`,
 };
 
 export const APPLICATION = {
