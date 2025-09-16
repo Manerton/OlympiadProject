@@ -42,6 +42,11 @@ HTTP_SERVERS_INFO:
       aggregate: false
       target: "http://sso-service:8181/api/users/change-password/"
       skip_auth: false
+    
+    - prefix: "/users/forgot-password/"
+      aggregate: false
+      target: "http://sso-service:8181/api/users/forgot-password"
+      skip_auth: false
 
     - prefix: "/users/all-info/"
       aggregate: false
@@ -89,6 +94,11 @@ HTTP_SERVERS_INFO:
       aggregate: false
       target: "http://event-service:8080/api/events"
       skip_auth: true
+
+    - prefix: "/events/change"
+      aggregate: false
+      target: "http://event-service:8080/api/events"
+      skip_auth: false
 
     - prefix: "/events/child/"
       aggregate: false

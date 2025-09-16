@@ -50,7 +50,7 @@ func main() {
 	router := chi.NewRouter()
 	// init cors
 	corsOptions := cors.Options{
-		AllowedOrigins:   []string{"http://172.16.0.196:6611"}, // React URL
+		AllowedOrigins:   []string{cfg.ReactVision}, // React URL
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 		ExposedHeaders:   []string{"Link"},
@@ -112,13 +112,14 @@ func main() {
 	})
 
 	//init rabbitMQ
-	rabbitConnect := rabbit.MustConnect(cfg.AddressRabbitPath)
-	rabbitChannel, err := rabbitConnect.Channel()
-	if err != nil {
-		log.Error("failed create channel for RabbitMQ")
-	}
-	rabbitConsumer := consumer.New(log, rabbitChannel, applicationService)
-	rabbitConsumer.Start(context.Background(), cfg.QueueName)
+
+	// init connection manager for rabbit
+	connectionManager := rabbit.New(cfg.AddressRabbitPath, log)
+	connectionManager.Start(context.TODO())
+
+	// init rabbit consumer
+	rabbitConsumer := consumer.New(log, connectionManager, applicationService)
+	rabbitConsumer.Start(context.TODO(), cfg.QueueName)
 	log.Info("rabbit started")
 
 	// init server
