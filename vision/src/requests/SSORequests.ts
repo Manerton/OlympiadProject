@@ -94,3 +94,16 @@ export async function axiosSSOChangePassword(token: string, data: changePassword
     );
     return res.status
 }
+
+export async function axiosSSOForgotPassword(token: string, data: changePasswordForm) { 
+    const res = await axios.post(
+        AUTH.forgotPassword,
+        data, {
+            withCredentials: true,
+            headers: {
+                Authorization: `Bearer ${token}` // добавляем токен
+            }
+        }
+    );
+    return res.status
+}

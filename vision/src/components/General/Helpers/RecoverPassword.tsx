@@ -1,10 +1,8 @@
 import React, { useState } from "react";
+import { axiosSendCode } from "../../../requests/NotificationRequests";
+import { useAuth } from "../../Helpers/AuthContext";
+import { axiosSSOForgotPassword } from "../../../requests/SSORequests";
 
-// Имитация API
-async function sendResetCode(email: string) {
-    console.log("Отправка кода на email:", email);
-    return new Promise((resolve) => setTimeout(resolve, 1000)); // имитация задержки
-}
 
 async function verifyResetCode(email: string, code: string, password: string) {
     console.log("Проверка кода:", code, "для email:", email);
@@ -17,6 +15,9 @@ async function verifyResetCode(email: string, code: string, password: string) {
 }
 
 const ForgotPasswordPage: React.FC = () => {
+
+    const { accessToken } = useAuth()
+
     const [step, setStep] = useState<1 | 2>(1);
     const [email, setEmail] = useState("");
     const [code, setCode] = useState("");
@@ -29,7 +30,7 @@ const ForgotPasswordPage: React.FC = () => {
         setError(null);
         setLoading(true);
         try {
-            await sendResetCode(email);
+            await axiosSendCode(accessToken!, email)
             setStep(2);
         } catch (err) {
             setError("Ошибка при отправке кода");
@@ -44,6 +45,7 @@ const ForgotPasswordPage: React.FC = () => {
         setLoading(true);
         try {
             await verifyResetCode(email, code, password);
+            // await axiosSSOForgotPassword(accessToken!, {}) TODO!! COmplite
             alert("Код подтверждён ✅ (тут можно открыть форму смены пароля)");
         } catch (err) {
             setError("Неверный код, попробуйте снова");

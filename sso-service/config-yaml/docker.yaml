@@ -14,7 +14,7 @@ HTTP_SERVER_INFO:
 
 JWT_INFO:
   key: "lololololololololololololololololololololololololololololol"
-  access_duration: 15
+  access_duration: 15 
   refresh_duration: 7
 
 
@@ -32,4 +32,4 @@ ADDITIONAL_ADDRESSES:
   event: "http://172.16.1.39:8080"
 
 ADDITIONAL_SERVICE_ADDRESSES:
-  notification_path: "https://olympic-notification/olymp_notification/web/index.php?r=email%2Fsend-code"
+  notification_path: "http://localhost:6611/email/send-code"

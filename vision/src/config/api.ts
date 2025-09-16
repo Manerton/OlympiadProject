@@ -15,6 +15,7 @@ export const AUTH = {
     logout: `${API_URL}/logout`,
     refresh: `${API_URL}/refresh`,
     register: `${API_URL}/register`,
+    forgotPassword: `${API_URL}/users/forgot-password/`
 };
 
 export const SCHOOLS = {
@@ -51,5 +52,9 @@ export const HOSTS = {
     OLYMP_ADMIN: "http://admin.olymp.local",
     OLYMP_NOTIFICATION: "http://notification.olymp.local",
 };
+
+export const NOTIFY = {
+    sendCode: `${API_URL}/email/send-code`
+}
 
 export default { API_CONFIG, HOSTS };
