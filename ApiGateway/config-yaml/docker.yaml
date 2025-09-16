@@ -158,6 +158,11 @@ HTTP_SERVERS_INFO:
       target: "http://olymp-admin/api/appeal/store"
       skip_auth: false
 
+    - prefix: "/email/send-code"
+      aggregate: false
+      target: "http://notification.olymp.local/index.php?r=api%2email%2Fsend-code"
+      skip_auth: false
+
     - prefix: "/appeal/change-status/"
       aggregate: false
       target: "http://olymp-admin/api/appeal/change-status"
