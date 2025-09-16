@@ -192,7 +192,15 @@ services:
       - -c
       - |
         cd /var/www/olymp-admin
+        if [ ! -f .env ]; then
+            cp .env.example .env
+        fi
+        php artisan key:generate
         composer install --no-interaction --optimize-autoloader
+        while ! nc -z olymp-admin-db 3306; do
+          sleep 1
+        done
+        php artisan migrate:fresh --seed --force
         php-fpm -F -R &
         exec php artisan rabbitmq-handler
     volumes:
@@ -216,6 +224,10 @@ services:
       - |
         cd /var/www/olymp-notification
         composer install --no-interaction --optimize-autoloader
+        while ! nc -z olymp-notification-db 3306; do
+          sleep 1
+        done
+        php yii migrate --interactive=0
         php-fpm -F -R &
         until nc -z rabbitmq 5672; do
           echo "Жду RabbitMQ..."
