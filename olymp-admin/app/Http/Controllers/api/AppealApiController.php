@@ -47,7 +47,7 @@ class AppealApiController
     public function eventsAppealUser($id){
         $appeals = $this->appealService->getByUserId($id);
         $appeals = $this->appealService->getAppealEvents($appeals);
-        return response()->json(ApiHelper::prepareResponse($appeals));
+        return response()->json(ApiHelper::prepareResponse(array_values(array_unique($appeals))));
     }
     public function appealEventUser($eventId, $userId){
         $appeals = $this->appealService->getByUserId($userId);

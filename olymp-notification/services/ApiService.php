@@ -46,7 +46,7 @@ class ApiService extends Component
      * @return array
      * @throws \yii\httpclient\Exception
      */
-    protected function get($url, $params = [])
+    public function get($url, $params = [])
     {
         $response = $this->client->get($url, $params)->send();
 
@@ -64,7 +64,7 @@ class ApiService extends Component
      * @return array
      * @throws \yii\httpclient\Exception
      */
-    protected function post($url, $data = [])
+    public function post($url, $data = [])
     {
         $response = $this->client->post($url, $data)->send();
 
@@ -82,7 +82,7 @@ class ApiService extends Component
      * @return array
      * @throws \yii\httpclient\Exception
      */
-    protected function put($url, $data = [])
+    public function put($url, $data = [])
     {
         $response = $this->client->put($url, $data)->send();
 
@@ -99,7 +99,7 @@ class ApiService extends Component
      * @return array
      * @throws \yii\httpclient\Exception
      */
-    protected function delete($url)
+    public function delete($url)
     {
         $response = $this->client->delete($url)->send();
 

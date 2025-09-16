@@ -187,6 +187,8 @@ services:
       context: .
       dockerfile: ./docker/php/Dockerfile
     container_name: olymp-admin
+    ports:
+      - "8083:8083"
     command:
       - /bin/sh
       - -c
@@ -201,6 +203,7 @@ services:
           sleep 1
         done
         php artisan migrate:fresh --seed --force
+        php artisan serve --host=0.0.0.0 --port=8083 &
         php-fpm -F -R &
         exec php artisan rabbitmq-handler
     volumes:
@@ -218,24 +221,16 @@ services:
       context: .
       dockerfile: ./docker/php/Dockerfile
     container_name: olympic-notification
-    command:
-      - /bin/sh
-      - -c
-      - |
-        cd /var/www/olymp-notification
-        composer install --no-interaction --optimize-autoloader
-        while ! nc -z olymp-notification-db 3306; do
-          sleep 1
-        done
-        php yii migrate --interactive=0
-        php-fpm -F -R &
-        until nc -z rabbitmq 5672; do
-          echo "Жду RabbitMQ..."
-          sleep 2
-        done
-        php yii queue/listen &
-        php yii rabbitmq/listen &
-        tail -f /dev/null
+    ports:
+      - "8084:8084"
+    command: >
+      sh -c "
+        cd /var/www/olymp-notification &&
+        composer install --no-interaction --optimize-autoloader &&
+        while ! nc -z olymp-notification-db 3306; do sleep 1; done &&
+        php yii migrate --interactive=0 &&
+        until nc -z rabbitmq 5672; do echo 'Жду RabbitMQ...'; sleep 2; done &&
+        php -S 0.0.0.0:8084 -t web"
     volumes:
       - ./olymp-notification:/var/www/olymp-notification
     environment:
@@ -259,21 +254,21 @@ services:
       - "8095:8095"   # пробрасываем наружу
     depends_on:
       - olymp-notification-db
-  nginx:
-    image: nginx:alpine
-    container_name: nginx_server
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/nginx.conf
-      - ./olymp-admin/public:/var/www/olymp-admin/public
-      - ./olymp-notification/web:/var/www/olymp-notification/web
-    depends_on:
-      - olymp-admin
-      - olympic-notification
-    networks:
-      - olympic
+#  nginx:
+#    image: nginx:alpine
+#    container_name: nginx_server
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - ./docker/nginx/default.conf:/etc/nginx/nginx.conf
+#      - ./olymp-admin/public:/var/www/olymp-admin/public
+#      - ./olymp-notification/web:/var/www/olymp-notification/web
+#    depends_on:
+#      - olymp-admin
+#      - olympic-notification
+#    networks:
+#      - olympic
 
   olymp-admin-db:
     image: mariadb:10.11
