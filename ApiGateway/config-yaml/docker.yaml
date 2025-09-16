@@ -155,52 +155,52 @@ HTTP_SERVERS_INFO:
     # ==================== Olimp-admin SERVICE ====================
     - prefix: "/appeal/store"
       aggregate: false
-      target: "http://olymp-admin/api/appeal/store"
+      target: "http://nginx_server/api/appeal/store"
       skip_auth: false
 
     - prefix: "/email/send-code"
       aggregate: false
-      target: "http://notification.olymp.local/index.php?r=api%2email%2Fsend-code"
+      target: "http://nginx_server/index.php?r=api%2email%2Fsend-code"
       skip_auth: false
 
     - prefix: "/appeal/change-status/"
       aggregate: false
-      target: "http://olymp-admin/api/appeal/change-status"
+      target: "http://nginx_server/api/appeal/change-status"
       skip_auth: false
 
     - prefix: "/appeal/appeal-by-event/"
       aggregate: false
-      target: "http://olymp-admin/api/appeal/appeal-by-event"
+      target: "http://nginx_server/api/appeal/appeal-by-event"
       skip_auth: false
 
     - prefix: "/appeal/appeal-by-user/"
       aggregate: false
-      target: "http://olymp-admin/api/appeal/appeal-by-user"
+      target: "http://nginx_server/api/appeal/appeal-by-user"
       skip_auth: false
 
     - prefix: "/appeal/appeal-event-user/"
       aggregate: false
-      target: "http://olymp-admin/api/appeal/appeal-event-user"
+      target: "http://nginx_server/api/appeal/appeal-event-user"
       skip_auth: false
 
     - prefix: "/result/result-by-attendance/"
       aggregate: false
-      target: "http://olymp-admin/api/result/result-by-attendance"
+      target: "http://nginx_server/api/result/result-by-attendance"
       skip_auth: false
 
     - prefix: "/result/result-by-user/"
       aggregate: false
-      target: "http://olymp-admin/api/result/result-by-user"
+      target: "http://nginx_server/api/result/result-by-user"
       skip_auth: false
 
     - prefix: "/result/result-by-user-type-event/"
       aggregate: false
-      target: "http://olymp-admin/api/result/result-by-user-type-event"
+      target: "http://nginx_server/api/result/result-by-user-type-event"
       skip_auth: false
     
     - prefix: "/result/result-by-event-user/"
       aggregate: false
-      target: "http://olymp-admin/api/result/result-by-event-user"
+      target: "http://nginx_server/api/result/result-by-event-user"
       skip_auth: false
 
     # ==================== AGGREGATE ROUTES ====================
@@ -235,7 +235,7 @@ HTTP_SERVERS_INFO:
     - prefix: "/history-event/"
       aggregate: true
       targets:
-        - url: "http://olymp-admin/api/result/events-by-user/"
+        - url: "http://nginx_server/api/result/events-by-user/"
           fields: [""]
         - url: "http://event-service:8080/api/events/list"
           fields: [""]
@@ -245,7 +245,7 @@ HTTP_SERVERS_INFO:
     - prefix: "/events-appeal/"
       aggregate: true
       targets:
-        - url: "http://olymp-admin/api/appeal/events-appeal/"
+        - url: "http://nginx_server/api/appeal/events-appeal/"
           fields: [""]
         - url: "http://event-service:8080/api/events/list"
           fields: [""]
