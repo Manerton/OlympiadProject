@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { Form, Button, Container, Alert } from "react-bootstrap";
 import type { MyEvent } from "../../../types/event";
 import { EventType } from "../../../../dictionary/eventType";
-import { axiosUpdateEvent } from "../../../../requests/EventsRequests";
+import { axiosUpdateEvent, fetchEvent } from "../../../../requests/EventsRequests";
 import { useAuth } from "../../../Helpers/AuthContext";
 
 // пока моки для примера
@@ -25,19 +25,26 @@ const EditEventPage: React.FC = () => {
   const [event, setEvent] = useState<MyEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const {accessToken } = useAuth();
+  const { accessToken } = useAuth();
 
   useEffect(() => {
-    // тут вместо мока — запрос к API
+
     if (!id) return;
     setLoading(true);
-    try {
-      setEvent(mockEvent);
-    } catch (err) {
-      setError("Ошибка загрузки события");
-    } finally {
-      setLoading(false);
+
+    const getEvent = async () => {
+      try {
+        const result = await fetchEvent(id)
+
+        setEvent(result);
+      } catch (err) {
+        setError("Ошибка загрузки события");
+      } finally {
+        setLoading(false);
+      }
     }
+
+    getEvent()
   }, [id]);
 
   const handleChange = (field: keyof MyEvent, value: any) => {
@@ -52,13 +59,13 @@ const EditEventPage: React.FC = () => {
     console.log("Сохраняем:", event);
 
     try {
-        await axiosUpdateEvent(accessToken!, event);
-        alert("Событие обновлено");
-      }
-      catch (err) { 
-        console.error("Ошибка обновления события", err);
-        alert("Ошибка обновления события");
-      }
+      await axiosUpdateEvent(accessToken!, event);
+      alert("Событие обновлено");
+    }
+    catch (err) {
+      console.error("Ошибка обновления события", err);
+      alert("Ошибка обновления события");
+    }
     // TODO: запрос PUT/PATCH на бэк
   };
 
@@ -123,7 +130,7 @@ const EditEventPage: React.FC = () => {
           </Form.Group>
         )}
 
-        {/* не редактируемые поля */}   
+        {/* не редактируемые поля */}
         <Form.Group className="mb-3">
           <Form.Label>Тип события</Form.Label>
           <Form.Control type="text" value={event.event_type} disabled />

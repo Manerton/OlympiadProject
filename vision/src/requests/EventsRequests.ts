@@ -9,7 +9,7 @@ export async function fetchRegionalStages() {
   return res.data.data;
 }
 
-export async function fetchEvent(id: string) {
+export async function fetchEvent(id: string): Promise<MyEvent> {
   const res = await axios.get(`${API_CONFIG.EVENT}/${id}`, {
     withCredentials: true,
   });
