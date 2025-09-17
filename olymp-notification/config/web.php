@@ -77,14 +77,12 @@ $config = [
             'password' => 'admin-password',
             'vhost' => '/',
         ],
-        /*
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
             ],
         ],
-        */
     ],
     'params' => $params,
 ];

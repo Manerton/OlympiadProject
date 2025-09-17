@@ -175,7 +175,7 @@ HTTP_SERVERS_INFO:
 
     - prefix: "/email/send-code"
       aggregate: false
-      target: "http://olympic-notification:8084/index.php?r=api%2Femail%2Fsend-code"
+      target: "http://olympic-notification:8084/api/email/send-code"
       skip_auth: true
 
     - prefix: "/appeal/change-status/"
