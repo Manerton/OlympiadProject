@@ -2,6 +2,7 @@ package jury_assignments_service
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"main/internal/dto/juryAssignmentsDto"
 	"main/internal/lib/converter/dtoConverter"
@@ -12,6 +13,7 @@ import (
 	"main/internal/storage/orm"
 
 	"github.com/google/uuid"
+	"golang.org/x/sync/errgroup"
 )
 
 type juryAssignmentsRepositoryInterface interface {
@@ -20,6 +22,7 @@ type juryAssignmentsRepositoryInterface interface {
 	GetAllJuryAssignmentsByFilter(context.Context, orm.ORM, jury_assignments.JuryAssignments) ([]jury_assignments.JuryAssignments, error)
 	CreateJuryAssignments(context.Context,
 		orm.ORM, jury_assignments.JuryAssignments) (uuid.UUID, error)
+
 	UpdateJuryAssignments(context.Context,
 		orm.ORM, jury_assignments.JuryAssignments) error
 	DeleteJuryAssignments(context.Context, orm.ORM, uuid.UUID) error
@@ -150,6 +153,39 @@ func (s *JuryAssignmentsService) GetAllJuryAssignmentsByFilter(ctx context.Conte
 		return nil, errs.ErrInternalError.Wrap("failed get all jury-assigments by filter")
 	}
 	return dtoConverter.ConvertManyJuryAssignmentsToDTO(results), nil
+}
+
+func (s *JuryAssignmentsService) CreateMany(ctx context.Context, dto juryAssignmentsDto.CreateOneAssigmentsManyJury) ([]uuid.UUID, error) {
+	const op = "services.juryAssignmentsService.CreateMany"
+
+	errGroup := errgroup.Group{}
+
+	ids := make(chan uuid.UUID, len(dto.JuryIDs))
+
+	for _, juryId := range dto.JuryIDs {
+		tempDto := juryAssignmentsDto.CreateJuryAssignmentsDTO{UserID: juryId, EventID: dto.EventID}
+		errGroup.Go(func() error {
+			id, err := s.Create(ctx, tempDto)
+			if err != nil {
+				return err
+			}
+			ids <- id
+			return nil
+		})
+	}
+
+	if err := errGroup.Wait(); err != nil {
+		close(ids)
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	close(ids)
+
+	sliceIds := []uuid.UUID{}
+	for id := range ids {
+		sliceIds = append(sliceIds, id)
+	}
+
+	return sliceIds, nil
 }
 
 // func isExistingID(id uuid.UUID, service string) (bool, error) {

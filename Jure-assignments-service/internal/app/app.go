@@ -93,11 +93,11 @@ func (a *App) initRoutes(router *chi.Mux, handler *jure_assignments_handler.Jury
 	router.Get("/api/jury-assignments/jury/{id}", handler.GetAllByJuryId)
 
 	router.Post("/api/jury-assignments", handler.CreateJuryAssignments)
-	// router.Post("/api/jury-assignments/many", handler.CreateManyAssignmentsByOneJury)
+	router.Post("/api/jury-assignments/many", handler.CreateManyJuryAssignments)
 
 	router.Put("/api/jure-assignments/{id}", handler.UpdateJuryAssignments)
 
-	router.Delete("/api/jure-assignments/{id}", handler.UpdateJuryAssignments)
+	router.Delete("/api/jure-assignments/{id}", handler.DeleteJuryAssignments)
 }
 
 func (a *App) MustRun() {

@@ -23,6 +23,8 @@ type JuryAssignmentsServiceInterface interface {
 
 	// CreateManyAssignmentsByOneJury(context.Context, juryAssignmentsDto.OneJuryManyAssignments) ([]uuid.UUID, error)
 	Create(context.Context, juryAssignmentsDto.CreateJuryAssignmentsDTO) (uuid.UUID, error)
+	CreateMany(context.Context, juryAssignmentsDto.CreateOneAssigmentsManyJury) ([]uuid.UUID, error)
+
 	Update(context.Context, string, juryAssignmentsDto.UpdateJuryAssignmentsDTO) error
 	Delete(context.Context, string) error
 }
@@ -202,6 +204,49 @@ func (h *JuryAssignmentHandler) CreateJuryAssignments(w http.ResponseWriter, r *
 		return
 	}
 	render.JSON(w, r, response.SuccessResponse(createdId.String()))
+}
+
+// @Summery Create many jury-assignments
+// @Description Создание множественной связей нескольких жюри на событие
+// @Tags jury-assignments
+// @Accept json
+// @Produce json
+// @Param credentials body juryAssignmentsDto.CreateOneAssigmentsManyJury true "Данные для создания связи"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/jury-assignments [post]
+func (h *JuryAssignmentHandler) CreateManyJuryAssignments(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	dto := juryAssignmentsDto.CreateOneAssigmentsManyJury{}
+	err := render.DecodeJSON(r.Body, &dto)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body")))
+		return
+	}
+
+	err = validator.New().Struct(dto)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed validate dto")))
+		return
+	}
+
+	// TODO!! service do
+	_, err = h.service.CreateMany(ctx, dto)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+	render.JSON(w, r, response.SuccessResponse("Success create jury-assigments"))
 }
 
 // @Summery Update jury-assignments

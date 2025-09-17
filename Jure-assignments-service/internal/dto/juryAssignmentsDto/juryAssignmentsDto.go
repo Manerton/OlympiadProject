@@ -23,7 +23,7 @@ type OneJuryManyAssignments struct {
 	EventIDs []uuid.UUID `json:"event_ids" validate:"required"`
 }
 
-type OneAssigmentsManyJury struct {
-	EventID uuid.UUID   `json:"event_id"`
-	JuryIDs []uuid.UUID `json:"jury_ids"`
+type CreateOneAssigmentsManyJury struct {
+	EventID string   `json:"event_id"`
+	JuryIDs []string `json:"jury_ids"`
 }
