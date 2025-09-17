@@ -1,7 +1,7 @@
 // src/pages/StagesListPage.tsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Container, Row, Col, Button, Spinner, Alert } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Spinner, Alert } from "react-bootstrap";
 import type { MyEvent } from "../../../types/event.ts";
 import { fetchOlympiadStages } from "../../../../requests/EventsRequests";
 import { useAuth } from "../../../Helpers/AuthContext";
@@ -16,8 +16,11 @@ interface JuryMember {
 // helper: находит ближайшее событие в будущем
 const findNextEventId = (stage: MyEvent): string | null => {
   const now = new Date();
+
+  // Собираем этап + его дочерние события
   const allEvents = [stage, ...(stage.events ?? [])];
 
+  // Парсим даты и фильтруем только будущие
   const futureEvents = allEvents
     .map((e) => ({
       ...e,
@@ -27,8 +30,9 @@ const findNextEventId = (stage: MyEvent): string | null => {
 
   if (futureEvents.length === 0) return null;
 
+  // Берём ближайшее
   futureEvents.sort((a, b) => a.start.getTime() - b.start.getTime());
-  return futureEvents[0].id!;
+  return futureEvents[0].id!
 };
 
 const formatDateTime = (dateString: string): string => {
@@ -68,7 +72,9 @@ const StagesListPage: React.FC = () => {
       <h3 className="fw-bold mb-4">Этапы олимпиады</h3>
       <Row>
         {stages.map((stage) => {
+
           const nextEventId = findNextEventId(stage);
+          // пока моки для жюри, можно будет заменить на stage.jury
           const jury: JuryMember[] = [
             { name: "Иван Иванов", role: "Председатель" },
             { name: "Мария Петрова", role: "Член жюри" },
@@ -78,20 +84,18 @@ const StagesListPage: React.FC = () => {
 
           return (
             <Col md={12} key={stage.id} className="mb-4">
-              <div className="shadow-sm mb-4 p-3">
+              <div className="shadow-sm mb-4">
                 <div className="row">
-                  {/* Левая часть с этапами */}
-                  <div className="col-12 col-md-8">
-                    <div className="d-flex flex-column flex-md-row align-items-center gap-3 mt-3">
+                  <div className="col-8">
+                    <div className="d-flex align-items-center gap-3 mt-3 flex-wrap">
                       {/* Этап */}
                       <div
-                        className={`p-3 border rounded text-center card-stage ${
-                          nextEventId === stage.id ? "border-primary border-3 shadow" : ""
-                        }`}
+                        className={`p-3 border rounded text-center card-stage ${nextEventId === stage.id ? "border-primary border-3 shadow" : ""
+                          }`}
                       >
                         <h6 className="fw-bold mb-3">{stage.name}</h6>
                         <hr />
-                        <div>
+                        <div className="justify-content-between">
                           <div>
                             <span className="badge bg-success mb-1">Начало</span>
                             <p className="mb-0 fw-semibold">{formatDateTime(stage.start_date)}</p>
@@ -103,12 +107,9 @@ const StagesListPage: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* ➝ или ⬇ */}
+                      {/* ➝ если есть просмотр */}
                       {stage.events?.some((c) => c.event_type === EventType.ViewWorks) && (
-                        <>
-                          <span className="fs-3 d-none d-md-inline">➝</span>
-                          <span className="fs-3 d-inline d-md-none">↓</span>
-                        </>
+                        <span className="fs-3">➝</span>
                       )}
 
                       {/* Просмотр работ */}
@@ -117,13 +118,13 @@ const StagesListPage: React.FC = () => {
                         .map((view) => (
                           <div
                             key={view.id}
-                            className={`p-3 border rounded text-center card-stage ${
-                              nextEventId === view.id ? "border-primary border-3 shadow" : ""
-                            }`}
+                            className={`p-3 border rounded text-center card-stage ${nextEventId === view.id ? "border-primary border-3 shadow" : ""
+                              }`}
                           >
                             <h6 className="fw-bold mb-3">Просмотр работ</h6>
                             <hr />
-                            <div>
+
+                            <div className="justify-content-between">
                               <div>
                                 <span className="badge bg-success mb-1">Начало</span>
                                 <p className="mb-0 fw-semibold">{formatDateTime(view.start_date)}</p>
@@ -136,12 +137,9 @@ const StagesListPage: React.FC = () => {
                           </div>
                         ))}
 
-                      {/* ➝ или ⬇ */}
+                      {/* ➝ если есть апелляция */}
                       {stage.events?.some((c) => c.event_type === EventType.Appeal) && (
-                        <>
-                          <span className="fs-3 d-none d-md-inline">➝</span>
-                          <span className="fs-3 d-inline d-md-none">↓</span>
-                        </>
+                        <span className="fs-3">➝</span>
                       )}
 
                       {/* Апелляция */}
@@ -150,13 +148,13 @@ const StagesListPage: React.FC = () => {
                         .map((appeal) => (
                           <div
                             key={appeal.id}
-                            className={`p-3 border rounded text-center card-stage ${
-                              nextEventId === appeal.id ? "border-primary border-3 shadow" : ""
-                            }`}
+                            className={`p-3 border rounded text-center card-stage ${nextEventId === appeal.id ? "border-primary border-3 shadow" : ""
+                              }`}
                           >
                             <h6 className="fw-bold mb-3">Апелляция</h6>
                             <hr />
-                            <div>
+
+                            <div className="justify-content-between">
                               <div>
                                 <span className="badge bg-success mb-1">Начало</span>
                                 <p className="mb-0 fw-semibold">{formatDateTime(appeal.start_date)}</p>
@@ -169,25 +167,24 @@ const StagesListPage: React.FC = () => {
                           </div>
                         ))}
                     </div>
-                  </div>
 
-                  {/* Правая часть с жюри */}
-                  <div className="col-12 col-md-4 d-flex flex-column h-100">
-                    <h6 className="m-3 fw-bold">Список жюри</h6>
-                    <div className="flex-grow-1 px-3">
-                      {jury.map((member, idx) => (
-                        <p key={idx} className="mb-1">
-                          <strong>{member.name}</strong> — {member.role}
-                        </p>
-                      ))}
-                    </div>
+                  </div>
+                  <div className="col-4">
+                    <h6 className="mt-3 fw-bold">Список жюри</h6>
+                    {jury.map((member, idx) => (
+                      <p key={idx} className="mb-1">
+                        <strong>{member.name}</strong> — {member.role}
+                      </p>
+                    ))}
                     {user?.role === UserRole.Admin && (
-                      <Button variant="primary" className="m-3">
+                      <Button variant="primary" className="w-100 m-3">
                         Назначить жюри
                       </Button>
                     )}
                   </div>
+
                 </div>
+
               </div>
               <hr />
             </Col>

@@ -31,7 +31,7 @@ const Footer: React.FC = () => (
         </Col>
 
         {/* Контактная информация */}
-        <Col md={4}>
+        <Col md={4} className="text-center">
           <h6 className="text-uppercase fw-bold mb-3 text-center">Контактная информация</h6>
           <div className="text-justify">
             <address className="small mb-3">

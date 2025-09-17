@@ -8,6 +8,8 @@ export const API_CONFIG = {
     AUTH: `${API_URL}/api/users`,
     JUREASSIGNMENTS: `${API_URL}/jury-assignments`,
     APPLICATION: `${API_URL}/applications`,
+    USERSBYROLE:  `${API_URL}/users/by-role/`,
+    JURYBYSTAGE: `${API_URL}/jury-assignments/event/`,
 };
 
 export const AUTH = {

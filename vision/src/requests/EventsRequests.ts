@@ -85,3 +85,17 @@ export async function axiosUpdateEvent(token: string, event: MyEvent) {
   })
 
 }
+
+export async function fetchAllJury(id: string) {
+  const res = await axios.get(`${API_CONFIG.USERSBYROLE}/${id}`, {
+    withCredentials: true,
+  });
+  return res.data.data; // массив всех существующих 
+}
+
+export async function fetchJuryStage(id: string) {
+  const res = await axios.get(`${API_CONFIG.JURYBYSTAGE}/${id}`, {
+    withCredentials: true,
+  });
+  return res.data.data; // массив уже назначенных
+}

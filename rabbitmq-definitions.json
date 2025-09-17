@@ -94,6 +94,13 @@
       "arguments": {}
     },
     {
+      "name": "olymp_application",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
       "name": "olymp_jury",
       "vhost": "/",
       "durable": true,

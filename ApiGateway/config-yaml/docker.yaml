@@ -46,7 +46,7 @@ HTTP_SERVERS_INFO:
     - prefix: "/users/forgot-password/"
       aggregate: false
       target: "http://sso-service:8181/api/users/forgot-password"
-      skip_auth: false
+      skip_auth: true
 
     - prefix: "/users/all-info/"
       aggregate: false
@@ -54,6 +54,11 @@ HTTP_SERVERS_INFO:
       skip_auth: false
 
     - prefix: "/users/participant/all-info/"
+      aggregate: false
+      target: "http://sso-service:8181/api/users/all-info/"
+      skip_auth: false
+    
+    - prefix: "/users/by-role/"
       aggregate: false
       target: "http://sso-service:8181/api/users/all-info/"
       skip_auth: false
@@ -149,7 +154,17 @@ HTTP_SERVERS_INFO:
     # ==================== JURY SERVICE (8090) ====================
     - prefix: "/jury-assignments/event/"
       aggregate: false
-      target: "http://jury-service:8090/api/jury-assignments/event"
+      target: "http://jury-service:8090/api/jury-assignments/event/"
+      skip_auth: false
+
+    - prefix: "/jury-assignments/"
+      aggregate: false
+      target: "http://jury-service:8090/api/jury-assignments/event/"
+      skip_auth: false
+
+    - prefix: "/jury-assignments/many"
+      aggregate: false
+      target: "http://jury-service:8090/api/jury-assignments/event/many"
       skip_auth: false
 
     # ==================== Olimp-admin SERVICE ====================
@@ -161,7 +176,7 @@ HTTP_SERVERS_INFO:
     - prefix: "/email/send-code"
       aggregate: false
       target: "http://olympic-notification:8084/index.php?r=api%2email%2Fsend-code"
-      skip_auth: false
+      skip_auth: true
 
     - prefix: "/appeal/change-status/"
       aggregate: false
