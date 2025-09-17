@@ -11,7 +11,7 @@ class ApiHelper
     public const STATUS_NOT_FOUND = 404;
     public const OLYMP_NOTIFICATION_TOKEN = 1234567890;
     public const API_GATEWAY_HOST = 'http://apigateway-service:6611';
-    public const NGINX_SERVER_HOST = 'http://nginx_server';
+    public const NOTIFICATION_HOST = 'http://olymp-admin:8083';
     public const AUTH_URL_API = self::API_GATEWAY_HOST . '/auth';
     public const USER_URL_API = self::API_GATEWAY_HOST . '/users';
     public const TOKEN_REVOKE_URL_API = self::API_GATEWAY_HOST . '/revoke-all';
@@ -30,8 +30,8 @@ class ApiHelper
     public const APPLICATION_USER_URL_API = self::API_GATEWAY_HOST . '/applications/user';
     public const APPLICATION_COUNT_URL_API = self::API_GATEWAY_HOST . '/applications/count';
     public const LOGOUT_URL_API = self::API_GATEWAY_HOST . '/logout';
-    public const SEND_CODE_URL_API = self::NGINX_SERVER_HOST . '/index.php?r=email%2Fsend-code';
-    public const SEND_MESSAGE_URL_API = self::NGINX_SERVER_HOST . '/index.php?r=email%2Fsend-message';
+    public const SEND_CODE_URL_API = self::NOTIFICATION_HOST . '/index.php?r=email%2Fsend-code';
+    public const SEND_MESSAGE_URL_API = self::NOTIFICATION_HOST . '/index.php?r=email%2Fsend-message';
     public const SUBJECTS_EVENT_URL_API = 'http://apigateway-service:8080/api/events/subjects';
     public static function prepareResponse($data)
     {

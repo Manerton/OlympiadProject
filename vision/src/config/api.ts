@@ -49,8 +49,8 @@ export const PARTICIPANT = {
 };
 
 export const HOSTS = {
-    OLYMP_ADMIN: "http://admin.olymp.local",
-    OLYMP_NOTIFICATION: "http://notification.olymp.local",
+    OLYMP_ADMIN: "http://localhost:8083",
+    OLYMP_NOTIFICATION: "http://localhost:8084",
 };
 
 export const NOTIFY = {
