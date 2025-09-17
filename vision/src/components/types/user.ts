@@ -38,8 +38,14 @@ export interface UserParticipant {
     citezenship: number
 }
 
-export interface changePasswordForm {
+export interface ChangePasswordForm {
     user_id: string
     old_password: string
     new_password: string
+}
+
+export interface ForgotPasswordForm {
+    email: string,
+    code: string,
+    password: string
 }

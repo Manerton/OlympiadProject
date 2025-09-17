@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../../Helpers/AuthContext";
 import { axiosSSOChangePassword } from "../../../../requests/SSORequests";
-import { changePasswordForm } from "../../../types/user";
+import { ChangePasswordForm } from "../../../types/user";
 
 const ChangePasswordBlock: React.FC = () => {
     const { accessToken, user } = useAuth();
@@ -30,7 +30,7 @@ const ChangePasswordBlock: React.FC = () => {
         try {
             if (!accessToken || !user) return;
 
-            const ChangePasswordForm: changePasswordForm = {
+            const ChangePasswordForm: ChangePasswordForm = {
                 user_id: user.id,
                 old_password: form.oldPassword,
                 new_password: form.newPassword

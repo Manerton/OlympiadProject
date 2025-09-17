@@ -1,6 +1,6 @@
 import axios from "axios";
 import { AUTH, PARTICIPANT, SCHOOLS, USER } from "../config/api";
-import type { changePasswordForm, RegisterForm, User, UserParticipant } from "../components/types/user";
+import type { ChangePasswordForm, ForgotPasswordForm, RegisterForm, User, UserParticipant } from "../components/types/user";
 import type { School } from "../components/types/schools";
 
 export async function axiosSSORegister(data: RegisterForm) {
@@ -82,7 +82,7 @@ export async function axiosSSOAllSchools(): Promise<School[]> {
     return res.data.data as School[]; // data → []SchoolResponseDTO
 }
 
-export async function axiosSSOChangePassword(token: string, data: changePasswordForm) { 
+export async function axiosSSOChangePassword(token: string, data: ChangePasswordForm) { 
     const res = await axios.post(
         USER.changePassword + data.user_id,
         data, {
@@ -95,15 +95,10 @@ export async function axiosSSOChangePassword(token: string, data: changePassword
     return res.status
 }
 
-export async function axiosSSOForgotPassword(token: string, data: changePasswordForm) { 
+export async function axiosSSOForgotPassword(data: ForgotPasswordForm) { 
     const res = await axios.post(
         AUTH.forgotPassword,
-        data, {
-            withCredentials: true,
-            headers: {
-                Authorization: `Bearer ${token}` // добавляем токен
-            }
-        }
+        data
     );
     return res.status
 }

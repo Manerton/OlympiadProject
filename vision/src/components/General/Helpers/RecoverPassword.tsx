@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { axiosSendCode } from "../../../requests/NotificationRequests";
 import { useAuth } from "../../Helpers/AuthContext";
 import { axiosSSOForgotPassword } from "../../../requests/SSORequests";
+import { ForgotPasswordForm } from "../../types/user";
 
 
 async function verifyResetCode(email: string, code: string, password: string) {
@@ -30,7 +31,7 @@ const ForgotPasswordPage: React.FC = () => {
         setError(null);
         setLoading(true);
         try {
-            await axiosSendCode(accessToken!, email)
+            await axiosSendCode(email)
             setStep(2);
         } catch (err) {
             setError("Ошибка при отправке кода");
@@ -44,8 +45,13 @@ const ForgotPasswordPage: React.FC = () => {
         setError(null);
         setLoading(true);
         try {
-            await verifyResetCode(email, code, password);
-            // await axiosSSOForgotPassword(accessToken!, {}) TODO!! COmplite
+            const forgotForm: ForgotPasswordForm = { 
+                email: email,
+                code: code,
+                password: password
+            }
+
+            await axiosSSOForgotPassword( forgotForm)
             alert("Код подтверждён ✅ (тут можно открыть форму смены пароля)");
         } catch (err) {
             setError("Неверный код, попробуйте снова");
