@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import {useAuth} from "../../Helpers/AuthContext";
 
-const WS_URL = "ws://notification.olymp.local:8095";
+const WS_URL = "ws://localhost:8095";
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const {

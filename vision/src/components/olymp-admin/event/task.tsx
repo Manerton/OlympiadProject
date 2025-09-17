@@ -52,16 +52,15 @@ const EventTask: React.FC = () => {
             );
             setEvent(response.data.event);
             setTasks(response.data.tasks || []);
-            
-            // Получаем типы заданий
-            const typesResponse = await axios.get(
-                HOSTS['OLYMP_ADMIN'] + `/api/event/task-types`,
-                {
-                    headers: { Authorization: accessToken },
-                    withCredentials: true,
-                }
-            );
-            setTaskTypes(typesResponse.data.types || {});
+            setTaskTypes(response.data.types || {});
+            // const typesResponse = await axios.get(
+            //     HOSTS['OLYMP_ADMIN'] + `/api/event/task-types`,
+            //     {
+            //         headers: { Authorization: accessToken },
+            //         withCredentials: true,
+            //     }
+            // );
+            // setTaskTypes(typesResponse.data.types || {});
         } catch (error) {
             console.error("Error fetching data:", error);
         } finally {

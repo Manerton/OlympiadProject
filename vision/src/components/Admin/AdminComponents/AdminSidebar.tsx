@@ -76,14 +76,14 @@ const AdminSidebar: React.FC = () => {
             {!collapsed && "На главную"}
           </Nav.Link>
 
-          <Nav.Link
-            as={Link}
-            to={`/applications/user/${user?.id}`}
-            className="text-white d-flex align-items-center"
-          >
-            <FileText className="me-2" />
-            {!collapsed && "Статус заявки"}
-          </Nav.Link>
+          {/*<Nav.Link*/}
+          {/*  as={Link}*/}
+          {/*  to={`/applications/user/${user?.id}`}*/}
+          {/*  className="text-white d-flex align-items-center"*/}
+          {/*>*/}
+          {/*  <FileText className="me-2" />*/}
+          {/*  {!collapsed && "Статус заявки"}*/}
+          {/*</Nav.Link>*/}
 
           {/* Админские ссылки */}
           {user?.role === 1 && (
@@ -97,14 +97,14 @@ const AdminSidebar: React.FC = () => {
                 {!collapsed && "Пользователи"}
               </Nav.Link>
 
-              <Nav.Link
-                as={Link}
-                to="/olymp-admin/participant/index"
-                className="text-white d-flex align-items-center"
-              >
-                <PersonBadge className="me-2" />
-                {!collapsed && "Участники"}
-              </Nav.Link>
+              {/*<Nav.Link*/}
+              {/*  as={Link}*/}
+              {/*  to="/olymp-admin/participant/index"*/}
+              {/*  className="text-white d-flex align-items-center"*/}
+              {/*>*/}
+              {/*  <PersonBadge className="me-2" />*/}
+              {/*  {!collapsed && "Участники"}*/}
+              {/*</Nav.Link>*/}
 
               <Nav.Link
                 as={Link}
