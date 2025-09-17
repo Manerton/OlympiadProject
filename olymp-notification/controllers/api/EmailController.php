@@ -12,7 +12,7 @@ use Symfony\Component\Mime\Email;
 use Yii;
 use yii\web\Controller;
 
-class EmailApiController extends Controller
+class EmailController extends Controller
 {
     private MailVisitRepository $mailVisitRepository;
     public function __construct(

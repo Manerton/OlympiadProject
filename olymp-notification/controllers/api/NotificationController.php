@@ -6,7 +6,7 @@ use app\jobs\SendNotificationJob;
 use Yii;
 use yii\web\Controller;
 
-class NotificationApiController extends Controller
+class NotificationController extends Controller
 {
     public function beforeAction($action)
     {
