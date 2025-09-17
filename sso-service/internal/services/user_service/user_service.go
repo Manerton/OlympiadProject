@@ -13,6 +13,7 @@ import (
 	"main/internal/models/participant"
 	"main/internal/models/user"
 	"main/internal/storage/orm"
+	"strconv"
 
 	"github.com/google/uuid"
 )
@@ -22,6 +23,8 @@ type UserRepository interface {
 	GetByFilter(ctx context.Context, orm orm.ORM, user user.User) (user.User, error)
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (user.User, error)
 	GetByListId(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]user.User, error)
+
+	GetByRole(ctx context.Context, orm orm.ORM, role user.RoleType) ([]user.User, error)
 
 	GetCount(ctx context.Context, orm orm.ORM) (int64, error)
 
@@ -140,6 +143,28 @@ func (s *UserService) GetById(ctx context.Context, id string) (user_dto.UserResp
 	}
 
 	return user_mapper.ToDTO(userResult), nil
+}
+
+func (s *UserService) GetUsersByRole(ctx context.Context, userRole string) ([]user_dto.UserResponseDTO, error) {
+	const op = "services.UserService.GetUsersByRole"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	role, err := strconv.Atoi(userRole)
+	if err != nil {
+		log.Error("failed convert user role to int", slog.String("role", userRole), liblogger.Err(err))
+		return nil, errs.ErrInternalError.Wrap("failed convert user role")
+	}
+
+	usersResult, err := s.userRepository.GetByRole(ctx, s.db, user.RoleType(role))
+	if err != nil {
+		log.Error("failed get users by role", liblogger.Err(err))
+		return nil, errs.ErrInternalError.Wrap("failed get users by role")
+	}
+
+	return user_mapper.ToDTOs(usersResult), nil
 }
 
 func (s *UserService) GetUserParticipantById(ctx context.Context, id string) (user_dto.UserParticipantResponseDTO, error) {

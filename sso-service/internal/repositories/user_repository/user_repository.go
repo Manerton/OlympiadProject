@@ -69,6 +69,17 @@ func (r *UserRepository) GetById(ctx context.Context, orm orm.ORM, id uuid.UUID)
 	return userResult, nil
 }
 
+func (r *UserRepository) GetByRole(ctx context.Context, orm orm.ORM, role user.RoleType) ([]user.User, error) {
+	const op = "repositories.UserRepository.GetByRole"
+
+	usersResult := []user.User{}
+	err := orm.Find(ctx, user.User{}, nil, nil, nil, nil, &usersResult, user.User{Role: role})
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return usersResult, nil
+}
+
 func (r *UserRepository) GetByListId(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]user.User, error) {
 	const op = "repositories.UserRepository.GetByListId"
 	userResult := []user.User{}

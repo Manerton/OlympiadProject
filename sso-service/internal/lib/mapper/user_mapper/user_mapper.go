@@ -25,6 +25,15 @@ func ToDTO(user user.User) user_dto.UserResponseDTO {
 	}
 }
 
+func ToDTOs(users []user.User) []user_dto.UserResponseDTO {
+	usersResults := make([]user_dto.UserResponseDTO, 0, len(users))
+	for _, user := range users {
+		usersResults = append(usersResults, ToDTO(user))
+	}
+
+	return usersResults
+}
+
 func FromRegisterToModel(regiterDTO *register_dto.RegisterParticipantRequestDTO) user.User {
 	birhDate, _ := time.Parse("2006-01-02", regiterDTO.BirthDate)
 

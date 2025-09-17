@@ -21,6 +21,8 @@ type UserService interface {
 	GetUserParticipantById(ctx context.Context, id string) (user_dto.UserParticipantResponseDTO, error)
 	GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error)
 
+	GetUsersByRole(ctx context.Context, userRole string) ([]user_dto.UserResponseDTO, error)
+
 	GetCount(ctx context.Context) (int64, error)
 
 	ChangePassword(ctx context.Context, id string, changePasswordDTO recover_dto.ChangePasswordDTORequest) error
@@ -152,7 +154,41 @@ func (h *UserHandler) GetUserByFilter(w http.ResponseWriter, r *http.Request) {
 		StatusCode: http.StatusOK,
 		Data:       userResponse,
 	})
+}
 
+// @Summery Get user type jury
+// @Security BearerAuth
+// @Description Получение всех пользователей с ролью
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param credentials body user_dto.SearchAttributesUserDTO true "Данные для поиска пользователя"
+// @Success 200 {object} response.ApiResponse{data=user_dto.UserResponseDTO}
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/users/filter [post]
+func (h *UserHandler) GetUsersTypeJury(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	roleStr := r.URL.Query().Get("role")
+
+	usersResponse, err := h.UserService.GetUsersByRole(ctx, roleStr)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       usersResponse,
+	})
 }
 
 // @Summery Get user by id
