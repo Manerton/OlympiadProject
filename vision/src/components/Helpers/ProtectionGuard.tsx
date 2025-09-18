@@ -7,7 +7,12 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
-  const { user } = useAuth(); // допустим user = { id, role }
+  const { user, initialized } = useAuth();
+
+  // Пока auth не инициализирован, можно показывать загрузку или null
+  if (!initialized) {
+    return <div>Загрузка...</div>; // или спиннер
+  }
 
   if (!user) {
     console.log("User not authenticated, redirecting to /auth");
