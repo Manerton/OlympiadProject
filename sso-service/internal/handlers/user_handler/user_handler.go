@@ -156,17 +156,16 @@ func (h *UserHandler) GetUserByFilter(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// @Summery Get user type jury
+// @Summery Get user type role
 // @Security BearerAuth
-// @Description Получение всех пользователей с ролью
+// @Description Получение всех пользователей по роли
 // @Tags users
 // @Accept json
 // @Produce json
-// @Param credentials body user_dto.SearchAttributesUserDTO true "Данные для поиска пользователя"
 // @Success 200 {object} response.ApiResponse{data=user_dto.UserResponseDTO}
 // @Failure 400 {object} response.ApiResponse
-// @Router /api/users/filter [post]
-func (h *UserHandler) GetUsersTypeJury(w http.ResponseWriter, r *http.Request) {
+// @Router /api/users/by-role [post]
+func (h *UserHandler) GetUsersByRole(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	roleStr := r.URL.Query().Get("role")

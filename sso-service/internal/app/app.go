@@ -130,10 +130,10 @@ func (a *App) initRoutes(router *chi.Mux,
 		r.Post("/api/users/list", userHandler.GetUsersByListId)
 		r.Get("/api/users/{id}", userHandler.GetUserById)
 		r.Get("/api/users/all-info/{id}", userHandler.GetUserParticipantById)
-		r.Get("/api/users/by-role?role=", userHandler.GetUsersTypeJury)
+		r.Get("/api/users/by-role", userHandler.GetUsersByRole)
 
 		// schools GET
-		// r.Get("/api/schools", schoolHandler.GetAll)
+		r.Get("/api/schools", schoolHandler.GetAll)
 		r.Get("/api/schools/count", schoolHandler.GetCount)
 		r.Get("/api/schools/{id}", schoolHandler.GetById)
 
