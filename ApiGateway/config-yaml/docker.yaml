@@ -60,7 +60,7 @@ HTTP_SERVERS_INFO:
     
     - prefix: "/users/by-role/"
       aggregate: false
-      target: "http://sso-service:8181/api/users/all-info/"
+      target: "http://sso-service:8181/api/users/by-role?role="
       skip_auth: false
 
     # ==================== PARTICIPANTS & SCHOOLS SERVICE (8181) ====================
