@@ -46,7 +46,7 @@ const ForgotPasswordPage: React.FC = () => {
         setLoading(true);
         try {
             const forgotForm: ForgotPasswordForm = { 
-                email: email,
+                mail: email,
                 code: code,
                 password: password
             }

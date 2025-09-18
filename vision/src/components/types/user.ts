@@ -45,7 +45,7 @@ export interface ChangePasswordForm {
 }
 
 export interface ForgotPasswordForm {
-    email: string,
+    mail: string,
     code: string,
     password: string
 }
