@@ -5,7 +5,7 @@ use Yii;
 class RedisComponent
 {
     public static function set($key, $data){
-        Yii::$app->redis->set($key, json_encode($data));
+        Yii::$app->redis->set($key, $data);
     }
     public static function delete($key)
     {

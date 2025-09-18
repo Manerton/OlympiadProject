@@ -30,7 +30,7 @@ RUN echo "memory_limit=512M" >> /usr/local/etc/php/conf.d/custom.ini \
     && echo "realpath_cache_size=4096K" >> /usr/local/etc/php/conf.d/custom.ini \
     && echo "realpath_cache_ttl=600" >> /usr/local/etc/php/conf.d/custom.ini \
     && echo "max_execution_time=30" >> /usr/local/etc/php/conf.d/custom.ini
-
+RUN apt-get update && apt-get install -y bash
 COPY --from=composer:2.7 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html

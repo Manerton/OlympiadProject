@@ -229,8 +229,13 @@ services:
         composer install --no-interaction --optimize-autoloader &&
         while ! nc -z olymp-notification-db 3306; do sleep 1; done &&
         php yii migrate --interactive=0 &&
-        until nc -z rabbitmq 5672; do echo 'Жду RabbitMQ...'; sleep 2; done &&
-        php -S 0.0.0.0:8084 -t web"
+        until nc -z rabbitmq 5672; do echo 'Жду RabbitMQ...'; sleep 2; done
+        sleep 5 &&
+        php -S 0.0.0.0:8084 -t web > /dev/stdout 2>&1 &
+        php /var/www/olymp-notification/yii queue/listen > /dev/stdout 2>&1 &
+        php /var/www/olymp-notification/yii rabbitmq/listen > /dev/stdout 2>&1 &
+        wait
+      "
     volumes:
       - ./olymp-notification:/var/www/olymp-notification
     environment:
