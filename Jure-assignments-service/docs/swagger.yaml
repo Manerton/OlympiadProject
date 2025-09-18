@@ -10,6 +10,15 @@ definitions:
     - event_id
     - user_id
     type: object
+  juryAssignmentsDto.CreateOneAssigmentsManyJury:
+    properties:
+      event_id:
+        type: string
+      jury_ids:
+        items:
+          type: string
+        type: array
+    type: object
   juryAssignmentsDto.JuryAssignmentsResponseDTO:
     properties:
       event_id:
@@ -228,6 +237,31 @@ paths:
                     $ref: '#/definitions/juryAssignmentsDto.JuryAssignmentsResponseDTO'
                   type: array
               type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      tags:
+      - jury-assignments
+  /api/jury-assignments/many:
+    post:
+      consumes:
+      - application/json
+      description: Создание множественной связей нескольких жюри на событие
+      parameters:
+      - description: Данные для создания связи
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/juryAssignmentsDto.CreateOneAssigmentsManyJury'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
         "400":
           description: Bad Request
           schema:

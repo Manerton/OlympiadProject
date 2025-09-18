@@ -190,6 +190,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/jury-assignments/many": {
+            "post": {
+                "description": "Создание множественной связей нескольких жюри на событие",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "jury-assignments"
+                ],
+                "parameters": [
+                    {
+                        "description": "Данные для создания связи",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/juryAssignmentsDto.CreateOneAssigmentsManyJury"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ApiResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ApiResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/jury-assignments/{id}": {
             "get": {
                 "description": "Получения связи жюри-событие по id связи",
@@ -326,6 +365,20 @@ const docTemplate = `{
                 },
                 "user_id": {
                     "type": "string"
+                }
+            }
+        },
+        "juryAssignmentsDto.CreateOneAssigmentsManyJury": {
+            "type": "object",
+            "properties": {
+                "event_id": {
+                    "type": "string"
+                },
+                "jury_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

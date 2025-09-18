@@ -214,7 +214,7 @@ func (h *JuryAssignmentHandler) CreateJuryAssignments(w http.ResponseWriter, r *
 // @Param credentials body juryAssignmentsDto.CreateOneAssigmentsManyJury true "Данные для создания связи"
 // @Success 200 {object} response.ApiResponse
 // @Failure 400 {object} response.ApiResponse
-// @Router /api/jury-assignments [post]
+// @Router /api/jury-assignments/many [post]
 func (h *JuryAssignmentHandler) CreateManyJuryAssignments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -233,7 +233,6 @@ func (h *JuryAssignmentHandler) CreateManyJuryAssignments(w http.ResponseWriter,
 		return
 	}
 
-	// TODO!! service do
 	_, err = h.service.CreateMany(ctx, dto)
 	if err != nil {
 		if apiErr, ok := errs.IsApiError(err); ok {
