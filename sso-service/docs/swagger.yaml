@@ -707,6 +707,31 @@ paths:
       - BearerAuth: []
       tags:
       - users
+  /api/users/by-role:
+    post:
+      consumes:
+      - application/json
+      description: Получение всех пользователей по роли
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.ApiResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/user_dto.UserResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - users
   /api/users/change-password/{id}:
     post:
       consumes:
