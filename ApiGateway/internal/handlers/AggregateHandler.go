@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"sort"
 	"strings"
 	"time"
 )
@@ -69,6 +70,17 @@ func singleJoiningSlash(a, b string) string {
 	return a + "/" + b
 }
 
+// Вспомогательная функция: убираем пустые строки из slice
+func filterEmpty(s []string) []string {
+	var result []string
+	for _, str := range s {
+		if str != "" {
+			result = append(result, str)
+		}
+	}
+	return result
+}
+
 func NewProxyHandler(route config.Route, jwtKey string) http.Handler {
 	target, err := url.Parse(route.Target)
 	if err != nil {
@@ -88,41 +100,50 @@ func NewProxyHandler(route config.Route, jwtKey string) http.Handler {
 			// Автоматическое определение mode по target.RawQuery
 			isQueryMode := target.RawQuery != ""
 			if path != "" && isQueryMode {
-				// Query mode: базовый путь без изменений, param из path
+				// Query mode: базовый путь без изменений, params из path
 				req.URL.Path = target.Path
 
-				paramValue := strings.TrimPrefix(path, "/") // Значение без слеша
+				// Парсим target query на ключи (в порядке появления)
+				targetQ, _ := url.ParseQuery(target.RawQuery)
+				paramKeys := make([]string, 0, len(targetQ))
+				for k := range targetQ {
+					paramKeys = append(paramKeys, k)
+				}
+				// Сортируем для стабильности (опционально; если порядок не важен, убери sort)
+				sort.Strings(paramKeys)
 
-				// Парсим и мержим query из target
+				// Парсим path на сегменты (e.g., "/3/abc" → []{"3", "abc"})
+				pathSegments := strings.Split(strings.TrimPrefix(path, "/"), "/")
+				pathSegments = filterEmpty(pathSegments) // Функция ниже, чтобы убрать пустые
+
+				log.Printf("Proxy Debug - Query Mode: Param Keys: %v, Path Segments: %v", paramKeys, pathSegments)
+
+				// Мержим query из target
 				q := req.URL.Query()
-				if target.RawQuery != "" {
-					targetQ, _ := url.ParseQuery(target.RawQuery)
-					// Добавляем все params из target (кроме первого, если нужно перезаписать; здесь мержим все)
-					for k, v := range targetQ {
-						for _, vv := range v {
-							q.Add(k, vv) // Add, чтобы не потерять множественные значения
-						}
-					}
-					// Берём первый ключ из targetQ и перезаписываем его значением из path
-					if len(targetQ) > 0 {
-						firstKey := "" // Или итерацией: for k := range targetQ { firstKey = k; break }
-						for k := range targetQ {
-							firstKey = k
-							break
-						}
-						q.Set(firstKey, paramValue) // Set перезаписывает
-						log.Printf("Proxy Debug - Query Mode: Target Path: %q, First Param: %q=%q, Final Query: %q",
-							target.Path, firstKey, paramValue, q.Encode())
+				for k, v := range targetQ {
+					for _, vv := range v {
+						q.Add(k, vv) // Добавляем дефолтные значения
 					}
 				}
+
+				// Маппим сегменты на ключи по порядку
+				for i, key := range paramKeys {
+					if i < len(pathSegments) {
+						paramValue := pathSegments[i]
+						q.Set(key, paramValue) // Set перезаписывает
+						log.Printf("Proxy Debug - Set Param: %q = %q", key, paramValue)
+					}
+				}
+
 				req.URL.RawQuery = q.Encode()
+				log.Printf("Proxy Debug - Target Path: %q, Final Query: %q", target.Path, req.URL.RawQuery)
 			} else {
-				// Path mode: appending в путь
+				// Path mode: без изменений
 				targetPath := target.Path
 				joinedPath := singleJoiningSlash(targetPath, path)
 				req.URL.Path = joinedPath
 
-				// Мержим query из target (если есть, но в path mode редко)
+				// Мерж query (редко в path mode)
 				if target.RawQuery != "" {
 					q := req.URL.Query()
 					targetQ, _ := url.ParseQuery(target.RawQuery)

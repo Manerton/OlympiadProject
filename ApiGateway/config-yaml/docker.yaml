@@ -155,7 +155,7 @@ HTTP_SERVERS_INFO:
     - prefix: "/jury-assignments/event/"
       aggregate: false
       target: "http://jury-service:8090/api/jury-assignments/event/"
-      skip_auth: false
+      skip_auth: true
 
     - prefix: "/jury-assignments/"
       aggregate: false
@@ -238,6 +238,16 @@ HTTP_SERVERS_INFO:
       roles: []
 
     - prefix: "/ApplicationEvent/"
+      aggregate: true
+      targets:
+        - url: "http://application-service:8082/applications/user/"
+          fields: [""]
+        - url: "http://event-service:8080/api/events/list"
+          fields: [""]
+      skip_auth: false
+      roles: []
+    
+    - prefix: "/ApprovedApplicationEvent/"
       aggregate: true
       targets:
         - url: "http://application-service:8082/applications/user/"
