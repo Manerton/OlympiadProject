@@ -133,7 +133,6 @@ func (a *App) initRoutes(router *chi.Mux,
 		r.Get("/api/users/by-role", userHandler.GetUsersByRole)
 
 		// schools GET
-		r.Get("/api/schools", schoolHandler.GetAll)
 		r.Get("/api/schools/count", schoolHandler.GetCount)
 		r.Get("/api/schools/{id}", schoolHandler.GetById)
 
