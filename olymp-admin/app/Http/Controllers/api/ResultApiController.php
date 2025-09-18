@@ -3,21 +3,26 @@
 namespace App\Http\Controllers\api;
 
 use App\Components\ApiHelper;
+use App\Components\Dictionaries\EventStatusDictionary;
 use App\Http\Controllers\Controller;
 use App\Repositories\AttendanceRepository;
 use App\Services\ApplicationService;
+use App\Services\EventService;
 
 class ResultApiController extends Controller
 {
     private AttendanceRepository $attendanceRepository;
     private ApplicationService $applicationService;
+    private EventService $eventService;
     public function __construct(
         AttendanceRepository $attendanceRepository,
-        ApplicationService $applicationService
+        ApplicationService $applicationService,
+        EventService $eventService
     )
     {
         $this->attendanceRepository = $attendanceRepository;
         $this->applicationService = $applicationService;
+        $this->eventService = $eventService;
     }
     public function resultByAttendance($id){
         $attendance = $this->attendanceRepository->get($id);
@@ -66,5 +71,14 @@ class ResultApiController extends Controller
             }
         }
         return response()->json(ApiHelper::prepareResponse($events));
+        /*
+            $applications = $this->applicationService->apiFindByUserId($id);
+            $events = array_filter($this->eventService->findAll(), function($event){
+                $event->conclude = EventStatusDictionary::CONCLUDE_OFF;
+            });
+            return response()->json(ApiHelper::prepareResponse(
+                array_intersect(array_column($events, 'id'), array_column($applications, 'event_id'))
+            ));
+         */
     }
 }
