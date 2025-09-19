@@ -219,7 +219,7 @@ func (c *RabbitConsumer) update(ctx context.Context, tableName string, data map[
 	switch tableName {
 	case EVENT_TABLE:
 		eventDTO := event_dto.UpdateEventDTORequest{}
-		if err := MapToStructViaJSON(data, eventDTO); err != nil {
+		if err := MapToStructViaJSON(data, &eventDTO); err != nil {
 			return fmt.Errorf("failed convert data to dto")
 		}
 		err := c.eventService.UpdateEvent(ctx, id, eventDTO)
