@@ -439,6 +439,46 @@ func (s *EventService) checkCorrectEventDTO(ctx context.Context, eventModel *eve
 	return nil
 }
 
+func (s *EventService) FinishedEvents(ctx context.Context, id string) error {
+	const op = "services.EventService.FinishedEvents"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		log.Error("failed parse id to uuid", slog.String("id", id), liblogger.Err(err))
+		return errs.ErrBadRequest.Wrap("failed parse id")
+	}
+
+	parentEvent, err := s.eventRepository.GetEventByID(ctx, s.db, uid)
+	if err != nil {
+		log.Error("failed get event by id", slog.String("id", id), liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed get by id")
+	}
+
+	parentEvent.Finished = event.Finished
+	err = s.eventRepository.UpdateEvent(ctx, s.db, parentEvent)
+	if err != nil {
+		log.Error("failed update status finished", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failed update finished status")
+	}
+
+	err = s.clasterFinished(ctx, parentEvent.ID)
+	if err != nil {
+		log.Error("failed get finish childs", liblogger.Err(err))
+		return errs.ErrInternalError.Wrap("failde claster finished events")
+	}
+
+	return nil
+}
+
+func (s *EventService) clasterFinished(ctx context.Context, parentId uuid.UUID) error {
+
+	return nil
+}
+
 // Create event
 func (s *EventService) CreateEvent(ctx context.Context, eventDTO event_dto.CreateEventDTORequest) (uuid.UUID, error) {
 	const op = "services.event_service.CreateEvent"

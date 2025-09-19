@@ -23,12 +23,15 @@ type EventServiceInterface interface {
 
 	GetEventByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string) (event_dto.DetailsEvent, error)
 	GetEventsByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string, offset, limit *int, order *string) ([]event_dto.DetailsEvent, error)
+
 	GetCountEventsByType(ctx context.Context, eventType event.EventType) (int64, error)
 	GetCountEventsByPreviousID(ctx context.Context, previousID string) (int64, error)
 	GetEventsByType(ctx context.Context, eventType event.EventType, offset, limit *int, order *string) ([]event_dto.EventDTOResponse, error)
 	GetEventsTypeStageAndHisChilds(ctx context.Context, id string) ([]event_dto.EventDTOResponse, error)
 	GetEventsByPreviousID(ctx context.Context, previousID string, offset, limit *int, order *string) ([]event_dto.EventDTOResponse, error)
 	GetEventsByListID(ctx context.Context, ids []string) ([]event_dto.EventDTOResponse, error)
+
+	FinishedEvents(ctx context.Context, id string) error
 
 	CreateEvent(ctx context.Context, eventDTO event_dto.CreateEventDTORequest) (uuid.UUID, error)
 	UpdateEvent(ctx context.Context, id string, eventDTO event_dto.UpdateEventDTORequest) error
@@ -557,6 +560,27 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	render.JSON(w, r, response.SuccessResponse(fmt.Sprintf("id = %v", id)))
+}
+
+func (h *EventHandler) FinishedEvents(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	id := chi.URLParam(r, "id")
+
+	err := h.service.FinishedEvents(ctx, id)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+
+	render.JSON(w, r, response.SuccessResponse("success finished"))
 }
 
 // @Summery update event
