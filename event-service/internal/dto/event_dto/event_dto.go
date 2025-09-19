@@ -17,6 +17,7 @@ type EventDTOResponse struct {
 	PreviousEventID *uuid.UUID          `json:"previous_event_id"`
 	Subject         int                 `json:"subject"`
 	AdditionalInfo  string              `json:"additional_info"`
+	Finished        int                 `json:"finished"`
 	Events          *[]EventDTOResponse `json:"events"`
 }
 
@@ -63,4 +64,5 @@ type UpdateEventDTORequest struct {
 	Subject        *string    `json:"subject"`
 	ClassNumber    *int       `json:"class_number"`
 	AdditionalInfo *string    `json:"additional_info"`
+	Finished       *int       `json:"finished"`
 }

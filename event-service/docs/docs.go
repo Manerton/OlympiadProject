@@ -870,6 +870,9 @@ const docTemplate = `{
                         "$ref": "#/definitions/event_dto.EventDTOResponse"
                     }
                 },
+                "finished": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -883,7 +886,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "subject": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
@@ -898,6 +901,9 @@ const docTemplate = `{
                 },
                 "end_date": {
                     "type": "string"
+                },
+                "finished": {
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"

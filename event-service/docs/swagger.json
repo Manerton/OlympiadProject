@@ -864,6 +864,9 @@
                         "$ref": "#/definitions/event_dto.EventDTOResponse"
                     }
                 },
+                "finished": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -877,7 +880,7 @@
                     "type": "string"
                 },
                 "subject": {
-                    "type": "string"
+                    "type": "integer"
                 }
             }
         },
@@ -892,6 +895,9 @@
                 },
                 "end_date": {
                     "type": "string"
+                },
+                "finished": {
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
