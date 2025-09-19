@@ -166,6 +166,18 @@ HTTP_SERVERS_INFO:
       aggregate: false
       target: "http://jury-service:8090/api/jury-assignments/event/many"
       skip_auth: false
+  
+    # RUD ТУТА
+    - prefix: "/jury-assignments/remove/"
+      aggregate: false
+      target: "http://jury-service:8090/api/jury-assignments/"
+      skip_auth: false
+
+    # C ТУТА
+    - prefix: "/jury-assignments/create"
+      aggregate: false
+      target: "http://jury-service:8090/api/jury-assignments"
+      skip_auth: false
 
     # ==================== Olimp-admin SERVICE ====================
     - prefix: "/appeal/store"

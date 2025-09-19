@@ -1,6 +1,6 @@
 // src/pages/StagesListPage.tsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams,useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Button, Spinner, Alert } from "react-bootstrap";
 import type { MyEvent } from "../../../types/event.ts";
 import { fetchOlympiadStages, fetchJuryStage } from "../../../../requests/EventsRequests";
@@ -9,6 +9,7 @@ import { UserRole } from "../../../../dictionary/role.js";
 import { EventType } from "../../../../dictionary/eventType.js";
 
 interface JuryMember {
+  Id?:  string;
   name: string;
   role: string;
 }
@@ -52,6 +53,7 @@ const StagesListPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!id) return;
@@ -195,7 +197,8 @@ const StagesListPage: React.FC = () => {
                       ))
                     )}
                     {user?.role === UserRole.Admin && (
-                      <Button variant="primary" className="w-100 m-3">
+                      <Button variant="primary" className="w-100 mt-1" onClick={() => navigate(`/JuryAssignPage/${stage.id}`, { state: { stage, olympiadId: id, assignedJury: jury } })}
+                      >
                         Назначить жюри
                       </Button>
                     )}

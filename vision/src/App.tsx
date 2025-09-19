@@ -54,6 +54,7 @@ import NotFoundPage from './components/General/Pages/ServicePages/NotFoundPage';
 import ForbiddenPage from './components/General/Pages/ServicePages/ForbiddenPage';
 import ForgotPasswordPage from './components/General/Helpers/RecoverPassword';
 import ChangePasswordBlock from './components/General/Pages/Profile/ChangePasswordPage';
+import JuryAssignPage from './components/General/Pages/Events/JuryAssignPage';
 
 function App() {
     return (
@@ -82,6 +83,12 @@ function App() {
                             <Route path="/EditEvent/:id" element={
                                 <ProtectedRoute allowedRoles={[UserRole.Admin, UserRole.Organizer]}>
                                     <EditEventPage />
+                                </ProtectedRoute>
+                            } />
+
+                            <Route path="/JuryAssignPage/:id" element={
+                                <ProtectedRoute allowedRoles={[UserRole.Admin, UserRole.Organizer]}>
+                                    <JuryAssignPage />
                                 </ProtectedRoute>
                             } />
 

@@ -86,9 +86,12 @@ export async function axiosUpdateEvent(token: string, event: MyEvent) {
 
 }
 
-export async function fetchAllJury(id: string) {
+export async function fetchAllJury(token: string, id: string) {
   const res = await axios.get(`${API_CONFIG.USERSBYROLE}/${id}`, {
     withCredentials: true,
+    headers: {
+      Authorization: `Bearer ${token}` // добавляем токен
+    }
   });
   return res.data.data; // массив всех существующих 
 }
@@ -99,3 +102,24 @@ export async function fetchJuryStage(id: string) {
   });
   return res.data.data; // массив уже назначенных
 }
+
+
+export async function CreateJuryStage(token: string, id: string, eventid: string) {
+  const res = await axios.get(`${API_CONFIG.CREATEJURY}/${id}`, {
+    withCredentials: true,
+    headers: {
+      Authorization: `Bearer ${token}` // добавляем токен
+    }
+  });
+}
+
+export async function DeleteJuryStage(token: string, id: string, eventid: string) {
+  const res = await axios.get(`${API_CONFIG.DELETEJURY}/${id}`, {
+    withCredentials: true,
+    headers: {
+      Authorization: `Bearer ${token}` // добавляем токен
+    }
+  });
+}
+
+
