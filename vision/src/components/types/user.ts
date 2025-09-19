@@ -30,6 +30,19 @@ export interface User {
     role: number
 }
 
+export interface Profile {
+    surname: string,
+    firstname: string,
+    patronymic: string,
+    phone_number: string,
+    birthdate: string,
+    gender: number,
+    school: string,
+    classnumber: number,
+    citezenship: number,
+    email: string,
+}
+
 export interface UserParticipant {
     User: User
     school: string

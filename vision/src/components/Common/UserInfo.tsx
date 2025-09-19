@@ -8,7 +8,7 @@ interface UserInfoBlockProps {
     actions?: React.ReactNode;
 }
 
-const UserInfoBlock: React.FC<UserInfoBlockProps> = ({ surname = "Иванов", firstname = "Иван", patronymic = "Иванович", email = "", actions }) => {
+const UserInfoBlock: React.FC<UserInfoBlockProps> = ({ surname, firstname, patronymic , email, actions }) => {
     return (
         <div>
             <div className="d-flex align-items-center m-4">
