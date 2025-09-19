@@ -15,6 +15,7 @@
                 <th>Дата начала олимпиады</th>
                 <th>Дата окончания олимпиады</th>
                 <th>Возрастная категория</th>
+                <th>Статус публикаций</th>
                 <th>Действия</th>
             </tr>
             </thead>
@@ -27,6 +28,7 @@
                     <td>{{ $event->start_date }}</td>
                     <td>{{ $event->end_date }}</td>
                     <td>{{ $event->class_number }} класс</td>
+                    <td>{{ $statuses[$event->finished] }}</td>
                     <td>
                         <a href="{{ route('event.show', $event->id) }}" class="btn btn-sm btn-primary">Просмотр</a>
                         <form action="{{ route('event.delete', $event->id) }}" method="POST" style="display:inline;">

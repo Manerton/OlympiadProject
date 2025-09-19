@@ -21,7 +21,7 @@ class SendNotificationJob extends BaseObject implements \yii\queue\JobInterface
     }
 
     public function execute($queue){
-        if ($this->id){
+        if ($this->id != 'ALL'){
             Yii::$app->websocket->sendTo($this->message, $this->id);
         }
         else {

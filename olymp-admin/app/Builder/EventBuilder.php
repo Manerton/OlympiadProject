@@ -22,6 +22,7 @@ class EventBuilder
         $event->subject = $item['subject'];
         $event->additional_info = $item['additional_info'];
         $event->events = $item['events'];
+        $event->finished = $item['finished'];
         return $event;
     }
 }

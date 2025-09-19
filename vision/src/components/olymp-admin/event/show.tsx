@@ -10,6 +10,7 @@ interface Event {
     start_date: string;
     end_date: string;
     class_number: string;
+    finished: string;
 }
 
 interface EventJury {
@@ -24,13 +25,16 @@ interface EventJury {
 interface SubjectDictionary {
     [key: string]: string;
 }
-
+interface EventStatusDictionary {
+    [key: string]: string;
+}
 const EventShow: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [event, setEvent] = useState<Event | null>(null);
     const [eventJuries, setEventJuries] = useState<EventJury[]>([]);
     const [subjects, setSubjects] = useState<SubjectDictionary>({});
+    const [statuses, setStatuses] = useState<EventStatusDictionary>({});
     const [loading, setLoading] = useState(true);
 
     const {accessToken} = useAuth()
@@ -46,6 +50,7 @@ const EventShow: React.FC = () => {
                 setEvent(response.data.event);
                 setEventJuries(response.data.eventJuries || []);
                 setSubjects(response.data.subjects || {});
+                setStatuses(response.data.statuses || {});
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching event data:', error);
@@ -131,6 +136,9 @@ const EventShow: React.FC = () => {
                                     <strong>Возрастная категория:</strong> {event.class_number} класс
                                 </li>
                                 <li className="list-group-item">
+                                    <strong>Статус публикации:</strong> {statuses[event.finished]}
+                                </li>
+                                <li className="list-group-item">
                                     <strong>Список жюри:</strong>
                                     {eventJuries.length > 0 ? (
                                         eventJuries.map(jury => (
@@ -173,16 +181,14 @@ const EventShow: React.FC = () => {
                             className="btn btn-success"
                             onClick={async () => {
                                 try {
-                                    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQG1haWwucnUiLCJleHAiOjE3ODU0OTE5MzksImlkIjoiMGU2OTkxOTQtZjc4MS00NWE2LTg3Y2YtNTRhOTYyMzI1Y2YyIiwicm9sZSI6MX0.-bc6ZKSP6Lbv6rYO89ZV65iWVHxCrFlUDPjM81N1Dyc';
                                     await axios.get(HOSTS['OLYMP_ADMIN'] + `/api/event/synchronize/${event.id}`, {
                                         headers: {
-                                            'Authorization': token,
+                                            'Authorization': accessToken,
                                             'Content-Type': 'application/json'
                                         },
                                         withCredentials: true
                                     });
-                                }
-                                catch {
+                                } catch {
 
                                 }
                             }
@@ -211,7 +217,26 @@ const EventShow: React.FC = () => {
                         >
                             Перейти к выставлению баллов
                         </button>
-
+                        <button
+                            className="btn btn-primary"
+                            onClick={
+                                async () => {
+                                    try {
+                                        await axios.get(HOSTS['OLYMP_ADMIN'] + `/api/event/publish/${event.id}`, {
+                                            headers: {
+                                                'Authorization': accessToken,
+                                                'Content-Type': 'application/json'
+                                            },
+                                            withCredentials: true
+                                        });
+                                    }
+                                    catch {
+                                    }
+                                }
+                            }
+                        >
+                            Опубликовать результаты
+                        </button>
                         <button
                             className="btn btn-danger"
                             onClick={handleDelete}

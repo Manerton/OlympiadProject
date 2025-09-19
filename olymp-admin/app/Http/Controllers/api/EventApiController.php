@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\api;
 
 use App\Components\Dictionaries\AttendanceDictionary;
+use App\Components\Dictionaries\EventStatusDictionary;
+use App\Components\Dictionaries\NotificationTypeDictionary;
 use App\Components\Dictionaries\SubjectDictionary;
 use App\Components\Dictionaries\TaskTypeDictionary;
+use App\Components\RabbitMQHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EventScoreRequest;
 use App\Http\Requests\TaskRequest;
@@ -17,6 +20,7 @@ use App\Services\AttendanceService;
 use App\Services\EventJuryService;
 use App\Services\EventScoreService;
 use App\Services\EventService;
+use App\Services\RabbitMQService;
 use App\Services\TaskService;
 use Illuminate\Http\Request;
 
@@ -32,6 +36,7 @@ class EventApiController extends Controller
     private TaskService $taskService;
     private EventScoreService $eventScoreService;
     private EventJuryService $eventJuryService;
+    private RabbitMQService $rabbitMQService;
     public function __construct(
         EventService $eventService,
         EventRepository $eventRepository,
@@ -42,7 +47,8 @@ class EventApiController extends Controller
         AttendanceService $attendanceService,
         TaskService $taskService,
         EventScoreService $eventScoreService,
-        EventJuryService $eventJuryService
+        EventJuryService $eventJuryService,
+        RabbitMQService $rabbitMQService
     )
     {
         $this->eventService = $eventService;
@@ -55,12 +61,14 @@ class EventApiController extends Controller
         $this->taskService = $taskService;
         $this->eventScoreService = $eventScoreService;
         $this->eventJuryService = $eventJuryService;
+        $this->rabbitMQService = $rabbitMQService;
     }
 
     public function index($page = 1){
         $events = $this->eventService->findAll($page);
         $eventsAmount = $this->eventRepository->getCount();
         $subjects = SubjectDictionary::getList();
+        $statuses = EventStatusDictionary::getList();
         return response()->json([
             'events' => array_map(function ($event) {
                 return (array)$event;
@@ -68,12 +76,14 @@ class EventApiController extends Controller
             'eventsAmount' => $eventsAmount,
             'subjects' => $subjects,
             'currentPage' => $page,
+            'statuses' => $statuses
         ]);
     }
     public function show($id){
         $event = $this->eventService->find($id);
         $eventJuries = $this->eventJuryService->findByEventId($event->id);
         $subjects = SubjectDictionary::getList();
+        $statuses = EventStatusDictionary::getList();
         return response()->json([
             'event' => (array)$event,
             'eventJuries' => array_map(function ($jury) {
@@ -86,7 +96,8 @@ class EventApiController extends Controller
                     ],
                 ];
             }, $eventJuries),
-            'subjects' => $subjects
+            'subjects' => $subjects,
+            'statuses' => $statuses
         ]);
     }
     public function task($id)
@@ -267,5 +278,29 @@ class EventApiController extends Controller
         return response()->json([]);
     }
     public function publish($id){
+        $this->rabbitMQService->publish(
+            [RabbitMQHelper::EVENT_QUEUE_NAME],
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
+            RabbitMQHelper::UPDATE,
+            RabbitMQHelper::EVENT_TABLE,
+            [
+                'finished' => EventStatusDictionary::CONCLUDE_ON
+            ],
+            [
+                'id' => $id
+            ]
+        );
+        $this->rabbitMQService->publish(
+            [RabbitMQHelper::NOTIFICATION_QUEUE_NAME],
+            RabbitMQHelper::ADMIN_QUEUE_NAME,
+            RabbitMQHelper::CREATE,
+            RabbitMQHelper::NOTIFICATION_TABLE,
+            [
+                'user_id' => 'ALL',
+                'message' => NotificationTypeDictionary::RESULT_PUBLISH,
+                'status' => NotificationTypeDictionary::ONLINE_NOTIFICATION
+            ]
+        );
+        return response()->json([]);
     }
 }

@@ -10,15 +10,19 @@ interface Event {
     start_date: string;
     end_date: string;
     class_number: string;
+    finished: string;
 }
 
 interface SubjectDictionary {
     [key: string]: string;
 }
-
+interface EventStatusDictionary {
+    [key: string]: string;
+}
 const EventIndex: React.FC = () => {
     const [events, setEvents] = useState<Event[]>([]);
     const [subjects, setSubjects] = useState<SubjectDictionary>({});
+    const [statuses, setStatuses] = useState<EventStatusDictionary>({});
     const [loading, setLoading] = useState<boolean>(true);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalEvents, setTotalEvents] = useState<number>(0);
@@ -39,6 +43,7 @@ const EventIndex: React.FC = () => {
         .then(response => {
             setEvents(response.data.events || []);
             setSubjects(response.data.subjects || {});
+            setStatuses(response.data.statuses || {});
             setTotalEvents(response.data.eventsAmount || 0);
             setCurrentPage(page);
             setLoading(false);
@@ -90,15 +95,16 @@ const EventIndex: React.FC = () => {
 
             <table className="table table-bordered table-striped">
                 <thead className="thead-dark">
-                    <tr>
-                        <th>#</th>
-                        <th>Название олимпиады</th>
-                        <th>Предмет</th>
-                        <th>Дата начала</th>
-                        <th>Дата окончания</th>
-                        <th>Возрастная категория</th>
-                        <th>Действия</th>
-                    </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Название олимпиады</th>
+                    <th>Предмет</th>
+                    <th>Дата начала</th>
+                    <th>Дата окончания</th>
+                    <th>Возрастная категория</th>
+                    <th>Статус публикации</th>
+                    <th>Действия</th>
+                </tr>
                 </thead>
                 <tbody>
                     {events.map((event, index) => (
@@ -109,14 +115,15 @@ const EventIndex: React.FC = () => {
                             <td>{event.start_date}</td>
                             <td>{event.end_date}</td>
                             <td>{event.class_number} класс</td>
+                            <td>{statuses[event.finished]}</td>
                             <td>
-                                <button 
+                                <button
                                     className="btn btn-sm btn-primary me-2"
                                     onClick={() => navigate(`/olymp-admin/event/show/${event.id}`)}
                                 >
                                     Просмотр
                                 </button>
-                                <button 
+                                <button
                                     className="btn btn-sm btn-danger"
                                     onClick={() => handleDelete(event.id)}
                                 >

@@ -18,6 +18,7 @@ class Event extends Model
     public $subject;
     public $additional_info;
     public $events;
+    public $finished;
     public function tasks(){
         return $this->hasMany(Task::class, 'event_id', 'id');
     }

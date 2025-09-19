@@ -18,4 +18,5 @@ class RabbitMQHelper
     public const SCHOOL_TABLE = 'school';
     public const APPLICATION_TABLE = 'applications';
     public const NOTIFICATION_TABLE = 'notification';
+    public const EVENT_TABLE = 'event';
 }
