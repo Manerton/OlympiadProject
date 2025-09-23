@@ -227,6 +227,40 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "description": "Удаление связи записи жюри на событие",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "jury-assignments"
+                ],
+                "parameters": [
+                    {
+                        "description": "Данные для удаления связей",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/juryAssignmentsDto.DeleteManyAssigmentsJury"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ApiResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ApiResponse"
+                        }
+                    }
+                }
             }
         },
         "/api/jury-assignments/{id}": {
@@ -374,7 +408,21 @@ const docTemplate = `{
                 "event_id": {
                     "type": "string"
                 },
-                "jury_ids": {
+                "user_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "juryAssignmentsDto.DeleteManyAssigmentsJury": {
+            "type": "object",
+            "properties": {
+                "event_id": {
+                    "type": "string"
+                },
+                "user_ids": {
                     "type": "array",
                     "items": {
                         "type": "string"

@@ -14,7 +14,16 @@ definitions:
     properties:
       event_id:
         type: string
-      jury_ids:
+      user_ids:
+        items:
+          type: string
+        type: array
+    type: object
+  juryAssignmentsDto.DeleteManyAssigmentsJury:
+    properties:
+      event_id:
+        type: string
+      user_ids:
         items:
           type: string
         type: array
@@ -244,6 +253,28 @@ paths:
       tags:
       - jury-assignments
   /api/jury-assignments/many:
+    delete:
+      description: Удаление связи записи жюри на событие
+      parameters:
+      - description: Данные для удаления связей
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/juryAssignmentsDto.DeleteManyAssigmentsJury'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      tags:
+      - jury-assignments
     post:
       consumes:
       - application/json
