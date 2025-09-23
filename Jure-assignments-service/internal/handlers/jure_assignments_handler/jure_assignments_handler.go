@@ -27,6 +27,8 @@ type JuryAssignmentsServiceInterface interface {
 
 	Update(context.Context, string, juryAssignmentsDto.UpdateJuryAssignmentsDTO) error
 	Delete(context.Context, string) error
+
+	DeleteManyAssigmentsJury(context.Context, juryAssignmentsDto.DeleteManyAssigmentsJury) error
 }
 
 type JuryAssignmentHandler struct {
@@ -312,4 +314,38 @@ func (h *JuryAssignmentHandler) DeleteJuryAssignments(w http.ResponseWriter, r *
 		return
 	}
 	render.JSON(w, r, response.SuccessResponse("object deleted"))
+}
+
+// @Summery Delete jury-assignments
+// @Description Удаление связи записи жюри на событие
+// @Tags jury-assignments
+// @Produce json
+// @Param  credentials body juryAssignmentsDto.DeleteManyAssigmentsJury true "Данные для удаления связей"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/jury-assignments/many [delete]
+func (h *JuryAssignmentHandler) DeleteManyAssigments(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	deletedDTO := juryAssignmentsDto.DeleteManyAssigmentsJury{}
+	err := render.DecodeJSON(r.Body, &deletedDTO)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failde decode body")))
+	}
+
+	err = h.service.DeleteManyAssigmentsJury(ctx, deletedDTO)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+
+	render.JSON(w, r, response.SuccessResponse("success deleted"))
 }

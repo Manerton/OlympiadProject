@@ -11,6 +11,7 @@ import (
 	"main/internal/lib/supportRequest"
 	"main/internal/models/jury_assignments"
 	"main/internal/storage/orm"
+	"sync"
 
 	"github.com/google/uuid"
 	"golang.org/x/sync/errgroup"
@@ -160,9 +161,9 @@ func (s *JuryAssignmentsService) CreateMany(ctx context.Context, dto juryAssignm
 
 	errGroup := errgroup.Group{}
 
-	ids := make(chan uuid.UUID, len(dto.JuryIDs))
+	ids := make(chan uuid.UUID, len(dto.UserIDs))
 
-	for _, juryId := range dto.JuryIDs {
+	for _, juryId := range dto.UserIDs {
 		tempDto := juryAssignmentsDto.CreateJuryAssignmentsDTO{UserID: juryId, EventID: dto.EventID}
 		errGroup.Go(func() error {
 			id, err := s.Create(ctx, tempDto)
@@ -362,6 +363,45 @@ func (s *JuryAssignmentsService) Delete(ctx context.Context, id string) error {
 		log.Error("failed delete jury-assinment", liblogger.Err(err))
 		return errs.ErrInternalError.Wrap("failed delete jury-assinment")
 	}
+	return nil
+}
+
+func (s *JuryAssignmentsService) DeleteManyAssigmentsJury(ctx context.Context, deletedDTO juryAssignmentsDto.DeleteManyAssigmentsJury) error {
+	const op = "services.juryAssignmentsService.DeleteManyAssigmentsJury"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	wg := sync.WaitGroup{}
+
+	eventUId, err := uuid.Parse(deletedDTO.EventID)
+	if err != nil {
+		log.Error("failde parse eventId to uuid", slog.String("eventId", deletedDTO.EventID), liblogger.Err(err))
+		return errs.ErrBadRequest.Wrap("invalid eventId")
+	}
+
+	for _, userId := range deletedDTO.UserIDs {
+		userUid, err := uuid.Parse(userId)
+		if err != nil {
+			log.Error("failde parse userId to uuid", slog.String("userId", userId), liblogger.Err(err))
+			return errs.ErrBadRequest.Wrap("invalid eventId")
+		}
+
+		juryAssignments := juryAssignmentsDto.JuryAssignmentsResponseDTO{
+			UserID:  userUid,
+			EventID: eventUId,
+		}
+		wg.Go(func() {
+			err := s.DeleteByFields(ctx, juryAssignments)
+			if err != nil {
+				log.Error("failed delete jury-assingment by fields", liblogger.Err(err))
+			}
+		})
+
+	}
+
+	wg.Wait()
 	return nil
 }
 

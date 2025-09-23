@@ -8,6 +8,11 @@ type JuryAssignmentsResponseDTO struct {
 	EventID uuid.UUID `json:"event_id" validate:"required"`
 }
 
+type JuryAssignmentsRequest struct {
+	UserID  string `json:"user_id" validate:"required"`
+	EventID string `json:"event_id" validate:"required"`
+}
+
 type CreateJuryAssignmentsDTO struct {
 	UserID  string `json:"user_id" validate:"required"`
 	EventID string `json:"event_id" validate:"required"`
@@ -19,11 +24,16 @@ type UpdateJuryAssignmentsDTO struct {
 }
 
 type OneJuryManyAssignments struct {
-	JuryID   uuid.UUID   `json:"jury_id" validate:"required"`
+	UserID   uuid.UUID   `json:"user_id" validate:"required"`
 	EventIDs []uuid.UUID `json:"event_ids" validate:"required"`
 }
 
 type CreateOneAssigmentsManyJury struct {
 	EventID string   `json:"event_id"`
-	JuryIDs []string `json:"jury_ids"`
+	UserIDs []string `json:"user_ids"`
+}
+
+type DeleteManyAssigmentsJury struct {
+	EventID string   `json:"event_id"`
+	UserIDs []string `json:"user_ids"`
 }

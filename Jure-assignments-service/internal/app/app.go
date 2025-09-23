@@ -99,6 +99,7 @@ func (a *App) initRoutes(router *chi.Mux, handler *jure_assignments_handler.Jury
 	router.Put("/api/jure-assignments/{id}", handler.UpdateJuryAssignments)
 
 	router.Delete("/api/jure-assignments/{id}", handler.DeleteJuryAssignments)
+	router.Delete("/api/jury-assignments/many", handler.DeleteManyAssigments)
 }
 
 func (a *App) MustRun() {
