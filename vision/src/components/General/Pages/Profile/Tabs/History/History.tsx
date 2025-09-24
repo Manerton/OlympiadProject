@@ -40,9 +40,9 @@ const HistoryTab: React.FC = () => {
         }
     }, [accessToken, user?.id]);
 
-    if (loading) return <div>Загрузка...</div>
+    if (loading) return <div className="text-center">Загрузка...</div>
 
-    if (events.length === 0) return <div>Вы не участвовали в олимпиадах</div>
+    if (events.length === 0) return <div className="text-center text-warning h4">Вы не участвовали в олимпиадах</div>
 
     function footer(event: MainEvent): ReactNode {
         return (

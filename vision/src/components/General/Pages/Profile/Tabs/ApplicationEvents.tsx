@@ -42,9 +42,9 @@ const ApplicationEventTab: React.FC = () => {
     }, [events]);
 
 
-    if (loading) return <div>Загрузка...</div>
+    if (loading) return <div className="text-center ">Загрузка...</div>
 
-    if (events.length === 0) return <div>Нет заявок на участие</div>
+    if (events.length === 0) return <div className="text-center text-warning h4">Нет заявок на участие</div>
 
     function footer(status: number, id: string) {
         return (

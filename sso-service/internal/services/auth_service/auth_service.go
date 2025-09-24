@@ -347,12 +347,6 @@ func (s *AuthService) RecoveryPassword(ctx context.Context, recoverDTO recover_d
 		return errs.ErrInternalError.Wrap("failed get user by email")
 	}
 
-	// // check password hash
-	// if !crypt.CheckPasswordHash(recoverDTO.Password, userResult.PasswordHash) {
-	// 	log.Error("uncorrect password")
-	// 	return errs.ErrAuthFailed.Wrap("uncorrect password")
-	// }
-
 	userResult.PasswordHash, err = crypt.HashPassword(recoverDTO.Password)
 	if err != nil {
 		log.Error("failed to hash password", liblogger.Err(err))

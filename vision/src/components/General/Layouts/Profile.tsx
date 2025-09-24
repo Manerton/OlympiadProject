@@ -99,7 +99,7 @@ const ProfileLayout: React.FC = () => {
                         </ul>
                     )}
                     
-s                    <div className="tab-content mt-3">
+                    <div className="tab-content mt-3">
                         <Outlet />
                     </div>
                 </div>

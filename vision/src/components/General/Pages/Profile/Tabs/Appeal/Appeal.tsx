@@ -30,9 +30,9 @@ const AppealTab: React.FC = () => {
     }, [])
 
 
-    if (loading) return <div>Загрузка...</div>
+    if (loading) return <div className="text-center">Загрузка...</div>
 
-    if (events.length === 0) return <div>Вы не подавали аппеляции</div>
+    if (events.length === 0) return <div className="text-center text-warning h4">Вы не подавали аппеляции</div>
 
     function footer(event: MainEvent): ReactNode {
         return (
