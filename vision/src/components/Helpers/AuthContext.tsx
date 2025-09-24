@@ -15,6 +15,7 @@ interface JwtPayload {
 interface AuthContextType {
     user: UserAuth | null
     accessToken: string | null
+    expires?: number
     initialized: boolean
     login: (email: string, password: string) => Promise<void>
     register: (data: RegisterForm) => Promise<void>
@@ -29,6 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [accessToken, setAccessToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(true); // флаг загрузки авторизации
     const [initialized, setInitialized] = useState(false);
+    const [expires, setExpires] = useState<number | undefined>(undefined);
 
     const register = async (data: RegisterForm) => {
         try {
@@ -40,10 +42,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const login = async (email: string, password: string) => {
         try {
-            const token = await axiosSSOLogin(email, password);
-            setAccessToken(token);
+            const result = await axiosSSOLogin(email, password);
+            setAccessToken(result.access_token);
+            setExpires(Date.now() + result.expires_in * 1000)
 
-            const decoded = jwtDecode<JwtPayload>(token);
+            const decoded = jwtDecode<JwtPayload>(result.access_token);
             setUser({
                 id: decoded.sub,
                 Email: decoded.email,
@@ -73,10 +76,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const refresh = async (): Promise<UserAuth | null> => {
         try {
-            const token = await axiosSSORefresh()
-            setAccessToken(token);
+            console.log("Refreshing token...")
 
-            const decoded = jwtDecode<JwtPayload>(token);
+            const result = await axiosSSORefresh()
+            setAccessToken(result.access_token);
+            setExpires(Date.now() + result.expires_in * 1000)
+
+            const decoded = jwtDecode<JwtPayload>(result.access_token);
             const newUser = { id: decoded.sub, Email: decoded.email, role: Number(decoded.role) };
             setUser(newUser);
             return newUser;
@@ -87,6 +93,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setInitialized(true);
         }
     };
+
+    useEffect(() => {
+        if (!accessToken || !expires) return;
+
+        const timeout = expires - Date.now() - 60_000; // обновляем за минуту до истечения
+
+        if (timeout > 0) {
+            const id = setTimeout(() => refresh(), timeout);
+            return () => clearTimeout(id);
+        }
+    }, [accessToken, expires]);
+
 
     // при монтировании вызываем refresh
     useEffect(() => {

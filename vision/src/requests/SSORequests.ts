@@ -8,10 +8,9 @@ export async function axiosSSORegister(data: RegisterForm) {
     return res.status;
 }
 
-export async function axiosSSOLogin(email: string, password: string): Promise<string> {
+export async function axiosSSOLogin(email: string, password: string) {
     const res = await axios.post(AUTH.login, { email, password }, { withCredentials: true });
-    const token = res.data.data.access_token;
-    return token
+    return res.data.data
 }
 
 export async function axiosSSOLogout(token: string) {
@@ -30,8 +29,7 @@ export async function axiosSSOLogout(token: string) {
 
 export async function axiosSSORefresh() {
     const res = await axios.post(AUTH.refresh, {}, { withCredentials: true });
-    const token = res.data.data.access_token;
-    return token
+    return res.data.data
 }
 
 export async function axiosSSOUserInfo(token: string, userId: string) {
