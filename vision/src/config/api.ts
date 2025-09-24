@@ -9,8 +9,9 @@ export const API_CONFIG = {
     JUREASSIGNMENTS: `${API_URL}/jury-assignments`,
     APPLICATION: `${API_URL}/applications`,
     USERSBYROLE:  `${API_URL}/users/by-role/`,
-    JURYBYSTAGE: `${API_URL}/jury-assignments/event/`,
+    JURYBYSTAGE: `${API_URL}/jury-names/`,
     CREATEJURY: `${API_URL}/jury-assignments/create`,
+    CREATEDELETEMANYJURY: `${API_URL}/jury-assignments/`,
     DELETEJURY: `${API_URL}/jury-assignments/remove/`,
 };
 

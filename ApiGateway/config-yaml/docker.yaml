@@ -63,6 +63,11 @@ HTTP_SERVERS_INFO:
       target: "http://sso-service:8181/api/users/by-role?role="
       skip_auth: false
 
+    - prefix: "/users/list/"
+      aggregate: false
+      target: "http://sso-service:8181/api/users/list"
+      skip_auth: false
+
     # ==================== PARTICIPANTS & SCHOOLS SERVICE (8181) ====================
     - prefix: "/participants/"
       aggregate: false
@@ -285,6 +290,16 @@ HTTP_SERVERS_INFO:
         - url: "http://olymp-admin:8083/api/appeal/events-appeal/"
           fields: [""]
         - url: "http://event-service:8080/api/events/list"
+          fields: [""]
+      skip_auth: false
+      roles: []
+
+    - prefix: "/jury-names/"
+      aggregate: true
+      targets:
+        - url: "http://jury-service:8090/api/jury-assignments/event/"
+          fields: [""]
+        - url: "http://sso-service:8181/api/users/list"
           fields: [""]
       skip_auth: false
       roles: []

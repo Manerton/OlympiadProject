@@ -25,7 +25,9 @@ func getStrategy(prefix string) strategy.AggregationStrategy {
 	case "/history-event/":
 		return strategy.NewHistoryEventStrategy(5 * time.Second)
 	case "/events-appeal/":
-		return strategy.NewHistoryEventStrategy(5 * time.Second)
+		return strategy.NewApprovedApplicationEventStrategy(5 * time.Second)
+	case "/jury-names/":
+		return strategy.NewJuryNamesStrategy(5 * time.Second)
 	default:
 		return nil
 	}

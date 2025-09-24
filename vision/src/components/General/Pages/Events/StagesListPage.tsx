@@ -3,16 +3,13 @@ import { useEffect, useState } from "react";
 import { useParams,useNavigate } from "react-router-dom";
 import { Container, Row, Col, Card, Button, Spinner, Alert } from "react-bootstrap";
 import type { MyEvent } from "../../../types/event.ts";
-import { fetchOlympiadStages, fetchJuryStage } from "../../../../requests/EventsRequests";
+import { fetchOlympiadStages} from "../../../../requests/EventsRequests";
+import { fetchJuryStage } from "../../../../requests/JuryRequests";
 import { useAuth } from "../../../Helpers/AuthContext";
 import { UserRole } from "../../../../dictionary/role.js";
 import { EventType } from "../../../../dictionary/eventType.js";
+import { JuryMember } from "../../../types/jury.js";
 
-interface JuryMember {
-  Id?:  string;
-  name: string;
-  role: string;
-}
 
 // helper: находит ближайшее событие в будущем
 const findNextEventId = (stage: MyEvent): string | null => {
@@ -52,9 +49,9 @@ const StagesListPage: React.FC = () => {
   const [juries, setJuries] = useState<{ [key: string]: JuryMember[] | null }>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user,accessToken } = useAuth();
   const navigate = useNavigate();
-
+  
   useEffect(() => {
     if (!id) return;
     setLoading(true);
@@ -71,7 +68,7 @@ const StagesListPage: React.FC = () => {
 
     stages.forEach((stage) => {
       if (!stage.id) return;
-      fetchJuryStage(stage.id)
+      fetchJuryStage(accessToken!,stage.id)
         .then((juryData) => {
           setJuries((prev) => ({ ...prev, [stage.id!]: juryData ?? [] }));
         })
@@ -184,7 +181,7 @@ const StagesListPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="col-4">
-                    <h6 className="mt-3 fw-bold">Список жюри</h6>
+                    <h6 className="mt-3 fw-bold">Список жюри:</h6>
                     {jury === null ? (
                       <p className="text-muted mb-1">Ошибка загрузки жюри</p>
                     ) : jury.length === 0 ? (
@@ -192,7 +189,8 @@ const StagesListPage: React.FC = () => {
                     ) : (
                       jury.map((member, idx) => (
                         <p key={idx} className="mb-1">
-                          <strong>{member.name}</strong> — {member.role}
+                          <>{member.name}</>
+                          {/*  — {member.role} */}
                         </p>
                       ))
                     )}

@@ -20,3 +20,9 @@ type ApplicationEvent struct {
 	AdditionalInfo string `json:"additional_info"`
 	Status         int    `json:"status"`
 }
+
+type JuryNames struct {
+	ID     string `json:"id"`
+	UserId string `json:"user_id"`
+	Name   string `json:"name"`
+}
