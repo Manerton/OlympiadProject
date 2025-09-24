@@ -341,7 +341,6 @@ func (h *EventHandler) GetEventsClassType(w http.ResponseWriter, r *http.Request
 			"amount": int(count),
 		},
 	})
-
 }
 
 // @Summery Get count event type class
@@ -562,6 +561,16 @@ func (h *EventHandler) CreateEvent(w http.ResponseWriter, r *http.Request) {
 	render.JSON(w, r, response.SuccessResponse(fmt.Sprintf("id = %v", id)))
 }
 
+// @Summery finished event
+// @Security BearerAuth
+// @Description Завершение событий
+// @Tags events
+// @Accept json
+// @Produce json
+// @Param id path string true "id события"
+// @Success 200 {object} response.ApiResponse
+// @Failure 400 {object} response.ApiResponse
+// @Router /api/events/finished/{id} [put]
 func (h *EventHandler) FinishedEvents(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

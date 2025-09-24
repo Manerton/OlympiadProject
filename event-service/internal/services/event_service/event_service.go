@@ -465,7 +465,7 @@ func (s *EventService) FinishedEvents(ctx context.Context, id string) error {
 		return errs.ErrInternalError.Wrap("failed update finished status")
 	}
 
-	err = s.clasterFinished(ctx, parentEvent.ID)
+	err = s.cascadeFinished(ctx, parentEvent.ID)
 	if err != nil {
 		log.Error("failed get finish childs", liblogger.Err(err))
 		return errs.ErrInternalError.Wrap("failde claster finished events")
@@ -474,7 +474,27 @@ func (s *EventService) FinishedEvents(ctx context.Context, id string) error {
 	return nil
 }
 
-func (s *EventService) clasterFinished(ctx context.Context, parentId uuid.UUID) error {
+func (s *EventService) cascadeFinished(ctx context.Context, parentId uuid.UUID) error {
+
+	childEvents, err := s.eventRepository.GetEventsByPreviousID(ctx, s.db, parentId, nil, nil, nil)
+	if err != nil {
+		return err
+	}
+
+	for _, childEvent := range childEvents {
+		if childEvent.Finished != event.Finished {
+			childEvent.Finished = event.Finished
+			err = s.eventRepository.UpdateEvent(ctx, s.db, childEvent)
+			if err != nil {
+				return err
+			}
+		}
+
+		err = s.cascadeFinished(ctx, childEvent.ID)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

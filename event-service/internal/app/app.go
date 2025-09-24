@@ -100,6 +100,8 @@ func (a *App) initRoutes(router *chi.Mux,
 	router.Put("/api/events/{id}", eventHandler.UpdateEvent)
 	router.Delete("/api/events/{id}", eventHandler.DeleteEvent)
 
+	router.Put("/api/events/finished/{id}", eventHandler.FinishedEvents)
+
 	// init events route
 	// router.With(auth.RoleBasedAccess(userrole.AdminRole)).Group(func(r chi.Router) {
 	// 	r.Post("/api/events", eventHandler.CreateEvent)

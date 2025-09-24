@@ -518,6 +518,32 @@ paths:
       - BearerAuth: []
       tags:
       - events
+  /api/events/finished/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Завершение событий
+      parameters:
+      - description: id события
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      security:
+      - BearerAuth: []
+      tags:
+      - events
   /api/events/list:
     post:
       consumes:
