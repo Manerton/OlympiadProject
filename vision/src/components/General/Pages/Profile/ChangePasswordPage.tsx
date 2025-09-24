@@ -59,6 +59,7 @@ const ChangePasswordBlock: React.FC = () => {
                         value={form.oldPassword}
                         onChange={handleChange}
                         required
+                        autoComplete="current-password"
                     />
                 </div>
                 <div className="col-md-4">
@@ -70,6 +71,7 @@ const ChangePasswordBlock: React.FC = () => {
                         value={form.newPassword}
                         onChange={handleChange}
                         required
+                        autoComplete="new-password"
                     />
                 </div>
                 <div className="col-md-4">
@@ -81,6 +83,7 @@ const ChangePasswordBlock: React.FC = () => {
                         value={form.confirmPassword}
                         onChange={handleChange}
                         required
+                        autoComplete="new-password"
                     />
                 </div>
                 <div className="col-12">
