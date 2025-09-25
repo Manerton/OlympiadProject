@@ -2,18 +2,37 @@ import type React from "react";
 import type { ApplicationEvent } from "../../../../../types/event";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../../../../../Helpers/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { axiosResultGetByEventUser } from "../../../../../../requests/ResultRequests";
+import { Result } from "../../../../../types/result";
+import { tr } from "date-fns/locale";
 
 
 
 const ResultByEvent: React.FC = () => {
-    const {eventId} = useParams();
+    const { eventId } = useParams();
+    const { accessToken, user } = useAuth();
 
-    // const {accessToken, user} = useAuth();
+    const [allTasks, setAllTasks] = useState<Result[]>([]);
 
+    useEffect(() => {
+        async function fetchResult() {
+            try {
+                if (!accessToken || !user || !eventId) return;
 
-  
+                const result = await axiosResultGetByEventUser(
+                    accessToken, eventId, user.id
+                )
+
+                setAllTasks(result)
+            } catch (err) {
+                console.error("Ошибка загрузки результатов")
+            }
+        }
+
+        fetchResult()
+    }, [accessToken, user, eventId])
+
 
     return (
         <div>
@@ -31,12 +50,23 @@ const ResultByEvent: React.FC = () => {
                                     <tr>
                                         <th scope="col" className="col-2">#</th>
                                         <th scope="col" className="col-6">Название</th>
-                                        <th scope="col" className="col-2">Макс. Балл</th>
+                                        {/* <th scope="col" className="col-2">Макс. Балл</th> */}
                                         <th scope="col" className="col-2">Полученный Балл</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {}
+                                    {allTasks.map((task) => (
+                                        <tr>
+                                            <td>{task.task_id}</td>
+                                            <td>{task.task_number}</td>
+                                            <td>{task.points}</td>
+                                        </tr>
+                                    ))}
+                                    <tr className="table-warning">
+                                        <td>Сумма</td>
+                                        <td>Баллов</td>
+                                        <td>{allTasks.reduce((acc, cur) => acc + cur.points, 0)}</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -50,7 +80,7 @@ const ResultByEvent: React.FC = () => {
                     </h2>
                     <div id="panelsStayOpen-collapsePracticalPart" className="accordion-collapse collapse show" aria-labelledby="panelsStayOpen-headingPracticalPart">
                         <div className="accordion-body">
-                            
+
                         </div>
                     </div>
                 </div>
@@ -62,10 +92,10 @@ const ResultByEvent: React.FC = () => {
                     </h2>
                     <div id="panelsStayOpen-collapseTesting" className="accordion-collapse collapse show" aria-labelledby="panelsStayOpen-headingTesting">
                         <div className="accordion-body">
-                            
+
                         </div>
                     </div>
-                </div>  
+                </div>
 
             </div>
         </div>
