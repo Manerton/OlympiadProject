@@ -34,29 +34,29 @@ export async function fetchJuryStage(token: string, id: string): Promise<JuryMem
   }
 }
 
-export async function CreateSingleJuryStage(token: string, id: string, eventid: string) {
-  const res = await axios.get(`${API_CONFIG.CREATEJURY}/${id}`, {
-    withCredentials: true,
-    headers: {
-      Authorization: `Bearer ${token}` // добавляем токен
-    }
-  });
-}
+// export async function CreateSingleJuryStage(token: string, id: string, eventid: string) {
+//   const res = await axios.get(`${API_CONFIG.CREATEJURY}/${id}`, {
+//     withCredentials: true,
+//     headers: {
+//       Authorization: `Bearer ${token}` // добавляем токен
+//     }
+//   });
+// }
 
-export async function DeleteSingleJuryStage(token: string, id: string, eventid: string) {
-  const res = await axios.get(`${API_CONFIG.DELETEJURY}/${id}`, {
-    withCredentials: true,
-    headers: {
-      Authorization: `Bearer ${token}` // добавляем токен
-    }
-  });
-}
+// export async function DeleteSingleJuryStage(token: string, id: string, eventid: string) {
+//   const res = await axios.get(`${API_CONFIG.DELETEJURY}/${id}`, {
+//     withCredentials: true,
+//     headers: {
+//       Authorization: `Bearer ${token}` // добавляем токен
+//     }
+//   });
+// }
 
-export async function CreateJuryStage(token: string, ids: string[], eventid: string) {
+export async function CreateJuryStage(token: string, user_ids: string[], event_id: string) {
   try {
     const res = await axios.post(
-      `${API_CONFIG.CREATEDELETEMANYJURY}/`,
-      { ids, eventid }, // тело запроса
+      `${API_CONFIG.CREATEMANYJURY}`,
+      { event_id, user_ids  }, // тело запроса
       {
         withCredentials: true,
         headers: {
@@ -74,21 +74,30 @@ export async function CreateJuryStage(token: string, ids: string[], eventid: str
   }
 }
 
-export async function DeleteJuryStage(token: string, ids: string[], eventid: string) {
+export async function DeleteJuryStage(
+  token: string,
+  user_ids: string[],
+  event_id: string
+) {
   try {
-    const res = await axios.delete(`${API_CONFIG.CREATEDELETEMANYJURY}/`, {
-      withCredentials: true,
-      headers: {
-        Authorization: `Bearer ${token}`, // добавляем токен
-      },
-      data: { ids, eventid }, // тело запроса для delete
-    });
+    const res = await axios.post(
+      `${API_CONFIG.DELETEMANYJURY}`,
+      { event_id, user_ids }, // тело запроса
+      {
+        withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`, // заголовки
+        },
+      }
+    );
     return res.data;
   } catch (error: any) {
     console.error("DeleteJuryStage error:", error);
     return {
       success: false,
-      message: error.response?.data?.message || "Ошибка при удалении связи жюри и этапа",
+      message:
+        error.response?.data?.message ||
+        "Ошибка при удалении связи жюри и этапа",
     };
   }
 }

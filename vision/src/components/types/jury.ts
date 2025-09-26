@@ -4,3 +4,4 @@ export interface JuryMember {
   name: string;
   // role?: string;  // роли нет в API пока
 }
+

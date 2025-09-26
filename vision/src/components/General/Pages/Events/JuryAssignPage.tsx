@@ -9,6 +9,7 @@ import { useAuth } from "../../../Helpers/AuthContext";
 import { UserRole } from "../../../../dictionary/role.js";
 import { EventType } from "../../../../dictionary/eventType.js";
 import { JuryMember } from "../../../types/jury.js";
+import { auto } from "@popperjs/core/index.js";
 
 // helper: находит ближайшее событие в будущем
 const findNextEventId = (stage: MyEvent): string | null => {
@@ -116,28 +117,28 @@ const JuryAssignPage: React.FC = () => {
   const nextEventId = findNextEventId(stage);
 
   const availableFiltered = allJury.filter(
-    (member) => !assignedJury.some((assigned) => assigned.id === member.id)
+    (member) => !assignedJury.some((assigned) => assigned.user_id === member.user_id)
   );
 
   const addToAssigned = (member: JuryMember) => {
-    if (!member.id) return;
+    if (!member.user_id) return;
 
     setAssignedJury((prev) => [...prev, member]);
 
-    const id = member.id;
-    if (!originalAssigned.some((m) => m.id === id)) {
+    const id = member.user_id;
+    if (!originalAssigned.some((m) => m.user_id === id)) {
       setAddedIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
     }
     setRemovedIds((prev) => prev.filter((r) => r !== id));
   };
 
   const removeFromAssigned = (member: JuryMember) => {
-    if (!member.id) return;
+    if (!member.user_id) return;
 
-    setAssignedJury((prev) => prev.filter((m) => m.id !== member.id));
+    setAssignedJury((prev) => prev.filter((m) => m.user_id !== member.user_id));
 
-    const id = member.id;
-    if (originalAssigned.some((m) => m.id === id)) {
+    const id = member.user_id;
+    if (originalAssigned.some((m) => m.user_id === id)) {
       setRemovedIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
     }
     setAddedIds((prev) => prev.filter((a) => a !== id));
@@ -160,102 +161,110 @@ const JuryAssignPage: React.FC = () => {
   };
 
   return (
-    <Container className="py-4">
-      <h3 className="fw-bold mb-4">Назначение жюри для этапа: {stage.name}</h3>
-      <Row>
-        <Col md={12} className="mb-4">
-          <div className="shadow-sm mb-4">
-            <div className="row">
-              <div className="col-8">
-                <div className="d-flex align-items-center gap-3 mt-3 flex-wrap">
-                  {/* Этап */}
-                  <div
-                    className={`p-3 border rounded text-center card-stage ${
-                      nextEventId === stage.id ? "border-primary border-3 shadow" : ""
-                    }`}
-                  >
-                    <h6 className="fw-bold mb-3">{stage.name}</h6>
-                    <hr />
-                    <div className="justify-content-between">
-                      <div>
-                        <span className="badge bg-success mb-1">Начало</span>
-                        <p className="mb-0 fw-semibold">{formatDateTime(stage.start_date)}</p>
-                      </div>
-                      <div>
-                        <span className="badge bg-danger mb-1">Конец</span>
-                        <p className="mb-0 fw-semibold">{formatDateTime(stage.end_date)}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* ➝ если есть просмотр */}
-                  {stage.events?.some((c) => c.event_type === EventType.ViewWorks) && (
-                    <span className="fs-3">➝</span>
-                  )}
-
-                  {/* Просмотр работ */}
-                  {stage.events
-                    ?.filter((c) => c.event_type === EventType.ViewWorks)
-                    .map((view) => (
-                      <div
-                        key={view.id}
-                        className={`p-3 border rounded text-center card-stage ${
-                          nextEventId === view.id ? "border-primary border-3 shadow" : ""
-                        }`}
-                      >
-                        <h6 className="fw-bold mb-3">Просмотр работ</h6>
-                        <hr />
-
-                        <div className="justify-content-between">
-                          <div>
-                            <span className="badge bg-success mb-1">Начало</span>
-                            <p className="mb-0 fw-semibold">{formatDateTime(view.start_date)}</p>
-                          </div>
-                          <div>
-                            <span className="badge bg-danger mb-1">Конец</span>
-                            <p className="mb-0 fw-semibold">{formatDateTime(view.end_date)}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-
-                  {/* ➝ если есть апелляция */}
-                  {stage.events?.some((c) => c.event_type === EventType.Appeal) && (
-                    <span className="fs-3">➝</span>
-                  )}
-
-                  {/* Апелляция */}
-                  {stage.events
-                    ?.filter((c) => c.event_type === EventType.Appeal)
-                    .map((appeal) => (
-                      <div
-                        key={appeal.id}
-                        className={`p-3 border rounded text-center card-stage ${
-                          nextEventId === appeal.id ? "border-primary border-3 shadow" : ""
-                        }`}
-                      >
-                        <h6 className="fw-bold mb-3">Апелляция</h6>
-                        <hr />
-
-                        <div className="justify-content-between">
-                          <div>
-                            <span className="badge bg-success mb-1">Начало</span>
-                            <p className="mb-0 fw-semibold">{formatDateTime(appeal.start_date)}</p>
-                          </div>
-                          <div>
-                            <span className="badge bg-danger mb-1">Конец</span>
-                            <p className="mb-0 fw-semibold">{formatDateTime(appeal.end_date)}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
+   <Container className="py-4">
+  <h3 className="fw-bold mb-4 text-center">
+    Назначение жюри для этапа: {stage.name}
+  </h3>
+  <Row className="justify-content-center">
+    <Col md={12} className="mb-4 text-center">
+      <div className="shadow-sm mb-4">
+        <div className="d-flex align-items-center gap-3 mt-3 flex-wrap justify-content-center">
+          {/* Этап */}
+          <div
+            className={`p-3 border rounded text-center card-stage ${
+              nextEventId === stage.id ? "border-primary border-3 shadow" : ""
+            }`}
+          >
+            <h6 className="fw-bold mb-3">{stage.name}</h6>
+            <hr />
+            <div className="justify-content-between">
+              <div>
+                <span className="badge bg-success mb-1">Начало</span>
+                <p className="mb-0 fw-semibold">
+                  {formatDateTime(stage.start_date)}
+                </p>
+              </div>
+              <div>
+                <span className="badge bg-danger mb-1">Конец</span>
+                <p className="mb-0 fw-semibold">
+                  {formatDateTime(stage.end_date)}
+                </p>
               </div>
             </div>
           </div>
-          <hr />
-        </Col>
-      </Row>
+
+          {/* ➝ если есть просмотр */}
+          {stage.events?.some((c) => c.event_type === EventType.ViewWorks) && (
+            <span className="fs-3">➝</span>
+          )}
+
+          {/* Просмотр работ */}
+          {stage.events
+            ?.filter((c) => c.event_type === EventType.ViewWorks)
+            .map((view) => (
+              <div
+                key={view.id}
+                className={`p-3 border rounded text-center card-stage ${
+                  nextEventId === view.id ? "border-primary border-3 shadow" : ""
+                }`}
+              >
+                <h6 className="fw-bold mb-3">Просмотр работ</h6>
+                <hr />
+                <div className="justify-content-between">
+                  <div>
+                    <span className="badge bg-success mb-1">Начало</span>
+                    <p className="mb-0 fw-semibold">
+                      {formatDateTime(view.start_date)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="badge bg-danger mb-1">Конец</span>
+                    <p className="mb-0 fw-semibold">
+                      {formatDateTime(view.end_date)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+          {/* ➝ если есть апелляция */}
+          {stage.events?.some((c) => c.event_type === EventType.Appeal) && (
+            <span className="fs-3">➝</span>
+          )}
+
+          {/* Апелляция */}
+          {stage.events
+            ?.filter((c) => c.event_type === EventType.Appeal)
+            .map((appeal) => (
+              <div
+                key={appeal.id}
+                className={`p-3 border rounded text-center card-stage ${
+                  nextEventId === appeal.id ? "border-primary border-3 shadow" : ""
+                }`}
+              >
+                <h6 className="fw-bold mb-3">Апелляция</h6>
+                <hr />
+                <div className="justify-content-between">
+                  <div>
+                    <span className="badge bg-success mb-1">Начало</span>
+                    <p className="mb-0 fw-semibold">
+                      {formatDateTime(appeal.start_date)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="badge bg-danger mb-1">Конец</span>
+                    <p className="mb-0 fw-semibold">
+                      {formatDateTime(appeal.end_date)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+        </div>
+      </div>
+      <hr />
+    </Col>
+  </Row>
 
       <Row>
         <Col md={6}>

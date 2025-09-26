@@ -10,9 +10,8 @@ export const API_CONFIG = {
     APPLICATION: `${API_URL}/applications`,
     USERSBYROLE:  `${API_URL}/users/by-role/`,
     JURYBYSTAGE: `${API_URL}/jury-names/`,
-    CREATEJURY: `${API_URL}/jury-assignments/create`,
-    CREATEDELETEMANYJURY: `${API_URL}/jury-assignments/`,
-    DELETEJURY: `${API_URL}/jury-assignments/remove/`,
+    CREATEMANYJURY: `${API_URL}/jury-assignments/many`,
+    DELETEMANYJURY: `${API_URL}/jury-assignments/delete/many`,
 };
 
 export const AUTH = {

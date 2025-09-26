@@ -169,9 +169,14 @@ HTTP_SERVERS_INFO:
 
     - prefix: "/jury-assignments/many"
       aggregate: false
-      target: "http://jury-service:8090/api/jury-assignments/event/many"
+      target: "http://jury-service:8090/api/jury-assignments/many"
       skip_auth: false
-  
+
+    - prefix: "/jury-assignments/delete/many"
+      aggregate: false
+      target: "http://jury-service:8090/api/jury-assignments/delete/many"
+      skip_auth: false
+
     # RUD ТУТА
     - prefix: "/jury-assignments/remove/"
       aggregate: false
