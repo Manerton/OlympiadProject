@@ -323,7 +323,7 @@ func (h *JuryAssignmentHandler) DeleteJuryAssignments(w http.ResponseWriter, r *
 // @Param  credentials body juryAssignmentsDto.DeleteManyAssigmentsJury true "Данные для удаления связей"
 // @Success 200 {object} response.ApiResponse
 // @Failure 400 {object} response.ApiResponse
-// @Router /api/jury-assignments/many [delete]
+// @Router /api/jury-assignments/delete/many [post]
 func (h *JuryAssignmentHandler) DeleteManyAssigments(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

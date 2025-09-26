@@ -92,6 +92,42 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/jury-assignments/delete/many": {
+            "post": {
+                "description": "Удаление связи записи жюри на событие",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "jury-assignments"
+                ],
+                "parameters": [
+                    {
+                        "description": "Данные для удаления связей",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/juryAssignmentsDto.DeleteManyAssigmentsJury"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ApiResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ApiResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/jury-assignments/event/{id}": {
             "get": {
                 "description": "Получение всех связей жюри-событие по event-id",
@@ -210,40 +246,6 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/juryAssignmentsDto.CreateOneAssigmentsManyJury"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.ApiResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.ApiResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Удаление связи записи жюри на событие",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "jury-assignments"
-                ],
-                "parameters": [
-                    {
-                        "description": "Данные для удаления связей",
-                        "name": "credentials",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/juryAssignmentsDto.DeleteManyAssigmentsJury"
                         }
                     }
                 ],

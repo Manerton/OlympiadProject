@@ -194,6 +194,29 @@ paths:
             $ref: '#/definitions/response.ApiResponse'
       tags:
       - jury-assignments
+  /api/jury-assignments/delete/many:
+    post:
+      description: Удаление связи записи жюри на событие
+      parameters:
+      - description: Данные для удаления связей
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/juryAssignmentsDto.DeleteManyAssigmentsJury'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ApiResponse'
+      tags:
+      - jury-assignments
   /api/jury-assignments/event/{id}:
     get:
       description: Получение всех связей жюри-событие по event-id
@@ -253,28 +276,6 @@ paths:
       tags:
       - jury-assignments
   /api/jury-assignments/many:
-    delete:
-      description: Удаление связи записи жюри на событие
-      parameters:
-      - description: Данные для удаления связей
-        in: body
-        name: credentials
-        required: true
-        schema:
-          $ref: '#/definitions/juryAssignmentsDto.DeleteManyAssigmentsJury'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.ApiResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.ApiResponse'
-      tags:
-      - jury-assignments
     post:
       consumes:
       - application/json
