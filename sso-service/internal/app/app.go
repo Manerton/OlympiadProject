@@ -35,9 +35,8 @@ import (
 )
 
 type App struct {
-	storage interface{}
-	server  *http.Server
-	log     *slog.Logger
+	server *http.Server
+	log    *slog.Logger
 }
 
 func New(log *slog.Logger, cfg *config.Config) *App {
@@ -81,7 +80,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 
 	app := &App{log: log}
 	// init cors
-	app.initCors(router, cfg.AdditionalAddressesConfig)
+	// app.initCors(router, cfg.AdditionalAddressesConfig)
 	// init middleware
 	router.Use(midlogger.NewMidLogger(log))
 	router.Use(middleware.URLFormat)

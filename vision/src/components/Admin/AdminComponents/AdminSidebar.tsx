@@ -147,19 +147,19 @@ const AdminSidebar: React.FC = () => {
       </div>
 
       {/* Нижняя часть: Тема и выход */}
-      <div className="pb-3">
-        <div className="mb-2 px-2">
-          <ThemeToggleButton />
-        </div>
+      <div className="d-flex flex-column pb-3 justify-content-center align-items-center">
+          <div className="mb-4">
+            <ThemeToggleButton />
+          </div>
 
-        <Nav.Link
-          onClick={logout}
-          className="text-danger d-flex align-items-center px-2"
-        >
-          <BoxArrowLeft className="me-2" />
-          {!collapsed && "Выйти"}
-        </Nav.Link>
-      </div>
+          <Nav.Link
+            onClick={logout}
+            className="text-danger align-items-center px-2"
+          >
+            <BoxArrowLeft className="me-2" />
+            {!collapsed && "Выйти"}
+          </Nav.Link>
+        </div>
     </div>
   );
 };

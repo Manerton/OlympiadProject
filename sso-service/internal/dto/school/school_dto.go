@@ -1,17 +1,17 @@
 package school_dto
 
 type CreateSchoolRequestDTO struct {
-	Name   string `json:"name"`
-	Region string `json:"region"`
+	Name       string `json:"name"`
+	DistrictID string `json:"district_id"`
 }
 
 type UpdateSchoolRequestDTO struct {
-	Name   *string `json:"name"`
-	Region *string `json:"region"`
+	Name       *string `json:"name"`
+	DistrictID *string `json:"district_id"`
 }
 
 type SchoolResponseDTO struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	Region int    `json:"region"`
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	DistrictID string `json:"district_id"`
 }

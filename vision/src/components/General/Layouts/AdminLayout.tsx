@@ -1,6 +1,5 @@
 import React from 'react';
-import AdminSidebar from '../../Admin/AdminComponents/AdminSidebar.tsx';
-import Footer from './Footer';
+import AdminSidebar from '../../Admin/AdminComponents/AdminSidebar';
 import { Container } from 'react-bootstrap';
 import { Outlet } from 'react-router-dom';
 
@@ -15,7 +14,6 @@ const AdminLayout: React.FC = () => {
             <Outlet />
           </main>
         </Container>
-        <Footer />
       </div>
     </div>
   );

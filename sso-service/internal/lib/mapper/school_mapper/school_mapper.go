@@ -3,45 +3,40 @@ package school_mapper
 import (
 	school_dto "main/internal/dto/school"
 	"main/internal/models/school"
-	"strconv"
 
 	"github.com/google/uuid"
 )
 
 func FromModelToDTO(school school.School) school_dto.SchoolResponseDTO {
 	return school_dto.SchoolResponseDTO{
-		ID:     school.ID.String(),
-		Name:   school.Name,
-		Region: school.Region,
+		ID:         school.ID.String(),
+		Name:       school.Name,
+		DistrictID: school.DistrictID.String(),
 	}
 }
 
 func FromCreateDTOToModel(schoolDto school_dto.CreateSchoolRequestDTO) (school.School, error) {
 
-	regionNum, err := strconv.Atoi(schoolDto.Region)
+	districtID, err := uuid.Parse(schoolDto.DistrictID)
 	if err != nil {
 		return school.School{}, nil
 	}
 
 	return school.School{
-		Name:   schoolDto.Name,
-		Region: regionNum,
+		Name:       schoolDto.Name,
+		DistrictID: districtID,
 	}, nil
 }
 
 func FromUpdateDTOToModel(schoolDto school_dto.UpdateSchoolRequestDTO, uid uuid.UUID) (school.School, error) {
-	if schoolDto.Region == nil {
-		return school.School{}, nil
-	}
-
-	regionNum, err := strconv.Atoi(*schoolDto.Region)
+	districtID, err := uuid.Parse(*schoolDto.DistrictID)
 	if err != nil {
 		return school.School{}, nil
 	}
 
 	return school.School{
-		ID:     uid,
-		Name:   *schoolDto.Name,
-		Region: regionNum,
+		ID:         uid,
+		Name:       *schoolDto.Name,
+		DistrictID: districtID,
 	}, nil
 }

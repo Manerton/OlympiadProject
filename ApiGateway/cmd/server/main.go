@@ -33,7 +33,7 @@ func CORSMiddleware2(cfg *config.AdditionalAddressesConfig) func(next http.Handl
 				}
 			}
 
-			log.Println("ORIGIN", origin)
+			log.Printf("CORS check: Origin=%q, Allowed=%v", origin, cfg.AllowOrigins)
 
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 			w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
