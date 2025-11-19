@@ -16,6 +16,7 @@ import (
 type SchoolService interface {
 	GetAll(ctx context.Context, page, limit *int) ([]school_dto.SchoolResponseDTO, error)
 	GetById(ctx context.Context, id string) (school_dto.SchoolResponseDTO, error)
+	GetAllByDistrict(ctx context.Context, districtId string) ([]school_dto.SchoolResponseDTO, error)
 
 	GetCount(ctx context.Context) (int64, error)
 
@@ -63,6 +64,31 @@ func (h *SchoolHandler) GetCount(w http.ResponseWriter, r *http.Request) {
 		Data:       schoolCount,
 	})
 
+}
+
+func (h *SchoolHandler) GetAllByDistrict(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	id := chi.URLParam(r, "id")
+
+	result, err := h.schoolService.GetAllByDistrict(ctx, id)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       result,
+	})
 }
 
 // @Summery all

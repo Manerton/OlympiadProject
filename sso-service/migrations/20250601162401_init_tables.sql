@@ -17,12 +17,17 @@ CREATE TABLE users (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
-CREATE TABLE schools (
+CREATE TABLE districts (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(128) NOT NULL,
     region INTEGER NOT NULL
 );
 
+CREATE TABLE schools (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name VARCHAR(128) NOT NULL,
+    district_id UUID NOT NULL REFERENCES districts(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
 
 CREATE TABLE participants (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -40,3 +45,5 @@ CREATE INDEX idx_participants_user_id ON participants(user_id);
 -- +goose Down
 DROP TABLE IF EXISTS participants;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS districts;
+

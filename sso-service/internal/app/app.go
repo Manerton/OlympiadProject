@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"main/internal/config"
 	"main/internal/handlers/auth_handler"
+	"main/internal/handlers/district_handler"
 	"main/internal/handlers/participant_handler"
 	"main/internal/handlers/school_handler"
 	"main/internal/handlers/user_handler"
@@ -15,11 +16,13 @@ import (
 	"main/internal/middleware/base_access"
 	"main/internal/middleware/midlogger"
 	"main/internal/rabbitmq/consumer"
+	"main/internal/repositories/district_repository"
 	"main/internal/repositories/participant_repository"
 	"main/internal/repositories/refresh_repository"
 	"main/internal/repositories/school_repository"
 	"main/internal/repositories/user_repository"
 	"main/internal/services/auth_service"
+	"main/internal/services/district_service"
 	"main/internal/services/participant_service"
 	"main/internal/services/school_service"
 	"main/internal/services/user_service"
@@ -54,6 +57,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	participantRepository := &participant_repository.ParticipantRepository{}
 	schoolRepository := &school_repository.SchoolRepository{}
 	refreshRepository := &refresh_repository.RefreshRepository{}
+	districtRepository := &district_repository.DistrictRepository{}
 
 	// init notify client
 	notifyClient := notification_client.New(cfg.NotificationService)
@@ -63,12 +67,14 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	userService := user_service.New(log, gormORM, userRepository, participantRepository)
 	schoolService := school_service.New(log, gormORM, schoolRepository)
 	participantService := participant_service.New(log, gormORM, participantRepository)
+	districtService := district_service.New(log, gormORM, districtRepository)
 
 	// init handlers
 	userHandler := user_handler.New(userService)
 	authHandler := auth_handler.New(authService)
 	participantHandler := participant_handler.New(participantService)
 	schoolHandler := school_handler.New(schoolService)
+	districtHandler := district_handler.New(districtService)
 
 	// init rabbitMQ
 	rabbitConsumer := consumer.New(log, cfg.AddressRabbitPath, userService, participantService, authService, schoolService)
@@ -80,13 +86,13 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 
 	app := &App{log: log}
 	// init cors
-	// app.initCors(router, cfg.AdditionalAddressesConfig)
+	app.initCors(router, cfg.AdditionalAddressesConfig)
 	// init middleware
 	router.Use(midlogger.NewMidLogger(log))
 	router.Use(middleware.URLFormat)
 
 	// init routes
-	app.initRoutes(router, jwtManager, authHandler, userHandler, schoolHandler, participantHandler)
+	app.initRoutes(router, jwtManager, authHandler, userHandler, schoolHandler, participantHandler, districtHandler)
 
 	// init server
 	app.server = &http.Server{
@@ -102,7 +108,8 @@ func (a *App) initRoutes(router *chi.Mux,
 	authHandler *auth_handler.AuthHandler,
 	userHandler *user_handler.UserHandler,
 	schoolHandler *school_handler.SchoolHandler,
-	participantHandler *participant_handler.ParticipantHandler) {
+	participantHandler *participant_handler.ParticipantHandler,
+	districtHandler *district_handler.DistrictHandler) {
 
 	router.Get("/swagger/*", httpSwagger.WrapHandler)
 
@@ -113,7 +120,8 @@ func (a *App) initRoutes(router *chi.Mux,
 	router.Post("/api/users/register", authHandler.Register)
 	router.Post("/api/users/refresh", authHandler.Refresh)
 
-	router.Get("/api/schools", schoolHandler.GetAll)
+	router.Get("/api/districts/{region}", districtHandler.GetAllByRegion)
+	router.Get("/api/schools/district/{id}", schoolHandler.GetAllByDistrict)
 
 	router.With(base_access.BaseAccess(jwtManager)).Group(func(r chi.Router) {
 		// participant GET

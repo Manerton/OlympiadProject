@@ -16,6 +16,7 @@ import (
 type SchoolRepository interface {
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (school.School, error)
 	GetAll(ctx context.Context, orm orm.ORM, offset, limit *int) ([]school.School, error)
+	GetAllByDistrict(ctx context.Context, orm orm.ORM, districtId uuid.UUID) ([]school.School, error)
 
 	GetCount(ctx context.Context, orm orm.ORM) (int64, error)
 
@@ -41,7 +42,7 @@ func New(log *slog.Logger, orm orm.ORM, schoolRepository SchoolRepository) *Scho
 }
 
 func (s *SchoolService) GetCount(ctx context.Context) (int64, error) {
-	const op = "services.school_service.GetCount"
+	const op = "services.SchoolService.GetCount"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -57,7 +58,7 @@ func (s *SchoolService) GetCount(ctx context.Context) (int64, error) {
 }
 
 func (s *SchoolService) GetById(ctx context.Context, id string) (school_dto.SchoolResponseDTO, error) {
-	const op = "services.school_service.GetById"
+	const op = "services.SchoolService.GetById"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -84,7 +85,7 @@ func (s *SchoolService) GetById(ctx context.Context, id string) (school_dto.Scho
 }
 
 func (s *SchoolService) GetAll(ctx context.Context, page, limit *int) ([]school_dto.SchoolResponseDTO, error) {
-	const op = "services.school_service.GetAll"
+	const op = "services.SchoolService.GetAll"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -101,16 +102,32 @@ func (s *SchoolService) GetAll(ctx context.Context, page, limit *int) ([]school_
 		return nil, errs.ErrInternalError.Wrap("failed get all schools")
 	}
 
-	schoolDTO := make([]school_dto.SchoolResponseDTO, 0, len(schoolsResult))
-	for _, schoolRes := range schoolsResult {
-		schoolDTO = append(schoolDTO, school_mapper.FromModelToDTO(schoolRes))
+	return school_mapper.FromManyModelToDTO(schoolsResult), nil
+}
+
+func (s *SchoolService) GetAllByDistrict(ctx context.Context, districtId string) ([]school_dto.SchoolResponseDTO, error) {
+	const op = "services.SchoolService.GetAllByDistrict"
+
+	log := s.log.With(slog.String("op", op))
+
+	uid, err := uuid.Parse(districtId)
+	if err != nil {
+		log.Error("failed parse id to uuid", slog.String("districtId", districtId), liblogger.Err(err))
+		return nil, errs.ErrBadRequest.Wrap("failed parse id to uuid")
 	}
-	return schoolDTO, nil
+
+	schoolResult, err := s.schoolRepository.GetAllByDistrict(ctx, s.db, uid)
+	if err != nil {
+		log.Error("failed get all schools by districts", liblogger.Err(err))
+		return nil, errs.ErrInternalError
+	}
+
+	return school_mapper.FromManyModelToDTO(schoolResult), nil
 
 }
 
 func (s *SchoolService) Create(ctx context.Context, schoolDTO school_dto.CreateSchoolRequestDTO) (uuid.UUID, error) {
-	const op = "services.school_service.Create"
+	const op = "services.SchoolService.Create"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -131,7 +148,7 @@ func (s *SchoolService) Create(ctx context.Context, schoolDTO school_dto.CreateS
 }
 
 func (s *SchoolService) Update(ctx context.Context, id string, schoolDTO school_dto.UpdateSchoolRequestDTO) error {
-	const op = "services.school_service.Update"
+	const op = "services.SchoolService.Update"
 
 	log := s.log.With(
 		slog.String("op", op),
@@ -159,7 +176,7 @@ func (s *SchoolService) Update(ctx context.Context, id string, schoolDTO school_
 }
 
 func (s *SchoolService) Delete(ctx context.Context, id string) error {
-	const op = "services.school_service.Delete"
+	const op = "services.SchoolService.Delete"
 
 	log := s.log.With(
 		slog.String("op", op),

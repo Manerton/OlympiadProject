@@ -15,6 +15,14 @@ func FromModelToDTO(school school.School) school_dto.SchoolResponseDTO {
 	}
 }
 
+func FromManyModelToDTO(schools []school.School) []school_dto.SchoolResponseDTO {
+	schoolDTO := make([]school_dto.SchoolResponseDTO, 0, len(schools))
+	for _, schoolRes := range schools {
+		schoolDTO = append(schoolDTO, FromModelToDTO(schoolRes))
+	}
+	return schoolDTO
+}
+
 func FromCreateDTOToModel(schoolDto school_dto.CreateSchoolRequestDTO) (school.School, error) {
 
 	districtID, err := uuid.Parse(schoolDto.DistrictID)

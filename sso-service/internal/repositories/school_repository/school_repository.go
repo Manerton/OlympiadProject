@@ -24,7 +24,7 @@ func (r *SchoolRepository) GetCount(ctx context.Context, orm orm.ORM) (int64, er
 }
 
 func (r *SchoolRepository) GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (school.School, error) {
-	const op = "repositories.school_repository.GetById"
+	const op = "repositories.SchoolRepository.GetById"
 
 	schoolResult := school.School{}
 	err := orm.First(ctx, school.School{}, nil, &schoolResult, school.School{ID: id})
@@ -35,7 +35,7 @@ func (r *SchoolRepository) GetById(ctx context.Context, orm orm.ORM, id uuid.UUI
 }
 
 func (r *SchoolRepository) GetAll(ctx context.Context, orm orm.ORM, offset, limit *int) ([]school.School, error) {
-	const op = "repositories.school_repository.GetAll"
+	const op = "repositories.SchoolRepository.GetAll"
 
 	schoolsResult := []school.School{}
 	err := orm.Find(ctx, school.School{}, nil, offset, limit, nil, &schoolsResult, nil)
@@ -45,8 +45,19 @@ func (r *SchoolRepository) GetAll(ctx context.Context, orm orm.ORM, offset, limi
 	return schoolsResult, nil
 }
 
+func (r *SchoolRepository) GetAllByDistrict(ctx context.Context, orm orm.ORM, districtId uuid.UUID) ([]school.School, error) {
+	const op = "repositories.SchoolRepository.GetAllByDistrict"
+
+	schoolResult := []school.School{}
+	err := orm.Find(ctx, school.School{}, nil, nil, nil, nil, &schoolResult, school.School{DistrictID: districtId})
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return schoolResult, nil
+}
+
 func (r *SchoolRepository) Create(ctx context.Context, orm orm.ORM, school school.School) (uuid.UUID, error) {
-	const op = "repositories.school_repository.Create"
+	const op = "repositories.SchoolRepository.Create"
 
 	err := orm.Create(ctx, &school)
 	if err != nil {
@@ -56,7 +67,7 @@ func (r *SchoolRepository) Create(ctx context.Context, orm orm.ORM, school schoo
 }
 
 func (r *SchoolRepository) Update(ctx context.Context, orm orm.ORM, school school.School) error {
-	const op = "repositories.school_repository.Update"
+	const op = "repositories.SchoolRepository.Update"
 
 	err := orm.Updates(ctx, nil, &school)
 	if err != nil {
@@ -66,7 +77,7 @@ func (r *SchoolRepository) Update(ctx context.Context, orm orm.ORM, school schoo
 }
 
 func (r *SchoolRepository) Delete(ctx context.Context, orm orm.ORM, id uuid.UUID) error {
-	const op = "repositories.school_repository.Delete"
+	const op = "repositories.SchoolRepository.Delete"
 
 	err := orm.Delete(ctx, &school.School{ID: id})
 	if err != nil {
