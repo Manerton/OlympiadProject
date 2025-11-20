@@ -8,8 +8,9 @@ import (
 
 // DTO для создания заявки
 type CreateApplicationDTO struct {
-	UserID  uuid.UUID `json:"userId" binding:"required"`
-	EventID uuid.UUID `json:"eventId" binding:"required"`
+	UserID   uuid.UUID `json:"userId" binding:"required"`
+	EventID  uuid.UUID `json:"eventId" binding:"required"`
+	SchoolID uuid.UUID `json:"schoolId" binding:"required"`
 }
 
 // DTO для обновления статуса заявки
@@ -20,16 +21,18 @@ type UpdateApplicationDTO struct {
 }
 
 type DeleteApplicationDTO struct {
-	ID      uuid.UUID `json:"id"`
-	UserID  uuid.UUID `json:"userId"`
-	EventID uuid.UUID `json:"eventId"`
+	ID       uuid.UUID `json:"id"`
+	UserID   uuid.UUID `json:"userId"`
+	EventID  uuid.UUID `json:"eventId"`
+	SchoolID uuid.UUID `json:"schoolId"`
 }
 
 // DTO для возврата заявки
 type ApplicationResponseDTO struct {
-	ID      uuid.UUID `json:"id"`
-	UserID  uuid.UUID `json:"userId"`
-	EventID uuid.UUID `json:"eventId"`
+	ID       uuid.UUID `json:"id"`
+	UserID   uuid.UUID `json:"userId"`
+	SchoolID uuid.UUID `json:"schoolId"`
+	EventID  uuid.UUID `json:"eventId"`
 	//ВРЕМЕННО ПОДУМАТЬ НАСЧЕТ КЭШИРОВАНИЯ
 	// EventName     string    `json:"eventName"`     //ВРЕМЕННО
 	// EventLocation string    `json:"eventLocation"` //ВРЕМЕННО

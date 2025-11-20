@@ -68,6 +68,11 @@ HTTP_SERVERS_INFO:
       target: "http://sso-service:8181/api/users/list"
       skip_auth: false
 
+    - prefix: "/sms/verify-code/"
+      aggregate: false
+      target: "http://sso-service:8181/api/sms/verify-code"
+      skip_auth: false
+
     # ==================== PARTICIPANTS & SCHOOLS SERVICE (8181) ====================
     - prefix: "/participants/"
       aggregate: false
@@ -98,6 +103,17 @@ HTTP_SERVERS_INFO:
       aggregate: false
       target: "http://sso-service:8181/api/schools/count"
       skip_auth: false
+
+    - prefix: "/districts/"
+      aggregate: false
+      target: "http://sso-service:8181/api/districts"
+      skip_auth: true
+
+    - prefix: "/schools/district/"
+      aggregate: false
+      target: "http://sso-service:8181/api/schools/district"
+      skip_auth: true
+
 
     # ==================== EVENTS SERVICE (8080) ====================
     - prefix: "/events/"
@@ -151,6 +167,12 @@ HTTP_SERVERS_INFO:
       target: "http://application-service:8082/applications/event/"
       skip_auth: false
 
+      # TODO!!!
+    - prefix: "/applications/school/"
+      aggregate: false
+      target: "http://application-service:8082/applications/school/"
+      skip_auth: false
+
     - prefix: "/applications/user/"
       aggregate: false
       target: "http://application-service:8082/applications/user/"
@@ -200,6 +222,11 @@ HTTP_SERVERS_INFO:
       target: "http://olympic-notification:8084/api/email/send-code"
       skip_auth: true
 
+    - prefix: "/sms/send-code"
+      aggregate: false
+      target: "http://olympic-notification:8084/api/sms/send-code"
+      skip_auth: true
+
     - prefix: "/appeal/change-status/"
       aggregate: false
       target: "http://olymp-admin:8083/api/appeal/change-status"
@@ -241,6 +268,17 @@ HTTP_SERVERS_INFO:
       skip_auth: false
 
     # ==================== AGGREGATE ROUTES ====================
+    - prefix: "/applications/create/"
+      aggregate: true
+      targets:
+        - url: "http://sso-service:8181/api/participants/byuser/"
+          fields: [ "" ]
+        - url: "http://application-service:8082/applications/create"
+          fields: [ "" ]
+      skip_auth: false
+      roles: [ ]
+
+
     - prefix: "/AplicationEvent"
       aggregate: true
       services:

@@ -19,7 +19,8 @@ export const AUTH = {
     logout: `${API_URL}/logout`,
     refresh: `${API_URL}/refresh`,
     register: `${API_URL}/register`,
-    forgotPassword: `${API_URL}/users/forgot-password/`
+    forgotPassword: `${API_URL}/users/forgot-password/`,
+    verifySMS: `${API_URL}/verifySMS`,
 };
 
 export const SCHOOLS = {
@@ -58,7 +59,8 @@ export const HOSTS = {
 };
 
 export const NOTIFY = {
-    sendCode: `${API_URL}/email/send-code`
+    sendCode: `${API_URL}/email/send-code`,
+    sendSMSCode: `${API_URL}/sms/send-code`,
 }
 
 export default { API_CONFIG, HOSTS };

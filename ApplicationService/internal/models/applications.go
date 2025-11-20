@@ -7,9 +7,10 @@ import (
 )
 
 type Application struct {
-	ID      uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
-	UserID  uuid.UUID `gorm:"not null"`
-	EventID uuid.UUID `gorm:"not null"`
+	ID       uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	UserID   uuid.UUID `gorm:"not null"`
+	SchoolID uuid.UUID `gorm:"not null"`
+	EventID  uuid.UUID `gorm:"not null"`
 	//ВРЕМЕННО ПОДУМАТЬ НАСЧЕТ КЭШИРОВАНИЯ
 	// EventName     string    `gorm:"not null"` //ВРЕМЕННО
 	// EventLocation string    `gorm:"not null"` //ВРЕМЕННО

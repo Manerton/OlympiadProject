@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import type { RegisterForm, UserAuth } from "../types/user";
 import axios from "axios";
 import { AUTH } from "../../config/api";
-import jwtDecode from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { axiosSSOLogin, axiosSSOLogout, axiosSSORefresh, axiosSSORegister } from "../../requests/SSORequests";
 interface JwtPayload {

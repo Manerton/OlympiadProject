@@ -100,3 +100,13 @@ export async function axiosSSOForgotPassword(data: ForgotPasswordForm) {
     );
     return res.status
 }
+
+export async function axiosSSOVerifySMSCode(phoneNumber: string, code: string) {
+    const res = await axios.post(
+        AUTH.verifySMS,
+        { phone: phoneNumber, code },
+        { withCredentials: true }
+    );
+
+    return res.data;// TODO!! УТОЧНИТЬ НУЖНО ЛИ DATA
+}

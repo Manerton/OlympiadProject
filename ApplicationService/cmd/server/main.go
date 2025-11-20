@@ -85,7 +85,7 @@ func main() {
 
 	router.Get("/applications/event/{eventID}", applicationHandler.GetApplicationsByEventID)
 
-	router.Post("/applications", applicationHandler.CreateApplication)
+	router.Post("/applications/create", applicationHandler.CreateApplication)
 
 	router.Put("/applications/{id}", applicationHandler.UpdateApplicationStatus)
 	router.Delete("/applications/{id}", applicationHandler.DeleteApplication)

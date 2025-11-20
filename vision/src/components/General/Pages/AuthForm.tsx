@@ -1,390 +1,568 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Container,
-  Row,
-  Col,
-  Form,
-  Button,
-  InputGroup,
-  ListGroup,
+    Container,
+    Row,
+    Col,
+    Form,
+    Button,
+    InputGroup,
+    ListGroup,
 } from "react-bootstrap";
 import { EyeFill, EyeSlashFill } from "react-bootstrap-icons";
-import { useAuth } from "../../Helpers/AuthContext";
-import type { RegisterForm } from "../../types/user";
-import { useNavigate } from "react-router-dom";
 import { useMask } from "@react-input/mask";
-import { axiosSSOAllSchools } from "../../../requests/SSORequests";
+import { useAuth } from "../../Helpers/AuthContext";
 import type { School } from "../../types/schools";
+import type { RegisterForm } from "../../types/user";
+import axios from "axios";
+import {axiosSendSMSCode} from "../../../requests/NotificationRequests";
+import {axiosSSOVerifySMSCode} from "../../../requests/SSORequests";
+
+axios.defaults.baseURL = "http://localhost:6611";
 
 const AuthForm: React.FC = () => {
-  const navigate = useNavigate();
-  const [isRegister, setIsRegister] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [passwordMismatch, setPasswordMismatch] = useState(false);
+    const { login, register } = useAuth();
 
-  // Поля формы
-  const [firstName, setFirstName] = useState("");
-  const [surName, setSurname] = useState("");
-  const [patronymic, setPatronymic] = useState("");
-  const [birthdate, setBirthdate] = useState("");
-  const [classNumber, setClassNumber] = useState(0);
-  const [gender, setGender] = useState(0);
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [schoolQuery, setSchoolQuery] = useState("");
+    const [isRegister, setIsRegister] = useState(false);
+    const [step, setStep] = useState(1);
 
-  // Состояния для поиска школы
-  const [showList, setShowList] = useState(false);
-
-  const [allSchools, setAllSchools] = useState<School[]>([]);
-  const [filteredSchools, setFilteredSchools] = useState<School[]>([]);
-  const [selectedSchoolId, setSelectedSchoolId] = useState<string>("");
+    // Шаг 1 — ФИО + дата + пол
+    const [firstName, setFirstName] = useState("");
+    const [surName, setSurName] = useState("");
+    const [patronymic, setPatronymic] = useState("");
+    const [birthdate, setBirthdate] = useState("");
+    const [gender, setGender] = useState(1);
 
 
-  // State авторизации
-  const { login, register } = useAuth();
+    // Финальный шаг — SMS подтверждение
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [smsSent, setSmsSent] = useState(false);
+    const [smsCode, setSmsCode] = useState("");
+    const [isPhoneVerified, setIsPhoneVerified] = useState(false);
 
-  // Define phoneInputRef inside the component
-  const phoneInputRef = useMask({
-    mask: "+7 (___) ___-__-__",
-    replacement: { _: /\d/ },
-    showMask: true,
-  });
+    // Расширенная логика тайм-аутов
+    const [attempts, setAttempts] = useState(0);
+    const retryTimeouts = [60, 300, 300]; // 1 мин → 5 мин → 5 мин
+    const [cooldown, setCooldown] = useState(0);
+    const [errorSMS, setErrorSMS] = useState("");
 
-  const handleSchoolChange = (value: string) => {
-    setSchoolQuery(value);
+    const phoneInputRef = useMask({
+        mask: "+7 (___) ___-__-__",
+        replacement: { _: /\d/ },
+        showMask: true,
+    });
 
-    if (value.trim() === "") {
-      setFilteredSchools([]);
-      setShowList(false);
-      return;
-    }
+    // Шаг 3 — школа + класс
+    // Districts
+    const [districts, setDistricts] = useState([]);
+    const [selectedDistrictId, setSelectedDistrictId] = useState("");
 
-    const results = allSchools.filter((school) =>
-      school.name.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredSchools(results);
-    setShowList(true);
-  };
 
-  const selectSchool = (school: School) => {
-    setSchoolQuery(school.name);  // показываем название
-    setShowList(false);
-    // если нужно сохранять id для регистрации
-    setSelectedSchoolId(school.id);
-  };
+    // Schools
+    const [schoolsInDistrict, setSchoolsInDistrict] = useState([]);
+    const [selectedSchoolId, setSelectedSchoolId] = useState("");
+    const [schoolQuery, setSchoolQuery] = useState("");
+    const [classNumber, setClassNumber] = useState(5);
 
-  // Проверка совпадения паролей
-  const checkPasswordMatch = (pwd: string, confirmPwd: string) => {
-    if (isRegister && pwd && confirmPwd) {
-      setPasswordMismatch(pwd !== confirmPwd);
-    } else {
-      setPasswordMismatch(false);
-    }
-  };
+    // Шаг 4 — пароль
+    const [email, setEmail] = useState("");
+    const [emailError, setEmailError] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const passwordMismatch = password !== confirmPassword;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isRegister) {
-      // Блокируем отправку, если пароли не совпадают
-      if (passwordMismatch) {
-        return;
-      }
+    ////////////////////////////////////////////////
+    // SMS Logics
+    ////////////////////////////////////////////////
 
-      const registerData: RegisterForm = {
-        firstname: firstName,
-        surname: surName,
-        patronymic: patronymic,
-        email: email,
-        password: password,
-        phone_number: phoneNumber,
-        gender: gender.toString(),
-        school_id: selectedSchoolId,
-        birthdate: birthdate,
-        classnumber: classNumber.toString(),
-        disability: "1",
-      };
+    const sendSMS = async () => {
+        try {
+            setErrorSMS("");
 
-      try {
-        await register(registerData);
-      } catch (error) {
-        console.error("Registration error:", error);
-      }
-    } else {
-      try {
-        await login(email, password);
-        navigate("/");
-      } catch (error) {
-        console.error("Login error:", error);
-      }
-    }
-  };
+            const data = await axiosSendSMSCode(phoneNumber);
+            // data можно использовать, если backend вернёт что-то вроде { success: true }
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const schools = await axiosSSOAllSchools();
-        setAllSchools(schools);
-      } catch (err) {
-        console.error("Ошибка загрузки школ:", err);
-      }
-    })();
-  }, []);
+            setSmsSent(true);
 
-  return (
-    <Container fluid className="vh-100 d-flex align-items-center">
-      <Row className="w-100">
-        {/* Левая панель */}
-        <Col
-          md={6}
-          className="d-flex flex-column justify-content-center align-items-center text-center"
-          style={{
-            background: "linear-gradient(135deg, #3a8dde, #4fd1c5)",
-            color: "#fff",
-            padding: "2rem",
-            borderRadius: "10px 0 0 10px",
-          }}
-        >
-          <h1 className="fw-bold">Добро пожаловать</h1>
-          <p>
-            Пройдите{" "}
-            {isRegister
-              ? "регистрацию для участия в ВСОШ"
-              : "авторизацию в системе"}
-          </p>
-        </Col>
+            // выставляем задержку на повтор
+            const timeout = retryTimeouts[Math.min(attempts, retryTimeouts.length - 1)];
+            setCooldown(timeout);
 
-        {/* Правая панель */}
-        <Col
-          md={6}
-          className="bg-info-subtle p-4 d-flex flex-column justify-content-center border border-1"
-          style={{ borderRadius: "0 10px 10px 0" }}
-        >
-          {/* Заголовок */}
-          <div className="d-flex justify-content-center align-items-center mb-4">
-            <h4
-              className={`fw-bold m-0 px-2 ${!isRegister ? "text-primary" : "text-secondary"
-                }`}
-              style={{ cursor: "pointer" }}
-              onClick={() => setIsRegister(false)}
-            >
-              Авторизация
-            </h4>
-            <span
-              className="mx-2"
-              style={{ fontSize: "1.2rem", color: "#999" }}
-            >
-              /
-            </span>
-            <h4
-              className={`fw-bold m-0 px-2 ${isRegister ? "text-primary" : "text-secondary"
-                }`}
-              style={{ cursor: "pointer" }}
-              onClick={() => setIsRegister(true)}
-            >
-              Регистрация
-            </h4>
-          </div>
+        } catch (e) {
+            console.error("Error sending SMS:", e);
+            setErrorSMS("Ошибка отправки SMS. Попробуйте позже.");
+        }
+    };
 
-          {/* Форма */}
-          <Form onSubmit={handleSubmit}>
-            {isRegister && (
-              <>
-                <Form.Group className="mb-3">
-                  <Form.Control
-                    type="text"
+
+    const verifySMS = async () => {
+        try {
+            setErrorSMS("");
+
+            const result = await axiosSSOVerifySMSCode(phoneNumber, smsCode);
+
+            if (!result.data.success) {
+                throw new Error(result.message || "Неверный код");
+            }
+
+            setIsPhoneVerified(true);
+            await handleFinalSubmit();
+
+        } catch (e) {
+            console.error("Неверный код SMS:", e);
+
+            setErrorSMS("Неверный код. Попробуйте снова.");
+
+            setAttempts(a => {
+                const next = a + 1;
+                const timeout = retryTimeouts[Math.min(next, retryTimeouts.length - 1)];
+                setCooldown(timeout);
+                return next;
+            });
+        }
+    };
+
+
+
+
+
+    useEffect(() => {
+        if (cooldown <= 0) return;
+        const t = setInterval(() => setCooldown((c) => c - 1), 1000);
+        return () => clearInterval(t);
+    }, [cooldown]);
+
+
+    ////////////////////////////////////////////////
+    // School Search
+    ////////////////////////////////////////////////
+
+    useEffect(() => {
+        const fetchDistricts = async () => {
+            try {
+                const res = await axios.get(`/districts/30`);
+                setDistricts(res.data.data);
+            } catch (err) {
+                console.error("Ошибка загрузки округов:", err);
+            }
+        };
+
+        fetchDistricts();
+    }, []);
+
+    useEffect(() => {
+        if (!selectedDistrictId) return;
+
+        const fetchSchools = async () => {
+            try {
+                const res = await axios.get(`/schools/district/${selectedDistrictId}`);
+                setSchoolsInDistrict(res.data.data);
+            } catch (err) {
+                console.error("Ошибка загрузки школ:", err);
+            }
+        };
+
+        fetchSchools();
+    }, [selectedDistrictId]);
+
+
+    const validateEmail = (value: string) => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(value);
+    };
+
+    ////////////////////////////////////////////////
+    // Submit
+    ////////////////////////////////////////////////
+
+    const handleFinalSubmit = async () => {
+        const registerData: RegisterForm = {
+            firstname: firstName,
+            surname: surName,
+            patronymic,
+            email,
+            password,
+            phone_number: phoneNumber,
+            gender: gender.toString(),
+            school_id: selectedSchoolId,
+            birthdate,
+            classnumber: classNumber.toString(),
+            disability: "1",
+        };
+
+        try {
+            await register(registerData);
+        } catch (err) {
+            console.error("Registration error:", err);
+        }
+    };
+
+    ////////////////////////////////////////////////
+    // Step Components
+    ////////////////////////////////////////////////
+
+    const Step1 = () => (
+        <>
+            <h4 className="fw-bold mb-3">Шаг 1: Личная информация</h4>
+
+            <Form.Group className="mb-3">
+                <Form.Control
                     placeholder="Имя"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Control
-                    type="text"
+                />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+                <Form.Control
                     placeholder="Фамилия"
                     value={surName}
-                    onChange={(e) => setSurname(e.target.value)}
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Control
-                    type="text"
+                    onChange={(e) => setSurName(e.target.value)}
+                />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+                <Form.Control
                     placeholder="Отчество"
                     value={patronymic}
                     onChange={(e) => setPatronymic(e.target.value)}
-                  />
-                </Form.Group>
+                />
+            </Form.Group>
 
-                {/* Дата рождения */}
-                <Form.Group className="mb-3">
-                  <Form.Label>Дата рождения</Form.Label>
-                  <Form.Control
+            <Form.Group className="mb-3">
+                <Form.Label>Дата рождения</Form.Label>
+                <Form.Control
                     type="date"
                     value={birthdate}
                     onChange={(e) => setBirthdate(e.target.value)}
-                    isInvalid={birthdate !== "" && new Date(birthdate) > new Date()}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    Дата рождения не может быть в будущем
-                  </Form.Control.Feedback>
-                </Form.Group>
+                />
+            </Form.Group>
 
-                {/* Пол */}
-                <Form.Group className="mb-3">
-                  <Form.Label>Пол</Form.Label>
-                  <Form.Select
-                    value={gender}
-                    onChange={(e) => setGender(Number(e.target.value))}
-                  >
+            <Form.Group className="mb-3">
+                <Form.Label>Пол</Form.Label>
+                <Form.Select value={gender} onChange={(e) => setGender(Number(e.target.value))}>
                     <option value={1}>Мужской</option>
                     <option value={2}>Женский</option>
-                  </Form.Select>
-                </Form.Group>
-
-                {/* Телефон */}
-                <Form.Group className="mb-3">
-                  <Form.Control
-                    type="tel"
-                    placeholder="+7 (___) ___-__-__"
-                    ref={phoneInputRef}
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                  />
-                </Form.Group>
-
-                {/* Поле выбора образовательного учреждения с поиском */}
-                <Form.Group className="mb-3 position-relative">
-                  <Form.Control
-                    type="text"
-                    placeholder="Образовательное учреждение"
-                    value={schoolQuery}
-                    onChange={(e) => handleSchoolChange(e.target.value)}
-                    onBlur={() => setTimeout(() => setShowList(false), 150)}
-                    onFocus={() => schoolQuery && setShowList(true)}
-                  />
-                  {showList && filteredSchools.length > 0 && (
-                    <ListGroup
-                      style={{
-                        position: "absolute",
-                        top: "100%",
-                        width: "100%",
-                        zIndex: 1000,
-                        maxHeight: "150px",
-                        overflowY: "auto",
-                      }}
-                    >
-                      {filteredSchools.map((school) => (
-                        <ListGroup.Item
-                          key={school.id}
-                          action
-                          onClick={() => selectSchool(school)}
-                        >
-                          {school.name} (регион {school.region})
-                        </ListGroup.Item>
-                      ))}
-                    </ListGroup>
-                  )}
-                </Form.Group>
-
-                {/* Поле выбора класса */}
-                <Form.Group className="mb-3">
-                  <Form.Label>Класс</Form.Label>
-                  <Form.Select
-                    value={classNumber}
-                    onChange={(e) => setClassNumber(Number(e.target.value))}
-                  >
-                    {[...Array(7)].map((_, i) => {
-                      const grade = i + 5;
-                      return <option key={grade}>{grade}</option>;
-                    })}
-                  </Form.Select>
-                </Form.Group>
-              </>
-            )}
-
-            <Form.Group className="mb-3">
-              <Form.Control
-                type="email"
-                placeholder="Почта"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+                </Form.Select>
             </Form.Group>
 
+            <Button className="w-100" onClick={() => setStep(2)}>
+                Далее
+            </Button>
+        </>
+    );
+
+
+    const Step2 = () => (
+        <>
+            <h4 className="fw-bold mb-3">Шаг 2: Образовательное учреждение</h4>
+
+            {/* Выбор муниципального округа */}
             <Form.Group className="mb-3">
-              <InputGroup>
-                <Form.Control
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Пароль"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    checkPasswordMatch(e.target.value, confirmPassword);
-                  }}
-                />
-                <Button
-                  variant="outline-secondary"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeSlashFill /> : <EyeFill />}
-                </Button>
-              </InputGroup>
-            </Form.Group>
-
-            {!isRegister && (
-              <div className="d-flex justify-content-end">
-                <button
-                  type="button"
-                  className="btn btn-link pb-3"
-                  onClick={() => navigate("/recover-password")}
-                >
-                  Забыл пароль?
-                </button>
-              </div>
-            )}
-
-            {isRegister && (
-              <Form.Group className="mb-3">
-                <InputGroup>
-                  <Form.Control
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Повторите пароль"
-                    value={confirmPassword}
+                <Form.Label>Муниципальное образование</Form.Label>
+                <Form.Select
+                    value={selectedDistrictId}
                     onChange={(e) => {
-                      setConfirmPassword(e.target.value);
-                      checkPasswordMatch(password, e.target.value);
+                        setSelectedDistrictId(e.target.value);
+                        setSelectedSchoolId(""); // сбрасываем школу
                     }}
-                    isInvalid={passwordMismatch}
-                  />
-                  <Button
-                    variant="outline-secondary"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? <EyeSlashFill /> : <EyeFill />}
-                  </Button>
-                </InputGroup>
-                <Form.Control.Feedback type="invalid">
-                  Пароли не совпадают
-                </Form.Control.Feedback>
-              </Form.Group>
-            )}
+                >
+                    <option value="">Выберите округ...</option>
+                    {districts.map((d: any) => (
+                        <option key={d.id} value={d.id}>
+                            {d.name}
+                        </option>
+                    ))}
+                </Form.Select>
+            </Form.Group>
+
+            {/* Выбор школы */}
+            <Form.Group className="mb-3">
+                <Form.Label>Школа</Form.Label>
+                <Form.Select
+                    value={selectedSchoolId}
+                    disabled={!selectedDistrictId}
+                    onChange={(e) => {
+                        setSelectedSchoolId(e.target.value);
+                        setSchoolQuery(e.target.name);
+                    }}
+                >
+                    <option value="">Выберите школу...</option>
+                    {schoolsInDistrict.map((s: any) => (
+                        <option key={s.id} value={s.id}>
+                            {s.name}
+                        </option>
+                    ))}
+                </Form.Select>
+            </Form.Group>
+
+            {/* Выбор класса */}
+            <Form.Group className="mb-3">
+                <Form.Label>Класс</Form.Label>
+                <Form.Select value={classNumber} onChange={(e) => setClassNumber(Number(e.target.value))}>
+                    {[...Array(7)].map((_, idx) => {
+                        const n = idx + 5;
+                        return (
+                            <option key={n} value={n}>
+                                {n}
+                            </option>
+                        );
+                    })}
+                </Form.Select>
+            </Form.Group>
 
             <Button
-              variant="primary"
-              className="w-100"
-              type="submit"
-              disabled={isRegister && passwordMismatch}
+                className="w-100"
+                disabled={!selectedDistrictId || !selectedSchoolId}
+                onClick={() => setStep(3)}
             >
-              {isRegister ? "Создать аккаунт" : "Войти"}
+                Далее
             </Button>
-          </Form>
-        </Col>
-      </Row>
-    </Container>
-  );
+
+            <Button variant="secondary" className="w-100 mt-3" onClick={() => setStep(1)}>
+                Назад
+            </Button>
+        </>
+    );
+
+
+    const Step3 = () => (
+        <>
+            <h4 className="fw-bold mb-3">Шаг 3: Данные аккаунта</h4>
+
+            <Form.Group className="mb-3">
+                <Form.Control
+                    placeholder="Почта"
+                    value={email}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        setEmail(value);
+
+                        if (!validateEmail(value)) {
+                            setEmailError("Некорректный формат почты");
+                        } else {
+                            setEmailError("");
+                        }
+                    }}
+                    isInvalid={!!emailError}
+                />
+
+                <Form.Control.Feedback type="invalid">
+                    {emailError}
+                </Form.Control.Feedback>
+            </Form.Group>
+
+
+            <Form.Group className="mb-3">
+                <InputGroup>
+                    <Form.Control
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Пароль"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <Button onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <EyeSlashFill /> : <EyeFill />}
+                    </Button>
+                </InputGroup>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+                <InputGroup>
+                    <Form.Control
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Повторите пароль"
+                        value={confirmPassword}
+                        isInvalid={passwordMismatch}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                    />
+                    <Button onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                        {showConfirmPassword ? <EyeSlashFill /> : <EyeFill />}
+                    </Button>
+                </InputGroup>
+
+                {passwordMismatch && (
+                    <div className="text-danger mt-1">Пароли не совпадают</div>
+                )}
+
+            </Form.Group>
+
+            <Button
+                className="w-100"
+                disabled={!!emailError || !email || passwordMismatch}
+                onClick={() => setStep(4)}
+            >
+                Далее
+            </Button>
+
+            <Button variant="secondary" className="w-100 mt-3" onClick={() => setStep(2)}>
+                Назад
+            </Button>
+        </>
+    );
+
+    const Step4 = () => (
+        <>
+            <h4 className="fw-bold mb-3">Шаг 4: Подтверждение</h4>
+
+            <p>Проверьте данные и завершите регистрацию.</p>
+
+            <ListGroup className="mb-3">
+                <ListGroup.Item>ФИО: {surName} {firstName} {patronymic}</ListGroup.Item>
+                <ListGroup.Item>Дата рождения: {birthdate}</ListGroup.Item>
+                <ListGroup.Item>Телефон: {phoneNumber}</ListGroup.Item>
+                <ListGroup.Item>Почта: {email}</ListGroup.Item>
+                <ListGroup.Item>Школа: {schoolQuery}</ListGroup.Item>
+                <ListGroup.Item>Класс: {classNumber}</ListGroup.Item>
+            </ListGroup>
+
+            <Button className="w-100" onClick={() => setStep(5)}>
+                Продолжить
+            </Button>
+
+            <Button variant="secondary" className="w-100 mt-3" onClick={() => setStep(3)}>
+                Назад
+            </Button>
+        </>
+    );
+
+    const Step5 = () => (
+        <>
+            <h4 className="fw-bold mb-3">Почти всё готово!</h4>
+            <p>Осталось лишь подтвердить ваш номер телефона:<br/><b>{phoneNumber}</b></p>
+
+            <Form.Group> <Form.Control placeholder="+7 (___) ___-__-__" ref={phoneInputRef} value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} /> </Form.Group>
+
+            {!smsSent && (
+                <Button className="w-100 mt-3" onClick={sendSMS}>
+                    Отправить SMS-код
+                </Button>
+            )}
+
+            {smsSent && (
+                <>
+                    <Form.Control
+                        className="mt-3"
+                        placeholder="Введите код"
+                        value={smsCode}
+                        onChange={(e) => setSmsCode(e.target.value)}
+                    />
+
+                    {errorSMS && (
+                        <div className="text-danger mt-2">{errorSMS}</div>
+                    )}
+
+                    <Button className="w-100 mt-3" onClick={verifySMS}>
+                        Подтвердить
+                    </Button>
+
+                    <div className="mt-3 text-center">
+                        {cooldown > 0 ? (
+                            <span>Повторная отправка через {cooldown} сек.</span>
+                        ) : (
+                            <Button
+                                variant="link"
+                                className="p-0"
+                                onClick={sendSMS}
+                            >
+                                Отправить код повторно
+                            </Button>
+                        )}
+                    </div>
+                </>
+            )}
+
+            <Button variant="secondary" className="w-100 mt-4" onClick={() => setStep(4)}>
+                Назад
+            </Button>
+        </>
+    );
+
+    ////////////////////////////////////////////////
+    // Render
+    ////////////////////////////////////////////////
+
+    const renderStep = () => {
+        switch (step) {
+            case 1: return <Step1 />;
+            case 2: return <Step2 />;
+            case 3: return <Step3 />;
+            case 4: return <Step4 />;
+            case 5: return <Step5 />;
+            default: return <Step1 />;
+        }
+    };
+
+    return (
+        <Container fluid className="vh-100 d-flex align-items-center">
+            <Row className="w-100">
+                <Col md={6} className="d-flex flex-column justify-content-center align-items-center text-center"
+                     style={{
+                         background: "linear-gradient(135deg, #3a8dde, #4fd1c5)",
+                         color: "#fff",
+                         padding: "2rem",
+                         borderRadius: "10px 0 0 10px",
+                     }}
+                >
+                    <h1 className="fw-bold">Добро пожаловать</h1>
+                    <p>{isRegister ? "Регистрация в системе" : "Авторизация"}</p>
+                </Col>
+
+                <Col md={6} className="p-4 border border-1 d-flex flex-column"
+                     style={{ borderRadius: "0 10px 10px 0", height: "572px" }}
+                >
+                    {!isRegister ? (
+                        <>
+                            <h4 className="fw-bold mb-3">Авторизация</h4>
+
+                            <Form.Group className="mb-3">
+                                <Form.Control
+                                    placeholder="Почта"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            </Form.Group>
+
+                            <Form.Group className="mb-3">
+                                <Form.Control
+                                    type="password"
+                                    placeholder="Пароль"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                />
+                            </Form.Group>
+
+                            <Button className="w-100" onClick={() => login(email, password)}>
+                                Войти
+                            </Button>
+
+                            <div className="text-center mt-3">
+                                <Button variant="link" onClick={() => setIsRegister(true)}>
+                                    Создать аккаунт
+                                </Button>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="d-flex justify-content-between mb-4">
+                                <h4 className="fw-bold m-0">Регистрация</h4>
+                                <span>Шаг {step} / 5</span>
+                            </div>
+
+                            {renderStep()}
+
+                            <div className="text-center mt-3">
+                                <Button variant="link" onClick={() => setIsRegister(false)}>
+                                    Уже есть аккаунт?
+                                </Button>
+                            </div>
+                        </>
+                    )}
+                </Col>
+            </Row>
+        </Container>
+    );
 };
 
 export default AuthForm;
