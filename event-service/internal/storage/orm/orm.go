@@ -19,6 +19,7 @@ type ORM interface {
 	//
 	// order - ORDER BY
 	Find(ctx context.Context, model interface{}, fields *[]string, offset, limit *int, order *string, dest interface{}, conds ...interface{}) error
+	FindWithAdvancedQuery(ctx context.Context, model interface{}, filter interface{}, dest interface{}, query interface{}, args ...interface{}) error
 	First(ctx context.Context, model interface{}, fields *[]string, dest interface{}, conds ...interface{}) error
 
 	Count(ctx context.Context, model interface{}, count *int64, query interface{}, args ...interface{}) error
@@ -116,6 +117,16 @@ func (g *Gorm) Find(ctx context.Context, model interface{}, fields *[]string, of
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
+	return nil
+}
+
+func (g *Gorm) FindWithAdvancedQuery(ctx context.Context, model interface{}, filter interface{}, dest interface{}, query interface{}, args ...interface{}) error {
+	const op = "storage.orm.FindWithAdvancedQuery"
+	queryRes := g.DB.WithContext(ctx).Model(model).Where(query, args).Where(filter).Find(dest)
+	err := queryRes.Error
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
 	return nil
 }
 

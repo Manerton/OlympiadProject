@@ -30,6 +30,7 @@ type EventServiceInterface interface {
 	GetEventsTypeStageAndHisChilds(ctx context.Context, id string) ([]event_dto.EventDTOResponse, error)
 	GetEventsByPreviousID(ctx context.Context, previousID string, offset, limit *int, order *string) ([]event_dto.EventDTOResponse, error)
 	GetEventsByListID(ctx context.Context, ids []string) ([]event_dto.EventDTOResponse, error)
+	GetAvailableEventsByClass(ctx context.Context, parentEventId string, class string) ([]event_dto.EventDTOResponse, error)
 
 	FinishedEvents(ctx context.Context, id string) error
 
@@ -401,8 +402,34 @@ func (h *EventHandler) GetEventsTypeStageAndHisChilds(w http.ResponseWriter, r *
 	}
 
 	render.JSON(w, r, response.ApiResponse{
-		Status: response.StatusOK,
-		Data:   eventsDto,
+		Status:     response.StatusOK,
+		StatusCode: http.StatusOK,
+		Data:       eventsDto,
+	})
+}
+
+func (h *EventHandler) GetAvailableEventsByClass(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	parentEventId := chi.URLParam(r, "id")
+	classStr := r.URL.Query().Get("class")
+
+	availableEvents, err := h.service.GetAvailableEventsByClass(ctx, parentEventId, classStr)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.StatusOK,
+		StatusCode: http.StatusOK,
+		Data:       availableEvents,
 	})
 }
 

@@ -71,5 +71,4 @@ func (s *DistrictService) GetByID(ctx context.Context, id string) (district_dto.
 	}
 
 	return district_mapper.ToDTO(districtModel), nil
-
 }
