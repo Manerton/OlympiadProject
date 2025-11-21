@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS applications (
     code TEXT DEFAULT NULL,        -- например: 09_111_25
     submitted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+
+    CONSTRAINT unique_user_event UNIQUE (user_id, event_id)
 );
 
 -- +goose Down

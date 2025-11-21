@@ -32,6 +32,8 @@ func getStrategy(prefix string) strategy.AggregationStrategy {
 		return strategy.NewJuryNamesStrategy(timeSecond)
 	case "/available-event/":
 		return strategy.NewAvailableClassStrategy(timeSecond)
+	case "/applications/create/":
+		return strategy.NewApplicationCreateStrategy(timeSecond)
 	default:
 		return nil
 	}

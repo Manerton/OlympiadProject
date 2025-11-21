@@ -9,7 +9,6 @@ import { useAuth } from "../../../Helpers/AuthContext";
 import { UserRole } from "../../../../dictionary/role.js";
 import { EventType } from "../../../../dictionary/eventType.js";
 import { JuryMember } from "../../../types/jury.js";
-import { auto } from "@popperjs/core/index.js";
 
 // helper: находит ближайшее событие в будущем
 const findNextEventId = (stage: MyEvent): string | null => {

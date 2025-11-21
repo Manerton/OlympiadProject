@@ -35,6 +35,7 @@ export const USER = {
 
 export const APPLICATION = {
     getByUser: `${API_URL}/ApplicationEvent/`,
+    create: `${API_URL}/applications/create/`,
 };
 
 export const RESULT = {

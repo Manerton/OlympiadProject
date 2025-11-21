@@ -7,6 +7,7 @@ import CardImage from "./components/CardImage";
 import { fetchEvent, fetchStagesCount } from "../../../../requests/EventsRequests";
 import { useAuth } from "../../../Helpers/AuthContext.js";
 import { UserRole } from "../../../../dictionary/role.js";
+import {axiosCreateApplication} from "../../../../requests/ApplicationRequests";
 
 const OlympiadDetails: React.FC = () => {
   const { id } = useParams();
@@ -17,7 +18,7 @@ const OlympiadDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [stagesCount, setStagesCount] = useState<number | null>(null);
 
-  const {user} = useAuth()
+  const {user,accessToken} = useAuth()
 
   useEffect(() => {
     if (!id) return;
@@ -45,14 +46,9 @@ const OlympiadDetails: React.FC = () => {
 
     try {
       console.log("Отправка заявки на олимпиаду:", id);
-
       // TODO: заменить URL и userId на реальные
-      const response = await axios.post(`/api/applications`, {
-        olympiadId: id,
-        userId: 123, // пока мок
-      });
+       await axiosCreateApplication(accessToken as string,user.id,id)
 
-      console.log("Заявка успешно отправлена:", response.data);
       alert("Заявка успешно отправлена!");
     } catch (err) {
       console.error("Ошибка при отправке заявки:", err);

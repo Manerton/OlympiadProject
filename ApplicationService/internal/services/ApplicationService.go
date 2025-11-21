@@ -201,24 +201,27 @@ func (s *ApplicationService) DeleteByFilter(ctx context.Context, deleteDTO Appli
 
 func ConvertDTOtoApplication(dto ApplicationDto.CreateApplicationDTO) models.Application {
 	return models.Application{
-		UserID:  dto.UserID,
-		EventID: dto.EventID,
+		UserID:   dto.UserID,
+		EventID:  dto.EventID,
+		SchoolID: dto.SchoolID,
 	}
 }
 
 func ConvertDeleteDTOtoApplication(dto ApplicationDto.DeleteApplicationDTO) models.Application {
 	return models.Application{
-		ID:      dto.ID,
-		UserID:  dto.UserID,
-		EventID: dto.EventID,
+		ID:       dto.ID,
+		UserID:   dto.UserID,
+		EventID:  dto.EventID,
+		SchoolID: dto.SchoolID,
 	}
 }
 
 func ConvertFullDTOtoApplication(dto ApplicationDto.ApplicationResponseDTO) models.Application {
 	return models.Application{
-		ID:      dto.ID,
-		UserID:  dto.UserID,
-		EventID: dto.EventID,
+		ID:       dto.ID,
+		UserID:   dto.UserID,
+		EventID:  dto.EventID,
+		SchoolID: dto.SchoolID,
 		//EventName:     application.EventName,
 		//EventLocation: application.EventLocation,
 		//EventDate:     application.EventDate,

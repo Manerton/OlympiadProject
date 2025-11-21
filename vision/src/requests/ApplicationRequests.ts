@@ -35,3 +35,24 @@ export async function axiosGetApplicationEvents(token: string, userId: string) {
 
     return wrapped;
 }
+
+export async function axiosCreateApplication(token: string, userId: string, eventID : string)
+{
+    const data = {
+        userId: userId,
+        eventID: eventID
+    };
+    const res = await axios.post(
+        APPLICATION.create, data,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            withCredentials: true
+        }
+
+
+
+    );
+}
