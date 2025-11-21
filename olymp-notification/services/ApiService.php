@@ -64,9 +64,15 @@ class ApiService extends Component
      * @return array
      * @throws \yii\httpclient\Exception
      */
-    public function post($url, $data = [])
+    public function post($url, $data = [], $headers = [])
     {
-        $response = $this->client->post($url, $data)->send();
+        $request = $this->client->createRequest()
+            ->setMethod('POST')
+            ->setUrl($url)
+            ->setData($data)
+            ->setHeaders($headers);
+
+        $response = $request->send();
 
         if (!$response->isOk) {
             throw new \Exception('API request failed: ' . $response->statusCode);
