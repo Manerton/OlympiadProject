@@ -347,12 +347,12 @@ HTTP_SERVERS_INFO:
       skip_auth: false
       roles: []
 
-    - prefix: "/available-class/"
+    - prefix: "/available-event/"
       aggregate: true
       targets: 
         - url: "http://sso-service:8181/api/participants/byuser/"
           fields: [""]
-        - url: "http://event-service:8080//api/events/class/available/"
+        - url: "http://event-service:8080/api/events/class/available/"
           fields: [""]
       skip_auth: false
       roles: []

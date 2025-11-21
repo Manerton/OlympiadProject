@@ -16,18 +16,22 @@ import (
 	"time"
 )
 
+const timeSecond = 5 * time.Second
+
 func getStrategy(prefix string) strategy.AggregationStrategy {
 	switch prefix {
 	case "/aplicationevent":
-		return strategy.NewDefaultAggregationStrategy(5 * time.Second)
+		return strategy.NewDefaultAggregationStrategy(timeSecond)
 	case "/ApplicationEvent/":
-		return strategy.NewApplicationEventStrategy(5 * time.Second)
+		return strategy.NewApplicationEventStrategy(timeSecond)
 	case "/history-event/":
-		return strategy.NewHistoryEventStrategy(5 * time.Second)
+		return strategy.NewHistoryEventStrategy(timeSecond)
 	case "/events-appeal/":
-		return strategy.NewApprovedApplicationEventStrategy(5 * time.Second)
+		return strategy.NewApprovedApplicationEventStrategy(timeSecond)
 	case "/jury-names/":
-		return strategy.NewJuryNamesStrategy(5 * time.Second)
+		return strategy.NewJuryNamesStrategy(timeSecond)
+	case "/available-event/":
+		return strategy.NewAvailableClassStrategy(timeSecond)
 	default:
 		return nil
 	}
