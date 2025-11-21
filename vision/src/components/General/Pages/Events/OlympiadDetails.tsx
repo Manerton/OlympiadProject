@@ -7,7 +7,8 @@ import CardImage from "./components/CardImage";
 import { fetchEvent, fetchStagesCount } from "../../../../requests/EventsRequests";
 import { useAuth } from "../../../Helpers/AuthContext.js";
 import { UserRole } from "../../../../dictionary/role.js";
-import {axiosCreateApplication} from "../../../../requests/ApplicationRequests";
+import { axiosCreateApplication } from "../../../../requests/ApplicationRequests";
+import { subjectsMap } from "../../../../dictionary/subjectDictionary.js";
 
 const OlympiadDetails: React.FC = () => {
   const { id } = useParams();
@@ -18,7 +19,7 @@ const OlympiadDetails: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [stagesCount, setStagesCount] = useState<number | null>(null);
 
-  const {user,accessToken} = useAuth()
+  const { user, accessToken } = useAuth()
 
   useEffect(() => {
     if (!id) return;
@@ -47,7 +48,7 @@ const OlympiadDetails: React.FC = () => {
     try {
       console.log("Отправка заявки на олимпиаду:", id);
       // TODO: заменить URL и userId на реальные
-       await axiosCreateApplication(accessToken as string,user.id,id)
+      await axiosCreateApplication(accessToken as string, user.id, id)
 
       alert("Заявка успешно отправлена!");
     } catch (err) {
@@ -84,27 +85,27 @@ const OlympiadDetails: React.FC = () => {
         {/* Правая карточка */}
         <Col md={4}>
           <Card className="shadow-sm">
-            <CardImage subjectId={olympiad.subject ?? 0} width={400} height={150} />
+            {/* <CardImage subjectId={olympiad.subject ?? 0} width={400} height={150} /> */}
             <Card.Body>
               <Button variant="primary" className="w-100 mb-3" onClick={handleApply}>
                 Подать заявку
               </Button>
-              <Button variant="secondary" className="w-100 mb-3" onClick={handleGoToStages}>
+              {/* <Button variant="secondary" className="w-100 mb-3" onClick={handleGoToStages}>
                 Список этапов
-              </Button>
+              </Button> */}
               {user?.role === UserRole.Admin && (
-              <Button variant="secondary" className="w-100 mb-3" onClick={() => navigate(`/EditEvent/${id}`)}>
-                Редактировать
-              </Button>)}
+                <Button variant="secondary" className="w-100 mb-3" onClick={() => navigate(`/EditEvent/${id}`)}>
+                  Редактировать
+                </Button>)}
 
               <p><strong>Дата начала:</strong> {startDate}</p>
               <p><strong>Время:</strong> {endDate}</p>
-              <p>
+              {/* <p>
                 <strong>Количество этапов:</strong>{" "}
                 {stagesCount !== null ? stagesCount : "Загрузка..."}
-              </p>
-              <p><strong>Предмет:</strong> {olympiad.subject}</p>
-              <p><strong>Место проведения:</strong> ???</p>
+              </p> */}
+              <p><strong>Предмет:</strong> {subjectsMap[olympiad.subject!]}</p>
+              {/* <p><strong>Место проведения:</strong> ???</p>  */}
             </Card.Body>
           </Card>
         </Col>

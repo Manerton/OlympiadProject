@@ -62,10 +62,22 @@ export async function fetchOlympiads({
   return res.data; // { data, metadata }
 }
 
-export async function fetchOlympiadChildren(id: string) {
+export async function fetchOlympiadAvailableClassEvents(token: string, id: string) {
+  const res = await axios.get(`${API_CONFIG.AVAILABLE}/${id}`, {
+    withCredentials: true,
+    headers: {
+      Authorization: `Bearer ${token}` // добавляем токен
+    }
+  });
+
+  return res.data.data.data; // массив событий (с class_number)
+}
+
+export async function fetchOlympiadChild(token: string, id: string) {
   const res = await axios.get(`${API_CONFIG.CHILD}/${id}`, {
     withCredentials: true,
   });
+
   return res.data.data; // массив событий (с class_number)
 }
 
@@ -84,7 +96,4 @@ export async function axiosUpdateEvent(token: string, event: MyEvent) {
       Authorization: `Bearer ${token}` // добавляем токен
     }
   })
-
 }
-
-
