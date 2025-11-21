@@ -211,6 +211,35 @@ func (h *ApplicationHandler) GetApplicationsByEventID(w http.ResponseWriter, r *
 	})
 }
 
+func (h *ApplicationHandler) GetApplicationsBySchoolID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	idStr := chi.URLParam(r, "schoolID")
+
+	pageStr := r.URL.Query().Get("page")
+	limitStr := r.URL.Query().Get("limit")
+
+	page, limit, err := parser.ParsePageLimit(pageStr, limitStr)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed parse page/limit"))
+		return
+	}
+
+	h.logger.Info("Получение заявок по ID школы", slog.Any("eventID", idStr))
+	applications, err := h.service.GetApplicationsBySchoolID(ctx, idStr, page, limit)
+	if err != nil {
+		h.logger.Error("Ошибка получения заявок по ID школы", slog.Any("error", err))
+		http.Error(w, "Не удалось получить заявки", http.StatusInternalServerError)
+		return
+	}
+	//render.JSON(w, r, applications)
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       applications,
+	})
+}
+
 // Создание новой заявки
 func (h *ApplicationHandler) CreateApplication(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

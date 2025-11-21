@@ -167,3 +167,30 @@ func (r *ApplicationRepository) GetApplicationsByEventID(ctx context.Context, or
 
 	return applications, nil
 }
+
+// 8. Получение всех заявок по ID школы
+func (r *ApplicationRepository) GetApplicationsBySchoolID(ctx context.Context, orm orm.ORM, schoolID uuid.UUID, offset *int, limit *int) ([]models.Application, error) {
+	const op = "repositories.application_repository.GetApplicationsBySchoolID"
+
+	var applications []models.Application
+
+	// Условие для поиска
+	condition := models.Application{SchoolID: schoolID}
+
+	err := orm.Find(
+		ctx,
+		models.Application{}, // Модель
+		nil,                  // Поля (nil - выбираем все)
+		offset,               // Offset (nil - без offset)
+		limit,                // Limit (nil - без лимита)
+		nil,                  // Order (nil - без сортировки)
+		&applications,        // Куда записать результат
+		condition,            // Условия WHERE
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return applications, nil
+}

@@ -17,6 +17,7 @@ type ApplicationRepository interface {
 	GetAllApplications(ctx context.Context, orm orm.ORM, offset *int, limit *int) ([]models.Application, error)
 	GetApplicationsByUserID(ctx context.Context, orm orm.ORM, userID uuid.UUID, offset *int, limit *int) ([]models.Application, error)
 	GetApplicationsByEventID(ctx context.Context, orm orm.ORM, eventID uuid.UUID, offset *int, limit *int) ([]models.Application, error)
+	GetApplicationsBySchoolID(ctx context.Context, orm orm.ORM, schoolID uuid.UUID, offset *int, limit *int) ([]models.Application, error)
 	UpdateApplication(ctx context.Context, orm orm.ORM, application models.Application) error
 	DeleteApplicationByID(ctx context.Context, orm orm.ORM, id uuid.UUID) error
 	DeleteByFilter(ctx context.Context, orm orm.ORM, model models.Application) error
@@ -137,6 +138,30 @@ func (s *ApplicationService) GetApplicationsByEventID(ctx context.Context, event
 
 	// Получаем заявки из репозитория
 	applications, err := s.repository.GetApplicationsByEventID(ctx, s.db, uid, offset, limit)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	// Конвертируем в DTO перед передачей
+	return ConvertManyApplicationsToDTO(applications), nil
+}
+
+// Получение всех заявок события
+func (s *ApplicationService) GetApplicationsBySchoolID(ctx context.Context, schoolID string, page *int, limit *int) ([]ApplicationDto.ApplicationResponseDTO, error) {
+	const op = "services.application_service.GetApplicationsBySchoolID"
+	const errMsg = "failed to find applications by SchoolID"
+	uid, err := uuid.Parse(schoolID)
+	if err != nil {
+		return []ApplicationDto.ApplicationResponseDTO{}, fmt.Errorf("%s", errMsg)
+	}
+
+	offset := new(int)
+	if page != nil && limit != nil {
+		*offset = (*page - 1) * (*limit)
+	}
+
+	// Получаем заявки из репозитория
+	applications, err := s.repository.GetApplicationsBySchoolID(ctx, s.db, uid, offset, limit)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
