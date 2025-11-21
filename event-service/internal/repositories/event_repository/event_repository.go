@@ -108,6 +108,16 @@ func (r *EventRepository) GetAllEvents(ctx context.Context, orm orm.ORM, offset,
 	return eventsRes, nil
 }
 
+func (r *EventRepository) GetAvailableEventsByClass(ctx context.Context, orm orm.ORM, id uuid.UUID, class int) ([]event.Event, error) {
+	const op = "repositories.event_repository.GetAvailableEventsByClass"
+	result := []event.Event{}
+	err := orm.FindWithAdvancedQuery(ctx, event.Event{}, event.Event{PreviousEventID: &id}, &result, "class_number >= ?", class)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return result, nil
+}
+
 func (r *EventRepository) GetCountEventsByType(ctx context.Context, orm orm.ORM, eventType event.EventType) (int64, error) {
 	const op = "repositories.event_repository.GetCountEventsByType"
 	var resultCount int64 = 0

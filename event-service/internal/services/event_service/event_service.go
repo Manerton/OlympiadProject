@@ -14,6 +14,7 @@ import (
 	"main/internal/models/outbox"
 	"main/internal/models/subject"
 	"main/internal/storage/orm"
+	"strconv"
 	"sync"
 
 	"github.com/google/uuid"
@@ -28,6 +29,7 @@ type EventRepositoryInterface interface {
 	GetEventsByType(ctx context.Context, orm orm.ORM, eventType event.EventType, offset, limit *int, order *string) ([]event.Event, error)
 	GetEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uuid.UUID, offset, limit *int, order *string) ([]event.Event, error)
 	GetAllEvents(ctx context.Context, orm orm.ORM, offset, limit *int) ([]event.Event, error)
+	GetAvailableEventsByClass(ctx context.Context, orm orm.ORM, id uuid.UUID, class int) ([]event.Event, error)
 
 	GetCountEventsByType(ctx context.Context, orm orm.ORM, eventType event.EventType) (int64, error)
 	GetCountEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uuid.UUID) (int64, error)
@@ -156,6 +158,32 @@ func (s *EventService) GetEventsByFilterAndFields(ctx context.Context, filter ev
 		return nil, errs.ErrInternalError.Wrap("failed get events by filter and fields")
 	}
 	return event_mapper.ConvertManyEventsToDetails(events), nil
+}
+
+func (s *EventService) GetAvailableEventsByClass(ctx context.Context, parentEventId string, classStr string) ([]event_dto.EventDTOResponse, error) {
+	const op = "services.event_service.GetAvailableEventsByClass"
+
+	log := s.log.With(slog.String("op", op))
+
+	uid, err := uuid.Parse(parentEventId)
+	if err != nil {
+		log.Error("failed parse id to uuid", slog.String("id", parentEventId), liblogger.Err(err))
+		return nil, errs.ErrBadRequest
+	}
+
+	class, err := strconv.Atoi(classStr)
+	if err != nil {
+		log.Error("failed parse class to int", slog.String("class", classStr), liblogger.Err(err))
+		return nil, errs.ErrBadRequest
+	}
+
+	eventsModel, err := s.eventRepository.GetAvailableEventsByClass(ctx, s.db, uid, class)
+	if err != nil {
+		log.Error("failed get available event by class and parentId", liblogger.Err(err))
+		return nil, errs.ErrInternalError
+	}
+
+	return event_mapper.ManyToDTO(eventsModel), nil
 }
 
 // Get count events by event type (for pagination)
