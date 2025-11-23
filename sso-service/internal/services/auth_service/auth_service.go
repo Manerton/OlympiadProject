@@ -402,6 +402,25 @@ func (s *AuthService) ActivateAccount(ctx context.Context, email string, userCod
 	return nil
 }
 
+func (s *AuthService) VerifyTrustCode(ctx context.Context, verifyCode register_dto.VerifyCodeDTO) error {
+	const op = "services.AuthService.VerifyTrustCode"
+
+	log := s.log.With(slog.String("op", op))
+
+	correctCode, err := redisdb.GetActivationCode(verifyCode.PhoneNumber)
+	if err != nil {
+		log.Error("failed get trust code by phone", slog.String("phone", verifyCode.PhoneNumber), liblogger.Err(err))
+		return errs.ErrBadRequest
+	}
+
+	if correctCode != verifyCode.Code {
+		log.Warn("invalid user code", slog.String("user-code", verifyCode.Code))
+		return errs.ErrBadRequest
+	}
+
+	return nil
+}
+
 func (s *AuthService) Refresh(ctx context.Context, refreshToken string) (*login_dto.AuthResultDTO, error) {
 	const op = "services.AuthService.Refresh"
 

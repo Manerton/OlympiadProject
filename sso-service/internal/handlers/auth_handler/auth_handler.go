@@ -21,6 +21,8 @@ type AuthService interface {
 	RegisterParticipant(ctx context.Context, registerRequest *register_dto.RegisterParticipantRequestDTO) error
 	RegisterUser(ctx context.Context, userRequest *register_dto.RegisterUserRequestDTO) error
 
+	VerifyTrustCode(ctx context.Context, verifyCode register_dto.VerifyCodeDTO) error
+
 	Refresh(ctx context.Context, refershToken string) (*login_dto.AuthResultDTO, error)
 	RevokeAllUserTokens(ctx context.Context, userId string) error
 	RevokeToken(ctx context.Context, id string) error
@@ -288,6 +290,38 @@ func (h *AuthHandler) Refresh(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *AuthHandler) VerifyTrustCode(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	verifyCode := register_dto.VerifyCodeDTO{}
+
+	err := render.DecodeJSON(r.Body, &verifyCode)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body")))
+		return
+	}
+
+	err = h.authService.VerifyTrustCode(ctx, verifyCode)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       true,
+	})
+}
+
 // @Summery Password recovery
 // @Security BearerAuth
 // @Description Восстановление забытого пароля
@@ -325,8 +359,6 @@ func (h *AuthHandler) RecoveryPassword(w http.ResponseWriter, r *http.Request) {
 
 	render.JSON(w, r, response.SuccessResponse("Password success recovered"))
 }
-
-func (h *AuthHandler) ChangePassword() {}
 
 // @Summery Revoke token
 // @Security BearerAuth

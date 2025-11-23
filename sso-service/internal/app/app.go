@@ -120,6 +120,8 @@ func (a *App) initRoutes(router *chi.Mux,
 	router.Post("/api/users/register", authHandler.Register)
 	router.Post("/api/users/refresh", authHandler.Refresh)
 
+	router.Post("/api/users/verify", authHandler.VerifyTrustCode)
+
 	router.Get("/api/districts/{region}", districtHandler.GetAllByRegion)
 	router.Get("/api/schools/district/{id}", schoolHandler.GetAllByDistrict)
 

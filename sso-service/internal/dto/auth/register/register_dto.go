@@ -28,6 +28,11 @@ type RegisterUserRequestDTO struct {
 	Role        string `json:"role"`
 }
 
+type VerifyCodeDTO struct {
+	PhoneNumber string `json:"phone_number"`
+	Code        string `json:"code"`
+}
+
 // func (dto *RegisterUserRequestDTO) UnmarshalJSON(data []byte) error {
 // 	// Временная структура с полями-строками
 // 	type Alias struct {
