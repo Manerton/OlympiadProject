@@ -17,6 +17,7 @@ export interface RegisterForm {
     school_id: string
     classnumber: string
     disability: string
+    citizenship: string
 }
 
 export interface User {
