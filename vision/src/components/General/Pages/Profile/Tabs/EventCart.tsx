@@ -17,9 +17,9 @@ const EventCart: React.FC<Props> = ({ event, footer }) => {
         <Card className="mb-3" >
             <Card.Body>
                 <Row className="">
-                    <Col md={3}>
+                    {/* <Col md={3}>
                         <CardImage subjectId={event.subject ?? 0} />
-                    </Col>
+                    </Col> */}
                     <Col md={7}>
                         <Card.Title>{event.name}</Card.Title>
                         <Card.Text>

@@ -56,6 +56,7 @@ import ForgotPasswordPage from './components/General/Helpers/RecoverPassword';
 import ChangePasswordBlock from './components/General/Pages/Profile/ChangePasswordPage';
 import JuryAssignPage from './components/General/Pages/Events/JuryAssignPage';
 import SchoolConfirmPage from "./components/General/Pages/SchoolConfirm";
+import ParticipantDashboard from './components/General/PersonalAccount/PersonalAccountPage';
 
 function App() {
     return (
@@ -66,8 +67,10 @@ function App() {
                     <Routes>
 
                         <Route element={<Layout />}>
-                            <Route path="/" element={<MainPage />} />
+                            <Route path="/" element={<ParticipantDashboard />} />
                             <Route path="/auth" element={<AuthPage />} />
+
+                            
                             {/* <Route
                             path="/profile"
                             element={

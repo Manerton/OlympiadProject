@@ -62,6 +62,16 @@ export async function fetchOlympiads({
   return res.data; // { data, metadata }
 }
 
+export async function fetchSimpleOlympiads(user_id: string) {
+  let url = `${API_CONFIG.OLYMPIAD}/${user_id}`;
+  const res = await axios.get(url, {
+    withCredentials: true,
+  });
+
+  return res.data; // { data, metadata }
+
+}
+
 export async function fetchOlympiadAvailableClassEvents(token: string, id: string) {
   const res = await axios.get(`${API_CONFIG.AVAILABLE}/${id}`, {
     withCredentials: true,

@@ -6,6 +6,7 @@ export const API_CONFIG = {
     AVAILABLE: `${API_URL}/available-event/`,
     STAGES: `${API_URL}/events/stages`,
     REGIONAL: `${API_URL}/regional-stages`,
+    OLYMPIAD: `${API_URL}/olympiad-stages`,
     AUTH: `${API_URL}/api/users`,
     JUREASSIGNMENTS: `${API_URL}/jury-assignments`,
     APPLICATION: `${API_URL}/applications`,
