@@ -17,21 +17,32 @@ const (
 	Appeal        EventType = "APPEAL"
 )
 
+type ClassCategoryType string
+
+const (
+	Class9     ClassCategoryType = "9"
+	Class9_10  ClassCategoryType = "9-10"
+	Class9_11  ClassCategoryType = "9-11"
+	Class10    ClassCategoryType = "10"
+	Class10_11 ClassCategoryType = "10-11"
+	Class11    ClassCategoryType = "11"
+)
+
 const (
 	NotFinished = 1
 	Finished    = 2
 )
 
 type Event struct {
-	ID              uuid.UUID  `gorm:"type:uuid;default:get_random_uuid();primaryKey"`
-	Name            string     `gorm:"type:varchar(128);not null"`
-	StartDate       time.Time  `gorm:"not null"`
-	EndDate         time.Time  `gorm:"not null"`
-	ClassNumber     int        `gorm:"type:int"`
-	EventType       EventType  `gorm:"type:event_type;not null"`
-	PreviousEventID *uuid.UUID `gorm:"index"`
-	PreviousEvent   *Event     `gorm:"foreignKey:PreviousEventID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
-	Subject         int        `gorm:"type:int"`
-	Finished        int        `gorm:"type:int"`
-	AdditionalInfo  string     `gorm:"type:text"`
+	ID              uuid.UUID         `gorm:"type:uuid;default:get_random_uuid();primaryKey"`
+	Name            string            `gorm:"type:varchar(128);not null"`
+	StartDate       time.Time         `gorm:"not null"`
+	EndDate         time.Time         `gorm:"not null"`
+	ClassCategory   ClassCategoryType `gorm:"type:class_category"`
+	EventType       EventType         `gorm:"type:event_type;not null"`
+	PreviousEventID *uuid.UUID        `gorm:"index"`
+	PreviousEvent   *Event            `gorm:"foreignKey:PreviousEventID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Subject         int               `gorm:"type:int"`
+	Finished        int               `gorm:"type:int"`
+	AdditionalInfo  string            `gorm:"type:text"`
 }

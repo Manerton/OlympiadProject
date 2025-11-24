@@ -13,7 +13,7 @@ type EventDTOResponse struct {
 	StartDate       time.Time           `json:"start_date" validate:"required"`
 	EndDate         time.Time           `json:"end_date" validate:"required"`
 	EventType       event.EventType     `json:"event_type"`
-	ClassNumber     int                 `json:"class_number"`
+	ClassCategory   string              `json:"class_category"`
 	PreviousEventID *uuid.UUID          `json:"previous_event_id"`
 	Subject         int                 `json:"subject"`
 	AdditionalInfo  string              `json:"additional_info"`
@@ -28,7 +28,7 @@ type EventDTO struct {
 	EndDate         time.Time `validate:"required"`
 	EventType       event.EventType
 	PreviousEventID *uuid.UUID
-	ClassNumber     int `json:"class_number"`
+	ClassCategory   int `json:"class_category"`
 	Subject         string
 	AdditionalInfo  string
 	Events          *[]EventDTO
@@ -41,7 +41,7 @@ type DetailsEvent struct {
 	EndDate         *time.Time      `json:"end_date,omitempty"`   // указатель для учета нулевых значений
 	EventType       event.EventType `json:"event_type,omitempty"`
 	PreviousEventID *uuid.UUID      `json:"previous_event_id,omitempty"`
-	ClassNumber     int             `json:"class_number"`
+	ClassCategory   string          `json:"class_category"`
 	Subject         string          `json:"subject,omitempty"`
 	AdditionalInfo  string          `json:"additional_info,omitempty"`
 }
@@ -53,8 +53,8 @@ type CreateEventDTORequest struct {
 	PreviousEventID *uuid.UUID `json:"previous_event_id,omitempty"`
 	Subject         string     `json:"subject,omitempty"`
 	AdditionalInfo  string     `json:"additional_info,omitempty"`
-	ClassNumber     int        `json:"class_number,omitempty"` // <- добавить
-	EventType       string     `json:"event_type,omitempty"`   // <- добавить
+	ClassCategory   string     `json:"class_category,omitempty"` // <- добавить
+	EventType       string     `json:"event_type,omitempty"`     // <- добавить
 }
 
 type UpdateEventDTORequest struct {
@@ -62,7 +62,7 @@ type UpdateEventDTORequest struct {
 	StartDate      *time.Time `json:"start_date"`
 	EndDate        *time.Time `json:"end_date"`
 	Subject        *string    `json:"subject"`
-	ClassNumber    *int       `json:"class_number"`
+	ClassCategory  *string    `json:"class_category"`
 	AdditionalInfo *string    `json:"additional_info"`
 	Finished       *int       `json:"finished"`
 }
