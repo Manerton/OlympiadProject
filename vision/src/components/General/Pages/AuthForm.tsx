@@ -77,6 +77,23 @@ const AuthForm: React.FC = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const passwordMismatch = password !== confirmPassword;
 
+    const CITIZENSHIP_TEXT: Record<number, string> = {
+        0: "Не выбрано",
+        1: "Россия",
+        2: "Другое",
+    };
+
+    const DISABILITY_TEXT: Record<number, string> = {
+        0: "Не выбрано",
+        1: "Нет",
+        2: "Есть",
+    };
+
+// Использование:
+    const citizenshipText = CITIZENSHIP_TEXT[citizenship] ?? "Не выбрано";
+    const disabilityText = DISABILITY_TEXT[disability] ?? "Не выбрано";
+
+
     ////////////////////////////////////////////////
     // SMS Logics
     ////////////////////////////////////////////////
@@ -393,8 +410,8 @@ const AuthForm: React.FC = () => {
 
                 {/* Пояснение для школьников */}
                 <Form.Text className="text-muted">
-                    ОВЗ — это если вам нужна дополнительная помощь или особые условия.
-                    Если не уверены — выбирайте «Нет».
+                    ОВЗ — это особенности здоровья, при которых может понадобиться помощь или особые условия для прохождения олимпиады.
+                    Если сомневаетесь, лучше выбрать «Нет».
                 </Form.Text>
             </Form.Group>
 
@@ -480,30 +497,35 @@ const AuthForm: React.FC = () => {
         </>
     );
 
-    const Step5 = () => (
-        <>
-            <h4 className="fw-bold mb-3">Шаг 5: Подтверждение</h4>
+    // А в Step5 используй так:
+    const Step5 = () => {
+        const selectedSchool = schoolsInDistrict.find((s: any) => s.id === selectedSchoolId);
+        const schoolName = selectedSchool?.name || "Не выбрана";
 
-            <p>Проверьте данные и завершите регистрацию.</p>
+        return (
+            <>
+                <h4 className="fw-bold mb-3">Шаг 5: Подтверждение</h4>
+                <p>Проверьте данные перед завершением регистрации:</p>
 
-            <ListGroup className="mb-3">
-                <ListGroup.Item>ФИО: {surName} {firstName} {patronymic}</ListGroup.Item>
-                <ListGroup.Item>Дата рождения: {birthdate}</ListGroup.Item>
-                <ListGroup.Item>Телефон: {phoneNumber}</ListGroup.Item>
-                <ListGroup.Item>Почта: {email}</ListGroup.Item>
-                <ListGroup.Item>Школа: {schoolQuery}</ListGroup.Item>
-                <ListGroup.Item>Класс: {classNumber}</ListGroup.Item>
-            </ListGroup>
+                <ListGroup className="mb-4">
+                    <ListGroup.Item>ФИО: {surName} {firstName} {patronymic}</ListGroup.Item>
+                    <ListGroup.Item>Дата рождения: {birthdate}</ListGroup.Item>
+                    <ListGroup.Item>Почта: {email}</ListGroup.Item>
+                    <ListGroup.Item>Школа: {schoolName}</ListGroup.Item>
+                    <ListGroup.Item>Класс: {classNumber}</ListGroup.Item>
+                    <ListGroup.Item>Гражданство: <strong>{CITIZENSHIP_TEXT[citizenship]}</strong></ListGroup.Item>
+                    <ListGroup.Item>ОВЗ: <strong>{DISABILITY_TEXT[disability]}</strong></ListGroup.Item>
+                </ListGroup>
 
-            <Button className="w-100" onClick={() => setStep(6)}>
-                Продолжить
-            </Button>
-
-            <Button variant="secondary" className="w-100 mt-3" onClick={() => setStep(4)}>
-                Назад
-            </Button>
-        </>
-    );
+                <Button className="w-100" onClick={() => setStep(6)}>
+                    Всё верно, продолжить
+                </Button>
+                <Button variant="secondary" className="w-100 mt-3" onClick={() => setStep(4)}>
+                    Назад
+                </Button>
+            </>
+        );
+    };
 
     const Step6 = () => (
         <>

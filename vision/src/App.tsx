@@ -55,6 +55,7 @@ import ForbiddenPage from './components/General/Pages/ServicePages/ForbiddenPage
 import ForgotPasswordPage from './components/General/Helpers/RecoverPassword';
 import ChangePasswordBlock from './components/General/Pages/Profile/ChangePasswordPage';
 import JuryAssignPage from './components/General/Pages/Events/JuryAssignPage';
+import SchoolConfirmPage from "./components/General/Pages/SchoolConfirm";
 
 function App() {
     return (
@@ -76,6 +77,7 @@ function App() {
                             }
                             /> */}
                             <Route path="/RegionalStages" element={<RegionalStagesPage />} />
+                            <Route path="/SchoolConfirmApplications" element={<SchoolConfirmPage />} />
                             <Route path="OlympiadsPage/:id" element={<OlympiadsPage />} />
                             <Route path="OlympiadDetails/:id" element={<OlympiadDetails />} />
                             <Route path="StagesList/:id" element={<StagesListPage />} />
