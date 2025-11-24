@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"main/internal/dictionary/class_dictionary"
 	"main/internal/dto/event_dto"
 	"main/internal/lib/errs"
 	"main/internal/lib/helper"
@@ -29,7 +30,7 @@ type EventRepositoryInterface interface {
 	GetEventsByType(ctx context.Context, orm orm.ORM, eventType event.EventType, offset, limit *int, order *string) ([]event.Event, error)
 	GetEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uuid.UUID, offset, limit *int, order *string) ([]event.Event, error)
 	GetAllEvents(ctx context.Context, orm orm.ORM, offset, limit *int) ([]event.Event, error)
-	GetAvailableEventsByClass(ctx context.Context, orm orm.ORM, id uuid.UUID, class int) ([]event.Event, error)
+	GetAvailableEventsByClass(ctx context.Context, orm orm.ORM, id uuid.UUID, classCategory []event.ClassCategoryType) ([]event.Event, error)
 
 	GetCountEventsByType(ctx context.Context, orm orm.ORM, eventType event.EventType) (int64, error)
 	GetCountEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uuid.UUID) (int64, error)
@@ -177,7 +178,8 @@ func (s *EventService) GetAvailableEventsByClass(ctx context.Context, parentEven
 		return nil, errs.ErrBadRequest
 	}
 
-	eventsModel, err := s.eventRepository.GetAvailableEventsByClass(ctx, s.db, uid, class)
+	acceptsClassCategory := class_dictionary.ClassDictionaryCategory[class]
+	eventsModel, err := s.eventRepository.GetAvailableEventsByClass(ctx, s.db, uid, acceptsClassCategory)
 	if err != nil {
 		log.Error("failed get available event by class and parentId", liblogger.Err(err))
 		return nil, errs.ErrInternalError
@@ -605,8 +607,8 @@ func (s *EventService) updateEventDTO(ctx context.Context, updatedEvent event.Ev
 	if !updatedEvent.EndDate.IsZero() {
 		oldEvent.EndDate = updatedEvent.EndDate
 	}
-	if updatedEvent.ClassNumber != 0 {
-		oldEvent.ClassNumber = updatedEvent.ClassNumber
+	if updatedEvent.ClassCategory != "" {
+		oldEvent.ClassCategory = updatedEvent.ClassCategory
 	}
 	if updatedEvent.Subject != 0 {
 		oldEvent.Subject = updatedEvent.Subject

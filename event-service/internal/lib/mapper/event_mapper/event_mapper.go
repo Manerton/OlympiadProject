@@ -21,7 +21,7 @@ func FromCreateToModel(createDTO event_dto.CreateEventDTORequest) event.Event {
 		StartDate:       createDTO.StartDate,
 		EndDate:         createDTO.EndDate,
 		Subject:         subjectInt,
-		ClassNumber:     createDTO.ClassNumber,
+		ClassCategory:   event.ClassCategoryType(createDTO.ClassCategory),
 		PreviousEventID: createDTO.PreviousEventID,
 		AdditionalInfo:  createDTO.AdditionalInfo,
 		Finished:        event.NotFinished, //Default
@@ -48,8 +48,8 @@ func FromUpdateToModel(updateDTO event_dto.UpdateEventDTORequest, id uuid.UUID) 
 		}
 		model.Subject = subjectInt
 	}
-	if updateDTO.ClassNumber != nil {
-		model.ClassNumber = *updateDTO.ClassNumber
+	if updateDTO.ClassCategory != nil {
+		model.ClassCategory = event.ClassCategoryType(*updateDTO.ClassCategory)
 	}
 	if updateDTO.AdditionalInfo != nil {
 		model.AdditionalInfo = *updateDTO.AdditionalInfo
@@ -72,7 +72,7 @@ func ToDTO(eventModel event.Event) event_dto.EventDTOResponse {
 		StartDate:       eventModel.StartDate,
 		EndDate:         eventModel.EndDate,
 		Subject:         eventModel.Subject,
-		ClassNumber:     eventModel.ClassNumber,
+		ClassCategory:   string(eventModel.ClassCategory),
 		AdditionalInfo:  eventModel.AdditionalInfo,
 		PreviousEventID: eventModel.PreviousEventID,
 		EventType:       eventModel.EventType,

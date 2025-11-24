@@ -1,6 +1,14 @@
 -- +goose Up
 -- +goose StatementBegin
 CREATE TYPE event_type AS ENUM ('REGIONAL_STAGE', 'OLYMPIAD', 'CLASS', 'STAGE', 'VIEW_WORKS', 'APPEAL');
+CREATE TYPE class_category_type AS ENUM (
+    '9',
+    '9-10',
+    '9-11',
+    '10',
+    '10-11',
+    '11'
+);
 
 CREATE TABLE events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -8,7 +16,7 @@ CREATE TABLE events (
     start_date TIMESTAMP NOT NULL,
     end_date TIMESTAMP NOT NULL,
     event_type event_type NOT NULL,
-    class_number int,
+    class_category class_category_type,
     previous_event_id UUID,
     subject int,
     additional_info TEXT,

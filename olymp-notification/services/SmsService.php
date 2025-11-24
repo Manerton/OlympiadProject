@@ -23,7 +23,7 @@ class SmsService
                 'destination' => $phone
             ],
             [
-                'Authorization: Bearer '. Yii::$app->params['apiKey'],
+                'Authorization: Bearer '. Yii::$app->params['sms_api_token'],
             ]
         );
 
