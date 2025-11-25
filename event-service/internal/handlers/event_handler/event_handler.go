@@ -276,6 +276,29 @@ func (h *EventHandler) GetEventsTypeRegionalStage(w http.ResponseWriter, r *http
 
 }
 
+func (h *EventHandler) GetEventsTypeOlympiads(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	result, err := h.service.GetAllEvents(ctx, nil, nil)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.StatusOK,
+		StatusCode: http.StatusOK,
+		Data:       result,
+	})
+}
+
 // @Summery Get events type class
 // @Security BearerAuth
 // @Description Получение всех событий типа "Класс"

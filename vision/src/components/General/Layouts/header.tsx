@@ -6,24 +6,32 @@ import { PersonCircle, BoxArrowInRight } from "react-bootstrap-icons";
 import ThemeToggleButton from "../../Helpers/ThemeToggleButton";
 import { useAuth } from "../../Helpers/AuthContext";
 
+import MainLogo from "/vsoshLogo.png";
+import MainLogo2 from "/vsoshLogoHor.png";
+
+import logoVOSh from '../../../assets/images/v51_9.png';
+
 function Header() {
   const { user, logout, initialized } = useAuth();
 
 
-   //console.log(user);
-  
+  //console.log(user);
+
   if (!initialized) {
-     return <Navbar><Container>Загрузка...</Container></Navbar>;
+    return <Navbar><Container>Загрузка...</Container></Navbar>;
   }
 
-   // Проверка на авторизацию
+  // Проверка на авторизацию
   const isAuthenticated = user;
- 
+
 
   return (
     <Navbar expand="lg" sticky="top" className="bg-body-tertiary border border-1">
       <Container fluid="lg" className="mx-auto">
-        <Navbar.Brand as={Link} to="/">ВСОШ</Navbar.Brand>
+        <Navbar.Brand as={Link} to="/"><img src={MainLogo2} alt="ВСОШ" className="img-fluid" style={{
+          maxHeight: "50px",
+          width: "auto",
+        }} /></Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav" className="navbar-expand-lg">
           <Nav className="me-auto">

@@ -22,7 +22,7 @@ const ParticipantDashboard: React.FC = () => {
 
     const [reloadFlag, setReloadFlag] = useState(0);
     const [profile, setProfile] = useState<Profile>();
-useEffect(() => {
+    useEffect(() => {
         const fetchUser = async () => {
             try {
                 if (!accessToken || !user) return;
@@ -72,7 +72,6 @@ useEffect(() => {
     return (
         <div className="container mt-4">
 
-            {/* ====== ЛИЧНАЯ ИНФОРМАЦИЯ ====== */}
             <Card className="mb-3 shadow-sm">
                 <Card.Header
                     className="d-flex justify-content-between align-items-center"
@@ -94,7 +93,6 @@ useEffect(() => {
                 </Collapse>
             </Card>
 
-            {/* ====== РАНЕЕ ПОДАННЫЕ ЗАЯВКИ ====== */}
             <Card className="mb-3 shadow-sm">
                 <Card.Header
                     className="d-flex justify-content-between align-items-center"
@@ -116,7 +114,6 @@ useEffect(() => {
                 </Collapse>
             </Card>
 
-            {/* ====== ОЛИМПИАДЫ ДЛЯ УЧАСТИЯ ====== */}
             <Card className="mb-3 shadow-sm">
                 <Card.Header
                     className="d-flex justify-content-between align-items-center"
@@ -132,7 +129,7 @@ useEffect(() => {
                 <Collapse in={openOlympiads}>
                     <div>
                         <Card.Body>
-                            <OlympiadsSimpleTable onApplied={reloadAll} reloadFlag={reloadFlag} />
+                            <OlympiadsSimpleTable user_class={profile?.classnumber!} onApplied={reloadAll} reloadFlag={reloadFlag} />
                         </Card.Body>
                     </div>
                 </Collapse>

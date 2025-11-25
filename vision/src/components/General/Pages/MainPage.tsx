@@ -1,37 +1,43 @@
 // MainPage.tsx
 import { Container, Row, Col, Button, Form, Accordion } from 'react-bootstrap';
+import { useAuth } from '../../Helpers/AuthContext';
+import { useNavigate } from 'react-router-dom';
 const MainPage: React.FC = () => {
+
+  const navigate = useNavigate();
+
+  const { user } = useAuth()
+
   return (
     <>
 
       {/* Hero Section */}
       <Row className="g-1 border border-1 rounded justify-content-center align-items-center">
-           <Col md={6}>
-                <div
-                  className="d-flex flex-column justify-content-center align-items-center h-100 text-center p-4"
-                  style={{minHeight: '70dvh' }}
-                >
-                  <h1 className="display-4 fw-bold text-center">
-                      Всероссийская олимпиада школьников <br />
-                      <span
-                        style={{
-                          background: 'linear-gradient(to right, #1494D4, #70FF99)',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          display: 'inline-block'
-                        }}
-                      >
-                        в твоём регионе!
-                      </span>
-                    </h1>
+        <Col md={6}>
+          <div
+            className="d-flex flex-column justify-content-center align-items-center h-100 text-center p-4"
+          >
+            <h1 className="display-4 fw-bold text-center">
+              Всероссийская олимпиада школьников <br />
+              <span
+                style={{
+                  background: 'linear-gradient(to right, #1494D4, #70FF99)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  display: 'inline-block'
+                }}
+              >
+                по Астраханской области
+              </span>
+            </h1>
 
-                  <p className="lead">
+            {/* <p className="lead">
                     Упрощение процессов, помощь талантливым школьникам раскрыть свой потенциал.
-                  </p>
-                </div>
-              </Col>
+                  </p> */}
+          </div>
+        </Col>
 
-           <Col md={6}>
+        {/* <Col md={6}>
             <div
                   className="position-relative d-flex align-items-center justify-content-center"
                   style={{ minHeight: '70dvh', backgroundColor: 'rgba(177, 172, 172, 0.5)' }}
@@ -44,12 +50,12 @@ const MainPage: React.FC = () => {
                   />
             </div>
 
-           </Col> 
+           </Col>  */}
       </Row>
-      
+
 
       {/* How It Works Section */}
-      <section className="mt-4 py-3 text-center border border-1">
+      {/* <section className="mt-4 py-3 text-center border border-1">
         <Container fluid="lg" className="mx-auto">
           <h2 className="mb-4">Как проходит олимпиада?</h2>
           <Row className="g-4">
@@ -75,19 +81,19 @@ const MainPage: React.FC = () => {
             </Col>
           </Row>
         </Container>
-      </section>
+      </section> */}
 
-    {/* How It  */}
-      <section className="mt-4 mb-4 py-5 text-center border border-1">
+      {/* How It  */}
+      {/* <section className="mt-4 mb-4 py-5 text-center border border-1">
         <Container fluid="lg">
           <h2 className="mb-5">Как принять участие в олимпиаде?</h2>
           <Row
             className="gx-0 justify-content-center"
             style={{ overflow: 'visible' }}
-          >
+          > */}
 
-            {/* Шаг 1 */}
-            <Col md={4}>
+      {/* Шаг 1 */}
+      {/* <Col md={4}>
               <div className="p-4 rounded-4 h-100" style={{ backgroundColor: '#d8ffe4' }}>
                 <div
                   className="d-flex flex-column align-items-center position-relative mb-4"
@@ -112,10 +118,10 @@ const MainPage: React.FC = () => {
                   Создайте личный кабинет на платформе. Введите необходимые данные и подтвердите свою учётную запись.
                 </p>
               </div>
-            </Col>
+            </Col> */}
 
-            {/* Шаг 2 — «выпирающая» карточка */}
-            <Col
+      {/* Шаг 2 — «выпирающая» карточка */}
+      {/* <Col
               md={4}
               style={{
                 position: 'relative',
@@ -148,10 +154,10 @@ const MainPage: React.FC = () => {
                   Выберите интересующую вас олимпиаду из списка доступных и подайте заявку на участие. Дождитесь одобрения заявки организатором.
                 </p>
               </div>
-            </Col>
+            </Col> */}
 
-            {/* Шаг 3 */}
-            <Col md={4}>
+      {/* Шаг 3 */}
+      {/* <Col md={4}>
               <div className="p-4 rounded-4 h-100" style={{ backgroundColor: '#ffe4e9' }}>
                 <div
                   className="d-flex flex-column align-items-center position-relative mb-4"
@@ -180,9 +186,26 @@ const MainPage: React.FC = () => {
 
           </Row>
         </Container>
+      </section> */}
+
+      <section className="mt-4 py-4 text-center border rounded">
+        <Container>
+          <h2 className="mb-3">Участвовать в олимпиаде</h2>
+          <p className="mb-4">Чтобы подать заявку на участие — войдите в личный кабинет.</p>
+
+          {user ? (
+            <>
+              <Button onClick={() => navigate("/PersonalAccount")} variant="primary" size="lg" className="me-2 mb-2">
+                Перейти в личный кабинет
+              </Button>
+            </>
+          ) : (
+            <Button onClick={() => navigate("/Auth")} variant="primary" size="lg">
+              Войти в личный кабинет
+            </Button>
+          )}
+        </Container>
       </section>
-
-
 
 
       {/* FAQ Section */}
@@ -219,7 +242,7 @@ const MainPage: React.FC = () => {
       </section>
 
       {/* Contact Section */}
-      <section className="mt-4 mb-4 py-3 border rounded">
+      {/* <section className="mt-4 mb-4 py-3 border rounded">
         <Container fluid="lg" className="mx-auto">
           <h2 className="mb-4 text-center">Свяжитесь с нами</h2>
           <Form>
@@ -248,7 +271,7 @@ const MainPage: React.FC = () => {
             </Row>
           </Form>
         </Container>
-      </section>
+      </section> */}
     </>
   );
 };

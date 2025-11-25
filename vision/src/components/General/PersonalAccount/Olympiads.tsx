@@ -7,38 +7,31 @@ import { fetchSimpleOlympiads } from "../../../requests/EventsRequests";
 import { useParams } from "react-router-dom";
 
 interface Props {
+    user_class: number;
     reloadFlag: number;
-    onApplied: () => void;  // ← callback чтобы перезагрузить всю страницу
+    onApplied: () => void;
 }
 
-
-const OlympiadsSimpleTable: React.FC<Props> = ({onApplied, reloadFlag}) => {
+const OlympiadsSimpleTable: React.FC<Props> = ({ user_class, onApplied, reloadFlag }) => {
     const { id } = useParams();
-
     const { user, accessToken } = useAuth();
 
     const [olympiads, setOlympiads] = useState<MyEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // per-row selections
     const [selectedClasses, setSelectedClasses] = useState<Record<string, number>>({});
     const [selectedProfiles, setSelectedProfiles] = useState<Record<string, string>>({});
 
-    // загрузка олимпиад
     useEffect(() => {
         setLoading(true);
 
-        if (!id) 
-            return
+        if (!id) return;
 
-        fetchSimpleOlympiads(id!) // ← твоя функция, подставь нужные параметры
-            .then((res) => {
-                setOlympiads(res.data);
-            })
+        fetchSimpleOlympiads(id)
+            .then((res) => setOlympiads(res.data))
             .catch((err) => setError((err as Error).message))
             .finally(() => setLoading(false));
-
     }, [reloadFlag]);
 
     const handleClassChange = (eventId: string, value: number) => {
@@ -51,7 +44,6 @@ const OlympiadsSimpleTable: React.FC<Props> = ({onApplied, reloadFlag}) => {
 
     const handleSubmit = async (eventId: string) => {
         const classNumber = selectedClasses[eventId];
-
         if (!classNumber) {
             alert("Выберите класс участия");
             return;
@@ -65,19 +57,18 @@ const OlympiadsSimpleTable: React.FC<Props> = ({onApplied, reloadFlag}) => {
         const body = {
             event_id: finalEventId,
             user_id: user!.id.toString(),
-            class_number: classNumber
+            class_number: classNumber,
         };
 
         try {
             await axios.post(
-                "http://localhost:PORT/api/application", // ← подставь свой ApplicationService
+                "http://localhost:PORT/api/application",
                 body,
                 { headers: { Authorization: `Bearer ${accessToken}` } }
             );
 
             alert("Заявка отправлена!");
-            onApplied()
-
+            onApplied();
         } catch (e) {
             alert("Ошибка при отправке заявки");
         }
@@ -87,88 +78,83 @@ const OlympiadsSimpleTable: React.FC<Props> = ({onApplied, reloadFlag}) => {
     if (error) return <Alert variant="danger">{error}</Alert>;
 
     return (
-        <Table bordered hover>
-            <thead>
-                <tr>
-                    <th>Предмет</th>
-                    <th>Даты проведения</th>
-                    <th>Класс участия</th>
-                    <th>Профиль</th>
-                    <th></th>
-                </tr>
-            </thead>
+        <div className="table-responsive">
+            <Table bordered hover className="align-middle text-center">
+                <thead>
+                    <tr>
+                        <th>Предмет</th>
+                        <th>Даты проведения</th>
+                        <th>Класс участия</th>
+                        <th>Профиль</th>
+                        <th></th>
+                    </tr>
+                </thead>
 
-            <tbody>
-                {olympiads.map((olymp) => {
-                    const start = new Date(olymp.start_date).toLocaleDateString();
-                    const end = new Date(olymp.end_date).toLocaleDateString();
-                    const fullDate = olymp.dates;
+                <tbody>
+                    {olympiads.map((olymp) => {
 
-                    return (
-                        <tr key={olymp.id}>
-                            <td>{olymp.name}</td>
+                        const fullDates = olymp.dates.join(", ");
 
-                            <td>{fullDate}</td>
+                        return (
+                            <tr key={olymp.id}>
+                                <td>{olymp.name}</td>
 
-                            <td >
-                                <Form.Check
-                                    inline
-                                    label="9"
-                                    type="radio"
-                                    name={`class-${olymp.id}`}
-                                    checked={selectedClasses[olymp.id!] === 9}
-                                    onChange={() => handleClassChange(olymp.id!, 9)}
-                                />
-                                <Form.Check
-                                    inline
-                                    label="10"
-                                    type="radio"
-                                    name={`class-${olymp.id}`}
-                                    checked={selectedClasses[olymp.id!] === 10}
-                                    onChange={() => handleClassChange(olymp.id!, 10)}
-                                />
-                                <Form.Check
-                                    inline
-                                    label="11"
-                                    type="radio"
-                                    name={`class-${olymp.id}`}
-                                    checked={selectedClasses[olymp.id!] === 11}
-                                    onChange={() => handleClassChange(olymp.id!, 11)}
-                                />
-                            </td>
+                                <td>{fullDates}</td>
 
-                            <td >
-                                {olymp.profiles && olymp.profiles.length > 0 ? (
-                                    <Form.Select
-                                        value={selectedProfiles[olymp.id!] ?? "none"}
-                                        onChange={(e) => handleProfileChange(olymp.id!, e.target.value)}
-                                    >
-                                        <option value="none">Выберите профиль</option>
-                                        {olymp.profiles.map((ev) => (
-                                            <option key={ev} value={ev}>
-                                                {ev}
-                                            </option>
+                                <td>
+                                    {[9, 10, 11]
+                                        .filter((c) => c >= user_class)
+                                        .map((c) => (
+                                            <Form.Check
+                                                key={c}
+                                                inline
+                                                label={c.toString()}
+                                                type="radio"
+                                                name={`class-${olymp.id}`}
+                                                checked={selectedClasses[olymp.id!] === c}
+                                                onChange={() => handleClassChange(olymp.id!, c)}
+                                            />
                                         ))}
-                                    </Form.Select>
-                                ) : (
-                                    "—"
-                                )}
-                            </td>
+                                </td>
 
-                            <td     >
-                                <Button
-                                    variant="primary"
-                                    className="w-100"
-                                    onClick={() => handleSubmit(olymp.id!)}
-                                >
-                                    Подать заявку
-                                </Button>
-                            </td>
-                        </tr>
-                    );
-                })}
-            </tbody>
-        </Table>
+                                <td>
+                                    {olymp.profiles && olymp.profiles.length > 0 ? (
+                                        <Form.Select
+                                            value={selectedProfiles[olymp.id!] ?? "none"}
+                                            onChange={(e) => handleProfileChange(olymp.id!, e.target.value)}
+                                        >
+                                            <option value="none">Выберите профиль</option>
+                                            {olymp.profiles.map((ev) => (
+                                                <option key={ev} value={ev}>
+                                                    {ev}
+                                                </option>
+                                            ))}
+                                        </Form.Select>
+                                    ) : (
+                                        "—"
+                                    )}
+                                </td>
+
+                                <td>
+                                    <Button
+                                        variant="primary"
+                                        className="w-100"
+                                        disabled={
+                                            !selectedClasses[olymp.id!] || // не выбран класс
+                                            (olymp.profiles?.length > 0 &&
+                                                (!selectedProfiles[olymp.id!] || selectedProfiles[olymp.id!] === "none")) // есть профили, но не выбран
+                                        }
+                                        onClick={() => handleSubmit(olymp.id!)}
+                                    >
+                                        Подать заявку
+                                    </Button>
+                                </td>
+                            </tr>
+                        );
+                    })}
+                </tbody>
+            </Table>
+        </div>
     );
 };
 

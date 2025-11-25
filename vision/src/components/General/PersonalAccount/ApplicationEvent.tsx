@@ -27,7 +27,7 @@ const ApplicationEventPage: React.FC<Props> = ({ onApplied, reloadFlag }) => {
                 const result = await axiosGetApplicationEvents(accessToken!, user?.id!);
                 console.log("result от API:", result); // правильное место для проверки
                 setEvents(result);
-                onApplied()
+                
             } catch (err) {
                 console.error("Ошибка загрузки заявок:", err);
             } finally {
@@ -46,6 +46,14 @@ const ApplicationEventPage: React.FC<Props> = ({ onApplied, reloadFlag }) => {
     }, [events]);
 
 
+    function fetchRevokeApplication(event_id: string) {
+        try {
+            onApplied()
+        } catch {
+
+        }
+    }
+
     if (loading) return <div className="text-center ">Загрузка...</div>
 
     if (events.length === 0) return <div className="text-center text-warning h4">Нет заявок на участие</div>
@@ -54,7 +62,7 @@ const ApplicationEventPage: React.FC<Props> = ({ onApplied, reloadFlag }) => {
         return (
             <div className="d-flex flex-column justify-content-between h-100">
                 <div className="text-end">
-                    <button className="btn btn-primary" onClick={() => { navigate(`/OlympiadDetails/${id}`); }}>Отозвать</button>
+                    <button className="btn btn-primary" onClick={() => { fetchRevokeApplication }}>Отозвать</button>
                 </div>
             </div>
         )
