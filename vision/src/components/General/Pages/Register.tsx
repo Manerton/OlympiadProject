@@ -1,0 +1,903 @@
+import React, { useEffect, useState } from "react";
+import {
+    Container,
+    Row,
+    Col,
+    Form,
+    Button,
+    InputGroup,
+    ListGroup,
+} from "react-bootstrap";
+import { EyeFill, EyeSlashFill, LockFill, PersonFill, BuildingFill, HeartFill, CheckCircleFill, PhoneFill } from "react-bootstrap-icons";
+import { useMask } from "@react-input/mask";
+import { useAuth } from "../../Helpers/AuthContext";
+import { useNavigate } from "react-router-dom";
+import type { RegisterForm } from "../../types/user";
+import axios from "axios";
+import { axiosSendSMSCode } from "../../../requests/NotificationRequests";
+import { axiosSSOVerifySMSCode } from "../../../requests/SSORequests";
+
+
+// Выносим интерфейсы для пропсов
+interface StepProps {
+    // Step1
+    regEmail: string;
+    setRegEmail: (email: string) => void;
+    regPassword: string;
+    setRegPassword: (password: string) => void;
+    confirmPassword: string;
+    setConfirmPassword: (password: string) => void;
+    emailError: string;
+    setEmailError: (error: string) => void;
+    showPassword: boolean;
+    setShowPassword: (show: boolean) => void;
+    showConfirmPassword: boolean;
+    setShowConfirmPassword: (show: boolean) => void;
+    validateEmail: (email: string) => boolean;
+    passwordMismatch: boolean;
+
+    // Step2
+    firstName: string;
+    setFirstName: (name: string) => void;
+    surName: string;
+    setSurName: (name: string) => void;
+    patronymic: string;
+    setPatronymic: (name: string) => void;
+    birthdate: string;
+    setBirthdate: (date: string) => void;
+    gender: number;
+    setGender: (gender: number) => void;
+
+    // Step3
+    districts: any[];
+    selectedDistrictId: string;
+    setSelectedDistrictId: (id: string) => void;
+    schoolsInDistrict: any[];
+    selectedSchoolId: string;
+    setSelectedSchoolId: (id: string) => void;
+    classNumber: number;
+    setClassNumber: (num: number) => void;
+
+    // Step4
+    citizenship: number;
+    setCitizenship: (citizenship: number) => void;
+    disability: number;
+    setDisability: (disability: number) => void;
+
+    // Step5
+    CITIZENSHIP_TEXT: Record<number, string>;
+    DISABILITY_TEXT: Record<number, string>;
+
+    // Step6
+    phoneNumber: string;
+    setPhoneNumber: (phone: string) => void;
+    smsSent: boolean;
+    setSmsSent: (sent: boolean) => void;
+    smsCode: string;
+    setSmsCode: (code: string) => void;
+    errorSMS: string;
+    cooldown: number;
+    sendSMS: () => void;
+    verifySMS: () => void;
+
+    // Общие
+    setStep: (step: number) => void;
+}
+
+
+
+// Выносим компоненты шагов ВНЕ основного компонента
+const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
+                                        regPassword, setRegPassword,
+                                        confirmPassword, setConfirmPassword,
+                                        emailError, setEmailError,
+                                        showPassword, setShowPassword,
+                                        showConfirmPassword, setShowConfirmPassword,
+                                        validateEmail,
+                                        passwordMismatch,
+                                        setStep }) => (
+    <>
+        <h4 className="fw-bold mb-4 text-center">
+            Создание личного кабинета
+            <span className="text-muted fs-6 d-block mt-1">Шаг 1 из 6</span>
+        </h4>
+
+        <Form.Group className="mb-4">
+            <Form.Label className="fw-semibold">Электронная почта</Form.Label>
+            <Form.Control
+                type="email"
+                placeholder="example@mail.ru"
+                value={regEmail}
+                onChange={(e) => {
+                    const value = e.target.value;
+                    setRegEmail(value);
+                    setEmailError(validateEmail(value) || !value ? "" : "Некорректный формат почты");
+                }}
+                isInvalid={!!emailError}
+                size="lg"
+            />
+            <Form.Text className="text-muted">
+                Эта почта будет будет использоваться для связи с вами
+            </Form.Text>
+            <Form.Control.Feedback type="invalid">
+                {emailError}
+            </Form.Control.Feedback>
+        </Form.Group>
+
+        <Form.Group className="mb-4">
+            <Form.Label className="fw-semibold">Пароль</Form.Label>
+            <InputGroup>
+                <Form.Control
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={regPassword}
+                    onChange={(e) => setRegPassword(e.target.value)}
+                    size="lg"
+                />
+                <Button variant="outline-secondary" onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <EyeSlashFill /> : <EyeFill />}
+                </Button>
+            </InputGroup>
+            <Form.Text className="text-muted">
+                Минимум 8 символов, используйте буквы и цифры
+            </Form.Text>
+        </Form.Group>
+
+        <Form.Group className="mb-4">
+            <Form.Label className="fw-semibold">Подтверждение пароля</Form.Label>
+            <InputGroup>
+                <Form.Control
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    isInvalid={passwordMismatch}
+                    size="lg"
+                />
+                <Button variant="outline-secondary" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                    {showConfirmPassword ? <EyeSlashFill /> : <EyeFill />}
+                </Button>
+            </InputGroup>
+            {passwordMismatch && (
+                <div className="text-danger small mt-1">
+                    Пароли не совпадают
+                </div>
+            )}
+        </Form.Group>
+
+        <Button
+            size="lg"
+            className="w-100 fw-semibold"
+            disabled={!regEmail || !!emailError || !regPassword || passwordMismatch}
+            onClick={() => setStep(2)}
+        >
+            Продолжить
+        </Button>
+    </>
+);
+
+const Step2: React.FC<StepProps> = ({
+                                        firstName, setFirstName,
+                                        surName, setSurName,
+                                        patronymic, setPatronymic,
+                                        birthdate, setBirthdate,
+                                        gender, setGender,
+                                        setStep
+                                    }) => {
+    // Простая валидация: только кириллица и дефис/пробел
+    const isValidName = (str: string) => /^[\u0400-\u04FF\s-]*$/.test(str.trim());
+    const isNameFilled = (str: string) => str.trim().length >= 2;
+
+    const nameError = !isValidName(firstName) || !isNameFilled(firstName) ? "Укажите имя кириллицей" : "";
+    const surnameError = !isValidName(surName) || !isNameFilled(surName) ? "Укажите фамилию кириллицей" : "";
+    const patronymicError = patronymic !== "" && !isValidName(patronymic) ? "Отчество — только кириллица" : "";
+
+    const canProceed =
+        isNameFilled(firstName) && isValidName(firstName) &&
+        isNameFilled(surName) && isValidName(surName) &&
+        birthdate &&
+        gender > 0;
+
+    return (
+        <>
+            <div className="text-center mb-4">
+                <h4 className="fw-bold">Личные данные</h4>
+                <small className="text-muted">Шаг 2 из 6</small>
+            </div>
+
+            <Form.Group className="mb-4">
+                <Form.Label className="fw-semibold">Фамилия</Form.Label>
+                <Form.Control
+                    type="text"
+                    placeholder="Иванов"
+                    value={surName}
+                    onChange={(e) => setSurName(e.target.value)}
+                    isInvalid={!!surnameError}
+                    size="lg"
+                    autoFocus
+                />
+                <Form.Text className="text-muted">
+                    Как в паспорте или свидетельстве о рождении
+                </Form.Text>
+                <Form.Control.Feedback type="invalid">
+                    {surnameError}
+                </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group className="mb-4">
+                <Form.Label className="fw-semibold">Имя</Form.Label>
+                <Form.Control
+                    type="text"
+                    placeholder="Иван"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    isInvalid={!!nameError}
+                    size="lg"
+                />
+                <Form.Control.Feedback type="invalid">
+                    {nameError}
+                </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group className="mb-4">
+                <Form.Label className="fw-semibold">
+                    Отчество
+                    <span className="text-muted fw-normal"> (при наличии)</span>
+                </Form.Label>
+                <Form.Control
+                    type="text"
+                    placeholder="Иванович"
+                    value={patronymic}
+                    onChange={(e) => setPatronymic(e.target.value)}
+                    isInvalid={!!patronymicError}
+                    size="lg"
+                />
+                <Form.Text className="text-muted">
+                    Если отчества нет — оставьте поле пустым
+                </Form.Text>
+                <Form.Control.Feedback type="invalid">
+                    {patronymicError}
+                </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group className="mb-4">
+                <Form.Label className="fw-semibold">Дата рождения</Form.Label>
+                <Form.Control
+                    type="date"
+                    value={birthdate}
+                    onChange={(e) => setBirthdate(e.target.value)}
+                    max={new Date().toISOString().split("T")[0]} // не в будущем
+                    size="lg"
+                    required
+                />
+                <Form.Text className="text-muted">
+                    Участники должны быть не младше 10 и не старше 18 лет
+                </Form.Text>
+            </Form.Group>
+
+            <Form.Group className="mb-5">
+                <Form.Label className="fw-semibold">Пол</Form.Label>
+                <div className="d-flex gap-4 justify-content-center">
+                    <Form.Check
+                        type="radio"
+                        label="Мужской"
+                        name="gender"
+                        id="male"
+                        checked={gender === 1}
+                        onChange={() => setGender(1)}
+                    />
+                    <Form.Check
+                        type="radio"
+                        label="Женский"
+                        name="gender"
+                        id="female"
+                        checked={gender === 2}
+                        onChange={() => setGender(2)}
+                    />
+                </div>
+            </Form.Group>
+
+            <div className="d-flex flex-column gap-3">
+                <Button
+                    size="lg"
+                    className="w-100 fw-semibold"
+                    disabled={!canProceed}
+                    onClick={() => setStep(3)}
+                >
+                    Продолжить
+                </Button>
+
+                <Button
+                    variant="outline-secondary"
+                    size="lg"
+                    className="w-100"
+                    onClick={() => setStep(1)}
+                >
+                    Назад
+                </Button>
+            </div>
+        </>
+    );
+};
+
+
+const Step3: React.FC<StepProps> = ({
+                                        districts,
+                                        selectedDistrictId, setSelectedDistrictId,
+                                        schoolsInDistrict,
+                                        selectedSchoolId, setSelectedSchoolId,
+                                        classNumber, setClassNumber,
+                                        setStep
+                                    }) => (
+    <>
+        <h4 className="fw-bold mb-3">Шаг 3: Образовательное учреждение</h4>
+
+        <Form.Group className="mb-3">
+            <Form.Label>Муниципальное образование</Form.Label>
+            <Form.Select
+                value={selectedDistrictId}
+                onChange={(e) => {
+                    setSelectedDistrictId(e.target.value);
+                    setSelectedSchoolId("");
+                }}
+            >
+                <option value="">Выберите округ...</option>
+                {districts.map((d: any) => (
+                    <option key={d.id} value={d.id}>
+                        {d.name}
+                    </option>
+                ))}
+            </Form.Select>
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+            <Form.Label>Школа</Form.Label>
+            <Form.Select
+                value={selectedSchoolId}
+                disabled={!selectedDistrictId}
+                onChange={(e) => setSelectedSchoolId(e.target.value)}
+            >
+                <option value="">Выберите школу...</option>
+                {schoolsInDistrict.map((s: any) => (
+                    <option key={s.id} value={s.id}>
+                        {s.name}
+                    </option>
+                ))}
+            </Form.Select>
+        </Form.Group>
+
+        <Form.Group className="mb-3">
+            <Form.Label>Класс</Form.Label>
+            <Form.Select value={classNumber} onChange={(e) => setClassNumber(Number(e.target.value))}>
+                {[...Array(7)].map((_, idx) => {
+                    const n = idx + 5;
+                    return (
+                        <option key={n} value={n}>
+                            {n}
+                        </option>
+                    );
+                })}
+            </Form.Select>
+        </Form.Group>
+
+        <Button
+            className="w-100"
+            disabled={!selectedDistrictId || !selectedSchoolId}
+            onClick={() => setStep(4)}
+        >
+            Далее
+        </Button>
+
+        <Button variant="secondary" className="w-100 mt-3" onClick={() => setStep(2)}>
+            Назад
+        </Button>
+    </>
+);
+
+const Step4: React.FC<StepProps> = ({
+                                        citizenship, setCitizenship,
+                                        disability, setDisability,
+                                        setStep
+                                    }) => (
+    <>
+        <h4 className="fw-bold mb-3">Шаг 4: Дополнительная информация</h4>
+
+        <Form.Group className="mb-4">
+            <Form.Label className="fw-semibold">Гражданство</Form.Label>
+            <div className="d-flex flex-column gap-2 mt-2">
+                <Form.Check
+                    type="radio"
+                    id="citizenship-russia"
+                    label="Россия"
+                    checked={citizenship === 1}
+                    onChange={() => setCitizenship(1)}
+                />
+                <Form.Check
+                    type="radio"
+                    id="citizenship-other"
+                    label="Другое"
+                    checked={citizenship === 2}
+                    onChange={() => setCitizenship(2)}
+                />
+            </div>
+        </Form.Group>
+
+        <Form.Group className="mb-4">
+            <Form.Label className="fw-semibold">
+                Наличие ограничений возможностей здоровья (ОВЗ)
+            </Form.Label>
+            <div className="d-flex flex-column gap-2 mt-2">
+                <Form.Check
+                    type="radio"
+                    id="disability-no"
+                    label="Нет"
+                    checked={disability === 1}
+                    onChange={() => setDisability(1)}
+                />
+                <Form.Check
+                    type="radio"
+                    id="disability-yes"
+                    label="Есть"
+                    checked={disability === 2}
+                    onChange={() => setDisability(2)}
+                />
+            </div>
+            <Form.Text className="text-muted">
+                ОВЗ — это особенности здоровья, при которых может понадобиться помощь или особые условия для прохождения олимпиады.
+                Если сомневаетесь, лучше выбрать «Нет».
+            </Form.Text>
+        </Form.Group>
+
+        <Button className="w-100" onClick={() => setStep(5)}>
+            Далее
+        </Button>
+        <Button variant="secondary" className="w-100 mt-3" onClick={() => setStep(3)}>
+            Назад
+        </Button>
+    </>
+);
+
+const Step5: React.FC<StepProps> = ({
+                                        surName, firstName, patronymic,
+                                        birthdate, regEmail,
+                                        selectedSchoolId, schoolsInDistrict,
+                                        classNumber, citizenship, disability,
+                                        CITIZENSHIP_TEXT, DISABILITY_TEXT,
+                                        setStep
+                                    }) => {
+    const selectedSchool = schoolsInDistrict.find((s: any) => s.id === selectedSchoolId);
+    const schoolName = selectedSchool?.name || "Не выбрана";
+
+    return (
+        <>
+            <h4 className="fw-bold mb-3">Шаг 5: Подтверждение</h4>
+            <p>Проверьте данные перед завершением регистрации:</p>
+
+            <ListGroup className="mb-4">
+                <ListGroup.Item>ФИО: {surName} {firstName} {patronymic}</ListGroup.Item>
+                <ListGroup.Item>Дата рождения: {birthdate}</ListGroup.Item>
+                <ListGroup.Item>Почта: {regEmail}</ListGroup.Item>
+                <ListGroup.Item>Школа: {schoolName}</ListGroup.Item>
+                <ListGroup.Item>Класс: {classNumber}</ListGroup.Item>
+                <ListGroup.Item>Гражданство: <strong>{CITIZENSHIP_TEXT[citizenship]}</strong></ListGroup.Item>
+                <ListGroup.Item>ОВЗ: <strong>{DISABILITY_TEXT[disability]}</strong></ListGroup.Item>
+            </ListGroup>
+
+            <Button className="w-100" onClick={() => setStep(6)}>
+                Всё верно, продолжить
+            </Button>
+            <Button variant="secondary" className="w-100 mt-3" onClick={() => setStep(4)}>
+                Назад
+            </Button>
+        </>
+    );
+};
+
+const Step6: React.FC<StepProps> = ({
+                                        phoneNumber, setPhoneNumber,
+                                        smsSent,
+                                        smsCode, setSmsCode,
+                                        errorSMS,
+                                        cooldown,
+                                        sendSMS, verifySMS,
+                                        setStep
+                                    }) => {
+    return (
+        <>
+            <h4 className="fw-bold mb-3">Почти всё готово!</h4>
+            <p className="mb-4">
+                Осталось подтвердить номер телефона:<br />
+                <strong>{phoneNumber || "+7 (___) ___-__-__"}</strong>
+            </p>
+
+            <Form.Group className="mb-4">
+                <Form.Control
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="+7 (___) ___-__-__"
+                    type="tel"
+                    className="fs-5"
+                />
+            </Form.Group>
+
+            {!smsSent ? (
+                <Button className="w-100" size="lg" onClick={sendSMS}>
+                    Отправить SMS-код
+                </Button>
+            ) : (
+                <>
+                    <Form.Group className="mb-3">
+                        <Form.Control
+                            placeholder="Введите код из SMS"
+                            value={smsCode}
+                            onChange={(e) => setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                            maxLength={6}
+                            className="text-center fs-4"
+                            style={{ letterSpacing: "0.5rem" }}
+                        />
+                    </Form.Group>
+
+                    {errorSMS && (
+                        <div className="text-danger text-center mb-3 fw-medium">
+                            {errorSMS}
+                        </div>
+                    )}
+
+                    <Button
+                        className="w-100 mb-3"
+                        size="lg"
+                        onClick={verifySMS}
+                        disabled={smsCode.length < 4}
+                    >
+                        Подтвердить
+                    </Button>
+
+                    <div className="text-center">
+                        {cooldown > 0 ? (
+                            <span className="text-muted">
+                Повторная отправка через {cooldown} сек.
+              </span>
+                        ) : (
+                            <Button variant="link" className="p-0" onClick={sendSMS}>
+                                Отправить код повторно
+                            </Button>
+                        )}
+                    </div>
+                </>
+            )}
+
+            <Button
+                variant="secondary"
+                className="w-100 mt-4"
+                onClick={() => setStep(5)}
+            >
+                Назад
+            </Button>
+        </>
+    );
+};
+
+const RegisterPage: React.FC = () => {
+    const { register } = useAuth();
+    const navigate = useNavigate();
+
+    const [step, setStep] = useState(1);
+
+    // Все стейты для регистрации
+    const [firstName, setFirstName] = useState("");
+    const [surName, setSurName] = useState("");
+    const [patronymic, setPatronymic] = useState("");
+    const [birthdate, setBirthdate] = useState("");
+    const [gender, setGender] = useState(1);
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [smsSent, setSmsSent] = useState(false);
+    const [smsCode, setSmsCode] = useState("");
+    const [isPhoneVerified, setIsPhoneVerified] = useState(false);
+    const [attempts, setAttempts] = useState(0);
+    const retryTimeouts = [60, 180, 300];
+    const [cooldown, setCooldown] = useState(0);
+    const [errorSMS, setErrorSMS] = useState("");
+    const [districts, setDistricts] = useState([]);
+    const [selectedDistrictId, setSelectedDistrictId] = useState("");
+    const [citizenship, setCitizenship] = useState(0);
+    const [disability, setDisability] = useState(0);
+    const [schoolsInDistrict, setSchoolsInDistrict] = useState([]);
+    const [selectedSchoolId, setSelectedSchoolId] = useState("");
+    const [schoolQuery, setSchoolQuery] = useState("");
+    const [classNumber, setClassNumber] = useState(5);
+    const [regEmail, setRegEmail] = useState("");
+    const [regPassword, setRegPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [emailError, setEmailError] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const passwordMismatch = regPassword !== confirmPassword;
+
+    const CITIZENSHIP_TEXT: Record<number, string> = {
+        0: "Не выбрано", 1: "Россия", 2: "Другое",
+    };
+
+    const DISABILITY_TEXT: Record<number, string> = {
+        0: "Не выбрано", 1: "Нет", 2: "Есть",
+    };
+
+    const hints: Record<number, { title: string; text: string }> = {
+        1: { title: "Шаг 1: Почта и пароль", text: "Укажите актуальную почту - она будет использоваться для связи с вами, а пароль должен быть надёжным.", icon: <LockFill size={48} className="mb-3 text-white opacity-75" />  },
+        2: {
+            title: "Расскажите о себе",
+            text: "Эти данные нужны для корректного участия в олимпиадах и выдачи дипломов.",
+            icon: <PersonFill size={48} className="mb-3 text-white opacity-75" />
+        },
+        3: {
+            title: "Где вы учитесь?",
+            text: "Мы найдём вашу школу по официальным данным. Начните с выбора округа.",
+            icon: <BuildingFill size={48} className="mb-3 text-white opacity-75" />
+        },
+        4: {
+            title: "Последние детали",
+            text: "Это нужно для правильного оформления документов и возможной помощи на олимпиаде.",
+            icon: <HeartFill size={48} className="mb-3 text-white opacity-75" />
+        },
+        5: {
+            title: "Проверьте внимательно",
+            text: "После отправки изменить данные будет сложно. Убедитесь, что всё верно!",
+            icon: <CheckCircleFill size={48} className="mb-3 text-white opacity-75" />
+        },
+        6: {
+            title: "Остался один шаг!",
+            text: "Подтвердите номер телефона — это защитит ваш аккаунт и позволит восстановить доступ.",
+            icon: <PhoneFill size={48} className="mb-3 text-white opacity-75" />
+        },
+    };
+
+    ////////////////////////////////////////////////
+    // SMS Logics
+    ////////////////////////////////////////////////
+
+    const sendSMS = async () => {
+        try {
+            setErrorSMS("");
+
+            // TODO: вызвать запрос на отправку SMS
+            // const data = await axiosSendSMSCode(phoneNumber);
+            // data можно использовать, если backend вернёт что-то вроде { success: true }
+
+            setSmsSent(true);
+
+            // выставляем задержку на повтор
+            const timeout = retryTimeouts[Math.min(attempts, retryTimeouts.length - 1)];
+            setCooldown(timeout);
+
+        } catch (e) {
+            console.error("Error sending SMS:", e);
+            setErrorSMS("Ошибка отправки SMS. Попробуйте позже.");
+        }
+    };
+
+
+    const verifySMS = async () => {
+        try {
+            setErrorSMS("");
+            // TODO: вызвать запрос на проверку SMS
+            //const result = await axiosSSOVerifySMSCode(phoneNumber, smsCode);
+
+            // if (!result.data.success) {
+            //     throw new Error(result.message || "Неверный код");
+            // }
+
+            setIsPhoneVerified(true);
+            await handleFinalSubmit();
+
+        } catch (e) {
+            console.error("Неверный код SMS:", e);
+
+            setErrorSMS("Неверный код. Попробуйте снова.");
+
+            setAttempts(a => {
+                const next = a + 1;
+                const timeout = retryTimeouts[Math.min(next, retryTimeouts.length - 1)];
+                setCooldown(timeout);
+                return next;
+            });
+        }
+    };
+
+
+    useEffect(() => {
+        if (cooldown <= 0) return;
+        const t = setInterval(() => setCooldown((c) => c - 1), 1000);
+        return () => clearInterval(t);
+    }, [cooldown]);
+
+
+    ////////////////////////////////////////////////
+    // School Search
+    ////////////////////////////////////////////////
+
+    useEffect(() => {
+        const fetchDistricts = async () => {
+            try {
+                const res = await axios.get(`/districts/30`);
+                setDistricts(res.data.data);
+            } catch (err) {
+                console.error("Ошибка загрузки округов:", err);
+            }
+        };
+
+        fetchDistricts();
+    }, []);
+
+    useEffect(() => {
+        if (!selectedDistrictId) return;
+
+        const fetchSchools = async () => {
+            try {
+                const res = await axios.get(`/schools/district/${selectedDistrictId}`);
+                setSchoolsInDistrict(res.data.data);
+            } catch (err) {
+                console.error("Ошибка загрузки школ:", err);
+            }
+        };
+
+        fetchSchools();
+    }, [selectedDistrictId]);
+
+
+    const validateEmail = (value: string) => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(value);
+    };
+
+    const validateEmailInSystem = (value: string) => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(value);
+    };
+
+    const validatePhoneInSystem = (value: string) => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(value);
+    };
+
+    ////////////////////////////////////////////////
+    // Submit
+    ////////////////////////////////////////////////
+
+    const handleFinalSubmit = async () => {
+        const registerData: RegisterForm = {
+            firstname: firstName,
+            surname: surName,
+            patronymic,
+            email: regEmail,
+            password: regPassword,
+            phone_number: phoneNumber,
+            gender: gender.toString(),
+            school_id: selectedSchoolId,
+            birthdate,
+            classnumber: classNumber.toString(),
+            disability: String(disability),
+            citizenship: String(citizenship)
+        };
+
+        try {
+            await register(registerData);
+        } catch (err) {
+            console.error("Registration error:", err);
+        }
+    };
+
+    // Создаем общий объект пропсов для всех шагов
+    const stepProps: StepProps = {
+        // Step1
+        regEmail, setRegEmail,
+        regPassword, setRegPassword,
+        confirmPassword, setConfirmPassword,
+        emailError, setEmailError,
+        showPassword, setShowPassword,
+        showConfirmPassword, setShowConfirmPassword,
+        validateEmail,
+        passwordMismatch,
+
+        // Step2
+        firstName, setFirstName,
+        surName, setSurName,
+        patronymic, setPatronymic,
+        birthdate, setBirthdate,
+        gender, setGender,
+
+        // Step3
+        districts,
+        selectedDistrictId, setSelectedDistrictId,
+        schoolsInDistrict,
+        selectedSchoolId, setSelectedSchoolId,
+        classNumber, setClassNumber,
+
+        // Step4
+        citizenship, setCitizenship,
+        disability, setDisability,
+
+        // Step5
+        CITIZENSHIP_TEXT,
+        DISABILITY_TEXT,
+
+        // Step6
+        phoneNumber, setPhoneNumber,
+        smsSent, setSmsSent,
+        smsCode, setSmsCode,
+        errorSMS,
+        cooldown,
+        sendSMS, verifySMS,
+
+        // Общие
+        setStep
+    };
+
+    const renderStep = () => {
+        switch (step) {
+            case 1: return <Step1 {...stepProps} />;
+            case 2: return <Step2 {...stepProps} />;
+            case 3: return <Step3 {...stepProps} />;
+            case 4: return <Step4 {...stepProps} />;
+            case 5: return <Step5 {...stepProps} />;
+            case 6: return <Step6 {...stepProps} />;
+            default: return <Step1 {...stepProps} />;
+        }
+    };
+
+    return (
+        <Container fluid className="vh-100 d-flex flex-column">
+            <Row className="flex-grow-1">
+                {/* Левый блок — только на десктопе */}
+                <Col md={6} className="d-none d-md-flex flex-column justify-content-center align-items-center text-center px-5"
+                     style={{
+                         background: "linear-gradient(135deg, #3a8dde, #4fd1c5)",
+                         color: "#fff",
+                         borderRadius: "10px 0 0 10px"
+                     }}>
+                    {hints[step].icon && <div className="mb-4">{hints[step].icon}</div>}
+                    <h1 className="fw-bold display-5">{hints[step].title}</h1>
+                    <p className="lead">{hints[step].text}</p>
+                    <div className="mt-4">
+                <span className="badge bg-white text-primary fs-6 px-4 py-2 rounded-pill">
+                    Шаг {step} из 6
+                </span>
+                    </div>
+                </Col>
+
+                {/* Правый блок — всегда */}
+                <Col xs={12} md={6} className="d-flex flex-column justify-content-center px-4 px-md-5 border border-1"
+                     style={{ background: "#fff", borderRadius: "0 10px 10px 0", minHeight: "100vh" }}>
+
+                    {/* Мобильная подсказка — только на телефоне */}
+                    <div className="d-block d-md-none mb-0 text-center">
+                        <div className="rounded-4 p-4 shadow-sm" style={{
+                            background: "linear-gradient(135deg, #3a8dde, #4fd1c5)",
+                            color: "#fff",
+                            borderRadius: "10px 0 0 10px"
+                        }}>
+                            {hints[step].icon && <div className="mb-3">{hints[step].icon}</div>}
+                            <h4 className="fw-bold">{hints[step].title}</h4>
+                            <p className="small mb-0 opacity-90">{hints[step].text}</p>
+                            <div className="mt-3">
+                                <span className="badge bg-light text-primary">Шаг {step} из 6</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Основная форма */}
+                    <div className="flex-grow-1 d-flex flex-column justify-content-center">
+                        {renderStep()}
+                    </div>
+
+                    <div className="text-center mt-4 pb-4">
+                        <Button variant="link" onClick={() => navigate('/auth')}>
+                            Уже есть аккаунт? Войти
+                        </Button>
+                    </div>
+                </Col>
+            </Row>
+        </Container>
+    );
+};
+
+export default RegisterPage;

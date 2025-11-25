@@ -57,6 +57,7 @@ import ChangePasswordBlock from './components/General/Pages/Profile/ChangePasswo
 import JuryAssignPage from './components/General/Pages/Events/JuryAssignPage';
 import SchoolConfirmPage from "./components/General/Pages/SchoolConfirm";
 import ParticipantDashboard from './components/General/PersonalAccount/PersonalAccountPage';
+import RegisterPage from "./components/General/Pages/Register";
 
 function App() {
     return (
@@ -71,6 +72,7 @@ function App() {
                             <Route path="/PersonalAccount/:id" element={<ParticipantDashboard />} />
 
                             <Route path="/auth" element={<AuthPage />} />
+                            <Route path="/register" element={<RegisterPage />} />
 
                             
                             {/* <Route

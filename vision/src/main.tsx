@@ -8,12 +8,11 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import { AuthProvider } from './components/Helpers/AuthContext';
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-
+  // <StrictMode>
     <ThemeProvider>
       <AuthProvider>
         <App />
       </AuthProvider>
-    </ThemeProvider>
-  </StrictMode>,
+    </ThemeProvider>,
+  // </StrictMode>,
 )
