@@ -1,6 +1,10 @@
 export interface MyEvent {
     id?: string;
     name: string;
+
+    dates: string[];
+    profiles: string[];
+
     start_date: string;
     end_date: string;
     previous_event_id?: string;

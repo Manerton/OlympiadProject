@@ -122,6 +122,9 @@ func (a *App) initRoutes(router *chi.Mux,
 
 	router.Post("/api/users/verify", authHandler.VerifyTrustCode)
 
+	router.Post("/api/auth/check-phone", authHandler.CheckPhone)
+	router.Post("/api/auth/check-email", authHandler.CheckEmail)
+
 	router.Get("/api/districts/{region}", districtHandler.GetAllByRegion)
 	router.Get("/api/schools/district/{id}", schoolHandler.GetAllByDistrict)
 

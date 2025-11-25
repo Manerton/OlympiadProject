@@ -26,6 +26,7 @@ import (
 
 type UserRepository interface {
 	GetById(ctx context.Context, orm orm.ORM, id uuid.UUID) (user.User, error)
+	GetByFilter(ctx context.Context, orm orm.ORM, userModel user.User) (user.User, error)
 	GetByEmail(ctx context.Context, orm orm.ORM, email string) (user.User, error)
 	Create(ctx context.Context, orm orm.ORM, user user.User) (uuid.UUID, error)
 	Update(ctx context.Context, orm orm.ORM, user user.User) error
@@ -70,6 +71,48 @@ func New(log *slog.Logger, orm orm.ORM, jwtManager *jwttoken.JWTManager,
 		refreshRepository:     refreshRepository,
 		notifyClient:          notifyClien,
 	}
+}
+
+func (s *AuthService) CheckPhone(ctx context.Context, phone string) (bool, error) {
+	const op = "services.AuthService.CheckPhone"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	_, err := s.userRepository.GetByFilter(ctx, s.db, user.User{PhoneNumber: phone})
+	if err == nil {
+		log.Warn("failed user exist", slog.String("phone", phone))
+		return false, nil
+	}
+
+	if !s.db.IsNotFound(err) {
+		log.Error("failed to check user exist", liblogger.Err(err))
+		return false, errs.ErrInternalError.Wrap("failed to check user exist")
+	}
+
+	return true, nil
+}
+
+func (s *AuthService) CheckEmail(ctx context.Context, email string) (bool, error) {
+	const op = "services.AuthService.CheckPhone"
+
+	log := s.log.With(
+		slog.String("op", op),
+	)
+
+	_, err := s.userRepository.GetByFilter(ctx, s.db, user.User{Email: email})
+	if err == nil {
+		log.Warn("failed user exist", slog.String("email", email))
+		return false, nil
+	}
+
+	if !s.db.IsNotFound(err) {
+		log.Error("failed to check user exist", liblogger.Err(err))
+		return false, errs.ErrInternalError.Wrap("failed to check user exist")
+	}
+
+	return true, nil
 }
 
 func (s *AuthService) Login(ctx context.Context, loginRequest *login_dto.LoginRequestDTO, deviceId string, deviceName string) (*login_dto.AuthResultDTO, error) {

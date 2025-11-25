@@ -17,7 +17,11 @@ func FromCreateToModel(createDTO event_dto.CreateEventDTORequest) event.Event {
 	}
 
 	return event.Event{
-		Name:            createDTO.Name,
+		Name: createDTO.Name,
+
+		Dates:    createDTO.Dates,
+		Profiles: createDTO.Profiles,
+
 		StartDate:       createDTO.StartDate,
 		EndDate:         createDTO.EndDate,
 		Subject:         subjectInt,
@@ -67,11 +71,15 @@ func ToDTO(eventModel event.Event) event_dto.EventDTOResponse {
 	// subjectStr := strconv.Itoa(eventModel.Subject)
 
 	return event_dto.EventDTOResponse{
-		ID:              eventModel.ID,
-		Name:            eventModel.Name,
-		StartDate:       eventModel.StartDate,
-		EndDate:         eventModel.EndDate,
-		Subject:         eventModel.Subject,
+		ID:        eventModel.ID,
+		Name:      eventModel.Name,
+		StartDate: eventModel.StartDate,
+		EndDate:   eventModel.EndDate,
+		Subject:   eventModel.Subject,
+
+		Dates:    eventModel.Dates,
+		Profiles: eventModel.Profiles,
+
 		ClassCategory:   string(eventModel.ClassCategory),
 		AdditionalInfo:  eventModel.AdditionalInfo,
 		PreviousEventID: eventModel.PreviousEventID,

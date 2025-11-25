@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type EventType string
@@ -34,15 +35,19 @@ const (
 )
 
 type Event struct {
-	ID              uuid.UUID         `gorm:"type:uuid;default:get_random_uuid();primaryKey"`
-	Name            string            `gorm:"type:varchar(128);not null"`
-	StartDate       time.Time         `gorm:"not null"`
-	EndDate         time.Time         `gorm:"not null"`
-	ClassCategory   ClassCategoryType `gorm:"type:class_category"`
-	EventType       EventType         `gorm:"type:event_type;not null"`
-	PreviousEventID *uuid.UUID        `gorm:"index"`
-	PreviousEvent   *Event            `gorm:"foreignKey:PreviousEventID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
-	Subject         int               `gorm:"type:int"`
-	Finished        int               `gorm:"type:int"`
-	AdditionalInfo  string            `gorm:"type:text"`
+	ID            uuid.UUID         `gorm:"type:uuid;default:get_random_uuid();primaryKey"`
+	Name          string            `gorm:"type:varchar(128);not null"`
+	StartDate     time.Time         `gorm:"not null"`
+	EndDate       time.Time         `gorm:"not null"`
+	ClassCategory ClassCategoryType `gorm:"type:class_category"`
+	// Temp for quic start
+	Profiles pq.StringArray `gorm:"type:text[]"`
+	Dates    pq.StringArray `gorm:"type:text[]"`
+
+	EventType       EventType  `gorm:"type:event_type;not null"`
+	PreviousEventID *uuid.UUID `gorm:"index"`
+	PreviousEvent   *Event     `gorm:"foreignKey:PreviousEventID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
+	Subject         int        `gorm:"type:int"`
+	Finished        int        `gorm:"type:int"`
+	AdditionalInfo  string     `gorm:"type:text"`
 }

@@ -13,8 +13,12 @@ CREATE TYPE class_category_type AS ENUM (
 CREATE TABLE events (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(128) NOT NULL,
-    start_date TIMESTAMP NOT NULL,
-    end_date TIMESTAMP NOT NULL,
+    start_date TIMESTAMP ,
+    end_date TIMESTAMP ,
+
+    dates TEXT[] ,
+    profiles TEXT[],
+
     event_type event_type NOT NULL,
     class_category class_category_type,
     previous_event_id UUID,

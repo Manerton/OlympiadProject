@@ -62,8 +62,8 @@ export async function fetchOlympiads({
   return res.data; // { data, metadata }
 }
 
-export async function fetchSimpleOlympiads(user_id: string) {
-  let url = `${API_CONFIG.OLYMPIAD}/${user_id}`;
+export async function fetchSimpleOlympiads(eventId: string) {
+  let url = `${API_CONFIG.CHILD}/${eventId}`;
   const res = await axios.get(url, {
     withCredentials: true,
   });

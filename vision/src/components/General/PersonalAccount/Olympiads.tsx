@@ -4,6 +4,7 @@ import { useAuth } from "../../Helpers/AuthContext";
 import axios from "axios";
 import { MyEvent } from "../../types/event";
 import { fetchSimpleOlympiads } from "../../../requests/EventsRequests";
+import { useParams } from "react-router-dom";
 
 interface Props {
     reloadFlag: number;
@@ -12,6 +13,8 @@ interface Props {
 
 
 const OlympiadsSimpleTable: React.FC<Props> = ({onApplied, reloadFlag}) => {
+    const { id } = useParams();
+
     const { user, accessToken } = useAuth();
 
     const [olympiads, setOlympiads] = useState<MyEvent[]>([]);
@@ -26,14 +29,16 @@ const OlympiadsSimpleTable: React.FC<Props> = ({onApplied, reloadFlag}) => {
     useEffect(() => {
         setLoading(true);
 
-        fetchSimpleOlympiads(user?.id!) // ← твоя функция, подставь нужные параметры
+        if (!id) 
+            return
+
+        fetchSimpleOlympiads(id!) // ← твоя функция, подставь нужные параметры
             .then((res) => {
                 setOlympiads(res.data);
             })
             .catch((err) => setError((err as Error).message))
             .finally(() => setLoading(false));
 
-        onApplied()
     }, [reloadFlag]);
 
     const handleClassChange = (eventId: string, value: number) => {
@@ -71,6 +76,8 @@ const OlympiadsSimpleTable: React.FC<Props> = ({onApplied, reloadFlag}) => {
             );
 
             alert("Заявка отправлена!");
+            onApplied()
+
         } catch (e) {
             alert("Ошибка при отправке заявки");
         }
@@ -84,8 +91,8 @@ const OlympiadsSimpleTable: React.FC<Props> = ({onApplied, reloadFlag}) => {
             <thead>
                 <tr>
                     <th>Предмет</th>
-                    <th>Дата проведения</th>
-                    <th>Класс</th>
+                    <th>Даты проведения</th>
+                    <th>Класс участия</th>
                     <th>Профиль</th>
                     <th></th>
                 </tr>
@@ -95,7 +102,7 @@ const OlympiadsSimpleTable: React.FC<Props> = ({onApplied, reloadFlag}) => {
                 {olympiads.map((olymp) => {
                     const start = new Date(olymp.start_date).toLocaleDateString();
                     const end = new Date(olymp.end_date).toLocaleDateString();
-                    const fullDate = `${start} — ${end}`;
+                    const fullDate = olymp.dates;
 
                     return (
                         <tr key={olymp.id}>
@@ -103,7 +110,7 @@ const OlympiadsSimpleTable: React.FC<Props> = ({onApplied, reloadFlag}) => {
 
                             <td>{fullDate}</td>
 
-                            <td style={{ width: 160 }}>
+                            <td >
                                 <Form.Check
                                     inline
                                     label="9"
@@ -130,16 +137,16 @@ const OlympiadsSimpleTable: React.FC<Props> = ({onApplied, reloadFlag}) => {
                                 />
                             </td>
 
-                            <td style={{ width: 200 }}>
-                                {olymp.events && olymp.events.length > 0 ? (
+                            <td >
+                                {olymp.profiles && olymp.profiles.length > 0 ? (
                                     <Form.Select
                                         value={selectedProfiles[olymp.id!] ?? "none"}
                                         onChange={(e) => handleProfileChange(olymp.id!, e.target.value)}
                                     >
-                                        <option value="none">Нет</option>
-                                        {olymp.events.map((ev) => (
-                                            <option key={ev.id} value={ev.id}>
-                                                {ev.name}
+                                        <option value="none">Выберите профиль</option>
+                                        {olymp.profiles.map((ev) => (
+                                            <option key={ev} value={ev}>
+                                                {ev}
                                             </option>
                                         ))}
                                     </Form.Select>
@@ -148,7 +155,7 @@ const OlympiadsSimpleTable: React.FC<Props> = ({onApplied, reloadFlag}) => {
                                 )}
                             </td>
 
-                            <td style={{ width: 140 }}>
+                            <td     >
                                 <Button
                                     variant="primary"
                                     className="w-100"

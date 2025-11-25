@@ -36,7 +36,7 @@ const RegionalStagesPage: React.FC = () => {
 
   const handleStageClick = (id: string) => {
   //console.log("Переход к этапу:", id);
-  navigate(`/OlympiadsPage/${id}`);
+  navigate(`/PersonalAccount/${id}`);
 };
 
   return (

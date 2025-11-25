@@ -1,61 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Helpers/AuthContext";
-import { useEffect, useState } from "react";
-import { Profile, User, UserParticipant } from "../../types/user";
+import { Profile} from "../../types/user";
 import { UserRole } from "../../../dictionary/role";
-import { axiosSSOUserInfo, axiosSSOUserParticipantInfo } from "../../../requests/SSORequests";
-import formatDateForInput from "../../Helpers/DateFormater";
-import ChangePasswordBlock from "../Pages/Profile/ChangePasswordPage";
 
-const PersonalInfo: React.FC = () => {
+import ChangePasswordBlock from "../Pages/Profile/ChangePasswordPage";
+import { GetCitizenshipLabel } from "../../../dictionary/citizenship";
+
+interface Props {
+    profile: Profile
+}
+
+const PersonalInfo: React.FC<Props> = ({profile}) => {
     const { accessToken, user } = useAuth();
     const navigate = useNavigate();
-
-    const [profile, setProfile] = useState<Profile>();
-
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                if (!accessToken || !user) return;
-
-                if (user.role === UserRole.Participant) {
-                    const data: UserParticipant = await axiosSSOUserParticipantInfo(accessToken, user.id);
-
-                    setProfile({
-                        surname: data.User.surname,
-                        firstname: data.User.firstname,
-                        patronymic: data.User.patronymic,
-                        phone_number: data.User.phone_number,
-                        birthdate: formatDateForInput(data.User.birthdate),
-                        gender: data.User.gender,
-                        school: data.school,
-                        classnumber: data.classnumber,
-                        email: data.User.email,
-                        citezenship: data.citezenship,
-                    });
-                } else {
-                    const data: User = await axiosSSOUserInfo(accessToken, user.id);
-
-                    setProfile({
-                        surname: data.surname,
-                        firstname: data.firstname,
-                        patronymic: data.patronymic,
-                        phone_number: data.phone_number,
-                        birthdate: formatDateForInput(data.birthdate),
-                        gender: data.gender,
-                        school: "",
-                        classnumber: 0,
-                        email: data.email,
-                        citezenship: 0,
-                    });
-                }
-            } catch (err) {
-                console.error("Ошибка загрузки профиля:", err);
-            }
-        };
-
-        fetchUser();
-    }, [accessToken, user]);
 
     const actions = (
         <button className="btn btn-secondary" onClick={() => navigate("/profile")}>
@@ -64,7 +21,7 @@ const PersonalInfo: React.FC = () => {
     );
 
     return (
-        <div className="d-flex flex-column min-vh-100">
+        <div className="d-flex flex-column">
             <div className="container">
                 {/* Карточки профиля */}
                 <div className="row g-3 mt-3">
@@ -118,14 +75,14 @@ const PersonalInfo: React.FC = () => {
                             </div>
                             <div className="col-md-3">
                                 <div className="card p-3 h-100 shadow-sm">
-                                    <h6 className="text-muted">Класс</h6>
+                                    <h6 className="text-muted">Класс обучения</h6>
                                     <p className="fs-5 fw-semibold mb-0">{profile?.classnumber}</p>
                                 </div>
                             </div>
                             <div className="col-md-3">
                                 <div className="card p-3 h-100 shadow-sm">
                                     <h6 className="text-muted">Гражданство</h6>
-                                    <p className="fs-5 fw-semibold mb-0">{profile?.citezenship}</p>
+                                    <p className="fs-5 fw-semibold mb-0">{GetCitizenshipLabel(profile?.citezenship)}</p>
                                 </div>
                             </div>
                         </>

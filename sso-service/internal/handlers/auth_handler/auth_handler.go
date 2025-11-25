@@ -23,6 +23,9 @@ type AuthService interface {
 
 	VerifyTrustCode(ctx context.Context, verifyCode register_dto.VerifyCodeDTO) error
 
+	CheckEmail(ctx context.Context, email string) (bool, error)
+	CheckPhone(ctx context.Context, phone string) (bool, error)
+
 	Refresh(ctx context.Context, refershToken string) (*login_dto.AuthResultDTO, error)
 	RevokeAllUserTokens(ctx context.Context, userId string) error
 	RevokeToken(ctx context.Context, id string) error
@@ -113,6 +116,70 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 			ExpiresIn:   authResult.ExpiresInAccess,
 		},
 	})
+}
+
+func (h *AuthHandler) CheckEmail(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var credential register_dto.CheckCredentialDTO
+	err := render.DecodeJSON(r.Body, &credential)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest))
+		return
+	}
+
+	result, err := h.authService.CheckEmail(ctx, credential.Credential)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       result,
+	})
+
+}
+
+func (h *AuthHandler) CheckPhone(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var credential register_dto.CheckCredentialDTO
+	err := render.DecodeJSON(r.Body, &credential)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest))
+		return
+	}
+
+	result, err := h.authService.CheckPhone(ctx, credential.Credential)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       result,
+	})
+
 }
 
 // @Summery Logout

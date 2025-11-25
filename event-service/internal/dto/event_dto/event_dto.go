@@ -8,10 +8,14 @@ import (
 )
 
 type EventDTOResponse struct {
-	ID              uuid.UUID           `json:"id"`
-	Name            string              `json:"name" validate:"required"`
-	StartDate       time.Time           `json:"start_date" validate:"required"`
-	EndDate         time.Time           `json:"end_date" validate:"required"`
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name" validate:"required"`
+	StartDate time.Time `json:"start_date" validate:"required"`
+	EndDate   time.Time `json:"end_date" validate:"required"`
+
+	Dates    []string `json:"dates"`
+	Profiles []string `json:"profiles"`
+
 	EventType       event.EventType     `json:"event_type"`
 	ClassCategory   string              `json:"class_category"`
 	PreviousEventID *uuid.UUID          `json:"previous_event_id"`
@@ -47,9 +51,13 @@ type DetailsEvent struct {
 }
 
 type CreateEventDTORequest struct {
-	Name            string     `json:"name" validate:"required"`
-	StartDate       time.Time  `json:"start_date" validate:"required"`
-	EndDate         time.Time  `json:"end_date" validate:"required"`
+	Name      string    `json:"name" validate:"required"`
+	StartDate time.Time `json:"start_date" validate:"required"`
+	EndDate   time.Time `json:"end_date" validate:"required"`
+
+	Dates    []string `json:"dates"`
+	Profiles []string `json:"profiles"`
+
 	PreviousEventID *uuid.UUID `json:"previous_event_id,omitempty"`
 	Subject         string     `json:"subject,omitempty"`
 	AdditionalInfo  string     `json:"additional_info,omitempty"`
@@ -58,11 +66,15 @@ type CreateEventDTORequest struct {
 }
 
 type UpdateEventDTORequest struct {
-	Name           *string    `json:"name"`
-	StartDate      *time.Time `json:"start_date"`
-	EndDate        *time.Time `json:"end_date"`
-	Subject        *string    `json:"subject"`
-	ClassCategory  *string    `json:"class_category"`
-	AdditionalInfo *string    `json:"additional_info"`
-	Finished       *int       `json:"finished"`
+	Name      *string    `json:"name"`
+	StartDate *time.Time `json:"start_date"`
+	EndDate   *time.Time `json:"end_date"`
+
+	Dates    *[]string `json:"dates"`
+	Profiles *[]string `json:"profiles"`
+
+	Subject        *string `json:"subject"`
+	ClassCategory  *string `json:"class_category"`
+	AdditionalInfo *string `json:"additional_info"`
+	Finished       *int    `json:"finished"`
 }

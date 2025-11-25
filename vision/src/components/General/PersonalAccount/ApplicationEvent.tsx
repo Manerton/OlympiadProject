@@ -33,7 +33,6 @@ const ApplicationEventPage: React.FC<Props> = ({ onApplied, reloadFlag }) => {
             } finally {
                 setLoading(false);
             }
-
         }
 
         fetchApplicationEvents();
