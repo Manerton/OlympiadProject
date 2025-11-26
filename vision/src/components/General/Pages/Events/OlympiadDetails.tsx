@@ -48,7 +48,7 @@ const OlympiadDetails: React.FC = () => {
     try {
       console.log("Отправка заявки на олимпиаду:", id);
       // TODO: заменить URL и userId на реальные
-      await axiosCreateApplication(accessToken as string, user.id, id)
+      // await axiosCreateApplication(accessToken as string, user.id, id)
 
       alert("Заявка успешно отправлена!");
     } catch (err) {

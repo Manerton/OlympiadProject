@@ -1,6 +1,7 @@
 import axios from "axios";
 import { APPLICATION } from "../config/api";
 import type { ApplicationEvent, MainEvent } from "../components/types/event";
+import { Application } from "../components/types/application";
 
 export async function axiosGetApplicationEvents(token: string, userId: string) {
     const res = await axios.get(
@@ -36,14 +37,10 @@ export async function axiosGetApplicationEvents(token: string, userId: string) {
     return wrapped;
 }
 
-export async function axiosCreateApplication(token: string, userId: string, eventID : string)
+export async function axiosCreateApplication(token: string, application: Application)
 {
-    const data = {
-        userId: userId,
-        eventID: eventID
-    };
     const res = await axios.post(
-        APPLICATION.create, data,
+        APPLICATION.create, application,
         {
             headers: {
                 Authorization: `Bearer ${token}`,

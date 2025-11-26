@@ -8,16 +8,20 @@ import (
 
 // DTO для создания заявки
 type CreateApplicationDTO struct {
-	UserID   uuid.UUID `json:"userId" binding:"required"`
-	EventID  uuid.UUID `json:"eventId" binding:"required"`
-	SchoolID uuid.UUID `json:"schoolId" binding:"required"`
+	UserID             uuid.UUID `json:"userId" binding:"required"`
+	EventID            uuid.UUID `json:"eventId" binding:"required"`
+	SchoolID           uuid.UUID `json:"schoolId" binding:"required"`
+	Profile            string    `json:"profile"`
+	ClassParticipation int       `json:"class_participation"`
 }
 
 // DTO для обновления статуса заявки
 type UpdateApplicationDTO struct {
-	Status int    `json:"status"`       // // 2 = одобрено, 3 = отклонено, 1 = не обработано
-	Reason int    `gorm:"default:null"` // 1 по результатам предудущего года, 2 по результатам текущего
-	Code   string `gorm:"default:null"` // 09_11_25
+	Status             int    `json:"status"`       // // 2 = одобрено, 3 = отклонено, 1 = не обработано
+	Reason             int    `gorm:"default:null"` // 1 по результатам предудущего года, 2 по результатам текущего
+	Code               string `gorm:"default:null"` // 09_11_25
+	Profile            string `json:"profile"`
+	ClassParticipation int    `json:"class_participation"`
 }
 
 type DeleteApplicationDTO struct {
@@ -29,10 +33,12 @@ type DeleteApplicationDTO struct {
 
 // DTO для возврата заявки
 type ApplicationResponseDTO struct {
-	ID       uuid.UUID `json:"id"`
-	UserID   uuid.UUID `json:"userId"`
-	SchoolID uuid.UUID `json:"schoolId"`
-	EventID  uuid.UUID `json:"eventId"`
+	ID                 uuid.UUID `json:"id"`
+	UserID             uuid.UUID `json:"userId"`
+	SchoolID           uuid.UUID `json:"schoolId"`
+	EventID            uuid.UUID `json:"eventId"`
+	Profile            string    `json:"profile"`
+	ClassParticipation int       `json:"class_participation"`
 	//ВРЕМЕННО ПОДУМАТЬ НАСЧЕТ КЭШИРОВАНИЯ
 	// EventName     string    `json:"eventName"`     //ВРЕМЕННО
 	// EventLocation string    `json:"eventLocation"` //ВРЕМЕННО

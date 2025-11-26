@@ -5,6 +5,8 @@ import axios from "axios";
 import { MyEvent } from "../../types/event";
 import { fetchSimpleOlympiads } from "../../../requests/EventsRequests";
 import { useParams } from "react-router-dom";
+import { axiosCreateApplication } from "../../../requests/ApplicationRequests";
+import { Application } from "../../types/application";
 
 interface Props {
     user_class: number;
@@ -24,9 +26,6 @@ const OlympiadsSimpleTable: React.FC<Props> = ({ user_class, onApplied, reloadFl
 
     useEffect(() => {
         setLoading(true);
-
-       
-
         fetchSimpleOlympiads()
             .then((res) => setOlympiads(res.data))
             .catch((err) => setError((err as Error).message))
@@ -53,18 +52,16 @@ const OlympiadsSimpleTable: React.FC<Props> = ({ user_class, onApplied, reloadFl
                 ? selectedProfiles[eventId]
                 : eventId;
 
-        const body = {
-            event_id: finalEventId,
-            user_id: user!.id.toString(),
-            class_number: classNumber,
-        };
-
         try {
-            await axios.post(
-                "http://localhost:PORT/api/application",
-                body,
-                { headers: { Authorization: `Bearer ${accessToken}` } }
-            );
+
+            let application = {
+                user_id: user?.id.toString(),
+                event_id: finalEventId,
+                class_participation: classNumber,
+                profile: selectedProfiles[eventId] ?? ""
+            } as Application
+
+            await axiosCreateApplication(accessToken!, application)
 
             alert("Заявка отправлена!");
             onApplied();
