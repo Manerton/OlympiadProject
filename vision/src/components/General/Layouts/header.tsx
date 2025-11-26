@@ -39,53 +39,52 @@ function Header() {
               <Nav.Link>Главная</Nav.Link>
             </LinkContainer>
 
-            <LinkContainer to="/RegionalStages">
-              <Nav.Link>Олимпиады</Nav.Link>
-            </LinkContainer>
+                        {user?.role === 1 && (
+                            <LinkContainer to="/AdminPanel">
+                                <Nav.Link>Панель Администрирования</Nav.Link>
+                            </LinkContainer>
+                        )}
+                    </Nav>
 
-            {/* Админские ссылки, показываются только для админов */}
-            {user?.role === 1 && (
-              <LinkContainer to="/AdminPanel">
-                <Nav.Link>Панель Администрирования</Nav.Link>
-              </LinkContainer>
-            )}
-          </Nav>
+                    {/* ПРАВАЯ ЧАСТЬ */}
+                    <Nav className="align-items-start">
+                        {isAuthenticated ? (
+                            <Dropdown align="end">
+                                <Dropdown.Toggle
+                                    variant="light"
+                                    id="dropdown-user"
+                                    className="d-flex align-items-center border-0 bg-transparent"
+                                >
+                                    <PersonCircle size={24} className="me-2" />
+                                    <span className="text-body">{user?.Email}</span>
+                                </Dropdown.Toggle>
 
-          <Nav className="ms-auto">
-            {isAuthenticated ? (
-              <Dropdown align="end">
-                <Dropdown.Toggle
-                  variant="light"
-                  id="dropdown-basic"
-                  className="d-flex align-items-center border-0 bg-transparent"
-                >
-                  <PersonCircle size={24} className="me-2" />
-                  <span className="ms-2 text-body">Email-{user?.Email}</span>
-                  <span className="ms-2 text-body">id-{user?.id}</span>
-                  <span className="ms-2 text-body">role-{user?.role}</span>
-                </Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Dropdown.Item as={Link} to="/profile">
+                                        <PersonCircle className="me-2" /> Мой профиль
+                                    </Dropdown.Item>
 
-                <Dropdown.Menu>
-                  <Dropdown.Item as={Link} to="/profile">
-                    <PersonCircle className="me-2" /> Мой профиль
-                  </Dropdown.Item>
-                  <Dropdown.Item onClick={logout}>
-                    <BoxArrowInRight className="me-2" /> Выйти
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
-            ) : (
-              <Nav.Link as={Link} to="/auth" className="d-flex align-items-center">
-                <BoxArrowInRight className="me-2" />
-                Войти
-              </Nav.Link>
-            )}
-          </Nav>
-          <ThemeToggleButton />
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
-  );
+                                    <Dropdown.Item onClick={logout}>
+                                        <BoxArrowInRight className="me-2" /> Выйти
+                                    </Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
+                        ) : (
+                            <Nav.Link as={Link} to="/auth" className="d-flex align-items-center">
+                                <BoxArrowInRight className="me-2" />
+                                Войти
+                            </Nav.Link>
+                        )}
+
+                        {/* Кнопка темы справа */}
+                        <div className="ms-3 d-flex align-items-start">
+                            <ThemeToggleButton />
+                        </div>
+                    </Nav>
+                </Navbar.Collapse>
+            </Container>
+        </Navbar>
+    );
 }
 
 export default Header;

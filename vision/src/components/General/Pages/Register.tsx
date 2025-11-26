@@ -17,6 +17,7 @@ import axios from "axios";
 import { axiosSendSMSCode } from "../../../requests/NotificationRequests";
 import { axiosSSOVerifySMSCode } from "../../../requests/SSORequests";
 
+axios.defaults.baseURL = "http://localhost:6611";
 
 // Выносим интерфейсы для пропсов
 interface StepProps {
@@ -114,7 +115,7 @@ const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
                     setEmailError(validateEmail(value) || !value ? "" : "Некорректный формат почты");
                 }}
                 isInvalid={!!emailError}
-                size="lg"
+                size="md"
             />
             <Form.Text className="text-muted">
                 Эта почта будет будет использоваться для связи с вами
@@ -132,7 +133,7 @@ const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
                     placeholder="••••••••"
                     value={regPassword}
                     onChange={(e) => setRegPassword(e.target.value)}
-                    size="lg"
+                    size="md"
                 />
                 <Button variant="outline-secondary" onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeSlashFill /> : <EyeFill />}
@@ -152,7 +153,7 @@ const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     isInvalid={passwordMismatch}
-                    size="lg"
+                    size="md"
                 />
                 <Button variant="outline-secondary" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                     {showConfirmPassword ? <EyeSlashFill /> : <EyeFill />}
@@ -166,7 +167,7 @@ const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
         </Form.Group>
 
         <Button
-            size="lg"
+            size="md"
             className="w-100 fw-semibold"
             disabled={!regEmail || !!emailError || !regPassword || passwordMismatch}
             onClick={() => setStep(2)}
@@ -198,6 +199,37 @@ const Step2: React.FC<StepProps> = ({
         birthdate &&
         gender > 0;
 
+    const [birthdateError, setBirthdateError] = useState("");
+
+    const validateAge = (dateString: string) => {
+        const birth = new Date(dateString);
+        const today = new Date();
+
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+            age--;
+        }
+
+        return age >= 10 && age <= 18;
+    };
+
+    const handleBirthChange = (value: string) => {
+        setBirthdate(value);
+
+        if (!value) {
+            setBirthdateError("Укажите дату рождения");
+            return;
+        }
+
+        if (!validateAge(value)) {
+            setBirthdateError("Возраст должен быть от 10 до 18 лет");
+        } else {
+            setBirthdateError(""); // ок
+        }
+    };
+
     return (
         <>
             <div className="text-center mb-4">
@@ -213,7 +245,7 @@ const Step2: React.FC<StepProps> = ({
                     value={surName}
                     onChange={(e) => setSurName(e.target.value)}
                     isInvalid={!!surnameError}
-                    size="lg"
+                    size="md"
                     autoFocus
                 />
                 <Form.Text className="text-muted">
@@ -232,7 +264,7 @@ const Step2: React.FC<StepProps> = ({
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     isInvalid={!!nameError}
-                    size="lg"
+                    size="md"
                 />
                 <Form.Control.Feedback type="invalid">
                     {nameError}
@@ -250,7 +282,7 @@ const Step2: React.FC<StepProps> = ({
                     value={patronymic}
                     onChange={(e) => setPatronymic(e.target.value)}
                     isInvalid={!!patronymicError}
-                    size="lg"
+                    size="md"
                 />
                 <Form.Text className="text-muted">
                     Если отчества нет — оставьте поле пустым
@@ -265,15 +297,21 @@ const Step2: React.FC<StepProps> = ({
                 <Form.Control
                     type="date"
                     value={birthdate}
-                    onChange={(e) => setBirthdate(e.target.value)}
+                    onChange={(e) => handleBirthChange(e.target.value)}
                     max={new Date().toISOString().split("T")[0]} // не в будущем
-                    size="lg"
+                    size="md"
                     required
+                    isInvalid={!!birthdateError}
                 />
+                <Form.Control.Feedback type="invalid">
+                    {birthdateError}
+                </Form.Control.Feedback>
+
                 <Form.Text className="text-muted">
                     Участники должны быть не младше 10 и не старше 18 лет
                 </Form.Text>
             </Form.Group>
+
 
             <Form.Group className="mb-5">
                 <Form.Label className="fw-semibold">Пол</Form.Label>
@@ -299,7 +337,7 @@ const Step2: React.FC<StepProps> = ({
 
             <div className="d-flex flex-column gap-3">
                 <Button
-                    size="lg"
+                    size="md"
                     className="w-100 fw-semibold"
                     disabled={!canProceed}
                     onClick={() => setStep(3)}
@@ -309,7 +347,7 @@ const Step2: React.FC<StepProps> = ({
 
                 <Button
                     variant="outline-secondary"
-                    size="lg"
+                    size="md"
                     className="w-100"
                     onClick={() => setStep(1)}
                 >
@@ -521,7 +559,7 @@ const Step6: React.FC<StepProps> = ({
             </Form.Group>
 
             {!smsSent ? (
-                <Button className="w-100" size="lg" onClick={sendSMS}>
+                <Button className="w-100" size="md" onClick={sendSMS}>
                     Отправить SMS-код
                 </Button>
             ) : (
@@ -545,7 +583,7 @@ const Step6: React.FC<StepProps> = ({
 
                     <Button
                         className="w-100 mb-3"
-                        size="lg"
+                        size="md"
                         onClick={verifySMS}
                         disabled={smsCode.length < 4}
                     >
@@ -622,7 +660,7 @@ const RegisterPage: React.FC = () => {
         0: "Не выбрано", 1: "Нет", 2: "Есть",
     };
 
-    const hints: Record<number, { title: string; text: string }> = {
+    const hints: Record<number, { title: string; text: string; icon?: React.ReactNode }> = {
         1: { title: "Шаг 1: Почта и пароль", text: "Укажите актуальную почту - она будет использоваться для связи с вами, а пароль должен быть надёжным.", icon: <LockFill size={48} className="mb-3 text-white opacity-75" />  },
         2: {
             title: "Расскажите о себе",
@@ -631,7 +669,7 @@ const RegisterPage: React.FC = () => {
         },
         3: {
             title: "Где вы учитесь?",
-            text: "Мы найдём вашу школу по официальным данным. Начните с выбора округа.",
+            text: "Мы найдём вашу школу по официальным данным. Начните с выбора муниципального образования.",
             icon: <BuildingFill size={48} className="mb-3 text-white opacity-75" />
         },
         4: {
@@ -640,13 +678,13 @@ const RegisterPage: React.FC = () => {
             icon: <HeartFill size={48} className="mb-3 text-white opacity-75" />
         },
         5: {
-            title: "Проверьте внимательно",
-            text: "После отправки изменить данные будет сложно. Убедитесь, что всё верно!",
+            title: "Проверьте внимательно!",
+            text: "Убедитесь, что всё верно! После отправки вы все еще можете изменить свои данные.",
             icon: <CheckCircleFill size={48} className="mb-3 text-white opacity-75" />
         },
         6: {
             title: "Остался один шаг!",
-            text: "Подтвердите номер телефона — это защитит ваш аккаунт и позволит восстановить доступ.",
+            text: "Укажите номер телефона - Он необходим для создания личного кабинета и позволит нам связаться с вами. <\br> После этого вам придет sms с кодом.",
             icon: <PhoneFill size={48} className="mb-3 text-white opacity-75" />
         },
     };
@@ -749,11 +787,13 @@ const RegisterPage: React.FC = () => {
         return regex.test(value);
     };
 
+    //TODO ЗАПРОС К АПИ НА ПРОВЕРКУ
     const validateEmailInSystem = (value: string) => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(value);
     };
 
+    //TODO ЗАПРОС К АПИ НА ПРОВЕРКУ
     const validatePhoneInSystem = (value: string) => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(value);
@@ -845,8 +885,8 @@ const RegisterPage: React.FC = () => {
     };
 
     return (
-        <Container fluid className="vh-100 d-flex flex-column">
-            <Row className="flex-grow-1">
+        <Container fluid className="min-vh-100 d-flex flex-column">
+            <Row className="flex-grow-1 gy-0">
                 {/* Левый блок — только на десктопе */}
                 <Col md={6} className="d-none d-md-flex flex-column justify-content-center align-items-center text-center px-5"
                      style={{

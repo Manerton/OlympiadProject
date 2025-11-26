@@ -15,6 +15,14 @@ const LoginPage: React.FC = () => {
         text: "Введите ваш логин и пароль, указанные при регистрации, чтобы войти в личный кабинет."
     };
 
+    const handleLogin = async () => {
+        const success = await login(authEmail, authPassword);
+
+        if (success) {
+            navigate("/");  // редирект только при успехе
+        }
+    };
+
     return (
         <Container fluid className="vh-100 d-flex align-items-center justify-content-center">
             <Row className="w-100 justify-content-center">
@@ -53,7 +61,7 @@ const LoginPage: React.FC = () => {
                             />
                         </Form.Group>
 
-                        <Button className="w-100" onClick={() => login(authEmail, authPassword)}>
+                        <Button className="w-100" onClick={() => handleLogin()}>
                             Войти
                         </Button>
 

@@ -3,7 +3,6 @@ import type { RegisterForm, UserAuth } from "../types/user";
 import axios from "axios";
 import { AUTH } from "../../config/api";
 import { jwtDecode } from "jwt-decode";
-import { useNavigate } from "react-router-dom";
 import { axiosSSOLogin, axiosSSOLogout, axiosSSORefresh, axiosSSORegister } from "../../requests/SSORequests";
 interface JwtPayload {
     sub: string;
@@ -17,7 +16,7 @@ interface AuthContextType {
     accessToken: string | null
     expires?: number
     initialized: boolean
-    login: (email: string, password: string) => Promise<void>
+    login: (email: string, password: string) => Promise<boolean>
     register: (data: RegisterForm) => Promise<void>
     logout: () => void
     refresh: () => Promise<UserAuth | null>
@@ -40,23 +39,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
-    const login = async (email: string, password: string) => {
+    const login = async (email: string, password: string): Promise<boolean> => {
         try {
             const result = await axiosSSOLogin(email, password);
             setAccessToken(result.access_token);
-            setExpires(Date.now() + result.expires_in * 1000)
+            setExpires(Date.now() + result.expires_in * 1000);
 
             const decoded = jwtDecode<JwtPayload>(result.access_token);
+
             setUser({
                 id: decoded.sub,
                 Email: decoded.email,
                 role: Number(decoded.role),
             });
+
+            return true;   // успешный логин
         } catch (err) {
             console.error("Login failed:", err);
             setUser(null);
+            return false;  // ошибка логина
         }
     };
+
 
 
     const logout = async () => {
