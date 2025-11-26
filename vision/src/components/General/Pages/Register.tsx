@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
     Container,
     Row,
@@ -118,7 +118,7 @@ const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
                 size="md"
             />
             <Form.Text className="text-muted">
-                Эта почта будет будет использоваться для связи с вами
+                Эта почта будет будет использоваться для связи с Вами
             </Form.Text>
             <Form.Control.Feedback type="invalid">
                 {emailError}
@@ -189,9 +189,9 @@ const Step2: React.FC<StepProps> = ({
     const isValidName = (str: string) => /^[\u0400-\u04FF\s-]*$/.test(str.trim());
     const isNameFilled = (str: string) => str.trim().length >= 2;
 
-    const nameError = !isValidName(firstName) || !isNameFilled(firstName) ? "Укажите имя кириллицей" : "";
-    const surnameError = !isValidName(surName) || !isNameFilled(surName) ? "Укажите фамилию кириллицей" : "";
-    const patronymicError = patronymic !== "" && !isValidName(patronymic) ? "Отчество — только кириллица" : "";
+    const nameError = !isValidName(firstName) || !isNameFilled(firstName) ? "Укажите имя только русскими буквами" : "";
+    const surnameError = !isValidName(surName) || !isNameFilled(surName) ? "Укажите фамилию только русскими буквами" : "";
+    const patronymicError = patronymic !== "" && !isValidName(patronymic) ? "Отчество только русскими буквами" : "";
 
     const canProceed =
         isNameFilled(firstName) && isValidName(firstName) &&
@@ -307,9 +307,6 @@ const Step2: React.FC<StepProps> = ({
                     {birthdateError}
                 </Form.Control.Feedback>
 
-                <Form.Text className="text-muted">
-                    Участники должны быть не младше 10 и не старше 18 лет
-                </Form.Text>
             </Form.Group>
 
 
@@ -366,71 +363,135 @@ const Step3: React.FC<StepProps> = ({
                                         selectedSchoolId, setSelectedSchoolId,
                                         classNumber, setClassNumber,
                                         setStep
-                                    }) => (
-    <>
-        <h4 className="fw-bold mb-3">Шаг 3: Образовательное учреждение</h4>
+                                    }) => {
+    const customOrder = ["Частные", "Федеральные", "Подведомственные МОиН АО"];
 
-        <Form.Group className="mb-3">
-            <Form.Label>Муниципальное образование</Form.Label>
-            <Form.Select
-                value={selectedDistrictId}
-                onChange={(e) => {
-                    setSelectedDistrictId(e.target.value);
-                    setSelectedSchoolId("");
-                }}
-            >
-                <option value="">Выберите округ...</option>
-                {districts.map((d: any) => (
-                    <option key={d.id} value={d.id}>
-                        {d.name}
+    const sortedDistricts = useMemo(() => {
+        const special = districts
+            .filter((d: any) => customOrder.includes(d.name.trim()))
+            .sort((a: any, b: any) =>
+                customOrder.indexOf(a.name.trim()) - customOrder.indexOf(b.name.trim())
+            );
+
+        const others = districts
+            .filter((d: any) => !customOrder.includes(d.name.trim()))
+            .sort((a: any, b: any) => {
+                const aIsMO = a.name.startsWith("МО г. Астрахань");
+                const bIsMO = b.name.startsWith("МО г. Астрахань");
+                if (aIsMO && !bIsMO) return -1;
+                if (!aIsMO && bIsMO) return 1;
+                return a.name.localeCompare(b.name, "ru");
+            });
+
+        return [...special, ...others];
+    }, [districts]);
+
+    const canProceed = !!selectedDistrictId && !!selectedSchoolId;
+
+    return (
+        <>
+            <div className="text-center mb-4">
+                <h4 className="fw-bold d-none d-md-block">Образовательное учреждение</h4>
+                <h5 className="fw-bold d-md-none">Выберите школу</h5>
+                <small className="text-muted">Шаг 3 из 6</small>
+            </div>
+
+            {/* Муниципальное образование */}
+            <Form.Group className="mb-4">
+                <Form.Label className="fw-semibold">Муниципальное образование</Form.Label>
+                <Form.Select
+                    value={selectedDistrictId}
+                    onChange={(e) => {
+                        setSelectedDistrictId(e.target.value);
+                        setSelectedSchoolId("");
+                    }}
+                    size="md"
+                >
+                    <option value="">Выберите...</option>
+
+                    {/* Особые категории */}
+                    {sortedDistricts.some((d: any) => customOrder.includes(d.name.trim())) && (
+                        <>
+                            <option disabled className="fw-bold text-primary">
+                                ─── Особые категории ───
+                            </option>
+                            {sortedDistricts
+                                .filter((d: any) => customOrder.includes(d.name.trim()))
+                                .map((d: any) => (
+                                    <option key={d.id} value={d.id}>
+                                        {d.name}
+                                    </option>
+                                ))}
+                        </>
+                    )}
+
+                    {/* Муниципальные */}
+                    {sortedDistricts.some((d: any) => !customOrder.includes(d.name.trim())) && (
+                        <>
+                            <option disabled className="fw-bold text-primary">
+                                ─── Муниципальные образования ───
+                            </option>
+                            {sortedDistricts
+                                .filter((d: any) => !customOrder.includes(d.name.trim()))
+                                .map((d: any) => (
+                                    <option key={d.id} value={d.id}>
+                                        {d.name}
+                                    </option>
+                                ))}
+                        </>
+                    )}
+                </Form.Select>
+            </Form.Group>
+
+            {/* Школа */}
+            <Form.Group className="mb-4">
+                <Form.Label className="fw-semibold">Образовательное учреждение</Form.Label>
+                <Form.Select
+                    value={selectedSchoolId}
+                    onChange={(e) => setSelectedSchoolId(e.target.value)}
+                    disabled={!selectedDistrictId}
+                    size="md"
+                >
+                    <option value="">
+                        {selectedDistrictId ? "Выберите школу..." : "Выберите муниципальное образование"}
                     </option>
-                ))}
-            </Form.Select>
-        </Form.Group>
-
-        <Form.Group className="mb-3">
-            <Form.Label>Школа</Form.Label>
-            <Form.Select
-                value={selectedSchoolId}
-                disabled={!selectedDistrictId}
-                onChange={(e) => setSelectedSchoolId(e.target.value)}
-            >
-                <option value="">Выберите школу...</option>
-                {schoolsInDistrict.map((s: any) => (
-                    <option key={s.id} value={s.id}>
-                        {s.name}
-                    </option>
-                ))}
-            </Form.Select>
-        </Form.Group>
-
-        <Form.Group className="mb-3">
-            <Form.Label>Класс</Form.Label>
-            <Form.Select value={classNumber} onChange={(e) => setClassNumber(Number(e.target.value))}>
-                {[...Array(7)].map((_, idx) => {
-                    const n = idx + 5;
-                    return (
-                        <option key={n} value={n}>
-                            {n}
+                    {schoolsInDistrict.map((s: any) => (
+                        <option key={s.id} value={s.id}>
+                            {s.name}
                         </option>
-                    );
-                })}
-            </Form.Select>
-        </Form.Group>
+                    ))}
+                </Form.Select>
+            </Form.Group>
 
-        <Button
-            className="w-100"
-            disabled={!selectedDistrictId || !selectedSchoolId}
-            onClick={() => setStep(4)}
-        >
-            Далее
-        </Button>
+            {/* Класс */}
+            <Form.Group className="mb-4">
+                <Form.Label className="fw-semibold">Класс, в котором вы обучаетесь</Form.Label>
+                <Form.Select
+                    value={classNumber}
+                    onChange={(e) => setClassNumber(Number(e.target.value))}
+                >
+                    {[5,6,7,8,9,10,11].map(n => (
+                        <option key={n} value={n}>{n} класс</option>
+                    ))}
+                </Form.Select>
+            </Form.Group>
 
-        <Button variant="secondary" className="w-100 mt-3" onClick={() => setStep(2)}>
-            Назад
-        </Button>
-    </>
-);
+            <div className="d-flex flex-column gap-3">
+                <Button
+                    size="md"
+                    className="w-100 fw-semibold"
+                    disabled={!canProceed}
+                    onClick={() => setStep(4)}
+                >
+                    Продолжить
+                </Button>
+                <Button variant="outline-secondary" onClick={() => setStep(2)}>
+                    Назад
+                </Button>
+            </div>
+        </>
+    );
+};
 
 const Step4: React.FC<StepProps> = ({
                                         citizenship, setCitizenship,
@@ -516,7 +577,7 @@ const Step5: React.FC<StepProps> = ({
                 <ListGroup.Item>Дата рождения: {birthdate}</ListGroup.Item>
                 <ListGroup.Item>Почта: {regEmail}</ListGroup.Item>
                 <ListGroup.Item>Школа: {schoolName}</ListGroup.Item>
-                <ListGroup.Item>Класс: {classNumber}</ListGroup.Item>
+                <ListGroup.Item>Класс обучения: {classNumber}</ListGroup.Item>
                 <ListGroup.Item>Гражданство: <strong>{CITIZENSHIP_TEXT[citizenship]}</strong></ListGroup.Item>
                 <ListGroup.Item>ОВЗ: <strong>{DISABILITY_TEXT[disability]}</strong></ListGroup.Item>
             </ListGroup>
@@ -661,10 +722,10 @@ const RegisterPage: React.FC = () => {
     };
 
     const hints: Record<number, { title: string; text: string; icon?: React.ReactNode }> = {
-        1: { title: "Шаг 1: Почта и пароль", text: "Укажите актуальную почту - она будет использоваться для связи с вами, а пароль должен быть надёжным.", icon: <LockFill size={48} className="mb-3 text-white opacity-75" />  },
+        1: { title: "Шаг 1: Почта и пароль", text: "Укажите актуальную электронную почту: она будет использовать для связи с Вами. Укажите надежный пароль", icon: <LockFill size={48} className="mb-3 text-white opacity-75" />  },
         2: {
-            title: "Расскажите о себе",
-            text: "Эти данные нужны для корректного участия в олимпиадах и выдачи дипломов.",
+            title: "Шаг 2: Расскажите о себе",
+            text: "Пожалуйста будьте предельно аккуратны при указании ваших ФИО. В случае внесения ошибочных сведений вы можете быть не допущены к участию в олимпиаде.",
             icon: <PersonFill size={48} className="mb-3 text-white opacity-75" />
         },
         3: {
@@ -684,7 +745,7 @@ const RegisterPage: React.FC = () => {
         },
         6: {
             title: "Остался один шаг!",
-            text: "Укажите номер телефона - Он необходим для создания личного кабинета и позволит нам связаться с вами. <\br> После этого вам придет sms с кодом.",
+            text: "Укажите номер телефона - Он необходим для создания личного кабинета и позволит нам связаться с Вами. <\br> После этого вам придет sms с кодом.",
             icon: <PhoneFill size={48} className="mb-3 text-white opacity-75" />
         },
     };

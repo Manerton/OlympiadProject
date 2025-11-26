@@ -5,6 +5,8 @@
     "preview": "deno run --allow-all --node-modules-dir npm:vite preview"
   },
   "imports": {
+    "@types/react-select": "npm:@types/react-select@^5.0.1",
+    "react-select": "npm:react-select@^5.10.2",
     "vite": "npm:vite@^7.2.2",
     "@vitejs/plugin-react": "npm:@vitejs/plugin-react@5.1.1",
     "react": "npm:react@^19.2.0",
