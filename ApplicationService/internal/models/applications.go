@@ -18,7 +18,7 @@ type Application struct {
 	//ВРЕМЕННО ПОДУМАТЬ НАСЧЕТ КЭШИРОВАНИЯ
 	Status      int       `gorm:"default:1"`    // 2 = одобрено, 3 = отклонено, 1 = не обработано
 	Reason      int       `gorm:"default:null"` // 1 по результатам предудущего года, 2 по результатам текущего
-	Code        string    `gorm:"default:null"` // 09_111_25
+	Code        string    `gorm:"dfeault:null"` // 09_111_25
 	SubmittedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt   time.Time `gorm:"autoUpdateTime"`
 }

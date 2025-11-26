@@ -13,7 +13,6 @@ interface Props {
 }
 
 const OlympiadsSimpleTable: React.FC<Props> = ({ user_class, onApplied, reloadFlag }) => {
-    const { id } = useParams();
     const { user, accessToken } = useAuth();
 
     const [olympiads, setOlympiads] = useState<MyEvent[]>([]);
@@ -26,9 +25,9 @@ const OlympiadsSimpleTable: React.FC<Props> = ({ user_class, onApplied, reloadFl
     useEffect(() => {
         setLoading(true);
 
-        if (!id) return;
+       
 
-        fetchSimpleOlympiads(id)
+        fetchSimpleOlympiads()
             .then((res) => setOlympiads(res.data))
             .catch((err) => setError((err as Error).message))
             .finally(() => setLoading(false));

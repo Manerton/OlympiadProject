@@ -69,7 +69,7 @@ function App() {
 
                         <Route element={<Layout />}>
                             <Route path="/" element={<MainPage />} />
-                            <Route path="/PersonalAccount/:id" element={<ParticipantDashboard />} />
+                            <Route path="/PersonalAccount" element={<ParticipantDashboard />} />
 
                             <Route path="/auth" element={<AuthPage />} />
                             <Route path="/register" element={<RegisterPage />} />
