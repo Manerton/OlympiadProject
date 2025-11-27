@@ -267,16 +267,21 @@ HTTP_SERVERS_INFO:
       target: "http://olymp-admin:8083/api/result/result-by-event-user"
       skip_auth: false
 
-    # ==================== AGGREGATE ROUTES ====================
     - prefix: "/applications/create/"
-      aggregate: true
-      targets:
-        - url: "http://sso-service:8181/api/participants/byuser/"
-          fields: [ "" ]
-        - url: "http://application-service:8082/applications/create"
-          fields: [ "" ]
+      aggregate: false
+      target: "http://application-service:8082/applications/create"
       skip_auth: false
-      roles: [ ]
+
+    # ==================== AGGREGATE ROUTES ====================
+    # - prefix: "/applications/create/"
+    #   aggregate: true
+    #   targets:
+    #     - url: "http://sso-service:8181/api/participants/byuser/"
+    #       fields: [ "" ]
+    #     - url: "http://application-service:8082/applications/create"
+    #       fields: [ "" ]
+    #   skip_auth: false
+    #   roles: [ ]
 
 
     - prefix: "/AplicationEvent"

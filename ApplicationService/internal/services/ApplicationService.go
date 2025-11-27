@@ -231,9 +231,11 @@ func ConvertDTOtoApplication(dto ApplicationDto.CreateApplicationDTO) models.App
 	schoolUid, _ := uuid.Parse(dto.SchoolID)
 
 	return models.Application{
-		UserID:   userUid,
-		EventID:  eventUid,
-		SchoolID: schoolUid,
+		UserID:             userUid,
+		EventID:            eventUid,
+		SchoolID:           schoolUid,
+		ClassParticipation: dto.ClassParticipation,
+		Profile:            dto.Profile,
 	}
 }
 
@@ -280,11 +282,13 @@ func ConvertApplicationToDTO(application models.Application) ApplicationDto.Appl
 		//EventName:     application.EventName,
 		//EventLocation: application.EventLocation,
 		//EventDate:     application.EventDate,
-		Status:      application.Status,
-		Reason:      application.Reason,
-		Code:        application.Code,
-		SubmittedAt: application.SubmittedAt,
-		UpdatedAt:   application.UpdatedAt,
+		Profile:            application.Profile,
+		ClassParticipation: application.ClassParticipation,
+		Status:             application.Status,
+		Reason:             application.Reason,
+		Code:               application.Code,
+		SubmittedAt:        application.SubmittedAt,
+		UpdatedAt:          application.UpdatedAt,
 	}
 }
 

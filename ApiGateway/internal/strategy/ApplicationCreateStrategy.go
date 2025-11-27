@@ -37,8 +37,11 @@ func (s *ApplicationCreateStrategy) Aggregate(
 
 	// ========== 1. Читаем тело оригинального запроса ==========
 	var incomingBody struct {
-		UserID  string `json:"userId"`
-		EventID string `json:"eventID"`
+		UserID             string `json:"userId"`
+		EventID            string `json:"eventID"`
+		SchoolID           string `json:"schoolID"`
+		Profile            string `json:"profile"`
+		ClassParticipation int    `json:"class_participation"`
 	}
 	if err := json.NewDecoder(origReq.Body).Decode(&incomingBody); err != nil {
 		return &responcetypes.ApiResponse{
@@ -59,57 +62,59 @@ func (s *ApplicationCreateStrategy) Aggregate(
 	eventID := incomingBody.EventID
 
 	// ========== 2. Запрос к SSO: получаем participant и school_id ==========
-	ssoURL := targets[0].URL + userID // например http://sso-service:8181/api/participants/byuser/ + uuid
+	// ssoURL := targets[0].URL + userID // например http://sso-service:8181/api/participants/byuser/ + uuid
 
-	req1, err := http.NewRequest("GET", ssoURL, nil)
-	if err != nil {
-		return nil, err
-	}
-	req1.Header = origReq.Header.Clone() // пробрасываем Authorization и прочие заголовки
+	// req1, err := http.NewRequest("GET", ssoURL, nil)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// req1.Header = origReq.Header.Clone() // пробрасываем Authorization и прочие заголовки
 
-	resp1, err := client.Do(req1)
-	if err != nil {
-		return &responcetypes.ApiResponse{
-			Status:     "error",
-			StatusCode: http.StatusBadGateway,
-			Error:      fmt.Sprintf("failed to call SSO service: %v", err),
-		}, err
-	}
-	defer resp1.Body.Close()
+	// resp1, err := client.Do(req1)
+	// if err != nil {
+	// 	return &responcetypes.ApiResponse{
+	// 		Status:     "error",
+	// 		StatusCode: http.StatusBadGateway,
+	// 		Error:      fmt.Sprintf("failed to call SSO service: %v", err),
+	// 	}, err
+	// }
+	// defer resp1.Body.Close()
 
-	if resp1.StatusCode >= 400 {
-		return &responcetypes.ApiResponse{
-			Status:     "error",
-			StatusCode: resp1.StatusCode,
-			Error:      "SSO service returned error",
-		}, nil
-	}
+	// if resp1.StatusCode >= 400 {
+	// 	return &responcetypes.ApiResponse{
+	// 		Status:     "error",
+	// 		StatusCode: resp1.StatusCode,
+	// 		Error:      "SSO service returned error",
+	// 	}, nil
+	// }
 
-	var ssoResp struct {
-		Data map[string]interface{} `json:"data"`
-	}
-	if err := json.NewDecoder(resp1.Body).Decode(&ssoResp); err != nil {
-		return &responcetypes.ApiResponse{
-			Status:     "error",
-			StatusCode: http.StatusInternalServerError,
-			Error:      "failed to parse SSO response",
-		}, err
-	}
+	// var ssoResp struct {
+	// 	Data map[string]interface{} `json:"data"`
+	// }
+	// if err := json.NewDecoder(resp1.Body).Decode(&ssoResp); err != nil {
+	// 	return &responcetypes.ApiResponse{
+	// 		Status:     "error",
+	// 		StatusCode: http.StatusInternalServerError,
+	// 		Error:      "failed to parse SSO response",
+	// 	}, err
+	// }
 
-	schoolID, ok := ssoResp.Data["school_id"].(string)
-	if !ok || schoolID == "" {
-		return &responcetypes.ApiResponse{
-			Status:     "error",
-			StatusCode: http.StatusUnprocessableEntity,
-			Error:      "school_id not found in participant data",
-		}, nil
-	}
+	// schoolID, ok := ssoResp.Data["school_id"].(string)
+	// if !ok || schoolID == "" {
+	// 	return &responcetypes.ApiResponse{
+	// 		Status:     "error",
+	// 		StatusCode: http.StatusUnprocessableEntity,
+	// 		Error:      "school_id not found in participant data",
+	// 	}, nil
+	// }
 
 	// ========== 3. Запрос к Application Service: создаём заявку ==========
-	appPayload := map[string]string{
-		"userId":   userID,
-		"eventID":  eventID,
-		"schoolId": schoolID,
+	appPayload := map[string]any{
+		"userId":              userID,
+		"eventID":             eventID,
+		"schoolId":            incomingBody.SchoolID,
+		"profile":             incomingBody.Profile,
+		"class_participation": incomingBody.ClassParticipation,
 	}
 	payloadBytes, _ := json.Marshal(appPayload)
 
