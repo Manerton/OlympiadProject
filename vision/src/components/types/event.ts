@@ -18,6 +18,10 @@ export interface MyEvent {
 export interface MainEvent {
     id: string
     name: string
+
+    dates: string[];
+    profile: string;
+
     start_date: string
     end_date: string
     previous_event_id: string | null   // может быть null
@@ -31,4 +35,5 @@ export interface MainEvent {
 export interface ApplicationEvent {
     MainEvent: MainEvent
     status: number
+    class_participation: number
 }

@@ -10,15 +10,18 @@ type ApiResponse struct {
 }
 
 type ApplicationEvent struct {
-	ID             string `json:"id"`
-	Name           string `json:"name"`
-	StartDate      string `json:"start_date"`
-	EndDate        string `json:"end_date"`
-	PreviousEvent  string `json:"previous_event_id"`
-	Subject        int    `json:"subject"`
-	ClassNumber    int    `json:"class_number"`
-	AdditionalInfo string `json:"additional_info"`
-	Status         int    `json:"status"`
+	ID                 string   `json:"id"`
+	Name               string   `json:"name"`
+	StartDate          string   `json:"start_date"`
+	EndDate            string   `json:"end_date"`
+	PreviousEvent      string   `json:"previous_event_id"`
+	Dates              []string `json:"dates"`
+	Profile            string   `json:"profile"`
+	Subject            int      `json:"subject"`
+	ClassNumber        int      `json:"class_number"`
+	AdditionalInfo     string   `json:"additional_info"`
+	Status             int      `json:"status"`
+	ClassParticipation int      `json:"class_participation"`
 }
 
 type Participant struct {
@@ -28,6 +31,23 @@ type Participant struct {
 	SchoolId    string `json:"school_id"`
 	Citizenship string `json:"citizenship"`
 	ClassNumber string `json:"class_number"`
+}
+
+type Event struct {
+	ID      string   `json:"id"`
+	Name    string   `json:"name"`
+	Subject int      `json:"subject"`
+	Dates   []string `json:"dates"`
+}
+
+type ApplicationResponse struct {
+	ID                 string `json:"id"`
+	UserID             string `json:"userId"`
+	SchoolID           string `json:"schoolId"`
+	EventID            string `json:"eventId"`
+	Profile            string `json:"profile"`
+	ClassParticipation int    `json:"class_participation"`
+	Status             int    `json:"status"`
 }
 
 type JuryNames struct {

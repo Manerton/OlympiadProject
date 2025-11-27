@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"main/internal/config"
+	"main/internal/lib/errs"
 	"main/internal/responcetypes"
 	"net/http"
 	"time"
@@ -67,22 +68,26 @@ func (s *ApplicationEventStrategy) Aggregate(
 		}, err
 	}
 
-	applications, ok := appResp.Data.([]interface{})
-	if !ok {
+	raw, _ := json.Marshal(appResp.Data)
+
+	var applications []responcetypes.ApplicationResponse
+	if err := json.Unmarshal(raw, &applications); err != nil {
 		return &responcetypes.ApiResponse{
-			Status:     "error",
-			StatusCode: 500,
-			Error:      "unexpected applications format",
-		}, fmt.Errorf("unexpected format in applications")
+			Status:     errs.StatusError,
+			StatusCode: http.StatusBadRequest,
+			Error:      "failed decode body",
+		}, err
 	}
 
 	eventStatuses := make(map[string]int)
+	eventProfile := make(map[string]string)
+	eventClassParticipation := make(map[string]int)
 	var eventIDs []string
 	for _, raw := range applications {
-		app := raw.(map[string]interface{})
-		eid := app["eventId"].(string)
-		eventIDs = append(eventIDs, eid)
-		eventStatuses[eid] = int(app["status"].(float64))
+		eventIDs = append(eventIDs, raw.EventID)
+		eventStatuses[raw.EventID] = raw.Status
+		eventProfile[raw.EventID] = raw.Profile
+		eventClassParticipation[raw.EventID] = raw.ClassParticipation
 	}
 
 	// === 2. второй сервис: /api/events/list (POST) ===
@@ -112,30 +117,28 @@ func (s *ApplicationEventStrategy) Aggregate(
 		}, err
 	}
 
-	events, ok := evResp.Data.([]interface{})
-	if !ok {
+	raw, _ = json.Marshal(evResp.Data)
+	var events []responcetypes.Event
+	if err := json.Unmarshal(raw, &events); err != nil {
 		return &responcetypes.ApiResponse{
 			Status:     "error",
 			StatusCode: 500,
-			Error:      "unexpected events format",
-		}, fmt.Errorf("unexpected format in events")
+			Error:      "invalid JSON from events",
+		}, err
 	}
 
 	// === 3. собираем ApplicationEvent ===
 	var result []responcetypes.ApplicationEvent
-	for _, raw := range events {
-		ev := raw.(map[string]interface{})
+	for _, event := range events {
 
 		appEv := responcetypes.ApplicationEvent{
-			ID:             getString(ev["id"]),
-			Name:           getString(ev["name"]),
-			StartDate:      getString(ev["start_date"]),
-			EndDate:        getString(ev["end_date"]),
-			PreviousEvent:  getString(ev["previous_event_id"]),
-			Subject:        int(ev["subject"].(float64)),
-			ClassNumber:    int(ev["class_number"].(float64)),
-			AdditionalInfo: getString(ev["additional_info"]),
-			Status:         eventStatuses[getString(ev["id"])],
+			ID:                 event.ID,
+			Name:               event.Name,
+			Subject:            event.Subject,
+			Dates:              event.Dates,
+			Profile:            eventProfile[event.ID],
+			Status:             eventStatuses[event.ID],
+			ClassParticipation: eventClassParticipation[event.ID],
 		}
 		result = append(result, appEv)
 	}

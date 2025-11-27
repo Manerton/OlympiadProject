@@ -1,8 +1,8 @@
 export interface Application {
     id: string;
-    event_id: string;
-    user_id: string;
-    school_id: string;
+    eventId: string;
+    userId: string;
+    schoolId: string;
     profile: string;
     class_participation: number;
 }

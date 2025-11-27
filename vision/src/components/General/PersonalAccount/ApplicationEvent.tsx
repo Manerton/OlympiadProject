@@ -1,33 +1,26 @@
 import { useEffect, useState } from "react";
 import { ApplicationEvent } from "../../types/event";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../Helpers/AuthContext";
 import { axiosGetApplicationEvents } from "../../../requests/ApplicationRequests";
-import EventCart from "../Pages/Profile/Tabs/EventCart";
 
 interface Props {
     reloadFlag: number;
-    onApplied: () => void;  // ← callback чтобы перезагрузить всю страницу
+    onApplied: () => void;
 }
-
 
 const ApplicationEventPage: React.FC<Props> = ({ onApplied, reloadFlag }) => {
     const [events, setEvents] = useState<ApplicationEvent[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const { accessToken, user } = useAuth()
-    const navigate = useNavigate();
-
+    const { accessToken, user } = useAuth();
 
     useEffect(() => {
-        if (!accessToken || !user?.id) return; // защита, если еще не загрузилось
+        if (!accessToken || !user?.id) return;
 
         async function fetchApplicationEvents() {
             try {
-                const result = await axiosGetApplicationEvents(accessToken!, user?.id!);
-                console.log("result от API:", result); // правильное место для проверки
+                const result = await axiosGetApplicationEvents(accessToken!, user!.id);
                 setEvents(result);
-                
             } catch (err) {
                 console.error("Ошибка загрузки заявок:", err);
             } finally {
@@ -38,43 +31,99 @@ const ApplicationEventPage: React.FC<Props> = ({ onApplied, reloadFlag }) => {
         fetchApplicationEvents();
     }, [accessToken, user?.id, reloadFlag]);
 
-    // 👇 этот эффект сработает каждый раз, когда allTasks обновится
-    useEffect(() => {
-        if (events.length > 0) {
-            console.log("Обновлённое состояние events:", events);
-        }
-    }, [events]);
-
-
-    function fetchRevokeApplication(event_id: string) {
-        try {
-            onApplied()
-        } catch {
-
-        }
+    function handleRevoke(event_id: string) {
+        onApplied();
     }
 
-    if (loading) return <div className="text-center ">Загрузка...</div>
+    if (loading) return <div className="text-center ">Загрузка...</div>;
 
-    if (events.length === 0) return <div className="text-center text-warning h4">Нет заявок на участие</div>
-
-    function footer(id: string) {
-        return (
-            <div className="d-flex flex-column justify-content-between h-100">
-                <div className="text-end">
-                    <button className="btn btn-primary" onClick={() => { fetchRevokeApplication }}>Отозвать</button>
-                </div>
-            </div>
-        )
-    }
+    if (events.length === 0)
+        return <div className="text-center text-warning h4">Нет заявок на участие</div>;
 
     return (
-        <div>
-            {events.map((event) => (
-                <EventCart key={event.MainEvent.id} event={event.MainEvent} footer={footer(event.MainEvent.id)} />
-            ))}
+        <div className="table-responsive">
+
+            {/* PC / Tablet View */}
+            <table className="table table-bordered table-striped d-none d-md-table">
+                <thead className="table-dark">
+                    <tr>
+                        <th>Предмет</th>
+                        <th>Даты</th>
+                        <th>Профиль</th>
+                        <th>Класс участия</th>
+                        <th>Статус</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {events.map((ev) => (
+                        <tr key={ev.MainEvent.id}>
+                            <td>{ev.MainEvent.name}</td>
+                            <td>{ev.MainEvent.dates.join(", ")}</td>
+                            <td>{ev.MainEvent.profile ? ev.MainEvent.profile : "—"}</td>
+                            <td>{ev.class_participation}</td>
+                            <td>{getStatusText(ev.status)}</td>
+                            <td>
+                                <button
+                                    className="btn btn-sm btn-danger"
+                                    onClick={() => handleRevoke(ev.MainEvent.id)}
+                                >
+                                    Отозвать
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+
+            {/* Mobile View */}
+            <div className="d-md-none">
+                {events.map((ev) => (
+                    <div key={ev.MainEvent.id} className="card mb-3 shadow-sm">
+                        <div className="card-body">
+                            <h5 className="card-title">{ev.MainEvent.name}</h5>
+
+                            <p className="mb-1">
+                                <strong>Даты:</strong> {ev.MainEvent.dates.join(", ")}
+                            </p>
+
+                            <p className="mb-1">
+                                <strong>Профиль:</strong>{" "}
+                                {ev.MainEvent.profile ? ev.MainEvent.profile : "—"}
+                            </p>
+
+                            <p className="mb-1">
+                                <strong>Класс участия:</strong> {ev.class_participation}
+                            </p>
+
+                            <p className="mb-3">
+                                <strong>Статус:</strong> {getStatusText(ev.status)}
+                            </p>
+
+                            <button
+                                className="btn btn-danger w-100"
+                                onClick={() => handleRevoke(ev.MainEvent.id)}
+                            >
+                                Отозвать
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
         </div>
     );
 };
 
 export default ApplicationEventPage;
+
+
+// Функция превращает статус в текст
+function getStatusText(status: number): string {
+    switch (status) {
+        case 1: return "Отправлена";
+        case 2: return "Отклонена";
+        case 3: return "Одобрена";
+        default: return "Неизвестно";
+    }
+}

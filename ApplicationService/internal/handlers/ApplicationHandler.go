@@ -250,6 +250,8 @@ func (h *ApplicationHandler) CreateApplication(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	h.logger.Info("Валидация данных заявки", slog.Any("input", input))
+
 	h.logger.Info("Создание новой заявки", slog.Any("user_id", input.UserID))
 	id, err := h.service.CreateApplication(ctx, input)
 	if err != nil {

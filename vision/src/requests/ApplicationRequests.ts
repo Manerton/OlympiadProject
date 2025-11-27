@@ -22,6 +22,8 @@ export async function axiosGetApplicationEvents(token: string, userId: string) {
         MainEvent: {
             id: event.id,
             name: event.name,
+            profile: event.profile,
+            dates: event.dates,
             start_date: event.start_date,
             end_date: event.end_date,
             previous_event_id: event.previous_event_id ?? null,
@@ -31,7 +33,8 @@ export async function axiosGetApplicationEvents(token: string, userId: string) {
             event_type: event.event_type ?? "", // если поле есть в API
             events: null                       // пока вложенных событий нет
         },
-        status: event.status ?? 0
+        status: event.status ?? 0,
+        class_participation: event.class_participation ?? 0
     }));
 
     return wrapped;
@@ -39,6 +42,7 @@ export async function axiosGetApplicationEvents(token: string, userId: string) {
 
 export async function axiosCreateApplication(token: string, application: Application)
 {
+    console.log("Profile", application.profile)
     const res = await axios.post(
         APPLICATION.create, application,
         {
@@ -49,7 +53,6 @@ export async function axiosCreateApplication(token: string, application: Applica
             withCredentials: true
         }
 
-
-
     );
+    console.log("res", res)
 }

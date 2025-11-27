@@ -225,10 +225,15 @@ func (s *ApplicationService) DeleteByFilter(ctx context.Context, deleteDTO Appli
 // Функции для преобразования между DTO и моделью
 
 func ConvertDTOtoApplication(dto ApplicationDto.CreateApplicationDTO) models.Application {
+
+	userUid, _ := uuid.Parse(dto.UserID)
+	eventUid, _ := uuid.Parse(dto.EventID)
+	schoolUid, _ := uuid.Parse(dto.SchoolID)
+
 	return models.Application{
-		UserID:   dto.UserID,
-		EventID:  dto.EventID,
-		SchoolID: dto.SchoolID,
+		UserID:   userUid,
+		EventID:  eventUid,
+		SchoolID: schoolUid,
 	}
 }
 

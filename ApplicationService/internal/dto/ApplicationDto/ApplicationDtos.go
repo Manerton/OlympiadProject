@@ -8,11 +8,11 @@ import (
 
 // DTO для создания заявки
 type CreateApplicationDTO struct {
-	UserID             uuid.UUID `json:"userId" binding:"required"`
-	EventID            uuid.UUID `json:"eventId" binding:"required"`
-	SchoolID           uuid.UUID `json:"schoolId" binding:"required"`
-	Profile            string    `json:"profile"`
-	ClassParticipation int       `json:"class_participation"`
+	UserID             string `json:"userId" binding:"required"`
+	EventID            string `json:"eventId" binding:"required"`
+	SchoolID           string `json:"schoolId" binding:"required"`
+	Profile            string `json:"profile"`
+	ClassParticipation int    `json:"class_participation"`
 }
 
 // DTO для обновления статуса заявки

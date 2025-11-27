@@ -129,7 +129,7 @@ const ParticipantDashboard: React.FC = () => {
                 <Collapse in={openOlympiads}>
                     <div>
                         <Card.Body>
-                            <OlympiadsSimpleTable user_class={profile?.classnumber!} onApplied={reloadAll} reloadFlag={reloadFlag} />
+                            <OlympiadsSimpleTable user_class={profile?.classnumber!} user_school_id={profile?.school ? profile?.school : ""} onApplied={reloadAll} reloadFlag={reloadFlag} />
                         </Card.Body>
                     </div>
                 </Collapse>

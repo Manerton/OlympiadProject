@@ -10,11 +10,12 @@ import { Application } from "../../types/application";
 
 interface Props {
     user_class: number;
+    user_school_id: string;
     reloadFlag: number;
     onApplied: () => void;
 }
 
-const OlympiadsSimpleTable: React.FC<Props> = ({ user_class, onApplied, reloadFlag }) => {
+const OlympiadsSimpleTable: React.FC<Props> = ({ user_class, user_school_id, onApplied, reloadFlag }) => {
     const { user, accessToken } = useAuth();
 
     const [olympiads, setOlympiads] = useState<MyEvent[]>([]);
@@ -47,20 +48,19 @@ const OlympiadsSimpleTable: React.FC<Props> = ({ user_class, onApplied, reloadFl
             return;
         }
 
-        const finalEventId =
-            selectedProfiles[eventId] && selectedProfiles[eventId] !== "none"
-                ? selectedProfiles[eventId]
-                : eventId;
-
         try {
 
+            console.log("profile", selectedProfiles[eventId])
+
             let application = {
-                user_id: user?.id.toString(),
-                event_id: finalEventId,
+                userId: user?.id.toString(),
+                eventId: eventId,
+                schoolId: user_school_id,
                 class_participation: classNumber,
                 profile: selectedProfiles[eventId] ?? ""
             } as Application
 
+            console.log("Applica", application.profile)
             await axiosCreateApplication(accessToken!, application)
 
             alert("Заявка отправлена!");
