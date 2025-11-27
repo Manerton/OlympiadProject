@@ -11,7 +11,7 @@ const LoginPage: React.FC = () => {
     const [authPassword, setAuthPassword] = useState("");
 
     const hints = {
-        title: "Авторизация в личный кабинет",
+        title: "Вход в личный кабинет",
         text: "Введите ваш логин и пароль, указанные при регистрации, чтобы войти в личный кабинет."
     };
 

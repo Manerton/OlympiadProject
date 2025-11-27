@@ -96,86 +96,98 @@ const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
                                         showConfirmPassword, setShowConfirmPassword,
                                         validateEmail,
                                         passwordMismatch,
-                                        setStep }) => (
-    <>
-        <h4 className="fw-bold mb-4 text-center">
-            Создание личного кабинета
-            <span className="text-muted fs-6 d-block mt-1">Шаг 1 из 6</span>
-        </h4>
+                                        setStep }) => {
 
-        <Form.Group className="mb-4">
-            <Form.Label className="fw-semibold">Электронная почта</Form.Label>
-            <Form.Control
-                type="email"
-                placeholder="example@mail.ru"
-                value={regEmail}
-                onChange={(e) => {
-                    const value = e.target.value;
-                    setRegEmail(value);
-                    setEmailError(validateEmail(value) || !value ? "" : "Некорректный формат почты");
-                }}
-                isInvalid={!!emailError}
+
+    const isPasswordEight = (str: string) => str.trim().length >= 8;
+
+
+    return (
+        <>
+            <h4 className="fw-bold mt-3 mb-3 text-center">
+                Создание личного кабинета
+                <span className="text-muted fs-6 d-block mt-1">Шаг 1 из 6</span>
+            </h4>
+
+            <Form.Group className="mb-4">
+                <Form.Label className="fw-semibold">Электронная почта</Form.Label>
+                <Form.Control
+                    type="email"
+                    placeholder="example@mail.ru"
+                    value={regEmail}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        setRegEmail(value);
+                        setEmailError(validateEmail(value) || !value ? "" : "Некорректный формат почты");
+                    }}
+                    isInvalid={!!emailError}
+                    size="md"
+                />
+                <Form.Text className="text-muted">
+                    Эта почта будет будет использоваться для связи с Вами
+                </Form.Text>
+                <Form.Control.Feedback type="invalid">
+                    {emailError}
+                </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group className="mb-4">
+                <Form.Label className="fw-semibold">Пароль</Form.Label>
+                <InputGroup>
+                    <Form.Control
+                        type={showPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={regPassword}
+                        onChange={(e) => setRegPassword(e.target.value)}
+                        size="md"
+                    />
+                    <Button variant="outline-secondary" onClick={() => setShowPassword(!showPassword)}>
+                        {showPassword ? <EyeSlashFill/> : <EyeFill/>}
+                    </Button>
+                </InputGroup>
+                <Form.Text className="text-muted">
+                    Минимум 8 символов, используйте буквы и цифры
+                </Form.Text>
+                {!isPasswordEight(regPassword) && (
+                    <div className="text-danger small mt-1">
+                        Пароль должен содержать не менее 8 символов
+                    </div>
+                )}
+            </Form.Group>
+
+            <Form.Group className="mb-4">
+                <Form.Label className="fw-semibold">Подтверждение пароля</Form.Label>
+                <InputGroup>
+                    <Form.Control
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="••••••••"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        isInvalid={passwordMismatch}
+                        size="md"
+                    />
+                    <Button variant="outline-secondary" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                        {showConfirmPassword ? <EyeSlashFill/> : <EyeFill/>}
+                    </Button>
+                </InputGroup>
+                {passwordMismatch && (
+                    <div className="text-danger small mt-1">
+                        Пароли не совпадают
+                    </div>
+                )}
+            </Form.Group>
+
+            <Button
                 size="md"
-            />
-            <Form.Text className="text-muted">
-                Эта почта будет будет использоваться для связи с Вами
-            </Form.Text>
-            <Form.Control.Feedback type="invalid">
-                {emailError}
-            </Form.Control.Feedback>
-        </Form.Group>
-
-        <Form.Group className="mb-4">
-            <Form.Label className="fw-semibold">Пароль</Form.Label>
-            <InputGroup>
-                <Form.Control
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={regPassword}
-                    onChange={(e) => setRegPassword(e.target.value)}
-                    size="md"
-                />
-                <Button variant="outline-secondary" onClick={() => setShowPassword(!showPassword)}>
-                    {showPassword ? <EyeSlashFill /> : <EyeFill />}
-                </Button>
-            </InputGroup>
-            <Form.Text className="text-muted">
-                Минимум 8 символов, используйте буквы и цифры
-            </Form.Text>
-        </Form.Group>
-
-        <Form.Group className="mb-4">
-            <Form.Label className="fw-semibold">Подтверждение пароля</Form.Label>
-            <InputGroup>
-                <Form.Control
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    isInvalid={passwordMismatch}
-                    size="md"
-                />
-                <Button variant="outline-secondary" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                    {showConfirmPassword ? <EyeSlashFill /> : <EyeFill />}
-                </Button>
-            </InputGroup>
-            {passwordMismatch && (
-                <div className="text-danger small mt-1">
-                    Пароли не совпадают
-                </div>
-            )}
-        </Form.Group>
-
-        <Button
-            size="md"
-            className="w-100 fw-semibold"
-            disabled={!regEmail || !!emailError || !regPassword || passwordMismatch}
-            onClick={() => setStep(2)}
-        >
-            Продолжить
-        </Button>
-    </>
-);
+                className="w-100 fw-semibold"
+                disabled={!regEmail || !!emailError || !regPassword || passwordMismatch || !isPasswordEight(regPassword)}
+                onClick={() => setStep(2)}
+            >
+                Продолжить
+            </Button>
+        </>
+    );
+};
 
 const Step2: React.FC<StepProps> = ({
                                         firstName, setFirstName,
@@ -187,7 +199,7 @@ const Step2: React.FC<StepProps> = ({
                                     }) => {
     // Простая валидация: только кириллица и дефис/пробел
     const isValidName = (str: string) => /^[\u0400-\u04FF\s-]*$/.test(str.trim());
-    const isNameFilled = (str: string) => str.trim().length >= 2;
+    const isNameFilled = (str: string) => str.trim().length >= 3;
 
     const nameError = !isValidName(firstName) || !isNameFilled(firstName) ? "Укажите имя только русскими буквами" : "";
     const surnameError = !isValidName(surName) || !isNameFilled(surName) ? "Укажите фамилию только русскими буквами" : "";
@@ -232,12 +244,12 @@ const Step2: React.FC<StepProps> = ({
 
     return (
         <>
-            <div className="text-center mb-4">
-                <h4 className="fw-bold">Личные данные</h4>
-                <small className="text-muted">Шаг 2 из 6</small>
-            </div>
+            <h4 className="fw-bold mt-3 mb-3 text-center">
+                Личные данные
+                <span className="text-muted fs-6 d-block mt-1">Шаг 2 из 6</span>
+            </h4>
 
-            <Form.Group className="mb-4">
+            <Form.Group className="mb-2">
                 <Form.Label className="fw-semibold">Фамилия</Form.Label>
                 <Form.Control
                     type="text"
@@ -256,7 +268,7 @@ const Step2: React.FC<StepProps> = ({
                 </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group className="mb-4">
+            <Form.Group className="mb-2">
                 <Form.Label className="fw-semibold">Имя</Form.Label>
                 <Form.Control
                     type="text"
@@ -271,7 +283,7 @@ const Step2: React.FC<StepProps> = ({
                 </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group className="mb-4">
+            <Form.Group className="mb-2">
                 <Form.Label className="fw-semibold">
                     Отчество
                     <span className="text-muted fw-normal"> (при наличии)</span>
@@ -292,7 +304,7 @@ const Step2: React.FC<StepProps> = ({
                 </Form.Control.Feedback>
             </Form.Group>
 
-            <Form.Group className="mb-4">
+            <Form.Group className="mb-2">
                 <Form.Label className="fw-semibold">Дата рождения</Form.Label>
                 <Form.Control
                     type="date"
@@ -310,7 +322,7 @@ const Step2: React.FC<StepProps> = ({
             </Form.Group>
 
 
-            <Form.Group className="mb-5">
+            <Form.Group className="mb-3">
                 <Form.Label className="fw-semibold">Пол</Form.Label>
                 <div className="d-flex gap-4 justify-content-center">
                     <Form.Check
@@ -343,8 +355,7 @@ const Step2: React.FC<StepProps> = ({
                 </Button>
 
                 <Button
-                    variant="outline-secondary"
-                    size="md"
+                    variant="secondary"
                     className="w-100"
                     onClick={() => setStep(1)}
                 >
@@ -365,6 +376,12 @@ const Step3: React.FC<StepProps> = ({
                                         setStep
                                     }) => {
     const customOrder = ["Частные", "Федеральные", "Подведомственные МОиН АО"];
+
+    const districtNameMap: Record<string, string> = {
+        "Частные": "Частная",
+        "Федеральные": "Министерство внутренних дел РФ",
+        "Подведомственные МОиН АО": "Министерство образования и науки АО"
+    };
 
     const sortedDistricts = useMemo(() => {
         const special = districts
@@ -390,11 +407,10 @@ const Step3: React.FC<StepProps> = ({
 
     return (
         <>
-            <div className="text-center mb-4">
-                <h4 className="fw-bold d-none d-md-block">Образовательное учреждение</h4>
-                <h5 className="fw-bold d-md-none">Выберите школу</h5>
-                <small className="text-muted">Шаг 3 из 6</small>
-            </div>
+            <h4 className="fw-bold mt-3 mb-3 text-center">
+                Образовательное учреждение
+                <span className="text-muted fs-6 d-block mt-1">Шаг 3 из 6</span>
+            </h4>
 
             {/* Муниципальное образование */}
             <Form.Group className="mb-4">
@@ -419,7 +435,7 @@ const Step3: React.FC<StepProps> = ({
                                 .filter((d: any) => customOrder.includes(d.name.trim()))
                                 .map((d: any) => (
                                     <option key={d.id} value={d.id}>
-                                        {d.name}
+                                        {districtNameMap[d.name.trim()] ?? d.name}
                                     </option>
                                 ))}
                         </>
@@ -485,7 +501,11 @@ const Step3: React.FC<StepProps> = ({
                 >
                     Продолжить
                 </Button>
-                <Button variant="outline-secondary" onClick={() => setStep(2)}>
+                <Button
+                    variant="secondary"
+                    className="w-100"
+                    onClick={() => setStep(2)}
+                >
                     Назад
                 </Button>
             </div>
@@ -499,7 +519,10 @@ const Step4: React.FC<StepProps> = ({
                                         setStep
                                     }) => (
     <>
-        <h4 className="fw-bold mb-3">Шаг 4: Дополнительная информация</h4>
+        <h4 className="fw-bold mt-3 mb-3 text-center">
+            Дополнительная информация
+            <span className="text-muted fs-6 d-block mt-1">Шаг 4 из 6</span>
+        </h4>
 
         <Form.Group className="mb-4">
             <Form.Label className="fw-semibold">Гражданство</Form.Label>
@@ -547,7 +570,9 @@ const Step4: React.FC<StepProps> = ({
             </Form.Text>
         </Form.Group>
 
-        <Button className="w-100" onClick={() => setStep(5)}>
+        <Button className="w-100"
+                disabled={!disability || !citizenship}
+                onClick={() => setStep(5)}>
             Далее
         </Button>
         <Button variant="secondary" className="w-100 mt-3" onClick={() => setStep(3)}>
@@ -569,15 +594,20 @@ const Step5: React.FC<StepProps> = ({
 
     return (
         <>
-            <h4 className="fw-bold mb-3">Шаг 5: Подтверждение</h4>
+            <h4 className="fw-bold mt-3 mb-3 text-center">
+                Подтверждение данных
+                <span className="text-muted fs-6 d-block mt-1">Шаг 5 из 6</span>
+            </h4>
             <p>Проверьте данные перед завершением регистрации:</p>
 
             <ListGroup className="mb-4">
-                <ListGroup.Item>ФИО: {surName} {firstName} {patronymic}</ListGroup.Item>
-                <ListGroup.Item>Дата рождения: {birthdate}</ListGroup.Item>
-                <ListGroup.Item>Почта: {regEmail}</ListGroup.Item>
-                <ListGroup.Item>Школа: {schoolName}</ListGroup.Item>
-                <ListGroup.Item>Класс обучения: {classNumber}</ListGroup.Item>
+                <ListGroup.Item>ФИО:<strong> {surName} {firstName} {patronymic} </strong></ListGroup.Item>
+                <ListGroup.Item>
+                    Дата рождения: <strong> {birthdate && new Date(birthdate).toLocaleDateString("ru-RU")} </strong>
+                </ListGroup.Item>
+                <ListGroup.Item>Почта: <strong> {regEmail} </strong> </ListGroup.Item>
+                <ListGroup.Item>Школа: <strong> {schoolName} </strong> </ListGroup.Item>
+                <ListGroup.Item>Класс обучения: <strong> {classNumber} </strong> </ListGroup.Item>
                 <ListGroup.Item>Гражданство: <strong>{CITIZENSHIP_TEXT[citizenship]}</strong></ListGroup.Item>
                 <ListGroup.Item>ОВЗ: <strong>{DISABILITY_TEXT[disability]}</strong></ListGroup.Item>
             </ListGroup>
@@ -586,11 +616,12 @@ const Step5: React.FC<StepProps> = ({
                 Всё верно, продолжить
             </Button>
             <Button variant="secondary" className="w-100 mt-3" onClick={() => setStep(4)}>
-                Назад
+                Вижу ошибку, вернуться назад
             </Button>
         </>
     );
 };
+
 
 const Step6: React.FC<StepProps> = ({
                                         phoneNumber, setPhoneNumber,
@@ -601,16 +632,31 @@ const Step6: React.FC<StepProps> = ({
                                         sendSMS, verifySMS,
                                         setStep
                                     }) => {
+
+    // маска номера телефона
+    const inputRef = useMask({
+        mask: "+7 (___) ___-__-__",
+        replacement: { _: /\d/ }
+    });
+
+    const isPhoneFilled = phoneNumber.replace(/\D/g, "").length === 11; // +7 и ещё 10 цифр
+
     return (
         <>
-            <h4 className="fw-bold mb-3">Почти всё готово!</h4>
+            <h4 className="fw-bold mt-3 mb-3 text-center">
+                Подтверждение номера сотового телефона
+                <span className="text-muted fs-6 d-block mt-1">Шаг 6 из 6</span>
+            </h4>
+
             <p className="mb-4">
                 Осталось подтвердить номер телефона:<br />
                 <strong>{phoneNumber || "+7 (___) ___-__-__"}</strong>
             </p>
 
+            {/* телефон */}
             <Form.Group className="mb-4">
                 <Form.Control
+                    ref={inputRef}
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     placeholder="+7 (___) ___-__-__"
@@ -619,52 +665,54 @@ const Step6: React.FC<StepProps> = ({
                 />
             </Form.Group>
 
-            {!smsSent ? (
-                <Button className="w-100" size="md" onClick={sendSMS}>
-                    Отправить SMS-код
-                </Button>
-            ) : (
-                <>
-                    <Form.Group className="mb-3">
-                        <Form.Control
-                            placeholder="Введите код из SMS"
-                            value={smsCode}
-                            onChange={(e) => setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                            maxLength={6}
-                            className="text-center fs-4"
-                            style={{ letterSpacing: "0.5rem" }}
-                        />
-                    </Form.Group>
+            {/* кнопка отправки SMS */}
+            <Button
+                className="w-100 mb-4"
+                size="md"
+                onClick={sendSMS}
+                disabled={!isPhoneFilled || cooldown > 0}
+            >
+                {!smsSent ? "Отправить SMS-код" : "Отправить код повторно"}
+            </Button>
 
-                    {errorSMS && (
-                        <div className="text-danger text-center mb-3 fw-medium">
-                            {errorSMS}
-                        </div>
-                    )}
-
-                    <Button
-                        className="w-100 mb-3"
-                        size="md"
-                        onClick={verifySMS}
-                        disabled={smsCode.length < 4}
-                    >
-                        Подтвердить
-                    </Button>
-
-                    <div className="text-center">
-                        {cooldown > 0 ? (
-                            <span className="text-muted">
-                Повторная отправка через {cooldown} сек.
-              </span>
-                        ) : (
-                            <Button variant="link" className="p-0" onClick={sendSMS}>
-                                Отправить код повторно
-                            </Button>
-                        )}
-                    </div>
-                </>
+            {/* информация о повторной отправке */}
+            {cooldown > 0 && (
+                <div className="text-center mb-3 text-muted">
+                    Повторная отправка доступна через {cooldown} сек.
+                </div>
             )}
 
+            {/* ввод кода — всегда отображается */}
+            <Form.Group className="mb-3">
+                <Form.Control
+                    placeholder="Введите код из SMS"
+                    value={smsCode}
+                    onChange={(e) =>
+                        setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                    }
+                    maxLength={6}
+                    className="text-center fs-4"
+                    style={{ letterSpacing: "0.4rem" }}
+                />
+            </Form.Group>
+
+            {errorSMS && (
+                <div className="text-danger text-center mb-3 fw-medium">
+                    {errorSMS}
+                </div>
+            )}
+
+            {/* кнопка проверки кода */}
+            <Button
+                className="w-100 mb-3"
+                size="md"
+                onClick={verifySMS}
+                disabled={smsCode.length < 4}
+            >
+                Подтвердить код
+            </Button>
+
+            {/* назад */}
             <Button
                 variant="secondary"
                 className="w-100 mt-4"
@@ -675,6 +723,8 @@ const Step6: React.FC<StepProps> = ({
         </>
     );
 };
+
+
 
 const RegisterPage: React.FC = () => {
     const { register } = useAuth();
@@ -722,30 +772,30 @@ const RegisterPage: React.FC = () => {
     };
 
     const hints: Record<number, { title: string; text: string; icon?: React.ReactNode }> = {
-        1: { title: "Шаг 1: Почта и пароль", text: "Укажите актуальную электронную почту: она будет использовать для связи с Вами. Укажите надежный пароль", icon: <LockFill size={48} className="mb-3 text-white opacity-75" />  },
+        1: { title: "Шаг 1: Почта и пароль", text: "Укажите актуальную электронную почту: она будет использована для связи с Вами. Укажите надежный пароль", icon: <LockFill size={48} className="mb-3 text-white opacity-75" />  },
         2: {
             title: "Шаг 2: Расскажите о себе",
             text: "Пожалуйста будьте предельно аккуратны при указании ваших ФИО. В случае внесения ошибочных сведений вы можете быть не допущены к участию в олимпиаде.",
             icon: <PersonFill size={48} className="mb-3 text-white opacity-75" />
         },
         3: {
-            title: "Где вы учитесь?",
-            text: "Мы найдём вашу школу по официальным данным. Начните с выбора муниципального образования.",
+            title: "Шаг 3: Где вы учитесь?",
+            text: "Сначала укажите кому подчиняется ваша школа. После чего выберите во втором списке свою школу.",
             icon: <BuildingFill size={48} className="mb-3 text-white opacity-75" />
         },
         4: {
-            title: "Последние детали",
-            text: "Это нужно для правильного оформления документов и возможной помощи на олимпиаде.",
+            title: "Шаг 4: Дополнительная информация",
+            text: "Необходима для корректного оформления документов и оказания помощи на олимпиаде.",
             icon: <HeartFill size={48} className="mb-3 text-white opacity-75" />
         },
         5: {
-            title: "Проверьте внимательно!",
-            text: "Убедитесь, что всё верно! После отправки вы все еще можете изменить свои данные.",
+            title: "Шаг 5: Проверьте внимательно!",
+            text: "Убедитесь, что всё верно!",
             icon: <CheckCircleFill size={48} className="mb-3 text-white opacity-75" />
         },
         6: {
-            title: "Остался один шаг!",
-            text: "Укажите номер телефона - Он необходим для создания личного кабинета и позволит нам связаться с Вами. <\br> После этого вам придет sms с кодом.",
+            title: "Шаг 6: Подтверждение номера сотового телефона",
+            text: "Укажите ваш контактный номер сотового телефона - Он необходим для создания личного кабинета и позволит нам связаться с Вами. После этого нажмите кнопку отправки смс. Когда получите код, введите его в поле ввода для кода",
             icon: <PhoneFill size={48} className="mb-3 text-white opacity-75" />
         },
     };
@@ -946,7 +996,7 @@ const RegisterPage: React.FC = () => {
     };
 
     return (
-        <Container fluid className="min-vh-100 d-flex flex-column">
+        <Container fluid className="min-vh-50 d-flex flex-column">
             <Row className="flex-grow-1 gy-0">
                 {/* Левый блок — только на десктопе */}
                 <Col md={6} className="d-none d-md-flex flex-column justify-content-center align-items-center text-center px-5"
@@ -955,10 +1005,10 @@ const RegisterPage: React.FC = () => {
                          color: "#fff",
                          borderRadius: "10px 0 0 10px"
                      }}>
-                    {hints[step].icon && <div className="mb-4">{hints[step].icon}</div>}
+                    {hints[step].icon && <div className="mb-2">{hints[step].icon}</div>}
                     <h1 className="fw-bold display-5">{hints[step].title}</h1>
                     <p className="lead">{hints[step].text}</p>
-                    <div className="mt-4">
+                    <div className="mt-0">
                 <span className="badge bg-white text-primary fs-6 px-4 py-2 rounded-pill">
                     Шаг {step} из 6
                 </span>
@@ -966,9 +1016,9 @@ const RegisterPage: React.FC = () => {
                 </Col>
 
                 {/* Правый блок — всегда */}
-                <Col xs={12} md={6} className="d-flex flex-column justify-content-center px-4 px-md-5 border border-1"
-                     style={{ background: "#fff", borderRadius: "0 10px 10px 0", minHeight: "100vh" }}>
-
+                <Col xs={12} md={6} className="d-flex flex-column justify-content-center px-4 px-md-5 border border-1 h-100"
+                     style={{borderRadius: "0 10px 10px 0"}}>
+                    {/*minHeight: "100vh"*/}
                     {/* Мобильная подсказка — только на телефоне */}
                     <div className="d-block d-md-none mb-0 text-center">
                         <div className="rounded-4 p-4 shadow-sm" style={{

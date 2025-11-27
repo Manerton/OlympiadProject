@@ -9,7 +9,7 @@ import iconSchool from '../../../assets/images/v51_13.png';
 import iconTelegram from '../../../assets/images/v51_11.png';
 
 const Footer: React.FC = () => (
-  <footer className="pt-5 border bg-body-tertiary">
+  <footer className="pt-3 border bg-body-tertiary">
     <Container fluid="lg">
       <Row className="gy-4">
         {/* Информация */}
