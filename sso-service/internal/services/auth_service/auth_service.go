@@ -352,11 +352,11 @@ func (s *AuthService) RegisterParticipant(ctx context.Context, registerRequst *r
 
 	transaction.TransactionCommit()
 
-	err = s.notifyClient.SendNotifyAcceptAccount(userModel.Email)
-	if err != nil {
-		log.Error("failed send notify on email: %w", liblogger.Err(err))
-		return errs.ErrInternalError.Wrap("failed to send notify on email")
-	}
+	// err = s.notifyClient.SendNotifyAcceptAccount(userModel.Email)
+	// if err != nil {
+	// 	log.Error("failed send notify on email: %w", liblogger.Err(err))
+	// 	return errs.ErrInternalError.Wrap("failed to send notify on email")
+	// }
 
 	return nil
 }

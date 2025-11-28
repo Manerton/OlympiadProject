@@ -809,6 +809,8 @@ const RegisterPage: React.FC = () => {
         try {
             setErrorSMS("");
 
+            setPhoneNumber(phoneNumber.replace(/\D/g, ""))
+
             // TODO: вызвать запрос на отправку SMS
             const data = await axiosSendSMSCode(phoneNumber);
             // data можно использовать, если backend вернёт что-то вроде { success: true }
@@ -830,11 +832,12 @@ const RegisterPage: React.FC = () => {
         try {
             setErrorSMS("");
             // TODO: вызвать запрос на проверку SMS
-            //const result = await axiosSSOVerifySMSCode(phoneNumber, smsCode);
+            const result = await axiosSSOVerifySMSCode(phoneNumber, smsCode);
+            console.log("Результат проверки SMS кода:", result);
 
-            // if (!result.data.success) {
-            //     throw new Error(result.message || "Неверный код");
-            // }
+            if (!result.data) {
+                throw new Error(result.message || "Неверный код");
+            }
 
             setIsPhoneVerified(true);
             await handleFinalSubmit();

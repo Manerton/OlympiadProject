@@ -3,6 +3,12 @@ env: "dev"
 HTTP_SERVERS_INFO:
   routes:
     # ==================== AUTH SERVICE (8181) ====================
+
+    - prefix: "/verifySMS"
+      aggregate: false
+      target: "http://sso-service:8181/api/users/verify"
+      skip_auth: true
+
     - prefix: "/auth"
       aggregate: false
       target: "http://sso-service:8181/api/users/login"
