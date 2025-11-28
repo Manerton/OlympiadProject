@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ApplicationEvent } from "../../types/event";
 import { useAuth } from "../../Helpers/AuthContext";
-import { axiosGetApplicationEvents } from "../../../requests/ApplicationRequests";
+import { axiosGetApplicationEvents, axiosRevokeApplication } from "../../../requests/ApplicationRequests";
 
 interface Props {
     reloadFlag: number;
@@ -14,25 +14,33 @@ const ApplicationEventPage: React.FC<Props> = ({ onApplied, reloadFlag }) => {
 
     const { accessToken, user } = useAuth();
 
+    async function fetchApplicationEvents() {
+        try {
+            const result = await axiosGetApplicationEvents(accessToken!, user!.id);
+            setEvents(result);
+        } catch (err) {
+            console.error("Ошибка загрузки заявок:", err);
+        } finally {
+            setLoading(false);
+        }
+    }
+
     useEffect(() => {
         if (!accessToken || !user?.id) return;
-
-        async function fetchApplicationEvents() {
-            try {
-                const result = await axiosGetApplicationEvents(accessToken!, user!.id);
-                setEvents(result);
-            } catch (err) {
-                console.error("Ошибка загрузки заявок:", err);
-            } finally {
-                setLoading(false);
-            }
-        }
 
         fetchApplicationEvents();
     }, [accessToken, user?.id, reloadFlag]);
 
-    function handleRevoke(event_id: string) {
-        onApplied();
+    async function handleRevoke(applicationId: string) {
+        try {
+            await axiosRevokeApplication(accessToken!, applicationId);
+
+            setEvents((prev) => prev.filter(ev => ev.id !== applicationId));
+
+            onApplied();
+        } catch (err) {
+            console.error("Ошибка отзыва заявки:", err);
+        }
     }
 
     if (loading) return <div className="text-center ">Загрузка...</div>;
@@ -66,7 +74,7 @@ const ApplicationEventPage: React.FC<Props> = ({ onApplied, reloadFlag }) => {
                             <td>
                                 <button
                                     className="btn btn-sm btn-danger"
-                                    onClick={() => handleRevoke(ev.MainEvent.id)}
+                                    onClick={() => handleRevoke(ev.id)}
                                 >
                                     Отозвать
                                 </button>
@@ -102,7 +110,7 @@ const ApplicationEventPage: React.FC<Props> = ({ onApplied, reloadFlag }) => {
 
                             <button
                                 className="btn btn-danger w-100"
-                                onClick={() => handleRevoke(ev.MainEvent.id)}
+                                onClick={() => handleRevoke(ev.id)}
                             >
                                 Отозвать
                             </button>

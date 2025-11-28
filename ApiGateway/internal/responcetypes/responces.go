@@ -10,6 +10,7 @@ type ApiResponse struct {
 }
 
 type ApplicationEvent struct {
+	ApplicationID      string   `json:"application_id"`
 	ID                 string   `json:"id"`
 	Name               string   `json:"name"`
 	StartDate          string   `json:"start_date"`

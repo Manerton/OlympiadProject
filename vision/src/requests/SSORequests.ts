@@ -80,6 +80,18 @@ export async function axiosSSOAllSchools(): Promise<School[]> {
     return res.data.data as School[]; // data → []SchoolResponseDTO
 }
 
+export async function axiosSSOSchoolById(token: string,schoolId: string): Promise<School> {
+    const res = await axios.get(SCHOOLS.byId + `${schoolId}`, 
+        {
+            withCredentials: true,
+            headers: {
+                Authorization: `Bearer ${token}` // добавляем токен
+            }
+        }
+    );
+    return res.data.data as School; // data → SchoolResponseDTO
+}
+
 export async function axiosSSOChangePassword(token: string, data: ChangePasswordForm) { 
     const res = await axios.post(
         USER.changePassword + data.user_id,
@@ -104,7 +116,7 @@ export async function axiosSSOForgotPassword(data: ForgotPasswordForm) {
 export async function axiosSSOVerifySMSCode(phoneNumber: string, code: string) {
     const res = await axios.post(
         AUTH.verifySMS,
-        { phone: phoneNumber, code },
+        { phone_number: phoneNumber, code: code },
         { withCredentials: true }
     );
 

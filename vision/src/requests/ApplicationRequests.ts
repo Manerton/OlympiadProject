@@ -33,6 +33,7 @@ export async function axiosGetApplicationEvents(token: string, userId: string) {
             event_type: event.event_type ?? "", // если поле есть в API
             events: null                       // пока вложенных событий нет
         },
+        id: event.application_id,
         status: event.status ?? 0,
         class_participation: event.class_participation ?? 0
     }));
@@ -42,7 +43,6 @@ export async function axiosGetApplicationEvents(token: string, userId: string) {
 
 export async function axiosCreateApplication(token: string, application: Application)
 {
-    console.log("Profile", application.profile)
     const res = await axios.post(
         APPLICATION.create, application,
         {
@@ -54,5 +54,19 @@ export async function axiosCreateApplication(token: string, application: Applica
         }
 
     );
-    console.log("res", res)
+}
+
+export async function axiosRevokeApplication(token: string, applicationId: string) 
+{
+    const res = await axios.delete(
+        APPLICATION.delete + `${applicationId}`, 
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'  
+            },
+            withCredentials: true
+        }
+    )
+    return res.data;
 }

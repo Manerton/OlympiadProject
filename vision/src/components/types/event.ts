@@ -34,6 +34,7 @@ export interface MainEvent {
 
 export interface ApplicationEvent {
     MainEvent: MainEvent
+    id: string
     status: number
     class_participation: number
 }

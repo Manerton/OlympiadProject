@@ -79,12 +79,14 @@ func (s *ApplicationEventStrategy) Aggregate(
 		}, err
 	}
 
+	appIds := make(map[string]string)
 	eventStatuses := make(map[string]int)
 	eventProfile := make(map[string]string)
 	eventClassParticipation := make(map[string]int)
 	var eventIDs []string
 	for _, raw := range applications {
 		eventIDs = append(eventIDs, raw.EventID)
+		appIds[raw.EventID] = raw.ID
 		eventStatuses[raw.EventID] = raw.Status
 		eventProfile[raw.EventID] = raw.Profile
 		eventClassParticipation[raw.EventID] = raw.ClassParticipation
@@ -132,6 +134,7 @@ func (s *ApplicationEventStrategy) Aggregate(
 	for _, event := range events {
 
 		appEv := responcetypes.ApplicationEvent{
+			ApplicationID:      appIds[event.ID],
 			ID:                 event.ID,
 			Name:               event.Name,
 			Subject:            event.Subject,

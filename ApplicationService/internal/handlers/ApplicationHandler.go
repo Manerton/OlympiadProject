@@ -287,7 +287,7 @@ func (h *ApplicationHandler) UpdateApplicationStatus(w http.ResponseWriter, r *h
 		return
 	}
 	//render.JSON(w, r, map[string]interface{}{"message": "Статус заявки обновлен"})
-	render.JSON(w, r, response.SuccessResponse(fmt.Sprintf("id = %d", idStr)))
+	render.JSON(w, r, response.SuccessResponse(fmt.Sprintf("id = %s", idStr)))
 }
 
 // Удаление заявки

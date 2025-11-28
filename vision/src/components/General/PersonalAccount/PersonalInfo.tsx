@@ -5,6 +5,9 @@ import { UserRole } from "../../../dictionary/role";
 
 import ChangePasswordBlock from "../Pages/Profile/ChangePasswordPage";
 import { GetCitizenshipLabel } from "../../../dictionary/citizenship";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { axiosSSOSchoolById } from "../../../requests/SSORequests";
 
 interface Props {
     profile: Profile
@@ -12,7 +15,19 @@ interface Props {
 
 const PersonalInfo: React.FC<Props> = ({profile}) => {
     const { accessToken, user } = useAuth();
+    const [schoolName, setSchoolName] = useState<string>("");
     const navigate = useNavigate();
+
+    useEffect(() => {
+        try {
+            axiosSSOSchoolById(accessToken!,profile.school).then((data) => {
+                setSchoolName(data.name);
+            });
+
+        } catch (err) {
+            console.error("Ошибка загрузки профиля:", err);
+        }
+    }, [user, profile]);
 
     const actions = (
         <button className="btn btn-secondary" onClick={() => navigate("/profile")}>
@@ -70,7 +85,7 @@ const PersonalInfo: React.FC<Props> = ({profile}) => {
                             <div className="col-md-6">
                                 <div className="card p-3 h-100 shadow-sm">
                                     <h6 className="text-muted">Школа</h6>
-                                    <p className="fs-5 fw-semibold mb-0">{profile?.school}</p>
+                                    <p className="fs-5 fw-semibold mb-0">{schoolName}</p>
                                 </div>
                             </div>
                             <div className="col-md-3">
