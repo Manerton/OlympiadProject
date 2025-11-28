@@ -102,6 +102,7 @@ const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
     const isPasswordEight = (str: string) => str.trim().length >= 8;
 
 
+
     return (
         <>
             <h4 className="fw-bold mt-3 mb-3 text-center">
@@ -809,7 +810,7 @@ const RegisterPage: React.FC = () => {
             setErrorSMS("");
 
             // TODO: вызвать запрос на отправку SMS
-            // const data = await axiosSendSMSCode(phoneNumber);
+            const data = await axiosSendSMSCode(phoneNumber);
             // data можно использовать, если backend вернёт что-то вроде { success: true }
 
             setSmsSent(true);

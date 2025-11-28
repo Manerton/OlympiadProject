@@ -73,6 +73,16 @@ HTTP_SERVERS_INFO:
       target: "http://sso-service:8181/api/sms/verify-code"
       skip_auth: false
 
+    - prefix: "/auth/check-phone/"
+      aggregate: false
+      target: "http://sso-service:8181/api/auth/check-phone"
+      skip_auth: true
+
+    - prefix: "/auth/check-email/"
+      aggregate: false
+      target: "http://sso-service:8181/api/auth/check-email"
+      skip_auth: true
+
     # ==================== PARTICIPANTS & SCHOOLS SERVICE (8181) ====================
     - prefix: "/participants/"
       aggregate: false
