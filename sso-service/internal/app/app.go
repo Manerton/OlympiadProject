@@ -127,6 +127,7 @@ func (a *App) initRoutes(router *chi.Mux,
 
 	router.Get("/api/districts/{region}", districtHandler.GetAllByRegion)
 	router.Get("/api/schools/district/{id}", schoolHandler.GetAllByDistrict)
+	router.Get("/api/schools/all", schoolHandler.GetAll)
 
 	router.With(base_access.BaseAccess(jwtManager)).Group(func(r chi.Router) {
 		// participant GET

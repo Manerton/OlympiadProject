@@ -105,12 +105,12 @@ HTTP_SERVERS_INFO:
       target: "http://sso-service:8181/api/participants/count"
       skip_auth: false
 
-    - prefix: "/schools/"
+    - prefix: "/schools/all"
       aggregate: false
-      target: "http://sso-service:8181/api/schools"
-      skip_auth: false
+      target: "http://sso-service:8181/api/schools/all"
+      skip_auth: true
 
-    - prefix: "/schools"
+    - prefix: "/schools/"
       aggregate: false
       target: "http://sso-service:8181/api/schools"
       skip_auth: true

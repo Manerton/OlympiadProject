@@ -27,11 +27,12 @@ export const AUTH = {
 };
 
 export const SCHOOLS = {
-    all: `${API_URL}/schools`,
+    all: `${API_URL}/schools/all`,
     byId: `${API_URL}/schools/`,
 };
 
 export const USER = {
+    update: `${API_URL}/users/`,
     info: `${API_URL}/users/all-info/`,
     changePassword: `${API_URL}/users/change-password/`,
 };
@@ -55,6 +56,7 @@ export const APPEAL = {
 };
 
 export const PARTICIPANT = {
+    update: `${API_URL}/participants/`,
     info: `${API_URL}/users/participant/all-info/`,
 };
 

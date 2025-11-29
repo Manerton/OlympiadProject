@@ -2,6 +2,7 @@ package participant_handler
 
 import (
 	"context"
+	"encoding/json"
 	participant_dto "main/internal/dto/participant"
 	"main/internal/lib/errs"
 	"main/internal/lib/parser"
@@ -190,10 +191,10 @@ func (h *ParticipantHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 
 	participantDTO := participant_dto.UpdateParticipantRequestDTO{}
-	err := render.DecodeJSON(r.Body, &participantDTO)
+	err := json.NewDecoder(r.Body).Decode(&participantDTO)
 	if err != nil {
 		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body")))
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode body update")))
 		return
 	}
 

@@ -17,10 +17,10 @@ func ToDTO(participantModel participant.Participant) participant_dto.Participant
 	classNumber := strconv.Itoa(participantModel.ClassNumber)
 
 	return participant_dto.ParticipantResponseDTO{
-		ID:         participantModel.ID.String(),
-		UserId:     participantModel.UserId.String(),
-		Disability: disability,
-		SchoolId:   participantModel.SchoolId.String(),
+		ParticipantId: participantModel.ID.String(),
+		UserId:        participantModel.UserId.String(),
+		Disability:    disability,
+		SchoolId:      participantModel.SchoolId.String(),
 
 		Citizenship: citizenship,
 		ClassNumber: classNumber,
@@ -67,11 +67,7 @@ func FromUpdateToModel(updateDTO participant_dto.UpdateParticipantRequestDTO, ui
 	}
 
 	if updateDTO.ClassNumber != nil {
-		val, err := strconv.Atoi(*updateDTO.ClassNumber)
-		if err != nil {
-			return model, fmt.Errorf("invalid class number value: %w", err)
-		}
-		model.ClassNumber = val
+		model.ClassNumber = *updateDTO.ClassNumber
 	}
 
 	if updateDTO.SchoolId != nil {

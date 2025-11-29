@@ -15,7 +15,7 @@ const MainPage: React.FC = () => {
       <Row className="g-1 border border-1 rounded justify-content-center align-items-center">
         <Col md={6}>
           <div
-            className="d-flex flex-column justify-content-center align-items-center h-100 text-center p-4"
+            className="d-flex flex-column justify-content-center align-items-center h-100 text-center p-3"
           >
             <h1 className="display-4 fw-bold text-center">
               Всероссийская олимпиада школьников <br />
@@ -188,25 +188,35 @@ const MainPage: React.FC = () => {
         </Container>
       </section> */}
 
-      <section className="mt-4 py-4 text-center border rounded">
-        <Container>
-          <h2 className="mb-3">Участвовать в олимпиаде</h2>
-          <p className="mb-4">Чтобы подать заявку на участие — войдите в личный кабинет.</p>
+      <section className="mt-4 mb-4 py-4">
+        {!user ? (
+          <div className="d-flex flex-column flex-md-row gap-3 justify-content-center">
+            {/* Left Block */}
+            <div className="border rounded  p-3  text-center flex-fill">
+              <h4>Я здесь впервые</h4>
+              <p>Зарегистрируйте личный кабинет участника</p>
+              <Button variant="primary" onClick={() => navigate("/Register")}>Зарегистрироваться</Button>
+            </div>
 
-          {user ? (
-            <>
+
+            {/* Right Block */}
+            <div className="border rounded p-3  text-center flex-fill">
+              <h4>У меня уже есть аккаунт</h4>
+              <p>Войдите в личный кабинет</p>
+              <Button variant="success" onClick={() => navigate("/Auth")}>Войти</Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="text-center p-3 flex-fill border rounded">
+              <h4>Для подачи заявки на участие в олимпиадах перейдите в Личный кабинет</h4>
               <Button onClick={() => navigate("/PersonalAccount")} variant="primary" size="lg" className="me-2 mb-2">
                 Перейти в личный кабинет
               </Button>
-            </>
-          ) : (
-            <Button onClick={() => navigate("/Auth")} variant="primary" size="lg">
-              Войти в личный кабинет
-            </Button>
-          )}
-        </Container>
+            </div>
+          </>
+        )}
       </section>
-
 
       {/* FAQ Section */}
       <section className="mt-4 mb-4  py-3 text-center border rounded">

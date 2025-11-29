@@ -29,8 +29,11 @@ const ParticipantDashboard: React.FC = () => {
 
                 if (user.role === UserRole.Participant) {
                     const data: UserParticipant = await axiosSSOUserParticipantInfo(accessToken, user.id);
+                    console.log("data", data)
 
                     setProfile({
+                        participant_id: data.participant_id,
+                        user_id: data.User.id,
                         surname: data.User.surname,
                         firstname: data.User.firstname,
                         patronymic: data.User.patronymic,
@@ -46,6 +49,7 @@ const ParticipantDashboard: React.FC = () => {
                     const data: User = await axiosSSOUserInfo(accessToken, user.id);
 
                     setProfile({
+                        user_id: data.id,
                         surname: data.surname,
                         firstname: data.firstname,
                         patronymic: data.patronymic,
@@ -56,8 +60,10 @@ const ParticipantDashboard: React.FC = () => {
                         classnumber: 0,
                         email: data.email,
                         citezenship: 0,
+                        participant_id: ""
                     });
                 }
+                console.log("profile",profile)
             } catch (err) {
                 console.error("Ошибка загрузки профиля:", err);
             }

@@ -45,3 +45,11 @@ type UpdateUserRequestDTO struct {
 	BirthDate   *string `json:"birthdate"`
 	Gender      *string `json:"gender"`
 }
+
+type UpdateUserParticipantInfoDTO struct {
+	FirstName   *string `json:"firstname"`
+	Surname     *string `json:"surname"`
+	Patronymic  *string `json:"patronymic"`
+	BirthDate   *string `json:"birthdate"`
+	ClassNumber *int    `json:"class_number"`
+}

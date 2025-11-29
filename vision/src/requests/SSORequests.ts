@@ -57,8 +57,11 @@ export async function axiosSSOUserParticipantInfo(token: string, userId: string)
     );
     const data = res.data.data;
 
+    console.log("data", data)
+
     return {
         User: {
+            id: data.user_id,
             email: data.email,
             firstname: data.firstname,
             surname: data.surname,
@@ -69,6 +72,7 @@ export async function axiosSSOUserParticipantInfo(token: string, userId: string)
             role: data.role,
         },
         school: data.school_id,
+        participant_id: data.participant_id,
         disability: Number(data.disability),
         classnumber: Number(data.class_number),
         citezenship: Number(data.citizenship),
@@ -79,6 +83,30 @@ export async function axiosSSOAllSchools(): Promise<School[]> {
     const res = await axios.get(SCHOOLS.all);
     return res.data.data as School[]; // data → []SchoolResponseDTO
 }
+
+export async function axiosSSOUpdateUser(token: string, id: string, payload: any) {
+    await axios.put(USER.update + `${id}`, payload,
+        {
+            withCredentials: true,
+            headers: {
+                Authorization: `Bearer ${token}` // добавляем токен
+            }
+        }
+    );
+}
+
+export const axiosSSOUpdateParticipant = async (token: string, participantId: string, data: any) => {
+    return await axios.put(
+        `${PARTICIPANT.update}${participantId}`,
+        data,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json', 
+            },
+        }
+    );
+};
 
 export async function axiosSSOSchoolById(token: string,schoolId: string): Promise<School> {
     const res = await axios.get(SCHOOLS.byId + `${schoolId}`, 

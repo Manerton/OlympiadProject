@@ -82,15 +82,29 @@ func FromRegisterUserToModel(regiterDTO *register_dto.RegisterUserRequestDTO) us
 }
 
 func FromUpdateToModel(updateDTO user_dto.UpdateUserRequestDTO, uid uuid.UUID) user.User {
-	gender, _ := strconv.Atoi(*updateDTO.Gender)
+	gender := 0
+	if updateDTO.Gender != nil {
+		gender, _ = strconv.Atoi(*updateDTO.Gender)
+
+	}
+
+	email := ""
+	if updateDTO.Email != nil {
+		email = *updateDTO.Email
+	}
+
+	phoneNumber := ""
+	if updateDTO.PhoneNumber != nil {
+		phoneNumber = *updateDTO.PhoneNumber
+	}
 
 	return user.User{
 		ID:          uid,
-		Email:       *updateDTO.Email,
+		Email:       email,
 		Firstname:   *updateDTO.Firstname,
 		Surname:     *updateDTO.Surname,
 		Patronymic:  *updateDTO.Patronymic,
-		PhoneNumber: *updateDTO.PhoneNumber,
+		PhoneNumber: phoneNumber,
 		Gender:      user.GenderType(gender),
 	}
 }

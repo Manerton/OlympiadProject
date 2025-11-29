@@ -21,6 +21,7 @@ export interface RegisterForm {
 }
 
 export interface User {
+    id: string
     firstname: string
     surname: string
     patronymic: string
@@ -32,6 +33,8 @@ export interface User {
 }
 
 export interface Profile {
+    user_id: string,
+    participant_id: string,
     surname: string,
     firstname: string,
     patronymic: string,
@@ -46,6 +49,7 @@ export interface Profile {
 
 export interface UserParticipant {
     User: User
+    participant_id: string
     school: string
     disability: number
     classnumber: number
