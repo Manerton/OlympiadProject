@@ -23,7 +23,11 @@ export const AUTH = {
     refresh: `${API_URL}/refresh`,
     register: `${API_URL}/register`,
     forgotPassword: `${API_URL}/users/forgot-password/`,
-    verifySMS: `${API_URL}/verifySMS`,
+    verifySMS: `${API_URL}/sms/verify-code/`,
+    verifyEmail: `${API_URL}/auth/check-email/`,
+    verifyPhone: `${API_URL}/auth/check-phone/`,
+    district: `${API_URL}/districts/`,
+    school: `${API_URL}/schools/district/`,
 };
 
 export const SCHOOLS = {

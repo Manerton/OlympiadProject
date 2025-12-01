@@ -150,3 +150,33 @@ export async function axiosSSOVerifySMSCode(phoneNumber: string, code: string) {
 
     return res.data;// TODO!! УТОЧНИТЬ НУЖНО ЛИ DATA
 }
+
+export async function axiosSSOVerifyEmail(Email: string) {
+    const res = await axios.post(
+        AUTH.verifyEmail,
+        { credential: Email},
+        //{ withCredentials: true }
+    );
+
+    return res.data;
+}
+
+export async function axiosSSOVerifyPhoneNumber(phoneNumber: string) {
+    const res = await axios.post(
+        AUTH.verifyPhone,
+        { credential: phoneNumber},
+        //{ withCredentials: true }
+    );
+
+    return res.data;
+}
+
+export async function axiosSSODistrict(districtNumber: string) {
+    const res = await axios.get(AUTH.district + districtNumber);
+    return res.data;
+}
+
+export async function axiosSSOSchool(selectedDistrictId: string) {
+    const res = await axios.get(AUTH.school + selectedDistrictId);
+    return res.data;
+}

@@ -15,7 +15,12 @@ import { useNavigate } from "react-router-dom";
 import type { RegisterForm } from "../../types/user";
 import axios from "axios";
 import { axiosSendSMSCode } from "../../../requests/NotificationRequests";
-import { axiosSSOVerifySMSCode } from "../../../requests/SSORequests";
+import {
+    axiosSSOVerifySMSCode,
+    axiosSSOVerifyEmail,
+    axiosSSOVerifyPhoneNumber,
+    axiosSSODistrict, axiosSSOSchool
+} from "../../../requests/SSORequests";
 
 axios.defaults.baseURL = "http://localhost:6611";
 
@@ -98,10 +103,38 @@ const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
                                         passwordMismatch,
                                         setStep }) => {
 
-
+    const [emailSystemError, setEmailSystemError] = useState("");
+    const [emailChecking, setEmailChecking] = useState(false);
     const isPasswordEight = (str: string) => str.trim().length >= 8;
 
+    // Debounced email check
+    useEffect(() => {
+        if (!regEmail || !validateEmail(regEmail)) {
+            setEmailSystemError("");
+            return;
+        }
 
+        const controller = new AbortController();
+
+        const timer = setTimeout(() => {
+            setEmailChecking(true);
+            setEmailSystemError("");
+
+            axiosSSOVerifyEmail(regEmail, { signal: controller.signal })
+                .then((res) => {
+                    if (!res.data) setEmailSystemError("Почта уже зарегистрирована");
+                })
+                .catch((err) => {
+                    if (!axios.isCancel(err)) setEmailSystemError("Ошибка проверки почты");
+                })
+                .finally(() => setEmailChecking(false));
+        }, 500);
+
+        return () => {
+            clearTimeout(timer);
+            controller.abort();
+        };
+    }, [regEmail, validateEmail]);
 
     return (
         <>
@@ -114,22 +147,24 @@ const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
                 <Form.Label className="fw-semibold">Электронная почта</Form.Label>
                 <Form.Control
                     type="email"
+                    value={regEmail}
                     placeholder="example@mail.ru"
                     value={regEmail}
                     onChange={(e) => {
                         const value = e.target.value;
                         setRegEmail(value);
-                        setEmailError(validateEmail(value) || !value ? "" : "Некорректный формат почты");
+                        // локальная проверка формата
+                        setEmailError(
+                            !value ? "" : (validateEmail(value) ? "" : "Некорректный формат почты")
+                        );
                     }}
-                    isInvalid={!!emailError}
-                    size="md"
+                    isInvalid={!!emailError || !!emailSystemError}
                 />
-                <Form.Text className="text-muted">
-                    Эта почта будет будет использоваться для связи с Вами
-                </Form.Text>
+
                 <Form.Control.Feedback type="invalid">
-                    {emailError}
+                    {emailError || emailSystemError}
                 </Form.Control.Feedback>
+
             </Form.Group>
 
             <Form.Group className="mb-4">
@@ -179,12 +214,17 @@ const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
             </Form.Group>
 
             <Button
-                size="md"
-                className="w-100 fw-semibold"
-                disabled={!regEmail || !!emailError || !regPassword || passwordMismatch || !isPasswordEight(regPassword)}
+                disabled={
+                    !regEmail ||
+                    !!emailError ||
+                    !!emailSystemError ||
+                    emailChecking ||
+                    !regPassword ||
+                    passwordMismatch || !isPasswordEight(regPassword)
+                }
                 onClick={() => setStep(2)}
             >
-                Продолжить
+                {emailChecking ? "Проверка..." : "Продолжить"}
             </Button>
         </>
     );
@@ -200,7 +240,7 @@ const Step2: React.FC<StepProps> = ({
                                     }) => {
     // Простая валидация: только кириллица и дефис/пробел
     const isValidName = (str: string) => /^[\u0400-\u04FF\s-]*$/.test(str.trim());
-    const isNameFilled = (str: string) => str.trim().length >= 3;
+    const isNameFilled = (str: string) => str.trim().length >= 2;
 
     const nameError = !isValidName(firstName) || !isNameFilled(firstName) ? "Укажите имя только русскими буквами" : "";
     const surnameError = !isValidName(surName) || !isNameFilled(surName) ? "Укажите фамилию только русскими буквами" : "";
@@ -385,6 +425,7 @@ const Step3: React.FC<StepProps> = ({
     };
 
     const sortedDistricts = useMemo(() => {
+
         const special = districts
             .filter((d: any) => customOrder.includes(d.name.trim()))
             .sort((a: any, b: any) =>
@@ -625,22 +666,59 @@ const Step5: React.FC<StepProps> = ({
 
 
 const Step6: React.FC<StepProps> = ({
-                                        phoneNumber, setPhoneNumber,
+                                        phoneNumber,
+                                        setPhoneNumber,
                                         smsSent,
-                                        smsCode, setSmsCode,
+                                        setSmsSent,
+                                        smsCode,
+                                        setSmsCode,
                                         errorSMS,
                                         cooldown,
-                                        sendSMS, verifySMS,
-                                        setStep
+                                        sendSMS,
+                                        verifySMS,
+                                        setStep,
                                     }) => {
 
     // маска номера телефона
     const inputRef = useMask({
         mask: "+7 (___) ___-__-__",
-        replacement: { _: /\d/ }
+        replacement: { _: /\d/ },
     });
 
-    const isPhoneFilled = phoneNumber.replace(/\D/g, "").length === 11; // +7 и ещё 10 цифр
+    const [phoneSystemError, setPhoneSystemError] = useState("");
+    const [phoneChecking, setPhoneChecking] = useState(false);
+
+    const digitsOnly = phoneNumber.replace(/\D/g, "");
+    const isPhoneFilled = digitsOnly.length === 11; // +7 + 10 цифр
+
+    // Debounced phone check
+    useEffect(() => {
+        if (!isPhoneFilled) {
+            setPhoneSystemError("");
+            return;
+        }
+
+        const controller = new AbortController();
+
+        const timer = setTimeout(() => {
+            setPhoneChecking(true);
+            setPhoneSystemError("");
+
+            axiosSSOVerifyPhoneNumber("+70000000001", { signal: controller.signal })
+                .then((res) => {
+                    if (!res.data) setPhoneSystemError("Номер уже зарегистрирован");
+                })
+                .catch((err) => {
+                    if (!axios.isCancel(err)) setPhoneSystemError("Ошибка проверки номера");
+                })
+                .finally(() => setPhoneChecking(false));
+        }, 500);
+
+        return () => {
+            clearTimeout(timer);
+            controller.abort();
+        };
+    }, [phoneNumber, isPhoneFilled, digitsOnly]);
 
     return (
         <>
@@ -663,7 +741,9 @@ const Step6: React.FC<StepProps> = ({
                     placeholder="+7 (___) ___-__-__"
                     type="tel"
                     className="fs-5"
+                    isInvalid={!!phoneSystemError}
                 />
+                <Form.Control.Feedback type="invalid">{phoneSystemError}</Form.Control.Feedback>
             </Form.Group>
 
             {/* кнопка отправки SMS */}
@@ -671,7 +751,7 @@ const Step6: React.FC<StepProps> = ({
                 className="w-100 mb-4"
                 size="md"
                 onClick={sendSMS}
-                disabled={!isPhoneFilled || cooldown > 0}
+                disabled={!isPhoneFilled || cooldown > 0 || !!phoneSystemError || phoneChecking}
             >
                 {!smsSent ? "Отправить SMS-код" : "Отправить код повторно"}
             </Button>
@@ -683,14 +763,12 @@ const Step6: React.FC<StepProps> = ({
                 </div>
             )}
 
-            {/* ввод кода — всегда отображается */}
+            {/* ввод кода */}
             <Form.Group className="mb-3">
                 <Form.Control
                     placeholder="Введите код из SMS"
                     value={smsCode}
-                    onChange={(e) =>
-                        setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 6))
-                    }
+                    onChange={(e) => setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                     maxLength={6}
                     className="text-center fs-4"
                     style={{ letterSpacing: "0.4rem" }}
@@ -698,9 +776,7 @@ const Step6: React.FC<StepProps> = ({
             </Form.Group>
 
             {errorSMS && (
-                <div className="text-danger text-center mb-3 fw-medium">
-                    {errorSMS}
-                </div>
+                <div className="text-danger text-center mb-3 fw-medium">{errorSMS}</div>
             )}
 
             {/* кнопка проверки кода */}
@@ -761,6 +837,10 @@ const RegisterPage: React.FC = () => {
     const [emailError, setEmailError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+    const [emailChecking, setEmailChecking] = useState(false);
+    const [emailSystemError, setEmailSystemError] = useState("");
+
 
     const passwordMismatch = regPassword !== confirmPassword;
 
@@ -831,12 +911,10 @@ const RegisterPage: React.FC = () => {
     const verifySMS = async () => {
         try {
             setErrorSMS("");
-            // TODO: вызвать запрос на проверку SMS
             const result = await axiosSSOVerifySMSCode(phoneNumber, smsCode);
-            console.log("Результат проверки SMS кода:", result);
 
             if (!result.data) {
-                throw new Error(result.message || "Неверный код");
+                 throw new Error(result.message || "Неверный код");
             }
 
             setIsPhoneVerified(true);
@@ -871,8 +949,8 @@ const RegisterPage: React.FC = () => {
     useEffect(() => {
         const fetchDistricts = async () => {
             try {
-                const res = await axios.get(`/districts/30`);
-                setDistricts(res.data.data);
+                const res = await axiosSSODistrict("30");
+                setDistricts(res.data);
             } catch (err) {
                 console.error("Ошибка загрузки округов:", err);
             }
@@ -886,8 +964,8 @@ const RegisterPage: React.FC = () => {
 
         const fetchSchools = async () => {
             try {
-                const res = await axios.get(`/schools/district/${selectedDistrictId}`);
-                setSchoolsInDistrict(res.data.data);
+                const res = await axiosSSOSchool(selectedDistrictId);
+                setSchoolsInDistrict(res.data);
             } catch (err) {
                 console.error("Ошибка загрузки школ:", err);
             }
@@ -898,18 +976,6 @@ const RegisterPage: React.FC = () => {
 
 
     const validateEmail = (value: string) => {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(value);
-    };
-
-    //TODO ЗАПРОС К АПИ НА ПРОВЕРКУ
-    const validateEmailInSystem = (value: string) => {
-        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return regex.test(value);
-    };
-
-    //TODO ЗАПРОС К АПИ НА ПРОВЕРКУ
-    const validatePhoneInSystem = (value: string) => {
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return regex.test(value);
     };
@@ -925,7 +991,7 @@ const RegisterPage: React.FC = () => {
             patronymic,
             email: regEmail,
             password: regPassword,
-            phone_number: phoneNumber,
+            phone_number: phoneNumber.replace(/\D/g, ""),
             gender: gender.toString(),
             school_id: selectedSchoolId,
             birthdate,
@@ -936,6 +1002,7 @@ const RegisterPage: React.FC = () => {
 
         try {
             await register(registerData);
+            navigate('/auth');
         } catch (err) {
             console.error("Registration error:", err);
         }
