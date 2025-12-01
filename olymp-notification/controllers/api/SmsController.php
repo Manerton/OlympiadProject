@@ -30,11 +30,12 @@ class SmsController extends Controller
         $requestToken = $data['requestToken'] ?? null;
         $code = CodeHelper::generateCode();
         if (CheckHelper::checkAccess($requestToken)) {
-            $this->smsService->sendSMS($phone, $code);
+            $response = $this->smsService->sendSMS($phone, $code);
             RedisComponent::set($phone, $code);
             return Yii::$app->response->data = json_encode([
                 'status' => 200,
-                'code' => $code
+                'code' => $code,
+                'response' => $response
             ]);
         }
         return Yii::$app->response->data = json_encode(['status' => 404]);
