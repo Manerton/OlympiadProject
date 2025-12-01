@@ -60,8 +60,8 @@ function Header() {
                                 </Dropdown.Toggle>
 
                                 <Dropdown.Menu>
-                                    <Dropdown.Item as={Link} to="/profile">
-                                        <PersonCircle className="me-2" /> Мой профиль
+                                    <Dropdown.Item as={Link} to="/PersonalAccount">
+                                        <PersonCircle className="me-2" /> Личный кабинет
                                     </Dropdown.Item>
 
                                     <Dropdown.Item onClick={logout}>

@@ -95,7 +95,7 @@ func (s *AuthService) CheckPhone(ctx context.Context, phone string) (bool, error
 }
 
 func (s *AuthService) CheckEmail(ctx context.Context, email string) (bool, error) {
-	const op = "services.AuthService.CheckPhone"
+	const op = "services.AuthService.CheckEmail"
 
 	log := s.log.With(
 		slog.String("op", op),

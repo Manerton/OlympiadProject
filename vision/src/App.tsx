@@ -83,7 +83,7 @@ function App() {
                                 </RequireAuth>
                             }
                             /> */}
-                            <Route path="/RegionalStages" element={<RegionalStagesPage />} />
+                            {/* <Route path="/RegionalStages" element={<RegionalStagesPage />} />
                             <Route path="/SchoolConfirmApplications" element={<SchoolConfirmPage />} />
                             <Route path="OlympiadsPage/:id" element={<OlympiadsPage />} />
                             <Route path="OlympiadDetails/:id" element={<OlympiadDetails />} />
@@ -99,7 +99,7 @@ function App() {
                                 <ProtectedRoute allowedRoles={[UserRole.Admin, UserRole.Organizer]}>
                                     <JuryAssignPage />
                                 </ProtectedRoute>
-                            } />
+                            } /> */}
 
                         </Route>
 
@@ -142,7 +142,7 @@ function App() {
 
                             <Route path="/olymp-admin/mail/index" element={<MailIndex />} />
                         </Route>
-
+{/* 
                         <Route path="/profile" element={
                             <ProtectedRoute allowedRoles={[UserRole.Admin, UserRole.Organizer, UserRole.Judge, UserRole.Participant]}>
                                 <ProfileLayout />
@@ -164,10 +164,10 @@ function App() {
                             <Route path="appeals/:appealId/appeal-view" element={<AppealView />} />
                             <Route path="appeals/:eventId/list" element={<AppealList />} />
 
-                        </Route>
+                        </Route> */}
 
                         <Route element={<Layout />}>
-                            <Route path="/profile/edit" element={<EditProfile />} />
+                            {/* <Route path="/profile/edit" element={<EditProfile />} /> */}
 
                             <Route path="*" element={<NotFoundPage />} />
                             <Route path="/forbidden" element={<ForbiddenPage />} />
