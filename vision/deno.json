@@ -6,6 +6,7 @@
   },
   "imports": {
     "@types/react-select": "npm:@types/react-select@^5.0.1",
+    "date-fns": "npm:date-fns@^4.1.0",
     "react-select": "npm:react-select@^5.10.2",
     "vite": "npm:vite@^7.2.2",
     "@vitejs/plugin-react": "npm:@vitejs/plugin-react@5.1.1",
@@ -23,7 +24,7 @@
     "react-toastify": "npm:react-toastify@^11.0.5",
     "react-bootstrap": "npm:react-bootstrap@^2.10.10",
     "@types/react-bootstrap": "npm:@types/react-bootstrap@^1.1.0",
-    "react-datepicker": "npm:react-datepicker@^8.9.0",
+    "react-datepicker": "npm:react-datepicker@^8.10.0",
     "@types/react-datepicker": "npm:@types/react-datepicker@^7.0.0",
     "react-bootstrap-icons": "npm:react-bootstrap-icons@^1.11.6",
     "@react-input/mask": "npm:@react-input/mask@^2.0.4",

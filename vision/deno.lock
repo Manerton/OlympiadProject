@@ -12,10 +12,11 @@
     "npm:@vitejs/plugin-react@5.1.1": "5.1.1_vite@7.2.2__picomatch@4.0.3_@babel+core@7.28.5",
     "npm:axios@^1.13.2": "1.13.2",
     "npm:bootstrap@^5.3.8": "5.3.8_@popperjs+core@2.11.8",
+    "npm:date-fns@^4.1.0": "4.1.0",
     "npm:jwt-decode@4": "4.0.0",
     "npm:react-bootstrap-icons@^1.11.6": "1.11.6_react@19.2.0",
     "npm:react-bootstrap@^2.10.10": "2.10.10_@types+react@19.2.6_react@19.2.0_react-dom@19.2.0__react@19.2.0",
-    "npm:react-datepicker@^8.9.0": "8.9.0_react@19.2.0_react-dom@19.2.0__react@19.2.0",
+    "npm:react-datepicker@^8.10.0": "8.10.0_react@19.2.0_react-dom@19.2.0__react@19.2.0",
     "npm:react-dom@^19.2.0": "19.2.0_react@19.2.0",
     "npm:react-icons@^5.5.0": "5.5.0_react@19.2.0",
     "npm:react-router-bootstrap@~0.26.3": "0.26.3_react@19.2.0_react-router-dom@7.9.6__react@19.2.0__react-dom@19.2.0___react@19.2.0_react-dom@19.2.0__react@19.2.0",
@@ -1143,8 +1144,8 @@
         "@types/react"
       ]
     },
-    "react-datepicker@8.9.0_react@19.2.0_react-dom@19.2.0__react@19.2.0": {
-      "integrity": "sha512-yoRsGxjqVRjk8iUBssrW9jcinTeyP9mAfTpuzdKvlESOUjdrY0sfDTzIZWJAn38jvNcxW1dnDmW1CinjiFdxYQ==",
+    "react-datepicker@8.10.0_react@19.2.0_react-dom@19.2.0__react@19.2.0": {
+      "integrity": "sha512-JIXuA+g+qP3c4MVJpx24o7n1gnv3WV/8A/D6964HucY1FlSEc30+ITPNUfbKZXYHl5rruCtxYCwi2lzn7gaz7g==",
       "dependencies": [
         "@floating-ui/react",
         "clsx",
@@ -1396,10 +1397,11 @@
       "npm:@vitejs/plugin-react@5.1.1",
       "npm:axios@^1.13.2",
       "npm:bootstrap@^5.3.8",
+      "npm:date-fns@^4.1.0",
       "npm:jwt-decode@4",
       "npm:react-bootstrap-icons@^1.11.6",
       "npm:react-bootstrap@^2.10.10",
-      "npm:react-datepicker@^8.9.0",
+      "npm:react-datepicker@^8.10.0",
       "npm:react-dom@^19.2.0",
       "npm:react-icons@^5.5.0",
       "npm:react-router-bootstrap@~0.26.3",

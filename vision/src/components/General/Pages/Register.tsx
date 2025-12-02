@@ -22,7 +22,11 @@ import {
     axiosSSODistrict, axiosSSOSchool
 } from "../../../requests/SSORequests";
 
-axios.defaults.baseURL = "http://localhost:6611";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { registerLocale } from "react-datepicker";
+import { ru } from "date-fns/locale/ru";
+registerLocale("ru", ru);
 
 // Выносим интерфейсы для пропсов
 interface StepProps {
@@ -90,8 +94,6 @@ interface StepProps {
     setStep: (step: number) => void;
 }
 
-
-
 // Выносим компоненты шагов ВНЕ основного компонента
 const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
                                         regPassword, setRegPassword,
@@ -149,7 +151,6 @@ const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
                     type="email"
                     value={regEmail}
                     placeholder="example@mail.ru"
-                    value={regEmail}
                     onChange={(e) => {
                         const value = e.target.value;
                         setRegEmail(value);
@@ -283,6 +284,26 @@ const Step2: React.FC<StepProps> = ({
         }
     };
 
+    const minDate = new Date(
+        new Date().getFullYear() - 18,
+        0,
+        1
+    ); // 01.01.(текущий год - 18)
+
+    const earliestAllowedDate = new Date(
+        new Date().getFullYear() - 18,
+        0,
+        1
+    );
+
+    const latestAllowedDate = new Date(
+        new Date().getFullYear() - 10,
+        11,
+        31
+    );
+
+
+
     return (
         <>
             <h4 className="fw-bold mt-3 mb-3 text-center">
@@ -346,21 +367,34 @@ const Step2: React.FC<StepProps> = ({
             </Form.Group>
 
             <Form.Group className="mb-2">
-                <Form.Label className="fw-semibold">Дата рождения</Form.Label>
-                <Form.Control
-                    type="date"
-                    value={birthdate}
-                    onChange={(e) => handleBirthChange(e.target.value)}
-                    max={new Date().toISOString().split("T")[0]} // не в будущем
-                    size="md"
-                    required
-                    isInvalid={!!birthdateError}
-                />
-                <Form.Control.Feedback type="invalid">
-                    {birthdateError}
-                </Form.Control.Feedback>
+                <Form.Label className="fw-semibold me-2">Дата рождения: </Form.Label>
 
+                <DatePicker
+                    selected={birthdate ? new Date(birthdate) : new Date("2007-01-01")}
+                    onChange={(date: Date | null) => {
+                        if (!date) {
+                            handleBirthChange("");
+                            return;
+                        }
+                        const iso = date.toISOString().split("T")[0];
+                        handleBirthChange(iso);
+                    }}
+                    dateFormat="dd.MM.yyyy"
+                    locale={ru}
+                    maxDate={latestAllowedDate}
+                    minDate={earliestAllowedDate}
+                    showYearDropdown
+                    scrollableYearDropdown
+                    yearDropdownItemNumber={100}
+                    placeholderText="Выберите дату"
+                    className={`form-control ${birthdateError ? "is-invalid" : ""}`}
+                />
+
+                {birthdateError && (
+                    <div className="invalid-feedback d-block">{birthdateError}</div>
+                )}
             </Form.Group>
+
 
 
             <Form.Group className="mb-3">
@@ -704,6 +738,146 @@ const Step6: React.FC<StepProps> = ({
             setPhoneChecking(true);
             setPhoneSystemError("");
 
+            axiosSSOVerifyPhoneNumber("+" + digitsOnly, { signal: controller.signal })
+                .then((res) => {
+                    if (!res.data) setPhoneSystemError("Номер уже зарегистрирован");
+                })
+                .catch((err) => {
+                    if (!axios.isCancel(err)) setPhoneSystemError("Ошибка проверки номера");
+                })
+                .finally(() => setPhoneChecking(false));
+        }, 500);
+
+        return () => {
+            clearTimeout(timer);
+            controller.abort();
+        };
+    }, [phoneNumber, isPhoneFilled, digitsOnly]);
+
+    return (
+        <>
+            <h4 className="fw-bold mt-3 mb-3 text-center">
+                Подтверждение номера с помощью звонка
+                <span className="text-muted fs-6 d-block mt-1">Шаг 6 из 6</span>
+            </h4>
+
+            <p className="mb-4">
+                Осталось подтвердить номер телефона:<br />
+                <strong>{phoneNumber || "+7 (___) ___-__-__"}</strong><br/>
+                <strong>Мы совершим автоматический звонок и продиктуем код подтверждения.</strong>
+            </p>
+
+            {/* телефон */}
+            <Form.Group className="mb-4">
+                <Form.Control
+                    ref={inputRef}
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    placeholder="+7 (___) ___-__-__"
+                    type="tel"
+                    className="fs-5"
+                    isInvalid={!!phoneSystemError}
+                />
+                <Form.Control.Feedback type="invalid">
+                    {phoneSystemError}
+                </Form.Control.Feedback>
+            </Form.Group>
+
+            {/* кнопка звонка теперь */}
+            <Button
+                className="w-100 mb-4"
+                size="md"
+                onClick={sendSMS}
+                disabled={!isPhoneFilled || cooldown > 0 || !!phoneSystemError || phoneChecking}
+            >
+                {!smsSent ? "Позвонить и продиктовать код" : "Позвонить повторно"}
+            </Button>
+
+            {/* информация о повторном звонке */}
+            {cooldown > 0 && (
+                <div className="text-center mb-3 text-muted">
+                    Повторный звонок доступен через {cooldown} сек.
+                </div>
+            )}
+
+            {/* ввод кода */}
+            <Form.Group className="mb-3">
+                <Form.Control
+                    placeholder="Введите код, продиктованный по телефону"
+                    value={smsCode}
+                    onChange={(e) => setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    maxLength={6}
+                    className="text-center fs-4"
+                    style={{ letterSpacing: "0.4rem" }}
+                />
+            </Form.Group>
+
+            {errorSMS && (
+                <div className="text-danger text-center mb-3 fw-medium">{errorSMS}</div>
+            )}
+
+            {/* кнопка проверки кода */}
+            <Button
+                className="w-100 mb-3"
+                size="md"
+                onClick={verifySMS}
+                disabled={smsCode.length < 4}
+            >
+                Подтвердить код
+            </Button>
+
+            <Button
+                variant="secondary"
+                className="w-100 mt-4"
+                onClick={() => setStep(5)}
+            >
+                Назад
+            </Button>
+
+        </>
+    );
+};
+
+
+ /*const Step6: React.FC<StepProps> = ({
+                                        phoneNumber,
+                                        setPhoneNumber,
+                                        smsSent,
+                                        setSmsSent,
+                                        smsCode,
+                                        setSmsCode,
+                                        errorSMS,
+                                        cooldown,
+                                        sendSMS,
+                                        verifySMS,
+                                        setStep,
+                                    }) => {
+
+    // маска номера телефона
+    const inputRef = useMask({
+        mask: "+7 (___) ___-__-__",
+        replacement: { _: /\d/ },
+    });
+
+    const [phoneSystemError, setPhoneSystemError] = useState("");
+    const [phoneChecking, setPhoneChecking] = useState(false);
+
+    const digitsOnly = phoneNumber.replace(/\D/g, "");
+    const isPhoneFilled = digitsOnly.length === 11; // +7 + 10 цифр
+
+    // Debounced phone check
+    useEffect(() => {
+        if (!isPhoneFilled) {
+            setPhoneSystemError("");
+            return;
+        }
+
+        const controller = new AbortController();
+
+        const timer = setTimeout(() => {
+            setPhoneChecking(true);
+            setPhoneSystemError("");
+
             axiosSSOVerifyPhoneNumber("+70000000001", { signal: controller.signal })
                 .then((res) => {
                     if (!res.data) setPhoneSystemError("Номер уже зарегистрирован");
@@ -732,7 +906,7 @@ const Step6: React.FC<StepProps> = ({
                 <strong>{phoneNumber || "+7 (___) ___-__-__"}</strong>
             </p>
 
-            {/* телефон */}
+            {/!* телефон *!/}
             <Form.Group className="mb-4">
                 <Form.Control
                     ref={inputRef}
@@ -746,7 +920,7 @@ const Step6: React.FC<StepProps> = ({
                 <Form.Control.Feedback type="invalid">{phoneSystemError}</Form.Control.Feedback>
             </Form.Group>
 
-            {/* кнопка отправки SMS */}
+            {/!* кнопка отправки SMS *!/}
             <Button
                 className="w-100 mb-4"
                 size="md"
@@ -756,14 +930,14 @@ const Step6: React.FC<StepProps> = ({
                 {!smsSent ? "Отправить SMS-код" : "Отправить код повторно"}
             </Button>
 
-            {/* информация о повторной отправке */}
+            {/!* информация о повторной отправке *!/}
             {cooldown > 0 && (
                 <div className="text-center mb-3 text-muted">
                     Повторная отправка доступна через {cooldown} сек.
                 </div>
             )}
 
-            {/* ввод кода */}
+            {/!* ввод кода *!/}
             <Form.Group className="mb-3">
                 <Form.Control
                     placeholder="Введите код из SMS"
@@ -779,7 +953,7 @@ const Step6: React.FC<StepProps> = ({
                 <div className="text-danger text-center mb-3 fw-medium">{errorSMS}</div>
             )}
 
-            {/* кнопка проверки кода */}
+            {/!* кнопка проверки кода *!/}
             <Button
                 className="w-100 mb-3"
                 size="md"
@@ -789,7 +963,7 @@ const Step6: React.FC<StepProps> = ({
                 Подтвердить код
             </Button>
 
-            {/* назад */}
+            {/!* назад *!/}
             <Button
                 variant="secondary"
                 className="w-100 mt-4"
@@ -799,7 +973,7 @@ const Step6: React.FC<StepProps> = ({
             </Button>
         </>
     );
-};
+};*/
 
 
 
@@ -875,11 +1049,18 @@ const RegisterPage: React.FC = () => {
             icon: <CheckCircleFill size={48} className="mb-3 text-white opacity-75" />
         },
         6: {
-            title: "Шаг 6: Подтверждение номера сотового телефона",
-            text: "Укажите ваш контактный номер сотового телефона - Он необходим для создания личного кабинета и позволит нам связаться с Вами. После этого нажмите кнопку отправки смс. Когда получите код, введите его в поле ввода для кода",
+            title: "Шаг 6: Подтверждение номера с помощью звонка",
+            text: "Укажите ваш номер телефона. Система автоматически позвонит вам и продиктует код подтверждения. После получения кода введите его в поле ниже.",
             icon: <PhoneFill size={48} className="mb-3 text-white opacity-75" />
         },
     };
+
+    // 6: {
+    //     title: "Шаг 6: Подтверждение номера сотового телефона",
+    //         text: "Укажите ваш контактный номер сотового телефона - Он необходим для создания личного кабинета и позволит нам связаться с Вами. После этого нажмите кнопку отправки смс. Когда получите код, введите его в поле ввода для кода",
+    //         icon: <PhoneFill size={48} className="mb-3 text-white opacity-75" />
+    // },
+
 
     ////////////////////////////////////////////////
     // SMS Logics

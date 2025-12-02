@@ -151,20 +151,22 @@ export async function axiosSSOVerifySMSCode(phoneNumber: string, code: string) {
     return res.data;// TODO!! УТОЧНИТЬ НУЖНО ЛИ DATA
 }
 
-export async function axiosSSOVerifyEmail(Email: string) {
+export async function axiosSSOVerifyEmail(Email: string,config = {}) {
     const res = await axios.post(
         AUTH.verifyEmail,
         { credential: Email},
+        config
         //{ withCredentials: true }
     );
 
     return res.data;
 }
 
-export async function axiosSSOVerifyPhoneNumber(phoneNumber: string) {
+export async function axiosSSOVerifyPhoneNumber(phoneNumber: string,config = {}) {
     const res = await axios.post(
         AUTH.verifyPhone,
         { credential: phoneNumber},
+        config
         //{ withCredentials: true }
     );
 
