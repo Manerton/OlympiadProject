@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "628d821213f103b6e3b040903bcb5d89",
+    "content-hash": "8729a66d309ec7e04d979a9e9d79ce16",
     "packages": [
         {
             "name": "bower-asset/bootstrap",
@@ -2128,6 +2128,40 @@
                 }
             ],
             "time": "2024-06-11T12:45:25+00:00"
+        },
+        {
+            "name": "smsaero/smsaero_api",
+            "version": "v1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/smsaero/smsaero_php.git",
+                "reference": "c9e7b98c35652dc76fa289e2ca4bfbe26bd6d9c8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/smsaero/smsaero_php/zipball/c9e7b98c35652dc76fa289e2ca4bfbe26bd6d9c8",
+                "reference": "c9e7b98c35652dc76fa289e2ca4bfbe26bd6d9c8",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "SmsAero\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Библиотека для работы с API сервиса smsaero.ru",
+            "support": {
+                "issues": "https://github.com/smsaero/smsaero_php/issues",
+                "source": "https://github.com/smsaero/smsaero_php/tree/v1.1.0"
+            },
+            "time": "2025-09-11T09:27:56+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -7368,12 +7402,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
         "php": ">=7.4.0"
     },
-    "platform-dev": {},
+    "platform-dev": [],
     "plugin-api-version": "2.6.0"
 }

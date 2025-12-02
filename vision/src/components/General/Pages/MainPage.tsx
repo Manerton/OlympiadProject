@@ -18,7 +18,7 @@ const MainPage: React.FC = () => {
             className="d-flex flex-column justify-content-center align-items-center h-100 text-center p-3"
           >
             <h1 className="display-4 fw-bold text-center">
-              Всероссийская олимпиада школьников <br />
+              Региональный этап всероссийской олимпиады школьников<br />
               <span
                 style={{
                   background: 'linear-gradient(to right, #1494D4, #70FF99)',
@@ -209,8 +209,9 @@ const MainPage: React.FC = () => {
         ) : (
           <>
             <div className="text-center p-3 flex-fill border rounded">
-              <h4>Для подачи заявки на участие в олимпиадах перейдите в Личный кабинет</h4>
-              <Button onClick={() => navigate("/PersonalAccount")} variant="primary" size="lg" className="me-2 mb-2">
+              <h4>Уважаемый учаткник регионального этапа всероссийской олимпиады школьников на территории Астрахансокй области!<br/>
+                Чтобы подать заявку на участие в региональном этапе ВСОШ пожалуйста перейдите в Личный кабинет</h4>
+              <Button onClick={() => navigate("/PersonalAccount")} variant="primary" size="lg" className="me-2 m-2">
                 Перейти в личный кабинет
               </Button>
             </div>
@@ -224,28 +225,32 @@ const MainPage: React.FC = () => {
           <h2 className="mb-4">Часто задаваемые вопросы</h2>
           <Accordion defaultActiveKey="0">
             <Accordion.Item eventKey="0">
-              <Accordion.Header>Как подать апелляцию?</Accordion.Header>
-              <Accordion.Body>После публикации результатов нажмите кнопку «Подать апелляцию» в личном кабинете.</Accordion.Body>
+              <Accordion.Header>Как получить доступ к личному кабинету</Accordion.Header>
+              <Accordion.Body>Для получения доступа к личному кабинету Создайте его пройдя регистрацию. Учётные данные от других платформ не подайдут</Accordion.Body>
             </Accordion.Item>
             <Accordion.Item eventKey="1">
               <Accordion.Header>Что делать, если не согласен с результатами?</Accordion.Header>
               <Accordion.Body>Вы можете подать апелляцию в течение 5 дней после объявления результатов.</Accordion.Body>
             </Accordion.Item>
             <Accordion.Item eventKey="2">
-              <Accordion.Header>Когда и где будут проходить этапы олимпиады?</Accordion.Header>
-              <Accordion.Body>Информация о датах и местах проведения этапов олимпиады будет опубликована на сайте и в личных кабинетах участников.</Accordion.Body>
+              <Accordion.Header>Когда будут проходить олимпиады?</Accordion.Header>
+              <Accordion.Body>Информация о датах проведения олимпиад будет опубликована на сайте в личных кабинетах участников.</Accordion.Body>
             </Accordion.Item>
             <Accordion.Item eventKey="3">
               <Accordion.Header>Можно ли участвовать в олимпиаде по нескольким предметам?</Accordion.Header>
               <Accordion.Body>Да, участники могут подавать заявки на участие в олимпиадах по нескольким предметам.</Accordion.Body>
             </Accordion.Item>
-            <Accordion.Item eventKey="4">
+            {/* <Accordion.Item eventKey="4">
               <Accordion.Header>Что делать, если я забыл пароль?</Accordion.Header>
               <Accordion.Body>На странице входа нажмите «Забыли пароль?» и следуйте инструкциям для восстановления пароля.</Accordion.Body>
-            </Accordion.Item>
+            </Accordion.Item> */}
             <Accordion.Item eventKey="5">
               <Accordion.Header>Как подать заявку на участие в олимпиаде?</Accordion.Header>
-              <Accordion.Body>После регистрации и входа в личный кабинет выберите интересующую вас олимпиаду из списка доступных и нажмите кнопку “Подать заявку”.</Accordion.Body>
+              <Accordion.Body>После регистрации и входа в личный кабинет выберите интересующую вас олимпиаду из списка доступных и нажмите кнопку "Подать заявку".</Accordion.Body>
+            </Accordion.Item>
+            <Accordion.Item eventKey="6">
+              <Accordion.Header>Что делать если я ошибся при указании ФИО или школы</Accordion.Header>
+              <Accordion.Body>В личном кабинете в разделе "информация о вас" есть возможность отредактировать данные.</Accordion.Body>
             </Accordion.Item>
           </Accordion>
         </Container>

@@ -16,7 +16,7 @@ const ParticipantDashboard: React.FC = () => {
     const { accessToken, user } = useAuth();
 
 
-    const [openInfo, setOpenInfo] = useState(true);
+    const [openInfo, setOpenInfo] = useState(false);
     const [openApps, setOpenApps] = useState(false);
     const [openOlympiads, setOpenOlympiads] = useState(false);
 
@@ -77,6 +77,7 @@ const ParticipantDashboard: React.FC = () => {
 
     return (
         <div className="container mt-4">
+            <h2 className="mb-3">Личный кабинет участника</h2>
 
             <Card className="mb-3 shadow-sm">
                 <Card.Header
