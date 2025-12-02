@@ -1176,7 +1176,7 @@ const RegisterPage: React.FC = () => {
             gender: gender.toString(),
             school_id: selectedSchoolId,
             birthdate,
-            classnumber: classNumber.toString(),
+            class_number: classNumber.toString(),
             disability: String(disability),
             citizenship: String(citizenship)
         };

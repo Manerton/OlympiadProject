@@ -15,7 +15,7 @@ export interface RegisterForm {
     birthdate: string
     gender: string
     school_id: string
-    classnumber: string
+    class_number: string
     disability: string
     citizenship: string
 }

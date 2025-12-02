@@ -13,9 +13,17 @@ interface Props {
     user_school_id: string;
     reloadFlag: number;
     onApplied: () => void;
+
+    appliedEventIds: string[];
 }
 
-const OlympiadsSimpleTable: React.FC<Props> = ({ user_class, user_school_id, onApplied, reloadFlag }) => {
+const OlympiadsSimpleTable: React.FC<Props> = ({
+    user_class,
+    user_school_id,
+    onApplied,
+    reloadFlag,
+    appliedEventIds
+}) => {
     const { user, accessToken } = useAuth();
 
     const [olympiads, setOlympiads] = useState<MyEvent[]>([]);
@@ -24,6 +32,8 @@ const OlympiadsSimpleTable: React.FC<Props> = ({ user_class, user_school_id, onA
 
     const [selectedClasses, setSelectedClasses] = useState<Record<string, number>>({});
     const [selectedProfiles, setSelectedProfiles] = useState<Record<string, string>>({});
+
+    const visibleOlympiads = olympiads.filter(o => !appliedEventIds.includes(o.id!));
 
     useEffect(() => {
         setLoading(true);
@@ -87,7 +97,7 @@ const OlympiadsSimpleTable: React.FC<Props> = ({ user_class, user_school_id, onA
                 </thead>
 
                 <tbody>
-                    {olympiads.map((olymp) => {
+                    {visibleOlympiads.map((olymp) => {
 
                         const fullDates = olymp.dates.join(", ");
 

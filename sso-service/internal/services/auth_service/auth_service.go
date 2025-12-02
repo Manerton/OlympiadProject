@@ -457,7 +457,7 @@ func (s *AuthService) VerifyTrustCode(ctx context.Context, verifyCode register_d
 	}
 
 	if correctCode != verifyCode.Code {
-		log.Warn("invalid user code", slog.String("user-code", verifyCode.Code))
+		log.Warn("invalid user code", slog.String("user-code", verifyCode.Code), slog.String("correct-code", correctCode))
 		return errs.ErrBadRequest
 	}
 

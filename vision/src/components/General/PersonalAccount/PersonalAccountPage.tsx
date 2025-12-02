@@ -11,9 +11,12 @@ import { Profile, User, UserParticipant } from "../../types/user";
 import { UserRole } from "../../../dictionary/role";
 import { axiosSSOUserInfo, axiosSSOUserParticipantInfo } from "../../../requests/SSORequests";
 import formatDateForInput from "../../Helpers/DateFormater";
+import { axiosGetApplicationEvents } from "../../../requests/ApplicationRequests";
 
 const ParticipantDashboard: React.FC = () => {
     const { accessToken, user } = useAuth();
+    const [appliedEventIds, setAppliedEventIds] = useState<string[]>([]);
+
 
 
     const [openInfo, setOpenInfo] = useState(false);
@@ -21,7 +24,24 @@ const ParticipantDashboard: React.FC = () => {
     const [openOlympiads, setOpenOlympiads] = useState(false);
 
     const [reloadFlag, setReloadFlag] = useState(0);
+    const [reloadInfo, setReloadInfo] = useState(0);
     const [profile, setProfile] = useState<Profile>();
+
+
+
+    useEffect(() => {
+        const fetchApplications = async () => {
+            if (!accessToken || !user) return;
+
+            const apps = await axiosGetApplicationEvents(accessToken, user.id);
+            const ids = apps.map((a: any) => a.MainEvent.id);
+            setAppliedEventIds(ids);
+        };
+
+        fetchApplications();
+    }, [accessToken, user, reloadFlag]);
+
+
     useEffect(() => {
         const fetchUser = async () => {
             try {
@@ -63,17 +83,19 @@ const ParticipantDashboard: React.FC = () => {
                         participant_id: ""
                     });
                 }
-                console.log("profile",profile)
+                console.log("profile", profile)
             } catch (err) {
                 console.error("Ошибка загрузки профиля:", err);
             }
         };
 
         fetchUser();
-    }, [accessToken, user]);
+    }, [accessToken, user, reloadInfo]);
 
 
     const reloadAll = () => setReloadFlag((prev) => prev + 1);
+    const onReloadInfo = () => setReloadInfo((prev) => prev + 1);
+
 
     return (
         <div className="container mt-4">
@@ -94,7 +116,7 @@ const ParticipantDashboard: React.FC = () => {
                 <Collapse in={openInfo}>
                     <div>
                         <Card.Body>
-                            <PersonalInfo profile={profile!} />
+                            <PersonalInfo profile={profile!} onReloadInfo={onReloadInfo} />
                         </Card.Body>
                     </div>
                 </Collapse>
@@ -136,7 +158,13 @@ const ParticipantDashboard: React.FC = () => {
                 <Collapse in={openOlympiads}>
                     <div>
                         <Card.Body>
-                            <OlympiadsSimpleTable user_class={profile?.classnumber!} user_school_id={profile?.school ? profile?.school : ""} onApplied={reloadAll} reloadFlag={reloadFlag} />
+                            <OlympiadsSimpleTable
+                                user_class={profile?.classnumber!}
+                                user_school_id={profile?.school ? profile?.school : ""}
+                                onApplied={reloadAll}
+                                reloadFlag={reloadFlag}
+                                appliedEventIds={appliedEventIds}
+                            />
                         </Card.Body>
                     </div>
                 </Collapse>

@@ -17,9 +17,10 @@ import { School } from "../../types/schools";
 
 interface Props {
     profile: Profile
+    onReloadInfo: () => void
 }
 
-const PersonalInfo: React.FC<Props> = ({ profile }) => {
+const PersonalInfo: React.FC<Props> = ({ onReloadInfo, profile }) => {
     const { accessToken, user } = useAuth();
     const navigate = useNavigate();
 
@@ -95,8 +96,7 @@ const PersonalInfo: React.FC<Props> = ({ profile }) => {
             alert("Данные обновлены!");
 
             setIsEditing(false);
-            navigate(0); // обновить страницу
-
+            onReloadInfo()
         } catch (err) {
             console.error("Ошибка обновления:", err);
             alert("Ошибка при сохранении");
@@ -266,11 +266,19 @@ const PersonalInfo: React.FC<Props> = ({ profile }) => {
                                         <input
                                             type="number"
                                             className="form-control"
+                                            max={11}
+                                            min={5}
                                             value={editData.classnumber}
-                                            onChange={(e) =>
-                                                setEditData({ ...editData, classnumber: Number(e.target.value) })
-                                            }
+                                            onChange={(e) => {
+                                                let value = Number(e.target.value);
+
+                                                if (value < 5) value = 5;
+                                                if (value > 11) value = 11;
+
+                                                setEditData({ ...editData, classnumber: value });
+                                            }}
                                         />
+
                                     )}
                                 </div>
                             </div>

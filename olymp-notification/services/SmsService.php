@@ -16,11 +16,17 @@ class SmsService
 
     public function sendSMS($phone, $code){
 
-        $smsAeroMessage = new \SmsAero\SmsAeroMessage('assbanlucky@gmail.com', 'nPFlpnCJATeiaSE84Rc-YOiAcBp9-j43');
-        // Отправка SMS сообщений
-        $response = $smsAeroMessage->send(['number' => $phone, 'text' => 'ВСОШ. Ваш код: ' . $code, 'sign' => 'SMS Aero']);
-        return $response;
-        
+
+        $url = 'https://zvonok.com/manager/cabapi_external/api/v1/phones/tellcode/?' . http_build_query([
+            'public_key'   => Yii::$app->params['sms_zvonok_public_key'],
+            'phone'        => $phone,
+            'campaign_id'  => Yii::$app->params['sms_zvonok_campaign_id'],
+            'pincode'      => $code,
+        ]);
+
+        return $this->apiService->post($url);
+        // return true;
+                
 
         // $this->apiService->post(
         //     'https://api.exolve.ru/messaging/v1/SendSMS',

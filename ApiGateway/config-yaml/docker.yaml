@@ -76,8 +76,8 @@ HTTP_SERVERS_INFO:
 
     - prefix: "/sms/verify-code/"
       aggregate: false
-      target: "http://sso-service:8181/api/sms/verify-code"
-      skip_auth: false
+      target: "http://sso-service:8181/api/users/verify"
+      skip_auth: true
 
     - prefix: "/auth/check-phone/"
       aggregate: false
