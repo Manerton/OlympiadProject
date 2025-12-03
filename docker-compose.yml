@@ -3,22 +3,33 @@
 services:
 
   vision:
-    build: ./vision
-    container_name: vision_app
-    working_dir: /app
-    volumes:
-      - ./vision:/app
-      - ./vision/.env:/app/.env
-      - /app/node_modules  # Для NPM-совместимости
+    build:
+      context: ./vision
+      dockerfile: Dockerfile.prod
+    container_name: vision_prod
+    restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "8080:80"          # Nginx на хосте будет ходить сюда
     networks:
       - olympic
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
-      - HOST=0.0.0.0
-      - VITE_API_URL=http://localhost:6611
+
+  # vision:
+  #   build: ./vision
+  #   container_name: vision_app
+  #   working_dir: /app
+  #   volumes:
+  #     - ./vision:/app
+  #     - ./vision/.env:/app/.env
+  #     - /app/node_modules  # Для NPM-совместимости
+  #   ports:
+  #     - "5173:5173"
+  #   networks:
+  #     - olympic
+  #   environment:
+  #     - CHOKIDAR_USEPOLLING=true
+  #     - WATCHPACK_POLLING=true
+  #     - HOST=0.0.0.0
+  #     - VITE_API_URL=http://localhost:6611
 
   application-db:
     image: postgres:16
@@ -146,7 +157,7 @@ services:
       - "8989:8181"
     entrypoint: [ "/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./sso-service" ]
 
-  # jury-db:
+      # jury-db:
   #   image: postgres:16
   #   container_name: jury-db
   #   environment:
@@ -259,7 +270,8 @@ services:
       - "8095:8095"   # пробрасываем наружу
     depends_on:
       - olymp-notification-db
-#  nginx:
+
+      #  nginx:
 #    image: nginx:alpine
 #    container_name: nginx_server
 #    ports:
@@ -291,6 +303,7 @@ services:
   #   networks:
   #     - olympic
 
+
   olymp-notification-db:
     image: mariadb:10.11
     container_name: olymp-notification-db
@@ -307,7 +320,7 @@ services:
     networks:
       - olympic
 
-  # phpmyadmin-admin:
+        # phpmyadmin-admin:
   #   image: phpmyadmin:latest
   #   container_name: olymp_admin_phpmyadmin
   #   restart: always
