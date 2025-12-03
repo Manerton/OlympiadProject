@@ -738,7 +738,7 @@ const Step6: React.FC<StepProps> = ({
             setPhoneChecking(true);
             setPhoneSystemError("");
 
-            axiosSSOVerifyPhoneNumber("+" + digitsOnly, { signal: controller.signal })
+            axiosSSOVerifyPhoneNumber(digitsOnly, { signal: controller.signal })
                 .then((res) => {
                     if (!res.data) setPhoneSystemError("Номер уже зарегистрирован");
                 })
@@ -1073,7 +1073,7 @@ const RegisterPage: React.FC = () => {
             setPhoneNumber(phoneNumber.replace(/\D/g, ""))
 
             // TODO: вызвать запрос на отправку SMS
-            const data = await axiosSendSMSCode(phoneNumber);
+            const data = await axiosSendSMSCode(phoneNumber.replace(/\D/g, ""));
             // data можно использовать, если backend вернёт что-то вроде { success: true }
 
             setSmsSent(true);
