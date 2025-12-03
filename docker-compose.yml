@@ -401,17 +401,17 @@ services:
   #       soft: -1
   #       hard: -1
 
-  grafana:
-    image: grafana/grafana:latest
-    container_name: olymp_grafana
-    ports:
-      - "3001:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-    networks:
-      - olympic
-    depends_on:
-      - elasticsearch
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: olymp_grafana
+  #   ports:
+  #     - "3001:3000"
+  #   volumes:
+  #     - grafana_data:/var/lib/grafana
+  #   networks:
+  #     - olympic
+  #   depends_on:
+  #     - elasticsearch
   # promtail:
   #   image: grafana/promtail:2.9.0
   #   volumes:
