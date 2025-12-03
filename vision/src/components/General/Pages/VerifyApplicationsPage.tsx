@@ -1,5 +1,14 @@
-import React, { useState } from "react";
-import { Table, Button, Collapse, Card, ListGroup } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Table, Button, Collapse, Card, ListGroup, Alert } from "react-bootstrap";
+import { jwtDecode } from "jwt-decode";
+
+// Тип короткоживущего токена
+interface JwtPayloadShortLived {
+    id: string;
+    role: number;
+}
+
+// ===== Моки (можно удалить позже) =====
 
 const CITIZENSHIP_TEXT: Record<number, string> = {
     1: "Россия",
@@ -11,7 +20,6 @@ const DISABILITY_TEXT: Record<number, string> = {
     2: "Есть"
 };
 
-// Моковые заявки (5 штук) с категориями и корректными классами
 const mockApplications = [
     {
         id: "1",
@@ -44,60 +52,39 @@ const mockApplications = [
             disability: 2
         },
         status: "pending"
-    },
-    {
-        id: "3",
-        olympiadName: "Олимпиада по биологии",
-        category: "9-11",
-        participant: {
-            surName: "Кузнецов",
-            firstName: "Никита",
-            patronymic: "Андреевич",
-            birthdate: "2010-11-02",
-            email: "kuznetsov@example.com",
-            classNumber: "11",
-            citizenship: 1,
-            disability: 1
-        },
-        status: "pending"
-    },
-    {
-        id: "4",
-        olympiadName: "Олимпиада по истории",
-        category: "10",
-        participant: {
-            surName: "Морозова",
-            firstName: "Елизавета",
-            patronymic: "Игоревна",
-            birthdate: "2007-01-18",
-            email: "morozova@example.com",
-            classNumber: "10",
-            citizenship: 1,
-            disability: 1
-        },
-        status: "pending"
-    },
-    {
-        id: "5",
-        olympiadName: "Олимпиада по русскому языку",
-        category: "11",
-        participant: {
-            surName: "Абрамян",
-            firstName: "Георгий",
-            patronymic: "Самвелович",
-            birthdate: "2008-08-08",
-            email: "abramyan@example.com",
-            classNumber: "11",
-            citizenship: 2,
-            disability: 1
-        },
-        status: "pending"
     }
 ];
 
-const MockApplicationsPage: React.FC = () => {
+// ===== Компонент =====
+
+const VerifyApplicationsPage: React.FC = () => {
+    const [token, setToken] = useState<string | null>(null);
+    const [claims, setClaims] = useState<JwtPayloadShortLived | null>(null);
+    const [error, setError] = useState<string | null>(null);
+
     const [applications, setApplications] = useState(mockApplications);
     const [openRow, setOpenRow] = useState<string | null>(null);
+
+    useEffect(() => {
+        // 1. Получение токена из URL: /page?access_token=xxxx
+        const params = new URLSearchParams(window.location.search);
+        const t = params.get("access_token");
+
+        if (!t) {
+            setError("Токен доступа отсутствует в URL");
+            return;
+        }
+
+        setToken(t);
+
+        try {
+            // 2. Декодирование JWT
+            const decoded = jwtDecode<JwtPayloadShortLived>(t);
+            setClaims(decoded);
+        } catch (e) {
+            setError("Не удалось декодировать токен");
+        }
+    }, []);
 
     const updateStatus = (id: string, newStatus: string) => {
         setApplications(prev =>
@@ -107,18 +94,40 @@ const MockApplicationsPage: React.FC = () => {
         );
     };
 
+    // Пример использования токена в headers (который ты позже добавишь)
+    const exampleHeaders = token
+        ? {
+            Authorization: `Bearer ${token}`
+        }
+        : {};
+
+    // ===== UI =====
     return (
         <div className="container py-4">
-            <h2 className="mb-4">Подтверждение заявок учащихся МБОУ г. Астрахани "Лицей № 2"</h2>
+            <h2 className="mb-4">Подтверждение заявок учащихся</h2>
+
+            {error && <Alert variant="danger">{error}</Alert>}
+
+            {!token && !error && (
+                <Alert variant="warning">Ожидание токена...</Alert>
+            )}
+
+            {claims && (
+                <Alert variant="info">
+                    <strong>Расшифрованные данные токена:</strong><br />
+                    ID: {claims.id}<br />
+                    Role: {claims.role}
+                </Alert>
+            )}
 
             <Table bordered hover responsive>
                 <thead>
                 <tr>
                     <th>№</th>
                     <th>ФИО ученика</th>
-                    <th>Класс ученика</th>
+                    <th>Класс</th>
                     <th>Олимпиада</th>
-                    <th>Возрастная группа (классов)</th>
+                    <th>Категория</th>
                     <th>Статус</th>
                     <th></th>
                 </tr>
@@ -169,24 +178,19 @@ const MockApplicationsPage: React.FC = () => {
                                                         {app.participant.firstName}{" "}
                                                         {app.participant.patronymic}
                                                     </ListGroup.Item>
-
                                                     <ListGroup.Item>
                                                         <strong>Дата рождения:</strong> {app.participant.birthdate}
                                                     </ListGroup.Item>
-
                                                     <ListGroup.Item>
                                                         <strong>Почта:</strong> {app.participant.email}
                                                     </ListGroup.Item>
-
                                                     <ListGroup.Item>
                                                         <strong>Класс:</strong> {app.participant.classNumber}
                                                     </ListGroup.Item>
-
                                                     <ListGroup.Item>
                                                         <strong>Гражданство:</strong>{" "}
                                                         {CITIZENSHIP_TEXT[app.participant.citizenship]}
                                                     </ListGroup.Item>
-
                                                     <ListGroup.Item>
                                                         <strong>ОВЗ:</strong>{" "}
                                                         {DISABILITY_TEXT[app.participant.disability]}
@@ -222,4 +226,4 @@ const MockApplicationsPage: React.FC = () => {
     );
 };
 
-export default MockApplicationsPage;
+export default VerifyApplicationsPage;

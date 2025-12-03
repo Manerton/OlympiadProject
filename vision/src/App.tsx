@@ -55,9 +55,10 @@ import ForbiddenPage from './components/General/Pages/ServicePages/ForbiddenPage
 import ForgotPasswordPage from './components/General/Helpers/RecoverPassword';
 import ChangePasswordBlock from './components/General/Pages/Profile/ChangePasswordPage';
 import JuryAssignPage from './components/General/Pages/Events/JuryAssignPage';
-import SchoolConfirmPage from "./components/General/Pages/SchoolConfirm";
+import SchoolConfirmPage from "./components/General/Pages/VerifyApplicationsPage";
 import ParticipantDashboard from './components/General/PersonalAccount/PersonalAccountPage';
 import RegisterPage from "./components/General/Pages/Register";
+import VerifyApplicationsPage from "./components/General/Pages/VerifyApplicationsPage";
 
 function App() {
     return (
@@ -73,7 +74,7 @@ function App() {
 
                             <Route path="/auth" element={<AuthPage />} />
                             <Route path="/register" element={<RegisterPage />} />
-
+                            <Route path="/verifyApplications" element={<VerifyApplicationsPage />}
                             
                             {/* <Route
                             path="/profile"
