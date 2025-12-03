@@ -2,6 +2,7 @@ package school_handler
 
 import (
 	"context"
+	link_dto "main/internal/dto/link"
 	school_dto "main/internal/dto/school"
 	"main/internal/lib/errs"
 	"main/internal/lib/parser"
@@ -22,6 +23,10 @@ type SchoolService interface {
 
 	Create(ctx context.Context, schoolDTO school_dto.CreateSchoolRequestDTO) (uuid.UUID, error)
 	Update(ctx context.Context, id string, schoolDTO school_dto.UpdateSchoolRequestDTO) error
+}
+
+type LinkService interface {
+	GetLinks(ctx context.Context, region string) ([]link_dto.LinkDTO, error)
 }
 
 type SchoolHandler struct {
