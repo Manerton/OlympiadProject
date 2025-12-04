@@ -87,6 +87,8 @@ func main() {
 
 	router.Get("/applications/school/{schoolID}", applicationHandler.GetApplicationsBySchoolID)
 
+	router.Get("/applications/school-list/", applicationHandler.GetApplicationsBySchoolListID)
+
 	router.Post("/applications/create", applicationHandler.CreateApplication)
 
 	router.Put("/applications/{id}", applicationHandler.UpdateApplicationStatus)

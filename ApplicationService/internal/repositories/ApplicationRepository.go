@@ -194,3 +194,20 @@ func (r *ApplicationRepository) GetApplicationsBySchoolID(ctx context.Context, o
 
 	return applications, nil
 }
+
+// 9. Получение всех заявок по ID школ
+func (r *ApplicationRepository) GetApplicationsBySchoolListID(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]models.Application, error) {
+	const op = "repositories.application_repository.GetApplicationsBySchoolListID"
+
+	if len(ids) == 0 {
+		return []models.Application{}, nil
+	}
+
+	eventRes := []models.Application{}
+
+	if err := orm.Find(ctx, models.Application{}, nil, nil, nil, nil, &eventRes, ids); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return eventRes, nil
+}

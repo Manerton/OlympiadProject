@@ -18,6 +18,7 @@ type ApplicationRepository interface {
 	GetApplicationsByUserID(ctx context.Context, orm orm.ORM, userID uuid.UUID, offset *int, limit *int) ([]models.Application, error)
 	GetApplicationsByEventID(ctx context.Context, orm orm.ORM, eventID uuid.UUID, offset *int, limit *int) ([]models.Application, error)
 	GetApplicationsBySchoolID(ctx context.Context, orm orm.ORM, schoolID uuid.UUID, offset *int, limit *int) ([]models.Application, error)
+	GetApplicationsBySchoolListID(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]models.Application, error)
 	UpdateApplication(ctx context.Context, orm orm.ORM, application models.Application) error
 	DeleteApplicationByID(ctx context.Context, orm orm.ORM, id uuid.UUID) error
 	DeleteByFilter(ctx context.Context, orm orm.ORM, model models.Application) error
@@ -167,6 +168,27 @@ func (s *ApplicationService) GetApplicationsBySchoolID(ctx context.Context, scho
 	}
 
 	// Конвертируем в DTO перед передачей
+	return ConvertManyApplicationsToDTO(applications), nil
+}
+
+// Получение всех заявок по спискн
+func (s *ApplicationService) GetApplicationsBySchoolListID(ctx context.Context, ids []string) ([]ApplicationDto.ApplicationResponseDTO, error) {
+	const op = "services.application_service.GetApplicationsBySchoolListID"
+	const errMsg = "failed to find applications by SchoolID"
+	uids := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		uid, err := uuid.Parse(id)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", op, "failed parse id")
+		}
+		uids = append(uids, uid)
+	}
+
+	applications, err := s.repository.GetApplicationsBySchoolListID(ctx, s.db, uids)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
 	return ConvertManyApplicationsToDTO(applications), nil
 }
 

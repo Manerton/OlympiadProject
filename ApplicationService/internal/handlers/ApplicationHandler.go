@@ -240,6 +240,39 @@ func (h *ApplicationHandler) GetApplicationsBySchoolID(w http.ResponseWriter, r 
 	})
 }
 
+func (h *ApplicationHandler) GetApplicationsBySchoolListID(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var data map[string][]string
+	err := render.DecodeJSON(r.Body, &data)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("failed decode request"))
+		return
+	}
+
+	// Получаем ids по ключу
+	ids, exists := data["ids"] ///TODO ГОВНОКОД
+	if !exists {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorResponse("ids field is required"))
+		return
+	}
+
+	h.logger.Info("Получение заявок по ID школы/муницапалитета", slog.Any("ID", ids))
+	ApplicationsBySchoolList, err := h.service.GetApplicationsBySchoolListID(ctx, ids)
+	if err != nil {
+		h.logger.Error("Ошибка получения заявок по массиву ID школ", slog.Any("error", err))
+		http.Error(w, "Не удалось получить заявки", http.StatusInternalServerError)
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status: response.SUCCESS,
+		Data:   ApplicationsBySchoolList,
+	})
+}
+
 // Создание новой заявки
 func (h *ApplicationHandler) CreateApplication(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

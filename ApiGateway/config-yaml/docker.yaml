@@ -3,6 +3,10 @@ env: "dev"
 HTTP_SERVERS_INFO:
   routes:
     # ==================== AUTH SERVICE (8181) ====================
+    - prefix: "/issue-short-jwt"
+      aggregate: false
+      target: "http://sso-service:8181/api/auth/issue-short-jwt"
+      skip_auth: false
 
     - prefix: "/verifySMS"
       aggregate: false
@@ -377,6 +381,21 @@ HTTP_SERVERS_INFO:
           fields: [""]
       skip_auth: false
       roles: []
+
+    - prefix: "/Verify-Applications/"
+      aggregate: true
+      targets:
+        - url: "http://sso-service:8181/api/schools/district"//ЕСЛИ ROLE = 0 ИНАЧЕ СКИП
+        - fields: [ "" ]
+        - url: "http://application-service:8082/applications/school-list/"
+          fields: [ "" ]
+        - url: "http://sso-service:8181/api/users/all-info-list/"
+          fields: [ "" ]
+        - url: "http://event-service:8080/api/events/list"
+          fields: [ "" ]
+
+      skip_auth: false
+      roles: [ ]
 
 CORS_INFO:
   allow_origins: [
