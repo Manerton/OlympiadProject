@@ -33,3 +33,6 @@ ADDITIONAL_ADDRESSES:
 
 ADDITIONAL_SERVICE_ADDRESSES:
   notification_path: "https://olymp_notification:/olymp_notification/web/index.php?r=email%2Fsend-code"
+
+CREATION_LINKS_TEMPLATE:
+  prefix: "https://172.16.1.39:5173/issue-short-jwt"

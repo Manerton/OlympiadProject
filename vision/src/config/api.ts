@@ -35,6 +35,10 @@ export const SCHOOLS = {
     byId: `${API_URL}/schools/`,
 };
 
+export const LINKS = {
+    getLinks: `${API_URL}/link-access/`
+}
+
 export const USER = {
     update: `${API_URL}/users/`,
     info: `${API_URL}/users/all-info/`,

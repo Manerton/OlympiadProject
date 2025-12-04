@@ -7,6 +7,7 @@ import (
 	"main/internal/config"
 	"main/internal/handlers/auth_handler"
 	"main/internal/handlers/district_handler"
+	"main/internal/handlers/link_handler"
 	"main/internal/handlers/participant_handler"
 	"main/internal/handlers/school_handler"
 	"main/internal/handlers/user_handler"
@@ -23,6 +24,7 @@ import (
 	"main/internal/repositories/user_repository"
 	"main/internal/services/auth_service"
 	"main/internal/services/district_service"
+	"main/internal/services/links_service"
 	"main/internal/services/participant_service"
 	"main/internal/services/school_service"
 	"main/internal/services/user_service"
@@ -68,6 +70,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	schoolService := school_service.New(log, gormORM, schoolRepository)
 	participantService := participant_service.New(log, gormORM, participantRepository)
 	districtService := district_service.New(log, gormORM, districtRepository)
+	linkService := links_service.New(log, gormORM, cfg.Prefix, jwtManager, schoolRepository, districtRepository)
 
 	// init handlers
 	userHandler := user_handler.New(userService)
@@ -75,6 +78,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	participantHandler := participant_handler.New(participantService)
 	schoolHandler := school_handler.New(schoolService)
 	districtHandler := district_handler.New(districtService)
+	linkHandler := link_handler.New(linkService)
 
 	// init rabbitMQ
 	rabbitConsumer := consumer.New(log, cfg.AddressRabbitPath, userService, participantService, authService, schoolService)
@@ -92,7 +96,13 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	router.Use(middleware.URLFormat)
 
 	// init routes
-	app.initRoutes(router, jwtManager, authHandler, userHandler, schoolHandler, participantHandler, districtHandler)
+	app.initRoutes(router, jwtManager,
+		authHandler,
+		userHandler,
+		schoolHandler,
+		participantHandler,
+		districtHandler,
+		linkHandler)
 
 	// init server
 	app.server = &http.Server{
@@ -109,7 +119,8 @@ func (a *App) initRoutes(router *chi.Mux,
 	userHandler *user_handler.UserHandler,
 	schoolHandler *school_handler.SchoolHandler,
 	participantHandler *participant_handler.ParticipantHandler,
-	districtHandler *district_handler.DistrictHandler) {
+	districtHandler *district_handler.DistrictHandler,
+	linkHandler *link_handler.LinkHandler) {
 
 	router.Get("/swagger/*", httpSwagger.WrapHandler)
 
@@ -130,6 +141,9 @@ func (a *App) initRoutes(router *chi.Mux,
 	router.Get("/api/schools/all", schoolHandler.GetAll)
 
 	router.With(base_access.BaseAccess(jwtManager)).Group(func(r chi.Router) {
+		// link GET
+		r.Get("/api/links-access/{region}", linkHandler.GetLinks)
+
 		// participant GET
 		r.Get("/api/participants", participantHandler.GetAllParticipants)
 		r.Get("/api/participants/count", participantHandler.GetCount)

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { AUTH, PARTICIPANT, SCHOOLS, USER } from "../config/api";
+import { AUTH, LINKS, PARTICIPANT, SCHOOLS, USER } from "../config/api";
 import type { ChangePasswordForm, ForgotPasswordForm, RegisterForm, User, UserParticipant } from "../components/types/user";
 import type { School } from "../components/types/schools";
 
@@ -160,6 +160,19 @@ export async function axiosSSOVerifyEmail(Email: string,config = {}) {
     );
 
     return res.data;
+}
+
+export async function axiosSSOGetAccessLinks(token: string, region: number) {
+    const res = await axios.get(
+        LINKS.getLinks + region, {
+            withCredentials: true,
+            headers: {
+                Authorization: `Bearer ${token}` // добавляем токен
+            }
+        }
+    )
+
+    return res.data.data
 }
 
 export async function axiosSSOVerifyPhoneNumber(phoneNumber: string,config = {}) {

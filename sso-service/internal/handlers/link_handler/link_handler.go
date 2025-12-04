@@ -19,6 +19,12 @@ type LinkHandler struct {
 	linkService LinkServiceInterface
 }
 
+func New(linkService LinkServiceInterface) *LinkHandler {
+	return &LinkHandler{
+		linkService: linkService,
+	}
+}
+
 func (h *LinkHandler) GetLinks(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 

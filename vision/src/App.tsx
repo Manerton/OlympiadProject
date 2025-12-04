@@ -59,6 +59,8 @@ import SchoolConfirmPage from "./components/General/Pages/VerifyApplicationsPage
 import ParticipantDashboard from './components/General/PersonalAccount/PersonalAccountPage';
 import RegisterPage from "./components/General/Pages/Register";
 import VerifyApplicationsPage from "./components/General/Pages/VerifyApplicationsPage";
+import LinkAcces from './components/Admin/Pages/LinkAccess';
+import LinkAccess from './components/Admin/Pages/LinkAccess';
 
 function App() {
     return (
@@ -74,7 +76,7 @@ function App() {
 
                             <Route path="/auth" element={<AuthPage />} />
                             <Route path="/register" element={<RegisterPage />} />
-                            <Route path="/verifyApplications" element={<VerifyApplicationsPage />}
+                            <Route path="/verifyApplications" element={<VerifyApplicationsPage />} />
                             
                             {/* <Route
                             path="/profile"
@@ -111,6 +113,8 @@ function App() {
                                 </RequireAuth>
                             }
                         >
+                            <Route path="/link-access" element={<LinkAccess/>}></Route>
+
                             <Route path="/AdminPanel" element={<AdminPanel />} />
                             <Route path="/olymp-admin/user/index" element={<UserIndex />} />
                             <Route path="/olymp-admin/user/show/:id" element={<UserShow />} />

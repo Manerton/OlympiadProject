@@ -1,3 +1,4 @@
 node_modules
 ApiGateway/cmd/server/__debug_bin.exe
 /.idea
+vision/Dockerfile

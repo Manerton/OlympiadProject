@@ -17,6 +17,7 @@ type Config struct {
 	JwtConfig                  `yaml:"JWT_INFO"`
 	RedisConfig                `yaml:"REDIS_INFO"`
 	RabbitConfig               `yaml:"RABBIT_INFO"`
+	CreationLinkConfig         `yaml:"CREATION_LINKS_TEMPLATE"`
 }
 
 type DatabaseConfig struct {
@@ -49,6 +50,10 @@ type RabbitConfig struct {
 
 type AdditionalServiceAddresses struct {
 	NotificationService string `yaml:"notification_path"`
+}
+
+type CreationLinkConfig struct {
+	Prefix string `yaml:"prefix"`
 }
 
 type AdditionalAddressesConfig struct {

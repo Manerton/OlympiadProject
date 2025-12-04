@@ -126,6 +126,16 @@ const AdminSidebar: React.FC = () => {
 
               <Nav.Link
                 as={Link}
+                to="/link-access"
+                className="text-white d-flex align-items-center"
+              >
+                <CreditCard className="me-2" />
+                {!collapsed && "Ссылки доступа"}
+              </Nav.Link>
+
+
+              <Nav.Link
+                as={Link}
                 to="/olymp-admin/event/index"
                 className="text-white d-flex align-items-center"
               >

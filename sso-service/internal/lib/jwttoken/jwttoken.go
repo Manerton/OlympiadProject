@@ -20,6 +20,11 @@ type TokenRefreshClaims struct {
 	TokenAccessClaims
 }
 
+type TokenLinkClaims struct {
+	Type int `json:"type"`
+	jwt.RegisteredClaims
+}
+
 type JWTManager struct {
 	secretKey       []byte
 	accessDuration  time.Duration
@@ -115,6 +120,26 @@ func (m *JWTManager) CreateRefreshToken(user user.User, tokenId string) (string,
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
+	tokenStr, err := token.SignedString(m.secretKey)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenStr, nil
+}
+
+func (m *JWTManager) CreateLinkToken(id string, objectType int) (string, error) {
+
+	claims := TokenLinkClaims{
+		Type: objectType,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   id,
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(m.refreshDuration * 3)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenStr, err := token.SignedString(m.secretKey)
 	if err != nil {
 		return "", err

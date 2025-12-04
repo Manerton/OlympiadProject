@@ -93,6 +93,11 @@ HTTP_SERVERS_INFO:
       target: "http://sso-service:8181/api/auth/check-email"
       skip_auth: true
 
+    - prefix: "/link-access/"
+      aggregate: false
+      target: "http://sso-service:8181/api/links-access/"
+      skip_auth: false
+
     # ==================== PARTICIPANTS & SCHOOLS SERVICE (8181) ====================
     - prefix: "/participants/"
       aggregate: false
@@ -385,7 +390,7 @@ HTTP_SERVERS_INFO:
     - prefix: "/Verify-Applications/"
       aggregate: true
       targets:
-        - url: "http://sso-service:8181/api/schools/district"//ЕСЛИ ROLE = 0 ИНАЧЕ СКИП
+        - url: "http://sso-service:8181/api/schools/district"
         - fields: [ "" ]
         - url: "http://application-service:8082/applications/school-list/"
           fields: [ "" ]
