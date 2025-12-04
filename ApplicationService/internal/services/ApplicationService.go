@@ -174,7 +174,7 @@ func (s *ApplicationService) GetApplicationsBySchoolID(ctx context.Context, scho
 // Получение всех заявок по спискн
 func (s *ApplicationService) GetApplicationsBySchoolListID(ctx context.Context, ids []string) ([]ApplicationDto.ApplicationResponseDTO, error) {
 	const op = "services.application_service.GetApplicationsBySchoolListID"
-	const errMsg = "failed to find applications by SchoolID"
+	const errMsg = "failed to find applications by SchoolListID"
 	uids := make([]uuid.UUID, 0, len(ids))
 	for _, id := range ids {
 		uid, err := uuid.Parse(id)

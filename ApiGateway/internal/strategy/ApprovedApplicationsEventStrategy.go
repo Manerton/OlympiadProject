@@ -75,7 +75,7 @@ func (s *ApprovedApplicationEventStrategy) Aggregate(
 			Error:      "unexpected applications format",
 		}, fmt.Errorf("unexpected format in applications")
 	}
-	/////////ЭТО ГОВНОКОД НУЖНО ИСПРАВИТЬ
+	/////////TODO ЭТО ГОВНОКОД НУЖНО ИСПРАВИТЬ
 	eventStatuses := make(map[string]int)
 	var eventIDs []string
 	for _, raw := range applications {
