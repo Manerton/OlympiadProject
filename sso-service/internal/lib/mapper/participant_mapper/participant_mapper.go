@@ -4,6 +4,7 @@ import (
 	"fmt"
 	register_dto "main/internal/dto/auth/register"
 	participant_dto "main/internal/dto/participant"
+	user_dto "main/internal/dto/user"
 	"main/internal/models/participant"
 	"strconv"
 
@@ -12,18 +13,14 @@ import (
 
 func ToDTO(participantModel participant.Participant) participant_dto.ParticipantResponseDTO {
 
-	disability := strconv.Itoa(participantModel.Disability)
-	citizenship := strconv.Itoa(participantModel.Citizenship)
-	classNumber := strconv.Itoa(participantModel.ClassNumber)
-
 	return participant_dto.ParticipantResponseDTO{
 		ParticipantId: participantModel.ID.String(),
 		UserId:        participantModel.UserId.String(),
-		Disability:    disability,
+		Disability:    participantModel.Disability,
 		SchoolId:      participantModel.SchoolId.String(),
 
-		Citizenship: citizenship,
-		ClassNumber: classNumber,
+		Citizenship: participantModel.Citizenship,
+		ClassNumber: participantModel.Citizenship,
 	}
 }
 
@@ -79,4 +76,37 @@ func FromUpdateToModel(updateDTO participant_dto.UpdateParticipantRequestDTO, ui
 	}
 
 	return model, nil
+}
+
+func FromPreloadToUserParticipantModel(participantModel participant.Participant) user_dto.UserParticipantResponseDTO {
+	return user_dto.UserParticipantResponseDTO{
+		UserResponseDTO: user_dto.UserResponseDTO{
+			ID:          participantModel.User.ID.String(),
+			Email:       participantModel.User.Email,
+			FirstName:   participantModel.User.Firstname,
+			Surname:     participantModel.User.Surname,
+			Patronymic:  participantModel.User.Patronymic,
+			PhoneNumber: participantModel.User.PhoneNumber,
+			BirthDate:   participantModel.User.BirthDate.String(),
+			Gender:      int(participantModel.User.Gender),
+			Role:        int(participantModel.User.Role),
+			Activated:   participantModel.User.Activated,
+		},
+		ParticipantResponseDTO: participant_dto.ParticipantResponseDTO{
+			ParticipantId: participantModel.ID.String(),
+			UserId:        participantModel.UserId.String(),
+			Disability:    participantModel.Disability,
+			SchoolId:      participantModel.SchoolId.String(),
+			Citizenship:   participantModel.Citizenship,
+			ClassNumber:   participantModel.ClassNumber,
+		},
+	}
+}
+
+func FromPreloadToUserParticipantModelList(participantModels []participant.Participant) []user_dto.UserParticipantResponseDTO {
+	result := make([]user_dto.UserParticipantResponseDTO, 0, len(participantModels))
+	for _, participantModel := range participantModels {
+		result = append(result, FromPreloadToUserParticipantModel(participantModel))
+	}
+	return result
 }

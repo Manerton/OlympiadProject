@@ -10,6 +10,7 @@ import (
 	"main/internal/lib/liblogger"
 	paricipant_mapper "main/internal/lib/mapper/participant_mapper"
 	"main/internal/lib/mapper/user_mapper"
+	"main/internal/lib/parser"
 	"main/internal/models/participant"
 	"main/internal/models/user"
 	"main/internal/storage/orm"
@@ -34,6 +35,7 @@ type UserRepository interface {
 
 type ParticipantRepository interface {
 	GetByUserId(ctx context.Context, orm orm.ORM, id uuid.UUID) (participant.Participant, error)
+	GetByUserIdListWithPreload(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]participant.Participant, error)
 }
 
 type UserService struct {
@@ -209,6 +211,26 @@ func (s *UserService) GetUserParticipantById(ctx context.Context, id string) (us
 
 }
 
+func (s *UserService) GetUserParticipantByListId(ctx context.Context, ids []string) ([]user_dto.UserParticipantResponseDTO, error) {
+	const op = "services.UserService.GetUserParticipantByListId"
+
+	log := s.log.With(slog.String("op", op))
+
+	uids, err := parser.ParseIdsFromStringToUUIDs(ids)
+	if err != nil {
+		log.Error("failed parse list string-id to uuid", liblogger.Err(err))
+		return nil, errs.ErrBadRequest.Wrap("failed parse uuid list")
+	}
+
+	participants, err := s.participantRepository.GetByUserIdListWithPreload(ctx, s.db, uids)
+	if err != nil {
+		log.Error("failed get participants by list id")
+	}
+
+	return paricipant_mapper.FromPreloadToUserParticipantModelList(participants), nil
+
+}
+
 func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error) {
 	const op = "services.UserService.GetByListId"
 
@@ -216,14 +238,10 @@ func (s *UserService) GetByListId(ctx context.Context, ids []string) ([]user_dto
 		slog.String("op", op),
 	)
 
-	uids := make([]uuid.UUID, 0, len(ids))
-	for _, id := range ids {
-		uid, err := uuid.Parse(id)
-		if err != nil {
-			log.Error("failed to parse id", slog.String("id", id), liblogger.Err(err))
-			return nil, errs.ErrBadRequest.Wrap("failed parse uuid")
-		}
-		uids = append(uids, uid)
+	uids, err := parser.ParseIdsFromStringToUUIDs(ids)
+	if err != nil {
+		log.Error("failed parse list string-id to uuid", liblogger.Err(err))
+		return nil, errs.ErrBadRequest.Wrap("failed parse uuid list")
 	}
 
 	usersResult, err := s.userRepository.GetByListId(ctx, s.db, uids)

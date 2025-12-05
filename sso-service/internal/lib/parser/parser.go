@@ -3,6 +3,8 @@ package parser
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/google/uuid"
 )
 
 func ParsePageLimit(pageStr string, limitStr string) (*int, *int, error) {
@@ -26,4 +28,16 @@ func ParsePageLimit(pageStr string, limitStr string) (*int, *int, error) {
 	}
 
 	return page, limit, nil
+}
+
+func ParseIdsFromStringToUUIDs(ids []string) ([]uuid.UUID, error) {
+	uids := make([]uuid.UUID, 0, len(ids))
+	for _, id := range ids {
+		uid, err := uuid.Parse(id)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", "ParseIdsFromStringToUUIDs", err)
+		}
+		uids = append(uids, uid)
+	}
+	return uids, nil
 }

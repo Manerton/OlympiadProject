@@ -27,7 +27,7 @@ func (r *UserRepository) GetAll(ctx context.Context, orm orm.ORM, offset *int, l
 	const op = "repositories.UserRepository.GetAll"
 
 	userResult := []user.User{}
-	err := orm.Find(ctx, user.User{}, nil, offset, limit, nil, &userResult)
+	err := orm.Find(ctx, user.User{}, nil, nil, offset, limit, nil, &userResult)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -73,7 +73,7 @@ func (r *UserRepository) GetByRole(ctx context.Context, orm orm.ORM, role user.R
 	const op = "repositories.UserRepository.GetByRole"
 
 	usersResult := []user.User{}
-	err := orm.Find(ctx, user.User{}, nil, nil, nil, nil, &usersResult, user.User{Role: role})
+	err := orm.Find(ctx, user.User{}, nil, nil, nil, nil, nil, &usersResult, user.User{Role: role})
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -83,7 +83,7 @@ func (r *UserRepository) GetByRole(ctx context.Context, orm orm.ORM, role user.R
 func (r *UserRepository) GetByListId(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]user.User, error) {
 	const op = "repositories.UserRepository.GetByListId"
 	userResult := []user.User{}
-	err := orm.Find(ctx, user.User{}, nil, nil, nil, nil, &userResult, ids)
+	err := orm.Find(ctx, user.User{}, nil, nil, nil, nil, nil, &userResult, ids)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

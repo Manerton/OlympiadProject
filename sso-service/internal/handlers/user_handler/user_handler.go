@@ -18,7 +18,9 @@ type UserService interface {
 	GetAll(ctx context.Context, page, limit *int) ([]user_dto.UserResponseDTO, error)
 	GetByFilter(ctx context.Context, searchUser user_dto.SearchAttributesUserDTO) (user_dto.UserResponseDTO, error)
 	GetById(ctx context.Context, id string) (user_dto.UserResponseDTO, error)
+
 	GetUserParticipantById(ctx context.Context, id string) (user_dto.UserParticipantResponseDTO, error)
+	GetUserParticipantByListId(ctx context.Context, ids []string) ([]user_dto.UserParticipantResponseDTO, error)
 	GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error)
 
 	GetUsersByRole(ctx context.Context, userRole string) ([]user_dto.UserResponseDTO, error)
@@ -256,6 +258,39 @@ func (h *UserHandler) GetUserParticipantById(w http.ResponseWriter, r *http.Requ
 		StatusCode: http.StatusOK,
 		Data:       participantUserResponse,
 	})
+}
+
+func (h *UserHandler) GetUserParticipantByListId(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var ids request.IdsRequest
+
+	err := render.DecodeJSON(r.Body, &ids)
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrBadRequest.Wrap("failed decode ids")))
+		return
+	}
+
+	result, err := h.UserService.GetUserParticipantByListId(ctx, ids.Ids)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       result,
+	})
+
 }
 
 // @Summery Get users by list id

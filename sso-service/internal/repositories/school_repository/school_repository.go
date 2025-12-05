@@ -38,7 +38,7 @@ func (r *SchoolRepository) GetAll(ctx context.Context, orm orm.ORM, offset, limi
 	const op = "repositories.SchoolRepository.GetAll"
 
 	schoolsResult := []school.School{}
-	err := orm.Find(ctx, school.School{}, nil, offset, limit, nil, &schoolsResult, nil)
+	err := orm.Find(ctx, school.School{}, nil, nil, offset, limit, nil, &schoolsResult, nil)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -49,7 +49,7 @@ func (r *SchoolRepository) GetAllByDistrict(ctx context.Context, orm orm.ORM, di
 	const op = "repositories.SchoolRepository.GetAllByDistrict"
 
 	schoolResult := []school.School{}
-	err := orm.Find(ctx, school.School{}, nil, nil, nil, nil, &schoolResult, school.School{DistrictID: districtId})
+	err := orm.Find(ctx, school.School{}, nil, nil, nil, nil, nil, &schoolResult, school.School{DistrictID: districtId})
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

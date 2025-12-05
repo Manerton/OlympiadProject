@@ -157,6 +157,8 @@ func (a *App) initRoutes(router *chi.Mux,
 		r.Post("/api/users/list", userHandler.GetUsersByListId)
 		r.Get("/api/users/{id}", userHandler.GetUserById)
 		r.Get("/api/users/all-info/{id}", userHandler.GetUserParticipantById)
+		r.Post("/api/users/all-info-list", userHandler.GetUserParticipantByListId)
+
 		r.Get("/api/users/by-role", userHandler.GetUsersByRole)
 
 		// schools GET

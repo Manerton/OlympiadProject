@@ -38,7 +38,7 @@ func (r *RefreshRepository) GetByUserId(ctx context.Context, orm orm.ORM, userId
 	const op = "repository.refresh_repository.GetByUserId"
 
 	resultsToken := []refresh_token.RefreshToken{}
-	err := orm.Find(ctx, refresh_token.RefreshToken{}, nil, nil, nil, nil, &resultsToken)
+	err := orm.Find(ctx, refresh_token.RefreshToken{}, nil, nil, nil, nil, nil, &resultsToken)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}

@@ -3,10 +3,10 @@ package participant_dto
 type ParticipantResponseDTO struct {
 	ParticipantId string `json:"participant_id"`
 	UserId        string `json:"user_id"`
-	Disability    string `json:"disability"`
+	Disability    int    `json:"disability"`
 	SchoolId      string `json:"school_id"`
-	Citizenship   string `json:"citizenship"`
-	ClassNumber   string `json:"class_number"`
+	Citizenship   int    `json:"citizenship"`
+	ClassNumber   int    `json:"class_number"`
 }
 
 type UpdateParticipantRequestDTO struct {

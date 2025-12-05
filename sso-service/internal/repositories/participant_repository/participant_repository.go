@@ -38,7 +38,7 @@ func (r *ParticipantRepository) GetAll(ctx context.Context, orm orm.ORM, offset,
 	const op = "repositories.participant_repository.GetAll"
 
 	participantRes := []participant.Participant{}
-	err := orm.Find(ctx, participant.Participant{}, nil, offset, limit, nil, &participantRes)
+	err := orm.Find(ctx, participant.Participant{}, nil, nil, offset, limit, nil, &participantRes)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
@@ -55,6 +55,17 @@ func (r *ParticipantRepository) GetByUserId(ctx context.Context, orm orm.ORM, us
 		return participant.Participant{}, fmt.Errorf("%s: %w", op, err)
 	}
 	return participantRes, nil
+}
+
+func (r *ParticipantRepository) GetByUserIdListWithPreload(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]participant.Participant, error) {
+	const op = "repositories.participant_repository.GetByUserIdListWithPreload"
+	participants := []participant.Participant{}
+	preload := "User"
+	err := orm.AdvancedFind(ctx, participant.Participant{}, "user_id IN ?", ids, &preload, &participants)
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return participants, nil
 }
 
 func (r *ParticipantRepository) Create(ctx context.Context, orm orm.ORM, participant participant.Participant) (uuid.UUID, error) {
