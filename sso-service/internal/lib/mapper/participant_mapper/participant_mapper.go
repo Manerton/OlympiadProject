@@ -20,7 +20,7 @@ func ToDTO(participantModel participant.Participant) participant_dto.Participant
 		SchoolId:      participantModel.SchoolId.String(),
 
 		Citizenship: participantModel.Citizenship,
-		ClassNumber: participantModel.Citizenship,
+		ClassNumber: participantModel.ClassNumber,
 	}
 }
 

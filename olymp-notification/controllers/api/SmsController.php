@@ -34,8 +34,6 @@ class SmsController extends Controller
             RedisComponent::set($phone, $code);
             return Yii::$app->response->data = json_encode([
                 'status' => 200,
-                'code' => $code,
-                'response' => $response
             ]);
         }
         return Yii::$app->response->data = json_encode(['status' => 404]);

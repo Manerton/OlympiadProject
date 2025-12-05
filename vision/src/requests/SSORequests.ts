@@ -73,9 +73,9 @@ export async function axiosSSOUserParticipantInfo(token: string, userId: string)
         },
         school: data.school_id,
         participant_id: data.participant_id,
-        disability: Number(data.disability),
-        classnumber: Number(data.class_number),
-        citezenship: Number(data.citizenship),
+        disability: data.disability,
+        classnumber: data.class_number,
+        citezenship: data.citizenship,
     };
 }
 
