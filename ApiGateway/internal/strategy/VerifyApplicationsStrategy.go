@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"main/internal/config"
 	"main/internal/responcetypes"
 	"net/http"
@@ -23,14 +24,27 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 	targets []config.Target,
 	origReq *http.Request,
 ) (*responcetypes.ApiResponse, error) {
+	fmt.Printf("=== НАЧАЛО ОБРАБОТКИ ЗАПРОСА VerifyApplications ===\n")
+	fmt.Printf("Время начала: %s\n", time.Now().Format(time.RFC3339))
+
 	client := &http.Client{Timeout: s.timeout}
 
 	// ========== 1. Читаем тело оригинального запроса ==========
+	fmt.Println("\n=== ЭТАП 1: Чтение входящего запроса ===")
+
+	// Сохраняем тело запроса для отладки
+	bodyBytes, _ := io.ReadAll(origReq.Body)
+	fmt.Printf("Тело запроса (raw): %s\n", string(bodyBytes))
+
+	// Восстанавливаем тело для декодирования
+	origReq.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
 	var incomingBody struct {
 		ID   string `json:"id"`
 		Role int    `json:"role"`
 	}
-	if err := json.NewDecoder(origReq.Body).Decode(&incomingBody); err != nil {
+	if err := json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&incomingBody); err != nil {
+		fmt.Printf("ОШИБКА декодирования тела запроса: %v\n", err)
 		return &responcetypes.ApiResponse{
 			Status:     "error",
 			StatusCode: http.StatusBadRequest,
@@ -38,20 +52,28 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 		}, err
 	}
 
+	fmt.Printf("Парсинг успешен: ID='%s', Role=%d\n", incomingBody.ID, incomingBody.Role)
+
 	// ========== 2. Получаем список школ ==========
+	fmt.Println("\n=== ЭТАП 2: Получение списка школ ===")
 	var schoolIDs []string
 
 	if incomingBody.Role == 0 {
-		// ROLE = 0: делаем запрос к первому таргету для получения школ района
-		districtURL := targets[0].URL + "?id=" + incomingBody.ID
+		fmt.Println("ROLE = 0: запрашиваем школы района")
+		districtURL := targets[0].URL + incomingBody.ID
+		fmt.Printf("URL запроса к district service: %s\n", districtURL)
+
 		req1, err := http.NewRequest("GET", districtURL, nil)
 		if err != nil {
+			fmt.Printf("ОШИБКА создания запроса: %v\n", err)
 			return nil, err
 		}
 		req1.Header = origReq.Header.Clone()
 
+		fmt.Println("Отправка запроса к district service...")
 		resp1, err := client.Do(req1)
 		if err != nil {
+			fmt.Printf("ОШИБКА вызова district service: %v\n", err)
 			return &responcetypes.ApiResponse{
 				Status:     "error",
 				StatusCode: http.StatusBadGateway,
@@ -60,7 +82,11 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 		}
 		defer resp1.Body.Close()
 
+		fmt.Printf("Ответ от district service: статус %d\n", resp1.StatusCode)
+
 		if resp1.StatusCode >= 400 {
+			body, _ := io.ReadAll(resp1.Body)
+			fmt.Printf("ОШИБКА от district service: %s\n", string(body))
 			return &responcetypes.ApiResponse{
 				Status:     "error",
 				StatusCode: resp1.StatusCode,
@@ -73,7 +99,12 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 				ID string `json:"id"`
 			} `json:"data"`
 		}
-		if err := json.NewDecoder(resp1.Body).Decode(&districtResp); err != nil {
+
+		respBody1, _ := io.ReadAll(resp1.Body)
+		fmt.Printf("Тело ответа от district service: %s\n", string(respBody1))
+
+		if err := json.Unmarshal(respBody1, &districtResp); err != nil {
+			fmt.Printf("ОШИБКА парсинга ответа от district service: %v\n", err)
 			return &responcetypes.ApiResponse{
 				Status:     "error",
 				StatusCode: http.StatusInternalServerError,
@@ -81,15 +112,20 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 			}, err
 		}
 
-		for _, school := range districtResp.Schools {
+		fmt.Printf("Получено школ от района: %d\n", len(districtResp.Schools))
+		for i, school := range districtResp.Schools {
 			schoolIDs = append(schoolIDs, school.ID)
+			fmt.Printf("  Школа %d: ID=%s\n", i+1, school.ID)
 		}
 	} else {
-		// ROLE != 0: используем переданный ID как школу
+		fmt.Printf("ROLE != 0: используем ID как школу: %s\n", incomingBody.ID)
 		schoolIDs = []string{incomingBody.ID}
 	}
 
+	fmt.Printf("Итого schoolIDs: %v\n", schoolIDs)
+
 	if len(schoolIDs) == 0 {
+		fmt.Println("Нет школ для обработки, возвращаем пустой массив")
 		return &responcetypes.ApiResponse{
 			Status:     "success",
 			StatusCode: http.StatusOK,
@@ -98,20 +134,27 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 	}
 
 	// ========== 3. Получаем заявки для школ ==========
+	fmt.Println("\n=== ЭТАП 3: Получение заявок для школ ===")
+	fmt.Printf("URL application service: %s\n", targets[1].URL)
+
 	appPayload := map[string]any{
 		"ids": schoolIDs,
 	}
 	payloadBytes, _ := json.Marshal(appPayload)
+	fmt.Printf("Тело запроса к application service: %s\n", string(payloadBytes))
 
 	req2, err := http.NewRequest("POST", targets[1].URL, bytes.NewReader(payloadBytes))
 	if err != nil {
+		fmt.Printf("ОШИБКА создания запроса: %v\n", err)
 		return nil, err
 	}
 	req2.Header = origReq.Header.Clone()
 	req2.Header.Set("Content-Type", "application/json")
 
+	fmt.Println("Отправка запроса к application service...")
 	resp2, err := client.Do(req2)
 	if err != nil {
+		fmt.Printf("ОШИБКА вызова application service: %v\n", err)
 		return &responcetypes.ApiResponse{
 			Status:     "error",
 			StatusCode: http.StatusBadGateway,
@@ -120,7 +163,11 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 	}
 	defer resp2.Body.Close()
 
+	fmt.Printf("Ответ от application service: статус %d\n", resp2.StatusCode)
+
 	if resp2.StatusCode >= 400 {
+		body, _ := io.ReadAll(resp2.Body)
+		fmt.Printf("ОШИБКА от application service: %s\n", string(body))
 		return &responcetypes.ApiResponse{
 			Status:     "error",
 			StatusCode: resp2.StatusCode,
@@ -142,7 +189,16 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 		UpdatedAt          string `json:"updatedAt"`
 	}
 
-	if err := json.NewDecoder(resp2.Body).Decode(&applications); err != nil {
+	respBody2, _ := io.ReadAll(resp2.Body)
+	fmt.Printf("Тело ответа от application service (сырое): %s\n", string(respBody2))
+
+	if err := json.Unmarshal(respBody2, &applications); err != nil {
+		fmt.Printf("ОШИБКА парсинга ответа от application service: %v\n", err)
+		// Попробуем распечатать как есть
+		var rawData interface{}
+		if json.Unmarshal(respBody2, &rawData) == nil {
+			fmt.Printf("Структура ответа: %+v\n", rawData)
+		}
 		return &responcetypes.ApiResponse{
 			Status:     "error",
 			StatusCode: http.StatusInternalServerError,
@@ -150,7 +206,14 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 		}, err
 	}
 
+	fmt.Printf("Получено заявок: %d\n", len(applications))
+	for i, app := range applications {
+		fmt.Printf("  Заявка %d: ID=%s, UserID=%s, EventID=%s, Status=%d, Profile=%s\n",
+			i+1, app.ID, app.UserID, app.EventID, app.Status, app.Profile)
+	}
+
 	if len(applications) == 0 {
+		fmt.Println("Нет заявок для обработки, возвращаем пустой массив")
 		return &responcetypes.ApiResponse{
 			Status:     "success",
 			StatusCode: http.StatusOK,
@@ -159,6 +222,7 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 	}
 
 	// ========== 4. Собираем уникальные UserID и EventID ==========
+	fmt.Println("\n=== ЭТАП 4: Сбор уникальных ID ===")
 	userIDSet := make(map[string]bool)
 	eventIDSet := make(map[string]bool)
 
@@ -178,7 +242,12 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 		eventIDs = append(eventIDs, id)
 	}
 
+	fmt.Printf("Уникальных UserID: %d -> %v\n", len(userIDs), userIDs)
+	fmt.Printf("Уникальных EventID: %d -> %v\n", len(eventIDs), eventIDs)
+
 	// ========== 5. Параллельно запрашиваем пользователей и события ==========
+	fmt.Println("\n=== ЭТАП 5: Параллельные запросы пользователей и событий ===")
+
 	var users []struct {
 		ID            string `json:"id"`
 		Email         string `json:"email"`
@@ -191,10 +260,10 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 		Role          int    `json:"role"`
 		Activated     bool   `json:"activated"`
 		ParticipantID string `json:"participant_id"`
-		Disability    string `json:"disability"`
+		Disability    int    `json:"disability"`
 		SchoolID      string `json:"school_id"`
-		Citizenship   string `json:"citizenship"`
-		ClassNumber   string `json:"class_number"`
+		Citizenship   int    `json:"citizenship"`
+		ClassNumber   int    `json:"class_number"`
 	}
 
 	var events []struct {
@@ -206,72 +275,107 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 	var userErr, eventErr error
 
 	// Запрос пользователей
+	fmt.Printf("URL user service: %s\n", targets[2].URL)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		userPayload := map[string]any{"ids": userIDs}
 		payloadBytes, _ := json.Marshal(userPayload)
+		fmt.Printf("Тело запроса к user service: %s\n", string(payloadBytes))
 
 		req3, err := http.NewRequest("POST", targets[2].URL, bytes.NewReader(payloadBytes))
 		if err != nil {
 			userErr = err
+			fmt.Printf("ОШИБКА создания запроса к user service: %v\n", err)
 			return
 		}
 		req3.Header = origReq.Header.Clone()
 		req3.Header.Set("Content-Type", "application/json")
 
+		fmt.Println("Отправка запроса к user service...")
 		resp3, err := client.Do(req3)
 		if err != nil {
 			userErr = err
+			fmt.Printf("ОШИБКА вызова user service: %v\n", err)
 			return
 		}
 		defer resp3.Body.Close()
 
+		fmt.Printf("Ответ от user service: статус %d\n", resp3.StatusCode)
+
 		if resp3.StatusCode >= 400 {
+			body, _ := io.ReadAll(resp3.Body)
+			fmt.Printf("ОШИБКА от user service: %s\n", string(body))
 			userErr = fmt.Errorf("user service returned status %d", resp3.StatusCode)
 			return
 		}
 
-		if err := json.NewDecoder(resp3.Body).Decode(&users); err != nil {
+		respBody3, _ := io.ReadAll(resp3.Body)
+		fmt.Printf("Тело ответа от user service (сырое): %s\n", string(respBody3))
+
+		if err := json.Unmarshal(respBody3, &users); err != nil {
 			userErr = err
+			fmt.Printf("ОШИБКА парсинга ответа от user service: %v\n", err)
+			return
 		}
+
+		fmt.Printf("Получено пользователей: %d\n", len(users))
 	}()
 
 	// Запрос событий
+	fmt.Printf("URL event service: %s\n", targets[3].URL)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		eventPayload := map[string]any{"ids": eventIDs}
 		payloadBytes, _ := json.Marshal(eventPayload)
+		fmt.Printf("Тело запроса к event service: %s\n", string(payloadBytes))
 
 		req4, err := http.NewRequest("POST", targets[3].URL, bytes.NewReader(payloadBytes))
 		if err != nil {
 			eventErr = err
+			fmt.Printf("ОШИБКА создания запроса к event service: %v\n", err)
 			return
 		}
 		req4.Header = origReq.Header.Clone()
 		req4.Header.Set("Content-Type", "application/json")
 
+		fmt.Println("Отправка запроса к event service...")
 		resp4, err := client.Do(req4)
 		if err != nil {
 			eventErr = err
+			fmt.Printf("ОШИБКА вызова event service: %v\n", err)
 			return
 		}
 		defer resp4.Body.Close()
 
+		fmt.Printf("Ответ от event service: статус %d\n", resp4.StatusCode)
+
 		if resp4.StatusCode >= 400 {
+			body, _ := io.ReadAll(resp4.Body)
+			fmt.Printf("ОШИБКА от event service: %s\n", string(body))
 			eventErr = fmt.Errorf("event service returned status %d", resp4.StatusCode)
 			return
 		}
 
-		if err := json.NewDecoder(resp4.Body).Decode(&events); err != nil {
+		respBody4, _ := io.ReadAll(resp4.Body)
+		fmt.Printf("Тело ответа от event service (сырое): %s\n", string(respBody4))
+
+		if err := json.Unmarshal(respBody4, &events); err != nil {
 			eventErr = err
+			fmt.Printf("ОШИБКА парсинга ответа от event service: %v\n", err)
+			return
 		}
+
+		fmt.Printf("Получено событий: %d\n", len(events))
 	}()
 
+	fmt.Println("Ожидание завершения параллельных запросов...")
 	wg.Wait()
+	fmt.Println("Параллельные запросы завершены")
 
 	if userErr != nil {
+		fmt.Printf("ОШИБКА при получении пользователей: %v\n", userErr)
 		return &responcetypes.ApiResponse{
 			Status:     "error",
 			StatusCode: http.StatusBadGateway,
@@ -280,6 +384,7 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 	}
 
 	if eventErr != nil {
+		fmt.Printf("ОШИБКА при получении событий: %v\n", eventErr)
 		return &responcetypes.ApiResponse{
 			Status:     "error",
 			StatusCode: http.StatusBadGateway,
@@ -288,6 +393,8 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 	}
 
 	// ========== 6. Создаем мапы для быстрого поиска ==========
+	fmt.Println("\n=== ЭТАП 6: Создание мап для поиска ===")
+
 	userMap := make(map[string]struct {
 		ID            string `json:"id"`
 		Email         string `json:"email"`
@@ -300,78 +407,106 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 		Role          int    `json:"role"`
 		Activated     bool   `json:"activated"`
 		ParticipantID string `json:"participant_id"`
-		Disability    string `json:"disability"`
+		Disability    int    `json:"disability"`
 		SchoolID      string `json:"school_id"`
-		Citizenship   string `json:"citizenship"`
-		ClassNumber   string `json:"class_number"`
+		Citizenship   int    `json:"citizenship"`
+		ClassNumber   int    `json:"class_number"`
 	})
 
 	for _, user := range users {
 		userMap[user.ID] = user
+		fmt.Printf("  Пользователь добавлен в мапу: ID=%s, ФИО=%s %s %s\n",
+			user.ID, user.Surname, user.FirstName, user.Patronymic)
 	}
+
+	fmt.Printf("Размер userMap: %d\n", len(userMap))
 
 	eventMap := make(map[string]string)
 	for _, event := range events {
 		eventMap[event.ID] = event.Name
+		fmt.Printf("  Событие добавлено в мапу: ID=%s, Name=%s\n", event.ID, event.Name)
 	}
 
+	fmt.Printf("Размер eventMap: %d\n", len(eventMap))
+
 	// ========== 7. Формируем итоговый ответ ==========
+	fmt.Println("\n=== ЭТАП 7: Формирование итогового ответа ===")
+
 	type ResultItem struct {
 		ID           string `json:"id"`
 		OlympiadName string `json:"olympiadName"`
-		Category     string `json:"category"`
-		Status       string `json:"status"`
+		Profile      string `json:"profile"`
+		Category     int    `json:"category"`
+		Status       int    `json:"status"`
 		Surname      string `json:"surname"`
 		FirstName    string `json:"firstName"`
 		Patronymic   string `json:"patronymic"`
 		Birthdate    string `json:"birthdate"`
-		ClassNumber  string `json:"classNumber"`
-		Citizenship  string `json:"citizenship"`
-		Disability   string `json:"disability"`
+		Gender       int    `json:"gender"`
+		ClassNumber  int    `json:"classNumber"`
+		Citizenship  int    `json:"citizenship"`
+		Disability   int    `json:"disability"`
 	}
 
 	results := make([]ResultItem, 0, len(applications))
+	skippedCount := 0
 
-	for _, app := range applications {
+	for i, app := range applications {
 		user, userExists := userMap[app.UserID]
 		eventName, eventExists := eventMap[app.EventID]
 
 		if !userExists || !eventExists {
+			skippedCount++
+			fmt.Printf("  Пропуск заявки %d (ID=%s): userExists=%v, eventExists=%v\n",
+				i+1, app.ID, userExists, eventExists)
 			continue
 		}
 
-		// Преобразуем статус в строку
-		statusStr := "pending"
-		switch app.Status {
-		case 2:
-			statusStr = "approved"
-		case 3:
-			statusStr = "rejected"
-		}
+		fmt.Printf("  Обработка заявки %d (ID=%s): User=%s %s, Event=%s\n",
+			i+1, app.ID, user.Surname, user.FirstName, eventName)
 
 		results = append(results, ResultItem{
 			ID:           app.ID,
 			OlympiadName: eventName,
-			Category:     fmt.Sprintf("%d", app.ClassParticipation),
-			Status:       statusStr,
+			Profile:      app.Profile,
+			Category:     app.ClassParticipation,
+			Status:       app.Status,
 			Surname:      user.Surname,
 			FirstName:    user.FirstName,
 			Patronymic:   user.Patronymic,
 			Birthdate:    user.BirthDate,
+			Gender:       user.Gender,
 			ClassNumber:  user.ClassNumber,
 			Citizenship:  user.Citizenship,
 			Disability:   user.Disability,
 		})
 	}
 
+	fmt.Printf("Обработано заявок: %d, пропущено: %d, итого в ответе: %d\n",
+		len(applications), skippedCount, len(results))
+
 	responseData, err := json.Marshal(results)
 	if err != nil {
+		fmt.Printf("ОШИБКА маршалинга ответа: %v\n", err)
 		return &responcetypes.ApiResponse{
 			Status:     "error",
 			StatusCode: http.StatusInternalServerError,
 			Error:      "failed to marshal response",
 		}, err
 	}
+
+	fmt.Printf("Итоговый ответ (сырой JSON): %s\n", string(responseData))
+
+	// Проверяем, что JSON валиден
+	var checkResult []map[string]interface{}
+	if err := json.Unmarshal(responseData, &checkResult); err != nil {
+		fmt.Printf("ОШИБКА: сгенерированный JSON невалиден: %v\n", err)
+	} else {
+		fmt.Printf("JSON валиден, элементов: %d\n", len(checkResult))
+	}
+
+	fmt.Println("\n=== КОНЕЦ ОБРАБОТКИ ЗАПРОСА VerifyApplications ===")
+	fmt.Printf("Время окончания: %s\n", time.Now().Format(time.RFC3339))
 
 	return &responcetypes.ApiResponse{
 		Status:     "success",

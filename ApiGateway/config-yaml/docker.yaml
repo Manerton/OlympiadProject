@@ -390,7 +390,7 @@ HTTP_SERVERS_INFO:
     - prefix: "/Verify-Applications/"
       aggregate: true
       targets:
-        - url: "http://sso-service:8181/api/schools/district"
+        - url: "http://sso-service:8181/api/schools/district/"
         - fields: [ "" ]
         - url: "http://application-service:8082/applications/school-list/"
           fields: [ "" ]
