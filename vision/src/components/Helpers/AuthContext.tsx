@@ -4,6 +4,7 @@ import axios from "axios";
 import { AUTH } from "../../config/api";
 import { jwtDecode } from "jwt-decode";
 import { axiosSSOLogin, axiosSSOLogout, axiosSSORefresh, axiosSSORegister } from "../../requests/SSORequests";
+import { useNavigate } from "react-router-dom";
 interface JwtPayload {
     sub: string;
     email: string;
@@ -30,6 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true); // флаг загрузки авторизации
     const [initialized, setInitialized] = useState(false);
     const [expires, setExpires] = useState<number | undefined>(undefined);
+
 
     const register = async (data: RegisterForm) => {
         try {
@@ -80,7 +82,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const refresh = async (): Promise<UserAuth | null> => {
         try {
-            console.log("Refreshing token...")
 
             const result = await axiosSSORefresh()
             setAccessToken(result.access_token);

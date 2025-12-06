@@ -2,11 +2,19 @@
 import { Container, Row, Col, Button, Form, Accordion } from 'react-bootstrap';
 import { useAuth } from '../../Helpers/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 const MainPage: React.FC = () => {
 
   const navigate = useNavigate();
 
   const { user } = useAuth()
+
+  useEffect(() => {
+    if (user) {
+      navigate("/PersonalAccount");  // <-- автоматический редирект
+    }
+  }, [user, navigate])
+
 
   return (
     <>
@@ -27,7 +35,7 @@ const MainPage: React.FC = () => {
                   display: 'inline-block'
                 }}
               >
-                по Астраханской области
+                на территории Астраханской области!
               </span>
             </h1>
 
@@ -193,7 +201,7 @@ const MainPage: React.FC = () => {
           <div className="d-flex flex-column flex-md-row gap-3 justify-content-center">
             {/* Left Block */}
             <div className="border rounded  p-3  text-center flex-fill">
-              <h4>Я здесь впервые</h4>
+              <h4>Вы здесь впервые?</h4>
               <p>Зарегистрируйте личный кабинет участника</p>
               <Button variant="primary" onClick={() => navigate("/Register")}>Зарегистрироваться</Button>
             </div>
@@ -201,7 +209,7 @@ const MainPage: React.FC = () => {
 
             {/* Right Block */}
             <div className="border rounded p-3  text-center flex-fill">
-              <h4>У меня уже есть аккаунт</h4>
+              <h4>У Вас уже есть личный кабинет</h4>
               <p>Войдите в личный кабинет</p>
               <Button variant="success" onClick={() => navigate("/Auth")}>Войти</Button>
             </div>
@@ -209,8 +217,8 @@ const MainPage: React.FC = () => {
         ) : (
           <>
             <div className="text-center p-3 flex-fill border rounded">
-              <h4>Уважаемый учаткник регионального этапа всероссийской олимпиады школьников на территории Астрахансокй области!<br/>
-                Чтобы подать заявку на участие в региональном этапе ВСОШ пожалуйста перейдите в Личный кабинет</h4>
+              <h4>Уважаемый участник регионального этапа всероссийской олимпиады школьников на территории Астраханской области!<br />
+                Чтобы подать заявку на участие в региональном этапе ВСОШ, пожалуйста, перейдите в Личный кабинеты</h4>
               <Button onClick={() => navigate("/PersonalAccount")} variant="primary" size="lg" className="me-2 m-2">
                 Перейти в личный кабинет
               </Button>
@@ -227,10 +235,6 @@ const MainPage: React.FC = () => {
             <Accordion.Item eventKey="0">
               <Accordion.Header>Как получить доступ к личному кабинету</Accordion.Header>
               <Accordion.Body>Для получения доступа к личному кабинету Создайте его пройдя регистрацию. Учётные данные от других платформ не подайдут</Accordion.Body>
-            </Accordion.Item>
-            <Accordion.Item eventKey="1">
-              <Accordion.Header>Что делать, если не согласен с результатами?</Accordion.Header>
-              <Accordion.Body>Вы можете подать апелляцию в течение 5 дней после объявления результатов.</Accordion.Body>
             </Accordion.Item>
             <Accordion.Item eventKey="2">
               <Accordion.Header>Когда будут проходить олимпиады?</Accordion.Header>

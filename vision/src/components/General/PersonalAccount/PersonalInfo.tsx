@@ -109,8 +109,6 @@ const PersonalInfo: React.FC<Props> = ({ onReloadInfo, profile }) => {
         <div className="d-flex flex-column">
             <div className="container">
                 <div className="d-flex justify-content-between mt-3">
-                    <h5>Информация о вас</h5>
-
                     {!isEditing ? (
                         <button className="btn btn-primary" onClick={() => setIsEditing(true)}>
                             Редактировать

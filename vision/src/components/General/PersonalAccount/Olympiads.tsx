@@ -60,7 +60,6 @@ const OlympiadsSimpleTable: React.FC<Props> = ({
 
         try {
 
-            console.log("profile", selectedProfiles[eventId])
 
             let application = {
                 userId: user?.id.toString(),
@@ -70,7 +69,6 @@ const OlympiadsSimpleTable: React.FC<Props> = ({
                 profile: selectedProfiles[eventId] ?? ""
             } as Application
 
-            console.log("Applica", application.profile)
             await axiosCreateApplication(accessToken!, application)
 
             alert("Заявка отправлена!");
@@ -85,6 +83,12 @@ const OlympiadsSimpleTable: React.FC<Props> = ({
 
     return (
         <div className="table-responsive">
+            <h2 className="mb-4">
+                Пожалуйста, выберите интересующую вас олимпиаду.
+                Укажите класс участия и профиль (если он предусмотрен), а затем нажмите кнопку
+                <strong> «Подать заявку»</strong>.
+            </h2>
+
             <Table bordered hover className="align-middle text-center">
                 <thead>
                     <tr>

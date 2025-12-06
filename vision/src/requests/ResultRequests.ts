@@ -14,7 +14,6 @@ export async function axiosGetHistoryEventsByUser(token: string, userId: string)
     );
     const raw = res.data.data.data;
 
-    console.log("Raw events data:", raw);
     return raw
 }
 

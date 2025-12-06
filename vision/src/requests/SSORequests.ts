@@ -57,8 +57,6 @@ export async function axiosSSOUserParticipantInfo(token: string, userId: string)
     );
     const data = res.data.data;
 
-    console.log("data", data)
-
     return {
         User: {
             id: data.user_id,
