@@ -2,6 +2,7 @@ package orm
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -17,7 +18,8 @@ type ORM interface {
 	// offset, limit - just ofset and limit)
 	//
 	// order - ORDER BY
-	Find(ctx context.Context, model interface{}, fields *[]string, offset, limit *int, order *string, dest interface{}, conds ...interface{}) error
+	Find(ctx context.Context, model interface{}, preload *string, fields *[]string, offset, limit *int, order *string, dest interface{}, conds ...interface{}) error
+	AdvancedFind(ctx context.Context, model interface{}, whereKey string, whereValue any, preload *string, dest interface{}) error
 	First(ctx context.Context, model interface{}, fields *[]string, dest interface{}, conds ...interface{}) error
 
 	Count(ctx context.Context, model interface{}, count *int64, query interface{}, args ...interface{}) error
@@ -27,6 +29,8 @@ type ORM interface {
 	TransactionBegin() (ORM, error)
 	TransactionCommit() error
 	TransactionRollback() error
+
+	IsNotFound(err error) bool
 }
 
 type Gorm struct {
@@ -35,6 +39,10 @@ type Gorm struct {
 
 func NewGormORM(db *gorm.DB) ORM {
 	return &Gorm{DB: db}
+}
+
+func (g *Gorm) IsNotFound(err error) bool {
+	return errors.Is(err, gorm.ErrRecordNotFound)
 }
 
 func (g *Gorm) Count(ctx context.Context, model interface{}, count *int64, query interface{}, args ...interface{}) error {
@@ -86,7 +94,7 @@ func (g *Gorm) First(ctx context.Context, model interface{}, fields *[]string, d
 	const op = "storage.orm.First"
 	query := g.DB.WithContext(ctx).Model(model)
 	if fields != nil {
-		query.Select(*fields)
+		query = query.Select(*fields)
 	}
 
 	if err := query.First(dest, conds...).Error; err != nil {
@@ -96,14 +104,17 @@ func (g *Gorm) First(ctx context.Context, model interface{}, fields *[]string, d
 }
 
 // Find by parametrs
-func (g *Gorm) Find(ctx context.Context, model interface{}, fields *[]string, offset, limit *int, order *string, dest interface{}, conds ...interface{}) error {
+func (g *Gorm) Find(ctx context.Context, model interface{}, preload *string, fields *[]string, offset, limit *int, order *string, dest interface{}, conds ...interface{}) error {
 	const op = "storage.orm.Find"
 	query := g.DB.WithContext(ctx).Model(model)
 	if order != nil && *order != "" {
-		query.Order(*order)
+		query = query.Order(*order)
+	}
+	if preload != nil && *preload != "" {
+		query = query.Preload(*preload)
 	}
 	if fields != nil && len(*fields) != 0 {
-		query.Select(*fields)
+		query = query.Select(*fields)
 	}
 	if offset != nil && *offset > 0 {
 		query = query.Offset(*offset)
@@ -113,6 +124,19 @@ func (g *Gorm) Find(ctx context.Context, model interface{}, fields *[]string, of
 	}
 
 	if err := query.Find(dest, conds...).Error; err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
+}
+
+func (g *Gorm) AdvancedFind(ctx context.Context, model interface{}, whereKey string, whereValue any, preload *string, dest interface{}) error {
+	const op = "storage.orm.AdvancedFind"
+	query := g.DB.WithContext(ctx).Model(model)
+	if preload != nil && *preload != "" {
+		query = query.Preload(*preload)
+	}
+
+	if err := query.Where(whereKey, whereValue).Find(dest).Error; err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	return nil

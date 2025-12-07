@@ -19,7 +19,7 @@ func (r *ApplicationRepository) GetAllByFilter(ctx context.Context, orm orm.ORM,
 
 	AppResult := []models.Application{}
 
-	if err := orm.Find(ctx, models.Application{}, nil, offset, limit, order, &AppResult, filter); err != nil {
+	if err := orm.Find(ctx, models.Application{}, nil, nil, offset, limit, order, &AppResult, filter); err != nil {
 		return []models.Application{}, fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -69,11 +69,12 @@ func (r *ApplicationRepository) GetAllApplications(ctx context.Context, orm orm.
 	err := orm.Find(
 		ctx,
 		models.Application{}, // Модель
-		nil,                  // Поля (nil - выбираем все)
-		offset,               // Offset (nil - без offset)
-		limit,                // Limit (nil - без лимита)
-		nil,                  // Order (nil - без сортировки)
-		&applications,        // Куда записать результат
+		nil,
+		nil,           // Поля (nil - выбираем все)
+		offset,        // Offset (nil - без offset)
+		limit,         // Limit (nil - без лимита)
+		nil,           // Order (nil - без сортировки)
+		&applications, // Куда записать результат
 	)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
@@ -126,12 +127,13 @@ func (r *ApplicationRepository) GetApplicationsByUserID(ctx context.Context, orm
 	err := orm.Find(
 		ctx,
 		models.Application{}, // Модель
-		nil,                  // Поля (nil - выбираем все)
-		offset,               // Offset (nil - без offset)
-		limit,                // Limit (nil - без лимита)
-		nil,                  // Order (nil - без сортировки)
-		&applications,        // Куда записать результат
-		condition,            // Условия WHERE
+		nil,
+		nil,           // Поля (nil - выбираем все)
+		offset,        // Offset (nil - без offset)
+		limit,         // Limit (nil - без лимита)
+		nil,           // Order (nil - без сортировки)
+		&applications, // Куда записать результат
+		condition,     // Условия WHERE
 	)
 
 	if err != nil {
@@ -153,12 +155,13 @@ func (r *ApplicationRepository) GetApplicationsByEventID(ctx context.Context, or
 	err := orm.Find(
 		ctx,
 		models.Application{}, // Модель
-		nil,                  // Поля (nil - выбираем все)
-		offset,               // Offset (nil - без offset)
-		limit,                // Limit (nil - без лимита)
-		nil,                  // Order (nil - без сортировки)
-		&applications,        // Куда записать результат
-		condition,            // Условия WHERE
+		nil,
+		nil,           // Поля (nil - выбираем все)
+		offset,        // Offset (nil - без offset)
+		limit,         // Limit (nil - без лимита)
+		nil,           // Order (nil - без сортировки)
+		&applications, // Куда записать результат
+		condition,     // Условия WHERE
 	)
 
 	if err != nil {
@@ -181,11 +184,12 @@ func (r *ApplicationRepository) GetApplicationsBySchoolID(ctx context.Context, o
 		ctx,
 		models.Application{}, // Модель
 		nil,                  // Поля (nil - выбираем все)
-		offset,               // Offset (nil - без offset)
-		limit,                // Limit (nil - без лимита)
-		nil,                  // Order (nil - без сортировки)
-		&applications,        // Куда записать результат
-		condition,            // Условия WHERE
+		nil,
+		offset,        // Offset (nil - без offset)
+		limit,         // Limit (nil - без лимита)
+		nil,           // Order (nil - без сортировки)
+		&applications, // Куда записать результат
+		condition,     // Условия WHERE
 	)
 
 	if err != nil {
@@ -203,11 +207,12 @@ func (r *ApplicationRepository) GetApplicationsBySchoolListID(ctx context.Contex
 		return []models.Application{}, nil
 	}
 
-	eventRes := []models.Application{}
+	Res := []models.Application{}
 
-	if err := orm.Find(ctx, models.Application{}, nil, nil, nil, nil, &eventRes, ids); err != nil {
+	err := orm.AdvancedFind(ctx, models.Application{}, "school_id IN ?", ids, nil, &Res)
+	if err != nil {
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
+	return Res, nil
 
-	return eventRes, nil
 }
