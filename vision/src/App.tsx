@@ -61,6 +61,7 @@ import RegisterPage from "./components/General/Pages/Register";
 import VerifyApplicationsPage from "./components/General/Pages/VerifyApplicationsPage";
 import LinkAcces from './components/Admin/Pages/LinkAccess';
 import LinkAccess from './components/Admin/Pages/LinkAccess';
+import RegisterLayout from './components/General/Layouts/RegisterLayout';
 
 function App() {
     return (
@@ -73,11 +74,8 @@ function App() {
                         <Route element={<Layout />}>
                             <Route path="/" element={<MainPage />} />
                             <Route path="/PersonalAccount" element={<ParticipantDashboard />} />
-
-                            <Route path="/auth" element={<AuthPage />} />
-                            <Route path="/register" element={<RegisterPage />} />
                             <Route path="/verifyApplications" element={<VerifyApplicationsPage />} />
-                            
+
                             {/* <Route
                             path="/profile"
                             element={
@@ -106,6 +104,11 @@ function App() {
 
                         </Route>
 
+                        <Route element={<RegisterLayout />}>
+                            <Route path="/auth" element={<AuthPage />} />
+                            <Route path="/register" element={<RegisterPage />} />
+                        </Route>
+
                         <Route
                             element={
                                 <RequireAuth allowedRoles={[UserRole.Admin]}>
@@ -113,7 +116,7 @@ function App() {
                                 </RequireAuth>
                             }
                         >
-                            <Route path="/link-access" element={<LinkAccess/>}></Route>
+                            <Route path="/link-access" element={<LinkAccess />}></Route>
 
                             <Route path="/AdminPanel" element={<AdminPanel />} />
                             <Route path="/olymp-admin/user/index" element={<UserIndex />} />
@@ -147,7 +150,7 @@ function App() {
 
                             <Route path="/olymp-admin/mail/index" element={<MailIndex />} />
                         </Route>
-{/* 
+                        {/* 
                         <Route path="/profile" element={
                             <ProtectedRoute allowedRoles={[UserRole.Admin, UserRole.Organizer, UserRole.Judge, UserRole.Participant]}>
                                 <ProfileLayout />

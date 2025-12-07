@@ -96,14 +96,14 @@ interface StepProps {
 
 // Выносим компоненты шагов ВНЕ основного компонента
 const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
-                                        regPassword, setRegPassword,
-                                        confirmPassword, setConfirmPassword,
-                                        emailError, setEmailError,
-                                        showPassword, setShowPassword,
-                                        showConfirmPassword, setShowConfirmPassword,
-                                        validateEmail,
-                                        passwordMismatch,
-                                        setStep }) => {
+    regPassword, setRegPassword,
+    confirmPassword, setConfirmPassword,
+    emailError, setEmailError,
+    showPassword, setShowPassword,
+    showConfirmPassword, setShowConfirmPassword,
+    validateEmail,
+    passwordMismatch,
+    setStep }) => {
 
     const [emailSystemError, setEmailSystemError] = useState("");
     const [emailChecking, setEmailChecking] = useState(false);
@@ -179,7 +179,7 @@ const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
                         size="md"
                     />
                     <Button variant="outline-secondary" onClick={() => setShowPassword(!showPassword)}>
-                        {showPassword ? <EyeSlashFill/> : <EyeFill/>}
+                        {showPassword ? <EyeSlashFill /> : <EyeFill />}
                     </Button>
                 </InputGroup>
                 <Form.Text className="text-muted">
@@ -204,7 +204,7 @@ const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
                         size="md"
                     />
                     <Button variant="outline-secondary" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                        {showConfirmPassword ? <EyeSlashFill/> : <EyeFill/>}
+                        {showConfirmPassword ? <EyeSlashFill /> : <EyeFill />}
                     </Button>
                 </InputGroup>
                 {passwordMismatch && (
@@ -232,13 +232,13 @@ const Step1: React.FC<StepProps> = ({ regEmail, setRegEmail,
 };
 
 const Step2: React.FC<StepProps> = ({
-                                        firstName, setFirstName,
-                                        surName, setSurName,
-                                        patronymic, setPatronymic,
-                                        birthdate, setBirthdate,
-                                        gender, setGender,
-                                        setStep
-                                    }) => {
+    firstName, setFirstName,
+    surName, setSurName,
+    patronymic, setPatronymic,
+    birthdate, setBirthdate,
+    gender, setGender,
+    setStep
+}) => {
     // Простая валидация: только кириллица и дефис/пробел
     const isValidName = (str: string) => /^[\u0400-\u04FF\s-]*$/.test(str.trim());
     const isNameFilled = (str: string) => str.trim().length >= 2;
@@ -443,13 +443,13 @@ const Step2: React.FC<StepProps> = ({
 
 
 const Step3: React.FC<StepProps> = ({
-                                        districts,
-                                        selectedDistrictId, setSelectedDistrictId,
-                                        schoolsInDistrict,
-                                        selectedSchoolId, setSelectedSchoolId,
-                                        classNumber, setClassNumber,
-                                        setStep
-                                    }) => {
+    districts,
+    selectedDistrictId, setSelectedDistrictId,
+    schoolsInDistrict,
+    selectedSchoolId, setSelectedSchoolId,
+    classNumber, setClassNumber,
+    setStep
+}) => {
     const customOrder = ["Частные", "Федеральные", "Подведомственные МОиН АО"];
 
     const districtNameMap: Record<string, string> = {
@@ -562,7 +562,7 @@ const Step3: React.FC<StepProps> = ({
                     value={classNumber}
                     onChange={(e) => setClassNumber(Number(e.target.value))}
                 >
-                    {[5,6,7,8,9,10,11].map(n => (
+                    {[5, 6, 7, 8, 9, 10, 11].map(n => (
                         <option key={n} value={n}>{n} класс</option>
                     ))}
                 </Form.Select>
@@ -590,10 +590,10 @@ const Step3: React.FC<StepProps> = ({
 };
 
 const Step4: React.FC<StepProps> = ({
-                                        citizenship, setCitizenship,
-                                        disability, setDisability,
-                                        setStep
-                                    }) => (
+    citizenship, setCitizenship,
+    disability, setDisability,
+    setStep
+}) => (
     <>
         <h4 className="fw-bold mt-3 mb-3 text-center">
             Дополнительная информация
@@ -647,8 +647,8 @@ const Step4: React.FC<StepProps> = ({
         </Form.Group>
 
         <Button className="w-100"
-                disabled={!disability || !citizenship}
-                onClick={() => setStep(5)}>
+            disabled={!disability || !citizenship}
+            onClick={() => setStep(5)}>
             Далее
         </Button>
         <Button variant="secondary" className="w-100 mt-3" onClick={() => setStep(3)}>
@@ -658,13 +658,13 @@ const Step4: React.FC<StepProps> = ({
 );
 
 const Step5: React.FC<StepProps> = ({
-                                        surName, firstName, patronymic,
-                                        birthdate, regEmail,
-                                        selectedSchoolId, schoolsInDistrict,
-                                        classNumber, citizenship, disability,
-                                        CITIZENSHIP_TEXT, DISABILITY_TEXT,
-                                        setStep
-                                    }) => {
+    surName, firstName, patronymic,
+    birthdate, regEmail,
+    selectedSchoolId, schoolsInDistrict,
+    classNumber, citizenship, disability,
+    CITIZENSHIP_TEXT, DISABILITY_TEXT,
+    setStep
+}) => {
     const selectedSchool = schoolsInDistrict.find((s: any) => s.id === selectedSchoolId);
     const schoolName = selectedSchool?.name || "Не выбрана";
 
@@ -700,18 +700,18 @@ const Step5: React.FC<StepProps> = ({
 
 
 const Step6: React.FC<StepProps> = ({
-                                        phoneNumber,
-                                        setPhoneNumber,
-                                        smsSent,
-                                        setSmsSent,
-                                        smsCode,
-                                        setSmsCode,
-                                        errorSMS,
-                                        cooldown,
-                                        sendSMS,
-                                        verifySMS,
-                                        setStep,
-                                    }) => {
+    phoneNumber,
+    setPhoneNumber,
+    smsSent,
+    setSmsSent,
+    smsCode,
+    setSmsCode,
+    errorSMS,
+    cooldown,
+    sendSMS,
+    verifySMS,
+    setStep,
+}) => {
 
     // маска номера телефона
     const inputRef = useMask({
@@ -762,8 +762,8 @@ const Step6: React.FC<StepProps> = ({
             </h4>
 
             <p className="mb-4">
-                Осталось подтвердить номер телефона:<br />
-                <strong>{phoneNumber || "+7 (___) ___-__-__"}</strong><br/>
+                Осталось ввести ниже и подтвердить Ваш номер сотового телефона:<br />
+                <strong>{phoneNumber }</strong><br />
                 <strong>Мы совершим автоматический звонок и продиктуем код подтверждения.</strong>
             </p>
 
@@ -790,7 +790,7 @@ const Step6: React.FC<StepProps> = ({
                 onClick={sendSMS}
                 disabled={!isPhoneFilled || cooldown > 0 || !!phoneSystemError || phoneChecking}
             >
-                {!smsSent ? "Позвонить и продиктовать код" : "Позвонить повторно"}
+                {!smsSent ? "Получить телефонный звонок и услышать код" : "Позвонить повторно"}
             </Button>
 
             {/* информация о повторном звонке */}
@@ -808,7 +808,7 @@ const Step6: React.FC<StepProps> = ({
                     onChange={(e) => setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                     maxLength={6}
                     className="text-center fs-4"
-                    style={{ letterSpacing: "0.4rem" }}
+                    // style={{ letterSpacing: "0.4rem" }}
                 />
             </Form.Group>
 
@@ -839,140 +839,140 @@ const Step6: React.FC<StepProps> = ({
 };
 
 
- /*const Step6: React.FC<StepProps> = ({
-                                        phoneNumber,
-                                        setPhoneNumber,
-                                        smsSent,
-                                        setSmsSent,
-                                        smsCode,
-                                        setSmsCode,
-                                        errorSMS,
-                                        cooldown,
-                                        sendSMS,
-                                        verifySMS,
-                                        setStep,
-                                    }) => {
+/*const Step6: React.FC<StepProps> = ({
+                                       phoneNumber,
+                                       setPhoneNumber,
+                                       smsSent,
+                                       setSmsSent,
+                                       smsCode,
+                                       setSmsCode,
+                                       errorSMS,
+                                       cooldown,
+                                       sendSMS,
+                                       verifySMS,
+                                       setStep,
+                                   }) => {
 
-    // маска номера телефона
-    const inputRef = useMask({
-        mask: "+7 (___) ___-__-__",
-        replacement: { _: /\d/ },
-    });
+   // маска номера телефона
+   const inputRef = useMask({
+       mask: "+7 (___) ___-__-__",
+       replacement: { _: /\d/ },
+   });
 
-    const [phoneSystemError, setPhoneSystemError] = useState("");
-    const [phoneChecking, setPhoneChecking] = useState(false);
+   const [phoneSystemError, setPhoneSystemError] = useState("");
+   const [phoneChecking, setPhoneChecking] = useState(false);
 
-    const digitsOnly = phoneNumber.replace(/\D/g, "");
-    const isPhoneFilled = digitsOnly.length === 11; // +7 + 10 цифр
+   const digitsOnly = phoneNumber.replace(/\D/g, "");
+   const isPhoneFilled = digitsOnly.length === 11; // +7 + 10 цифр
 
-    // Debounced phone check
-    useEffect(() => {
-        if (!isPhoneFilled) {
-            setPhoneSystemError("");
-            return;
-        }
+   // Debounced phone check
+   useEffect(() => {
+       if (!isPhoneFilled) {
+           setPhoneSystemError("");
+           return;
+       }
 
-        const controller = new AbortController();
+       const controller = new AbortController();
 
-        const timer = setTimeout(() => {
-            setPhoneChecking(true);
-            setPhoneSystemError("");
+       const timer = setTimeout(() => {
+           setPhoneChecking(true);
+           setPhoneSystemError("");
 
-            axiosSSOVerifyPhoneNumber("+70000000001", { signal: controller.signal })
-                .then((res) => {
-                    if (!res.data) setPhoneSystemError("Номер уже зарегистрирован");
-                })
-                .catch((err) => {
-                    if (!axios.isCancel(err)) setPhoneSystemError("Ошибка проверки номера");
-                })
-                .finally(() => setPhoneChecking(false));
-        }, 500);
+           axiosSSOVerifyPhoneNumber("+70000000001", { signal: controller.signal })
+               .then((res) => {
+                   if (!res.data) setPhoneSystemError("Номер уже зарегистрирован");
+               })
+               .catch((err) => {
+                   if (!axios.isCancel(err)) setPhoneSystemError("Ошибка проверки номера");
+               })
+               .finally(() => setPhoneChecking(false));
+       }, 500);
 
-        return () => {
-            clearTimeout(timer);
-            controller.abort();
-        };
-    }, [phoneNumber, isPhoneFilled, digitsOnly]);
+       return () => {
+           clearTimeout(timer);
+           controller.abort();
+       };
+   }, [phoneNumber, isPhoneFilled, digitsOnly]);
 
-    return (
-        <>
-            <h4 className="fw-bold mt-3 mb-3 text-center">
-                Подтверждение номера сотового телефона
-                <span className="text-muted fs-6 d-block mt-1">Шаг 6 из 6</span>
-            </h4>
+   return (
+       <>
+           <h4 className="fw-bold mt-3 mb-3 text-center">
+               Подтверждение номера сотового телефона
+               <span className="text-muted fs-6 d-block mt-1">Шаг 6 из 6</span>
+           </h4>
 
-            <p className="mb-4">
-                Осталось подтвердить номер телефона:<br />
-                <strong>{phoneNumber || "+7 (___) ___-__-__"}</strong>
-            </p>
+           <p className="mb-4">
+               Осталось подтвердить номер телефона:<br />
+               <strong>{phoneNumber || "+7 (___) ___-__-__"}</strong>
+           </p>
 
-            {/!* телефон *!/}
-            <Form.Group className="mb-4">
-                <Form.Control
-                    ref={inputRef}
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="+7 (___) ___-__-__"
-                    type="tel"
-                    className="fs-5"
-                    isInvalid={!!phoneSystemError}
-                />
-                <Form.Control.Feedback type="invalid">{phoneSystemError}</Form.Control.Feedback>
-            </Form.Group>
+           {/!* телефон *!/}
+           <Form.Group className="mb-4">
+               <Form.Control
+                   ref={inputRef}
+                   value={phoneNumber}
+                   onChange={(e) => setPhoneNumber(e.target.value)}
+                   placeholder="+7 (___) ___-__-__"
+                   type="tel"
+                   className="fs-5"
+                   isInvalid={!!phoneSystemError}
+               />
+               <Form.Control.Feedback type="invalid">{phoneSystemError}</Form.Control.Feedback>
+           </Form.Group>
 
-            {/!* кнопка отправки SMS *!/}
-            <Button
-                className="w-100 mb-4"
-                size="md"
-                onClick={sendSMS}
-                disabled={!isPhoneFilled || cooldown > 0 || !!phoneSystemError || phoneChecking}
-            >
-                {!smsSent ? "Отправить SMS-код" : "Отправить код повторно"}
-            </Button>
+           {/!* кнопка отправки SMS *!/}
+           <Button
+               className="w-100 mb-4"
+               size="md"
+               onClick={sendSMS}
+               disabled={!isPhoneFilled || cooldown > 0 || !!phoneSystemError || phoneChecking}
+           >
+               {!smsSent ? "Отправить SMS-код" : "Отправить код повторно"}
+           </Button>
 
-            {/!* информация о повторной отправке *!/}
-            {cooldown > 0 && (
-                <div className="text-center mb-3 text-muted">
-                    Повторная отправка доступна через {cooldown} сек.
-                </div>
-            )}
+           {/!* информация о повторной отправке *!/}
+           {cooldown > 0 && (
+               <div className="text-center mb-3 text-muted">
+                   Повторная отправка доступна через {cooldown} сек.
+               </div>
+           )}
 
-            {/!* ввод кода *!/}
-            <Form.Group className="mb-3">
-                <Form.Control
-                    placeholder="Введите код из SMS"
-                    value={smsCode}
-                    onChange={(e) => setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    maxLength={6}
-                    className="text-center fs-4"
-                    style={{ letterSpacing: "0.4rem" }}
-                />
-            </Form.Group>
+           {/!* ввод кода *!/}
+           <Form.Group className="mb-3">
+               <Form.Control
+                   placeholder="Введите код из SMS"
+                   value={smsCode}
+                   onChange={(e) => setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                   maxLength={6}
+                   className="text-center fs-4"
+                   style={{ letterSpacing: "0.4rem" }}
+               />
+           </Form.Group>
 
-            {errorSMS && (
-                <div className="text-danger text-center mb-3 fw-medium">{errorSMS}</div>
-            )}
+           {errorSMS && (
+               <div className="text-danger text-center mb-3 fw-medium">{errorSMS}</div>
+           )}
 
-            {/!* кнопка проверки кода *!/}
-            <Button
-                className="w-100 mb-3"
-                size="md"
-                onClick={verifySMS}
-                disabled={smsCode.length < 4}
-            >
-                Подтвердить код
-            </Button>
+           {/!* кнопка проверки кода *!/}
+           <Button
+               className="w-100 mb-3"
+               size="md"
+               onClick={verifySMS}
+               disabled={smsCode.length < 4}
+           >
+               Подтвердить код
+           </Button>
 
-            {/!* назад *!/}
-            <Button
-                variant="secondary"
-                className="w-100 mt-4"
-                onClick={() => setStep(5)}
-            >
-                Назад
-            </Button>
-        </>
-    );
+           {/!* назад *!/}
+           <Button
+               variant="secondary"
+               className="w-100 mt-4"
+               onClick={() => setStep(5)}
+           >
+               Назад
+           </Button>
+       </>
+   );
 };*/
 
 
@@ -1026,31 +1026,45 @@ const RegisterPage: React.FC = () => {
         0: "Не выбрано", 1: "Нет", 2: "Есть",
     };
 
-    const hints: Record<number, { title: string; text: string; icon?: React.ReactNode }> = {
-        1: { title: "Шаг 1: Почта и пароль", text: "Укажите актуальную электронную почту: она будет использована для связи с Вами. Укажите надежный пароль", icon: <LockFill size={48} className="mb-3 text-white opacity-75" />  },
+    const hints: Record<number, { title: string; text: React.ReactNode[]; icon?: React.ReactNode }> = {
+        1: { title: "Шаг 1: Почта и пароль", text: ["Укажите актуальную электронную почту: она будет использована для связи с Вами. Укажите надежный пароль"], icon: <LockFill size={48} className="mb-3 text-white opacity-75" /> },
         2: {
             title: "Шаг 2: Расскажите о себе",
-            text: "Пожалуйста будьте предельно аккуратны при указании ваших ФИО. В случае внесения ошибочных сведений вы можете быть не допущены к участию в олимпиаде.",
+            text: ["Пожалуйста будьте предельно аккуратны при указании ваших ФИО. В случае внесения ошибочных сведений вы можете быть не допущены к участию в олимпиаде."],
             icon: <PersonFill size={48} className="mb-3 text-white opacity-75" />
         },
         3: {
             title: "Шаг 3: Где вы учитесь?",
-            text: "Сначала укажите кому подчиняется ваша школа. После чего выберите во втором списке свою школу.",
+            text: [
+                <>
+                    Сначала укажите, кому подчиняется ваша школа, и затем выберите во втором выпадающем списке свою школу, после чего укажите класс обучения.
+                </>,
+                <span key="note">
+                    <strong className="text-danger">Примечание:</strong>{" "}
+                    школы <strong>АТЛ</strong>, <strong>ШОД</strong>,
+                    <strong> Инженерная школа</strong>,
+                    <strong> Православная гимназия </strong>
+                    относятся к {" "}
+                    <strong className="text-primary">«Министерство образования и науки АО»</strong>.
+                    <br />
+                    Пожалуйста, ищите их именно там.
+                </span>
+            ],
             icon: <BuildingFill size={48} className="mb-3 text-white opacity-75" />
         },
         4: {
             title: "Шаг 4: Дополнительная информация",
-            text: "Необходима для корректного оформления документов и оказания помощи на олимпиаде.",
+            text: ["Необходима для корректного оформления документов и оказания помощи на олимпиаде."],
             icon: <HeartFill size={48} className="mb-3 text-white opacity-75" />
         },
         5: {
             title: "Шаг 5: Проверьте внимательно!",
-            text: "Убедитесь, что всё верно!",
+            text: ["Убедитесь, что всё верно!"],
             icon: <CheckCircleFill size={48} className="mb-3 text-white opacity-75" />
         },
         6: {
             title: "Шаг 6: Подтверждение номера с помощью звонка",
-            text: "Укажите ваш номер телефона. Система автоматически позвонит вам и продиктует код подтверждения. После получения кода введите его в поле ниже.",
+            text: ["Укажите ваш номер телефона. Система автоматически позвонит вам и продиктует код подтверждения. После получения кода введите его в поле ниже."],
             icon: <PhoneFill size={48} className="mb-3 text-white opacity-75" />
         },
     };
@@ -1095,7 +1109,7 @@ const RegisterPage: React.FC = () => {
             const result = await axiosSSOVerifySMSCode(phoneNumber, smsCode);
 
             if (!result.data) {
-                 throw new Error(result.message || "Неверный код");
+                throw new Error(result.message || "Неверный код");
             }
 
             setIsPhoneVerified(true);
@@ -1252,24 +1266,35 @@ const RegisterPage: React.FC = () => {
             <Row className="flex-grow-1 gy-0">
                 {/* Левый блок — только на десктопе */}
                 <Col md={6} className="d-none d-md-flex flex-column justify-content-center align-items-center text-center px-5"
-                     style={{
-                         background: "linear-gradient(135deg, #3a8dde, #4fd1c5)",
-                         color: "#fff",
-                         borderRadius: "10px 0 0 10px"
-                     }}>
+                    style={{
+                        background: "linear-gradient(135deg, #3a8dde, #4fd1c5)",
+                        color: "#fff",
+                        borderRadius: "10px 0 0 10px"
+                    }}>
                     {hints[step].icon && <div className="mb-2">{hints[step].icon}</div>}
                     <h1 className="fw-bold display-5">{hints[step].title}</h1>
-                    <p className="lead">{hints[step].text}</p>
+                    {hints[step].text.map((line, index) => (
+                        <p
+                            key={index}
+                            className={
+                                index === 1
+                                    ? "lead p-3 bg-light text-dark rounded border-start border-4 border-warning"
+                                    : "lead"
+                            }
+                        >
+                            {line}
+                        </p>
+                    ))}
                     <div className="mt-0">
-                <span className="badge bg-white text-primary fs-6 px-4 py-2 rounded-pill">
-                    Шаг {step} из 6
-                </span>
+                        <span className="badge bg-white text-primary fs-6 px-4 py-2 rounded-pill">
+                            Шаг {step} из 6
+                        </span>
                     </div>
                 </Col>
 
                 {/* Правый блок — всегда */}
                 <Col xs={12} md={6} className="d-flex flex-column justify-content-center px-4 px-md-5 border border-1 h-100"
-                     style={{borderRadius: "0 10px 10px 0"}}>
+                    style={{ borderRadius: "0 10px 10px 0" }}>
                     {/*minHeight: "100vh"*/}
                     {/* Мобильная подсказка — только на телефоне */}
                     <div className="d-block d-md-none mb-0 text-center">

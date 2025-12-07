@@ -81,10 +81,10 @@ function Header() {
                             </Nav.Link>
                         )}
 
-                        {/* Кнопка темы справа */}
+                        {/* Кнопка темы справа
                         <div className="ms-3 d-flex align-items-start">
                             <ThemeToggleButton />
-                        </div>
+                        </div> */}
                     </Nav>
                 </Navbar.Collapse>
             </Container>

@@ -2,34 +2,34 @@
 
 services:
 
-  # vision:
-  #   build:
-  #     context: ./vision
-  #     dockerfile: Dockerfile.prod
-  #   container_name: vision_prod
-  #   restart: unless-stopped
-  #   ports:
-  #     - "8080:80"          # Nginx на хосте будет ходить сюда
-  #   networks:
-  #     - olympic
-
   vision:
-    build: ./vision
-    container_name: vision_app
-    working_dir: /app
-    volumes:
-      - ./vision:/app
-      - ./vision/.env:/app/.env
-      - /app/node_modules  # Для NPM-совместимости
+    build:
+      context: ./vision
+      dockerfile: Dockerfile.prod
+    container_name: vision_prod
+    restart: unless-stopped
     ports:
-      - "5173:5173"
+      - "8080:80"          # Nginx на хосте будет ходить сюда
     networks:
       - olympic
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-      - WATCHPACK_POLLING=true
-      - HOST=0.0.0.0
-      - VITE_API_URL=http://localhost:6611
+
+  # vision:
+  #   build: ./vision
+  #   container_name: vision_app
+  #   working_dir: /app
+  #   volumes:
+  #     - ./vision:/app
+  #     - ./vision/.env:/app/.env
+  #     - /app/node_modules  # Для NPM-совместимости
+  #   ports:
+  #     - "5173:5173"
+  #   networks:
+  #     - olympic
+  #   environment:
+  #     - CHOKIDAR_USEPOLLING=true
+  #     - WATCHPACK_POLLING=true
+  #     - HOST=0.0.0.0
+  #     - VITE_API_URL=http://localhost:6611
 
   application-db:
     image: postgres:16

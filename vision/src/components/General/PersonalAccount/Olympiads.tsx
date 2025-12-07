@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Table, Button, Form, Spinner, Alert } from "react-bootstrap";
+import { Table, Button, Form, Spinner, Alert, Card } from "react-bootstrap";
 import { useAuth } from "../../Helpers/AuthContext";
 import axios from "axios";
 import { MyEvent } from "../../types/event";
@@ -83,11 +83,17 @@ const OlympiadsSimpleTable: React.FC<Props> = ({
 
     return (
         <div className="table-responsive">
-            <h2 className="mb-4">
-                Пожалуйста, выберите интересующую вас олимпиаду.
-                Укажите класс участия и профиль (если он предусмотрен), а затем нажмите кнопку
-                <strong> «Подать заявку»</strong>.
-            </h2>
+            <div className="d-flex align-items-start bg-light p-3 rounded-3 border mb-4">
+                <i className="bi bi-info-circle fs-3 me-3 text-primary"></i>
+                <div>
+                    <h4 className="mb-1">Внимание</h4>
+                    <p className="mb-0">
+                        Пожалуйста, выберите интересующую вас олимпиаду.
+                        Укажите класс участия и профиль (если он предусмотрен), а затем нажмите кнопку
+                        <strong> «Подать заявку»</strong>.
+                    </p>
+                </div>
+            </div>
 
             <Table bordered hover className="align-middle text-center">
                 <thead>

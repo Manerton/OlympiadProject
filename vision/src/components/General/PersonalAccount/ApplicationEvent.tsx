@@ -51,9 +51,20 @@ const ApplicationEventPage: React.FC<Props> = ({ onApplied, reloadFlag }) => {
     return (
         <div className="table-responsive">
 
+            <div className="d-flex align-items-start bg-light p-3 rounded-3 border mb-4">
+                <i className="bi bi-info-circle fs-3 me-3 text-primary"></i>
+                <div>
+                    <h4 className="mb-1">Ваши заявки</h4>
+                    <p className="mb-0">
+                        Здесь отображаются все поданные вами заявки на участие в олимпиадах.
+                        Вы можете отслеживать статус рассмотрения или отозвать заявку до окончания регистрации.
+                    </p>
+                </div>
+            </div>
+
             {/* PC / Tablet View */}
             <table className="table table-bordered table-striped d-none d-md-table">
-                <thead className="table-dark">
+                <thead className="">
                     <tr>
                         <th>Предмет</th>
                         <th>Даты</th>
