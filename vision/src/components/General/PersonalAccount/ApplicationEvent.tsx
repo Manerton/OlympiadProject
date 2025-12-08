@@ -51,16 +51,32 @@ const ApplicationEventPage: React.FC<Props> = ({ onApplied, reloadFlag }) => {
     return (
         <div className="table-responsive">
 
-            <div className="d-flex align-items-start bg-light p-3 rounded-3 border mb-4">
-                <i className="bi bi-info-circle fs-3 me-3 text-primary"></i>
-                <div>
-                    <h4 className="mb-1">Ваши заявки</h4>
-                    <p className="mb-0">
-                        Здесь отображаются все поданные вами заявки на участие в олимпиадах.
-                        Вы можете отслеживать статус рассмотрения или отозвать заявку до окончания регистрации.
-                    </p>
+            <div className="d-flex justify-content-between align-items-center bg-light p-3 rounded-3 border mb-4">
+
+                <div className="d-flex align-items-start">
+                    <i className="bi bi-info-circle fs-3 me-3 text-primary"></i>
+                    <div>
+                        <h4 className="mb-1">Ваши заявки</h4>
+                        <p className="mb-0">
+                            Здесь отображаются все поданные вами заявки на участие в олимпиадах.
+                            Вы можете отслеживать статус рассмотрения или отозвать заявку до окончания регистрации.
+                        </p>
+                    </div>
                 </div>
+
+                <button
+                    className="btn btn-outline-primary d-flex align-items-center"
+                    onClick={() => {
+                        setLoading(true);
+                        fetchApplicationEvents();
+                    }}
+                >
+                    <i className="bi bi-arrow-clockwise me-2"></i>
+                    Обновить
+                </button>
+
             </div>
+
 
             {/* PC / Tablet View */}
             <table className="table table-bordered table-striped d-none d-md-table">
