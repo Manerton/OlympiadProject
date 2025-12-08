@@ -46,6 +46,7 @@ export async function axiosCreateApplication(token: string, application: Applica
     const res = await axios.post(
         APPLICATION.create, application,
         {
+
             headers: {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json'
@@ -64,6 +65,21 @@ export async function axiosRevokeApplication(token: string, applicationId: strin
             headers: {
                 Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json'  
+            },
+            withCredentials: true
+        }
+    )
+    return res.data;
+}
+
+export async function axiosUpdateApplication(token: string, applicationId: string, status: string)
+{
+    const res = await axios.Put(
+        APPLICATION.update + `${applicationId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
             },
             withCredentials: true
         }

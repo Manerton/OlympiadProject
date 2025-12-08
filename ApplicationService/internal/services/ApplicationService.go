@@ -298,9 +298,10 @@ func ConvertUpdateDTOtoApplication(id uuid.UUID, dto ApplicationDto.UpdateApplic
 
 func ConvertApplicationToDTO(application models.Application) ApplicationDto.ApplicationResponseDTO {
 	return ApplicationDto.ApplicationResponseDTO{
-		ID:      application.ID,
-		UserID:  application.UserID,
-		EventID: application.EventID,
+		ID:       application.ID,
+		UserID:   application.UserID,
+		EventID:  application.EventID,
+		SchoolID: application.SchoolID,
 		//EventName:     application.EventName,
 		//EventLocation: application.EventLocation,
 		//EventDate:     application.EventDate,

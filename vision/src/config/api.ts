@@ -28,6 +28,7 @@ export const AUTH = {
     verifyPhone: `${API_URL}/auth/check-phone/`,
     district: `${API_URL}/districts/`,
     school: `${API_URL}/schools/district/`,
+    verifySchool: `${API_URL}/Verify-Applications/`,
 };
 
 export const SCHOOLS = {
@@ -48,6 +49,7 @@ export const USER = {
 export const APPLICATION = {
     getByUser: `${API_URL}/ApplicationEvent/`,
     create: `${API_URL}/applications/create/`,
+    update: `${API_URL}/applications/`,
     delete: `${API_URL}/applications/`,
 };
 

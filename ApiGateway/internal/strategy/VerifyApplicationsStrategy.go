@@ -72,6 +72,8 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 	// ========== 2. Получаем список школ ==========
 	fmt.Println("\n=== ЭТАП 2: Получение списка школ ===")
 	var schoolIDs []string
+	// ДОБАВЛЕНО: мапа для хранения названий школ
+	schoolNameMap := make(map[string]string)
 
 	if incomingBody.Role == 0 {
 		fmt.Println("ROLE = 0: запрашиваем школы района")
@@ -131,10 +133,12 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 				}, nil
 			}
 
+			// ОБНОВЛЕНО: структура для парсинга ответа от district service с полем Name
 			var districtResp struct {
 				Data struct {
 					Schools []struct {
-						ID string `json:"id"`
+						ID   string `json:"id"`
+						Name string `json:"name"`
 					} `json:"schools"`
 				} `json:"data"`
 				Status string `json:"status"`
@@ -148,7 +152,8 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 				// Попробуем альтернативную структуру
 				var altDistrictResp struct {
 					Schools []struct {
-						ID string `json:"id"`
+						ID   string `json:"id"`
+						Name string `json:"name"`
 					} `json:"data"`
 				}
 				if err := json.Unmarshal(respBody1, &altDistrictResp); err != nil {
@@ -163,13 +168,15 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 				fmt.Printf("Получено школ от района (альтернативная структура): %d\n", len(altDistrictResp.Schools))
 				for i, school := range altDistrictResp.Schools {
 					schoolIDs = append(schoolIDs, school.ID)
-					fmt.Printf("  Школа %d: ID=%s\n", i+1, school.ID)
+					schoolNameMap[school.ID] = school.Name
+					fmt.Printf("  Школа %d: ID=%s, Name=%s\n", i+1, school.ID, school.Name)
 				}
 			} else {
 				fmt.Printf("Получено школ от района (стандартная структура): %d\n", len(districtResp.Data.Schools))
 				for i, school := range districtResp.Data.Schools {
 					schoolIDs = append(schoolIDs, school.ID)
-					fmt.Printf("  Школа %d: ID=%s\n", i+1, school.ID)
+					schoolNameMap[school.ID] = school.Name
+					fmt.Printf("  Школа %d: ID=%s, Name=%s\n", i+1, school.ID, school.Name)
 				}
 			}
 		} else {
@@ -311,8 +318,8 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 
 		fmt.Printf("Получено заявок: %d\n", len(applications))
 		for i, app := range applications {
-			fmt.Printf("  Заявка %d: ID=%s, UserID=%s, EventID=%s, Status=%d, Profile=%s\n",
-				i+1, app.ID, app.UserID, app.EventID, app.Status, app.Profile)
+			fmt.Printf("  Заявка %d: ID=%s, UserID=%s, EventID=%s, Status=%d, Profile=%s, SchoolID=%s\n",
+				i+1, app.ID, app.UserID, app.EventID, app.Status, app.Profile, app.SchoolID)
 		}
 
 		if len(applications) == 0 {
@@ -324,18 +331,21 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 			}, nil
 		}
 
-		// ========== 4. Собираем уникальные UserID и EventID ==========
+		// ========== 4. Собираем уникальные UserID, EventID и SchoolID ==========
 		fmt.Println("\n=== ЭТАП 4: Сбор уникальных ID ===")
 		userIDSet := make(map[string]bool)
 		eventIDSet := make(map[string]bool)
+		schoolIDSet := make(map[string]bool)
 
 		for _, app := range applications {
 			userIDSet[app.UserID] = true
 			eventIDSet[app.EventID] = true
+			schoolIDSet[app.SchoolID] = true
 		}
 
 		userIDs := make([]string, 0, len(userIDSet))
 		eventIDs := make([]string, 0, len(eventIDSet))
+		schoolIDsFromApps := make([]string, 0, len(schoolIDSet))
 
 		for id := range userIDSet {
 			userIDs = append(userIDs, id)
@@ -345,11 +355,91 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 			eventIDs = append(eventIDs, id)
 		}
 
+		for id := range schoolIDSet {
+			schoolIDsFromApps = append(schoolIDsFromApps, id)
+		}
+
 		fmt.Printf("Уникальных UserID: %d -> %v\n", len(userIDs), userIDs)
 		fmt.Printf("Уникальных EventID: %d -> %v\n", len(eventIDs), eventIDs)
+		fmt.Printf("Уникальных SchoolID из заявок: %d -> %v\n", len(schoolIDsFromApps), schoolIDsFromApps)
 
-		// ========== 5. Параллельно запрашиваем пользователей и события ==========
-		fmt.Println("\n=== ЭТАП 5: Параллельные запросы пользователей и событий ===")
+		// ========== 5. Получаем недостающие названия школ ==========
+		fmt.Println("\n=== ЭТАП 5: Получение названий школ ===")
+
+		// Захардкоженный URL для получения информации о школе по ID
+		schoolBaseURL := "http://sso-service:8181/api/schools/"
+
+		var schoolWg sync.WaitGroup
+
+		schoolErrChan := make(chan error, len(schoolIDsFromApps))
+
+		for _, schoolID := range schoolIDsFromApps {
+			// Пропускаем, если название уже есть
+			if _, exists := schoolNameMap[schoolID]; exists || schoolID == "" {
+				continue
+			}
+
+			schoolWg.Add(1)
+			go func(sid string) {
+				defer schoolWg.Done()
+
+				schoolURL := schoolBaseURL + sid
+				fmt.Printf("Запрашиваем название школы: %s\n", schoolURL)
+
+				reqSchool, err := http.NewRequest("GET", schoolURL, nil)
+				if err != nil {
+					schoolErrChan <- fmt.Errorf("failed to create request for school %s: %v", sid, err)
+					return
+				}
+				reqSchool.Header = origReq.Header.Clone()
+
+				respSchool, err := client.Do(reqSchool)
+				if err != nil {
+					schoolErrChan <- fmt.Errorf("failed to get school %s: %v", sid, err)
+					return
+				}
+				defer respSchool.Body.Close()
+
+				if respSchool.StatusCode >= 400 {
+					body, _ := io.ReadAll(respSchool.Body)
+					schoolErrChan <- fmt.Errorf("school service returned status %d for school %s: %s", respSchool.StatusCode, sid, string(body))
+					return
+				}
+
+				var schoolResp struct {
+					Data struct {
+						ID   string `json:"id"`
+						Name string `json:"name"`
+					} `json:"data"`
+					Status string `json:"status"`
+				}
+
+				respBody, _ := io.ReadAll(respSchool.Body)
+				if err := json.Unmarshal(respBody, &schoolResp); err != nil {
+					schoolErrChan <- fmt.Errorf("failed to parse school response for %s: %v", sid, err)
+					return
+				}
+
+				schoolNameMap[sid] = schoolResp.Data.Name
+				fmt.Printf("  Получено название школы: ID=%s, Name=%s\n", sid, schoolResp.Data.Name)
+				schoolErrChan <- nil
+			}(schoolID)
+		}
+
+		// Ждем завершения всех запросов к школам
+		schoolWg.Wait()
+		close(schoolErrChan)
+
+		// Проверяем ошибки
+		for err := range schoolErrChan {
+			if err != nil {
+				fmt.Printf("Ошибка при получении названия школы: %v\n", err)
+				// Не прерываем выполнение, просто продолжаем
+			}
+		}
+
+		// ========== 6. Параллельно запрашиваем пользователей и события ==========
+		fmt.Println("\n=== ЭТАП 6: Параллельные запросы пользователей и событий ===")
 
 		// Проверяем остальные targets
 		if len(targets) < 4 {
@@ -566,8 +656,8 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 			}, nil
 		}
 
-		// ========== 6. Создаем мапы для быстрого поиска ==========
-		fmt.Println("\n=== ЭТАП 6: Создание мап для поиска ===")
+		// ========== 7. Создаем мапы для быстрого поиска ==========
+		fmt.Println("\n=== ЭТАП 7: Создание мап для поиска ===")
 
 		userMap := make(map[string]struct {
 			ID            string `json:"id"`
@@ -603,9 +693,10 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 
 		fmt.Printf("Размер eventMap: %d\n", len(eventMap))
 
-		// ========== 7. Формируем итоговый ответ ==========
-		fmt.Println("\n=== ЭТАП 7: Формирование итогового ответа ===")
+		// ========== 8. Формируем итоговый ответ ==========
+		fmt.Println("\n=== ЭТАП 8: Формирование итогового ответа ===")
 
+		// ОБНОВЛЕНО: структура ResultItem с полем SchoolName
 		type ResultItem struct {
 			ID           string `json:"id"`
 			OlympiadName string `json:"olympiadName"`
@@ -620,24 +711,26 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 			ClassNumber  int    `json:"classNumber"`
 			Citizenship  int    `json:"citizenship"`
 			Disability   int    `json:"disability"`
+			SchoolName   string `json:"schoolName"` // ДОБАВЛЕНО
 		}
 
 		results := make([]ResultItem, 0, len(applications))
 		skippedCount := 0
-
 		for i, app := range applications {
 			user, userExists := userMap[app.UserID]
 			eventName, eventExists := eventMap[app.EventID]
 
-			if !userExists || !eventExists {
+			schoolName, schoolExists := schoolNameMap[app.SchoolID]
+
+			if !userExists || !eventExists || !schoolExists {
 				skippedCount++
-				fmt.Printf("  Пропуск заявки %d (ID=%s): userExists=%v, eventExists=%v\n",
-					i+1, app.ID, userExists, eventExists)
+				fmt.Printf("  Пропуск заявки %d (ID=%s): userExists=%v, eventExists=%v, schoolExists=%v\n",
+					i+1, app.ID, userExists, eventExists, schoolExists)
 				continue
 			}
 
-			fmt.Printf("  Обработка заявки %d (ID=%s): User=%s %s, Event=%s\n",
-				i+1, app.ID, user.Surname, user.FirstName, eventName)
+			fmt.Printf("  Обработка заявки %d (ID=%s): User=%s %s, Event=%s, School=%s\n",
+				i+1, app.ID, user.Surname, user.FirstName, eventName, schoolName)
 
 			results = append(results, ResultItem{
 				ID:           app.ID,
@@ -653,6 +746,7 @@ func (s *VerifyApplicationsStrategy) Aggregate(
 				ClassNumber:  user.ClassNumber,
 				Citizenship:  user.Citizenship,
 				Disability:   user.Disability,
+				SchoolName:   schoolName, // ДОБАВЛЕНО
 			})
 		}
 
