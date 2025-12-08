@@ -1107,7 +1107,7 @@ const RegisterPage: React.FC = () => {
     const verifySMS = async () => {
         try {
             setErrorSMS("");
-            const result = await axiosSSOVerifySMSCode(phoneNumber, smsCode);
+            const result = await axiosSSOVerifySMSCode(phoneNumber.replace(/\D/g, ""), smsCode);
 
             if (!result.data) {
                 throw new Error(result.message || "Неверный код");
