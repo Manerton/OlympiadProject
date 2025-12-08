@@ -35,4 +35,4 @@ ADDITIONAL_SERVICE_ADDRESSES:
   notification_path: "http://localhost:6611/email/send-code"
 
 CREATION_LINKS_TEMPLATE:
-  prefix: "https://vos.schooltech.ru/issue-short-jwt"
+  prefix: "https://vos.schooltech.ru/verifyApplications?access_token="

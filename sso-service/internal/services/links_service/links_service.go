@@ -117,5 +117,5 @@ func (s *LinksService) createLink(id string, objectType int) (string, error) {
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
-	return fmt.Sprintf("%s/%s", s.prefixLink, accessToken), nil
+	return fmt.Sprintf("%s%s", s.prefixLink, accessToken), nil
 }
