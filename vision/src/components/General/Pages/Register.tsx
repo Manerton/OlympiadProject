@@ -674,7 +674,7 @@ const Step5: React.FC<StepProps> = ({
                 Подтверждение данных
                 <span className="text-muted fs-6 d-block mt-1">Шаг 5 из 6</span>
             </h4>
-            <p>Проверьте данные перед завершением регистрации:</p>
+            <p>Проверьте свои данные перед завершением регистрации:</p>
 
             <ListGroup className="mb-4">
                 <ListGroup.Item>ФИО:<strong> {surName} {firstName} {patronymic} </strong></ListGroup.Item>
@@ -757,14 +757,13 @@ const Step6: React.FC<StepProps> = ({
     return (
         <>
             <h4 className="fw-bold mt-3 mb-3 text-center">
-                Подтверждение номера с помощью звонка
+                Подтверждение номера телефона с помощью звонка
                 <span className="text-muted fs-6 d-block mt-1">Шаг 6 из 6</span>
             </h4>
 
             <p className="mb-4">
-                Осталось ввести ниже и подтвердить Ваш номер сотового телефона:<br />
-                <strong>{phoneNumber }</strong><br />
-                <strong>Мы совершим автоматический звонок и продиктуем код подтверждения.</strong>
+                Осталось ввести номер сотового телефона и подтвердить его для создания личного кабинета.
+                <strong> Мы совершим автоматический звонок и продиктуем код подтверждения.</strong>
             </p>
 
             {/* телефон */}
@@ -1041,13 +1040,15 @@ const RegisterPage: React.FC = () => {
                 </>,
                 <span key="note">
                     <strong className="text-danger">Примечание:</strong>{" "}
-                    школы <strong>АТЛ</strong>, <strong>ШОД</strong>,
-                    <strong> Инженерная школа</strong>,
-                    <strong> Православная гимназия </strong>
-                    относятся к {" "}
+                    обучающиеся школ <strong>ГБОУ АО "АТЛ"</strong>, <strong>ГБОУ АО "АЛГ"</strong>,
+                    <strong> ГБОУ АО "Инженерная школа"</strong>,
+                    <strong> ГБОУ АО "Православная гимназия" </strong>,
+                    <strong> ГБОУ АО "ШОД им. А.П.Гужвина" </strong>,
+                    подчиняются {""}
+                    <br></br>
                     <strong className="text-primary">«Министерство образования и науки АО»</strong>.
                     <br />
-                    Пожалуйста, ищите их именно там.
+                    Пожалуйста, выбирайте это муниципальное образование в списке.
                 </span>
             ],
             icon: <BuildingFill size={48} className="mb-3 text-white opacity-75" />
@@ -1063,7 +1064,7 @@ const RegisterPage: React.FC = () => {
             icon: <CheckCircleFill size={48} className="mb-3 text-white opacity-75" />
         },
         6: {
-            title: "Шаг 6: Подтверждение номера с помощью звонка",
+            title: "Шаг 6: Подтверждение номера телефона с помощью звонка",
             text: ["Укажите ваш номер телефона. Система автоматически позвонит Вам и продиктует код подтверждения. После получения кода введите его в поле ниже."],
             icon: <PhoneFill size={48} className="mb-3 text-white opacity-75" />
         },
@@ -1084,9 +1085,9 @@ const RegisterPage: React.FC = () => {
         try {
             setErrorSMS("");
 
-            setPhoneNumber(phoneNumber.replace(/\D/g, ""))
+            //setPhoneNumber(phoneNumber.replace(/\D/g, ""))
 
-            // TODO: вызвать запрос на отправку SMS
+            //запрос на отправку SMS
             const data = await axiosSendSMSCode(phoneNumber.replace(/\D/g, ""));
             // data можно использовать, если backend вернёт что-то вроде { success: true }
 
@@ -1120,12 +1121,12 @@ const RegisterPage: React.FC = () => {
 
             setErrorSMS("Неверный код. Попробуйте снова.");
 
-            setAttempts(a => {
-                const next = a + 1;
-                const timeout = retryTimeouts[Math.min(next, retryTimeouts.length - 1)];
-                setCooldown(timeout);
-                return next;
-            });
+            // setAttempts(a => {
+            //     const next = a + 1;
+            //     const timeout = retryTimeouts[Math.min(next, retryTimeouts.length - 1)];
+            //     setCooldown(timeout);
+            //     return next;
+            // });
         }
     };
 
@@ -1305,7 +1306,18 @@ const RegisterPage: React.FC = () => {
                         }}>
                             {hints[step].icon && <div className="mb-3">{hints[step].icon}</div>}
                             <h4 className="fw-bold">{hints[step].title}</h4>
-                            <p className="small mb-0 opacity-90">{hints[step].text}</p>
+                            {hints[step].text.map((line, index) => (
+                                <p
+                                    key={index}
+                                    className={
+                                        index === 1
+                                            ? "lead p-3 bg-light text-dark rounded border-start border-4 border-warning"
+                                            : "lead"
+                                    }
+                                >
+                                    {line}
+                                </p>
+                            ))}
                             <div className="mt-3">
                                 <span className="badge bg-light text-primary">Шаг {step} из 6</span>
                             </div>
