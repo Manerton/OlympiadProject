@@ -92,7 +92,7 @@ func (s *LinksService) GetLinks(ctx context.Context, region string) ([]link_dto.
 		}
 
 		for _, school := range allSchools {
-			linkAccss, err := s.createLink(district.ID.String(), link_dto.DistricType)
+			linkAccss, err := s.createLink(school.ID.String(), link_dto.SchoolType)
 			if err != nil {
 				log.Error("faild create link with access token", liblogger.Err(err))
 				return nil, errs.ErrInternalError.Wrap("failed crate access link")

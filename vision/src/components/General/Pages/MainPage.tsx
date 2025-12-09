@@ -234,7 +234,7 @@ const MainPage: React.FC = () => {
           <Accordion defaultActiveKey="0">
             <Accordion.Item eventKey="0">
               <Accordion.Header>Как получить доступ к личному кабинету</Accordion.Header>
-              <Accordion.Body>Для получения доступа к личному кабинету Создайте его пройдя регистрацию. Учётные данные от других платформ не подайдут</Accordion.Body>
+              <Accordion.Body>Для получения доступа к личному кабинету создайте его пройдя регистрацию.</Accordion.Body>
             </Accordion.Item>
             <Accordion.Item eventKey="2">
               <Accordion.Header>Когда будут проходить олимпиады?</Accordion.Header>

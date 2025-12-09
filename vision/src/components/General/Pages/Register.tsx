@@ -490,7 +490,7 @@ const Step3: React.FC<StepProps> = ({
 
             {/* Муниципальное образование */}
             <Form.Group className="mb-4">
-                <Form.Label className="fw-semibold">Муниципальное образование</Form.Label>
+                <Form.Label className="fw-semibold">Муниципальное образование/Учредитель</Form.Label>
                 <Form.Select
                     value={selectedDistrictId}
                     onChange={(e) => {
@@ -557,7 +557,7 @@ const Step3: React.FC<StepProps> = ({
 
             {/* Класс */}
             <Form.Group className="mb-4">
-                <Form.Label className="fw-semibold">Класс, в котором вы обучаетесь</Form.Label>
+                <Form.Label className="fw-semibold">Класс, в котором Вы обучаетесь</Form.Label>
                 <Form.Select
                     value={classNumber}
                     onChange={(e) => setClassNumber(Number(e.target.value))}
@@ -807,7 +807,7 @@ const Step6: React.FC<StepProps> = ({
                     onChange={(e) => setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
                     maxLength={6}
                     className="text-center fs-4"
-                    // style={{ letterSpacing: "0.4rem" }}
+                // style={{ letterSpacing: "0.4rem" }}
                 />
             </Form.Group>
 
@@ -1033,14 +1033,14 @@ const RegisterPage: React.FC = () => {
             icon: <PersonFill size={48} className="mb-3 text-white opacity-75" />
         },
         3: {
-            title: "Шаг 3: Где вы учитесь?",
+            title: "Шаг 3: Где Вы учитесь?",
             text: [
                 <>
                     Сначала укажите, кому подчиняется Ваша школа, и затем выберите во втором выпадающем списке свою школу, после чего укажите класс обучения.
                 </>,
                 <span key="note">
                     <strong className="text-danger">Примечание:</strong>{" "}
-                    обучающиеся школ <strong>ГБОУ АО "АТЛ"</strong>, <strong>ГБОУ АО "АЛГ"</strong>,
+                    <strong> ГБОУ АО "АТЛ"</strong>, <strong>ГБОУ АО "АЛГ"</strong>,
                     <strong> ГБОУ АО "Инженерная школа"</strong>,
                     <strong> ГБОУ АО "Православная гимназия" </strong>,
                     <strong> ГБОУ АО "ШОД им. А.П.Гужвина" </strong>,
@@ -1048,7 +1048,7 @@ const RegisterPage: React.FC = () => {
                     <br></br>
                     <strong className="text-primary">«Министерство образования и науки АО»</strong>.
                     <br />
-                    Пожалуйста, выбирайте это муниципальное образование в списке.
+                    Пожалуйста, выбирайте эту опцию в списке «Муниципальное образование/Учредитель».
                 </span>
             ],
             icon: <BuildingFill size={48} className="mb-3 text-white opacity-75" />
@@ -1065,7 +1065,7 @@ const RegisterPage: React.FC = () => {
         },
         6: {
             title: "Шаг 6: Подтверждение номера телефона с помощью звонка",
-            text: ["Укажите ваш номер телефона. Система автоматически позвонит Вам и продиктует код подтверждения. После получения кода введите его в поле ниже."],
+            text: ["Укажите Ваш номер телефона. Система автоматически позвонит Вам и продиктует код подтверждения. После получения кода введите его в поле ниже."],
             icon: <PhoneFill size={48} className="mb-3 text-white opacity-75" />
         },
     };
