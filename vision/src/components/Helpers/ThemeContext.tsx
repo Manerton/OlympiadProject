@@ -19,6 +19,7 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
+    // Устанавливаем светлую тему по умолчанию
     const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
     const toggleTheme = () => {
@@ -28,11 +29,13 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
         localStorage.setItem('theme', newTheme); // Persist theme
     };
 
-    // Load saved theme or system preference
+    // Load saved theme or use light theme by default
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const initialTheme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+
+        // Всегда используем светлую тему по умолчанию, игнорируя системные настройки
+        const initialTheme = savedTheme || 'light';
+
         setTheme(initialTheme);
         document.documentElement.setAttribute('data-bs-theme', initialTheme);
     }, []);
