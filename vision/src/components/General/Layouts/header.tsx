@@ -34,7 +34,7 @@ function Header() {
     <Navbar expand="lg" sticky="top" className="bg-body-tertiary border border-1">
       <Container fluid="lg" className="mx-auto">
         <Navbar.Brand as={Link} to="/"><img src={MainLogo2} alt="ВСОШ" className="img-fluid" style={{
-          maxHeight: "50px",
+          maxHeight: "40px",
           width: "auto",
         }} /></Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />

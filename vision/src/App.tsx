@@ -107,6 +107,7 @@ function App() {
                         <Route element={<RegisterLayout />}>
                             <Route path="/auth" element={<AuthPage />} />
                             <Route path="/register" element={<RegisterPage />} />
+                            <Route path="/recover-password" element={<ForgotPasswordPage/>}/>
                         </Route>
 
                         <Route
