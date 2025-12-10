@@ -14,7 +14,7 @@ const LoginPage: React.FC = () => {
 
     const hints = {
         title: "Вход в личный кабинет",
-        text: "Введите ваш логин и пароль, указанные при регистрации, чтобы войти в личный кабинет."
+        text: "Введите Ваш логин и пароль, указанные при регистрации, чтобы войти в личный кабинет."
     };
 
     const handleLogin = async () => {
@@ -80,6 +80,12 @@ const LoginPage: React.FC = () => {
                         <div className="mt-3 w-100" style={{ textAlign: "center" }}>
                             <Button variant="link" onClick={() => navigate('/register')}>
                                 Впервые на сайте? Перейдите к регистрации личного кабинета
+                            </Button>
+                        </div>
+
+                        <div className="mt-3 w-100" style={{ textAlign: "center" }}>
+                            <Button variant="link" onClick={() => navigate('/recover-password')}>
+                                Забыли пароль? Восстановите его здесь
                             </Button>
                         </div>
                     </div>
