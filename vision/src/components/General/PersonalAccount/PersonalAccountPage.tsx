@@ -12,6 +12,7 @@ import { UserRole } from "../../../dictionary/role";
 import { axiosSSOUserInfo, axiosSSOUserParticipantInfo } from "../../../requests/SSORequests";
 import formatDateForInput from "../../Helpers/DateFormater";
 import { axiosGetApplicationEvents } from "../../../requests/ApplicationRequests";
+import VideoInfoBlock from "../Pages/VideoInfoBlock";
 
 const ParticipantDashboard: React.FC = () => {
     const { accessToken, user } = useAuth();
@@ -169,6 +170,9 @@ const ParticipantDashboard: React.FC = () => {
                     </div>
                 </Collapse>
             </Card>
+
+            <VideoInfoBlock />
+
 
         </div>
     );

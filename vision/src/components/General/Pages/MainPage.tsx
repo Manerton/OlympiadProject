@@ -3,6 +3,7 @@ import { Container, Row, Col, Button, Form, Accordion } from 'react-bootstrap';
 import { useAuth } from '../../Helpers/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import VideoInfoBlock from './VideoInfoBlock';
 const MainPage: React.FC = () => {
 
   const navigate = useNavigate();
@@ -196,7 +197,9 @@ const MainPage: React.FC = () => {
         </Container>
       </section> */}
 
-      <section className="mt-4 mb-4 py-4">
+
+
+      <section className="mt-4 mb-4 py-3">
         {!user ? (
           <div className="d-flex flex-column flex-md-row gap-3 justify-content-center">
             {/* Left Block */}
@@ -226,6 +229,8 @@ const MainPage: React.FC = () => {
           </>
         )}
       </section>
+
+      <VideoInfoBlock />
 
       {/* FAQ Section */}
       <section className="mt-4 mb-4  py-3 text-center border rounded">
