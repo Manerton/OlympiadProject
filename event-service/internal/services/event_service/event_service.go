@@ -32,6 +32,8 @@ type EventRepositoryInterface interface {
 	GetAllEvents(ctx context.Context, orm orm.ORM, offset, limit *int) ([]event.Event, error)
 	GetAvailableEventsByClass(ctx context.Context, orm orm.ORM, id uuid.UUID, classCategory []event.ClassCategoryType) ([]event.Event, error)
 
+	GetEventsByStatus(ctx context.Context, orm orm.ORM, status int) ([]event.Event, error)
+
 	GetCountEventsByType(ctx context.Context, orm orm.ORM, eventType event.EventType) (int64, error)
 	GetCountEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uuid.UUID) (int64, error)
 
@@ -76,6 +78,20 @@ func (s *EventService) GetAllEvents(ctx context.Context, offset, limit *int) ([]
 	if err != nil {
 		log.Error("failed to get all events: %v", liblogger.Err(err))
 		return nil, errs.ErrInternalError
+	}
+
+	return event_mapper.ManyToDTO(events), nil
+}
+
+func (s *EventService) GetEventsByStatus(ctx context.Context, status int) ([]event_dto.EventDTOResponse, error) {
+	const op = "services.event_service.GetEventsByStatus"
+
+	log := s.log.With(slog.String("op", op))
+
+	events, err := s.eventRepository.GetEventsByStatus(ctx, s.db, status)
+	if err != nil {
+		log.Error("failed get events by status", slog.Int("status", status), liblogger.Err(err))
+		return nil, errs.ErrInternalError.Wrap("failed get events by status")
 	}
 
 	return event_mapper.ManyToDTO(events), nil
@@ -488,7 +504,7 @@ func (s *EventService) FinishedEvents(ctx context.Context, id string) error {
 		return errs.ErrInternalError.Wrap("failed get by id")
 	}
 
-	parentEvent.Finished = event.Finished
+	parentEvent.Status = event.Finished
 	err = s.eventRepository.UpdateEvent(ctx, s.db, parentEvent)
 	if err != nil {
 		log.Error("failed update status finished", liblogger.Err(err))
@@ -512,8 +528,8 @@ func (s *EventService) cascadeFinished(ctx context.Context, parentId uuid.UUID) 
 	}
 
 	for _, childEvent := range childEvents {
-		if childEvent.Finished != event.Finished {
-			childEvent.Finished = event.Finished
+		if childEvent.Status != event.Finished {
+			childEvent.Status = event.Finished
 			err = s.eventRepository.UpdateEvent(ctx, s.db, childEvent)
 			if err != nil {
 				return err

@@ -89,6 +89,8 @@ func main() {
 
 	router.Post("/applications/school-list/", applicationHandler.GetApplicationsBySchoolListID)
 
+	router.Post("/applications/participant-code/{id}", applicationHandler.SetParticipantCode)
+
 	router.Post("/applications/create", applicationHandler.CreateApplication)
 
 	router.Put("/applications/{id}", applicationHandler.UpdateApplicationStatus)

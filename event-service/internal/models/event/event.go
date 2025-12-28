@@ -30,8 +30,9 @@ const (
 )
 
 const (
-	NotFinished = 1
-	Finished    = 2
+	Register = 1
+	Approval = 2
+	Finished = 3
 )
 
 type Event struct {
@@ -48,6 +49,6 @@ type Event struct {
 	PreviousEventID *uuid.UUID `gorm:"index"`
 	PreviousEvent   *Event     `gorm:"foreignKey:PreviousEventID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT;"`
 	Subject         int        `gorm:"type:int"`
-	Finished        int        `gorm:"type:int"`
+	Status          int        `gorm:"type:int"`
 	AdditionalInfo  string     `gorm:"type:text"`
 }

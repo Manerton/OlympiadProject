@@ -63,7 +63,7 @@ export async function fetchOlympiads({
 }
 
 export async function fetchSimpleOlympiads(   ) {
-  let url = `${API_CONFIG.ALLEVENTS}`;
+  let url = `${API_CONFIG.REGISTEREVENTS}`;
   const res = await axios.get(url, {
     withCredentials: true,
   });

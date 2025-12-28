@@ -82,6 +82,18 @@ func (r *EventRepository) GetEventsByType(ctx context.Context, orm orm.ORM, even
 	return eventsRes, nil
 }
 
+// Get list events by status
+func (r *EventRepository) GetEventsByStatus(ctx context.Context, orm orm.ORM, status int) ([]event.Event, error) {
+	const op = "repositories.event_repository.GetEventsByStatus"
+	eventsRes := []event.Event{}
+
+	if err := orm.Find(ctx, event.Event{}, nil, nil, nil, nil, &eventsRes, event.Event{Status: status}); err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return eventsRes, nil
+}
+
 // Get all events by PreviousID
 // Offset, limit can be nil
 func (r *EventRepository) GetEventsByPreviousID(ctx context.Context, orm orm.ORM, previousID uuid.UUID, offset, limit *int, order *string) ([]event.Event, error) {

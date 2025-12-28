@@ -6,6 +6,12 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	ApprovedStatus      = 2
+	RejectedStatus      = 3
+	ConsiderationStatus = 1
+)
+
 type Application struct {
 	ID       uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
 	UserID   uuid.UUID `gorm:"not null"`
@@ -20,7 +26,7 @@ type Application struct {
 	ClassParticipation int       `gorm:"type:int"`
 	Status             int       `gorm:"default:1"`    // 2 = одобрено, 3 = отклонено, 1 = не обработано
 	Reason             int       `gorm:"default:null"` // 1 по результатам предудущего года, 2 по результатам текущего
-	Code               string    `gorm:"dfeault:null"` // 09_111_25
+	Code               string    `gorm:"default:null"` // 09_111_25
 	SubmittedAt        time.Time `gorm:"autoCreateTime"`
 	UpdatedAt          time.Time `gorm:"autoUpdateTime"`
 }

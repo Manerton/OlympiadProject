@@ -28,7 +28,7 @@ func FromCreateToModel(createDTO event_dto.CreateEventDTORequest) event.Event {
 		ClassCategory:   event.ClassCategoryType(createDTO.ClassCategory),
 		PreviousEventID: createDTO.PreviousEventID,
 		AdditionalInfo:  createDTO.AdditionalInfo,
-		Finished:        event.NotFinished, //Default
+		Status:          event.Register, //Default
 	}
 }
 
@@ -60,7 +60,7 @@ func FromUpdateToModel(updateDTO event_dto.UpdateEventDTORequest, id uuid.UUID) 
 	}
 
 	if updateDTO.Finished != nil {
-		model.Finished = *updateDTO.Finished
+		model.Status = *updateDTO.Finished
 	}
 
 	return model
@@ -84,7 +84,7 @@ func ToDTO(eventModel event.Event) event_dto.EventDTOResponse {
 		AdditionalInfo:  eventModel.AdditionalInfo,
 		PreviousEventID: eventModel.PreviousEventID,
 		EventType:       eventModel.EventType,
-		Finished:        eventModel.Finished,
+		Finished:        eventModel.Status,
 		Events:          new([]event_dto.EventDTOResponse),
 	}
 }

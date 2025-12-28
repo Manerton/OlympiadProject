@@ -216,3 +216,14 @@ func (r *ApplicationRepository) GetApplicationsBySchoolListID(ctx context.Contex
 	return Res, nil
 
 }
+
+func (r *ApplicationRepository) GetApprovedApplicationsByEventID(ctx context.Context, orm orm.ORM, eventId uuid.UUID) ([]models.Application, error) {
+	const op = "repositories.application_repository.GetApprovedApplicationsByEventID"
+
+	result := []models.Application{}
+	err := orm.Find(ctx, models.Application{}, nil, nil, nil, nil, nil, &result, models.Application{EventID: eventId, Status: models.ApprovedStatus})
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return result, nil
+}

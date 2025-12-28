@@ -3,6 +3,7 @@ package ApplicationService
 import (
 	"context"
 	"fmt"
+	"log"
 	ApplicationDto "main/internal/dto/ApplicationDto"
 	"main/internal/models"
 	"main/internal/storage/orm"
@@ -18,6 +19,7 @@ type ApplicationRepository interface {
 	GetApplicationsByUserID(ctx context.Context, orm orm.ORM, userID uuid.UUID, offset *int, limit *int) ([]models.Application, error)
 	GetApplicationsByEventID(ctx context.Context, orm orm.ORM, eventID uuid.UUID, offset *int, limit *int) ([]models.Application, error)
 	GetApplicationsBySchoolID(ctx context.Context, orm orm.ORM, schoolID uuid.UUID, offset *int, limit *int) ([]models.Application, error)
+	GetApprovedApplicationsByEventID(ctx context.Context, orm orm.ORM, eventId uuid.UUID) ([]models.Application, error)
 	GetApplicationsBySchoolListID(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]models.Application, error)
 	UpdateApplication(ctx context.Context, orm orm.ORM, application models.Application) error
 	DeleteApplicationByID(ctx context.Context, orm orm.ORM, id uuid.UUID) error
@@ -179,7 +181,7 @@ func (s *ApplicationService) GetApplicationsBySchoolListID(ctx context.Context, 
 	for _, id := range ids {
 		uid, err := uuid.Parse(id)
 		if err != nil {
-			return nil, fmt.Errorf("%s: %w", op, "failed parse id")
+			return nil, fmt.Errorf("%s: %s", op, "failed parse id")
 		}
 		uids = append(uids, uid)
 	}
@@ -190,6 +192,42 @@ func (s *ApplicationService) GetApplicationsBySchoolListID(ctx context.Context, 
 	}
 
 	return ConvertManyApplicationsToDTO(applications), nil
+}
+
+func (s *ApplicationService) SetParticipantCode(ctx context.Context, eventIDStr string) error {
+	const op = "services.application_service.SetParticipantCode"
+	eventUId, err := uuid.Parse(eventIDStr)
+	if err != nil {
+		return fmt.Errorf("%s: %s", op, "failed parse id")
+	}
+
+	applications, err := s.repository.GetApprovedApplicationsByEventID(ctx, s.db, eventUId)
+	if err != nil {
+		return fmt.Errorf("%s: %s", op, "failde get applications by event id")
+	}
+
+	log.Println(applications)
+
+	transactionBegin, err := s.db.TransactionBegin()
+	if err != nil {
+		return fmt.Errorf("%s: %s", op, "failed begin transaction")
+	}
+
+	for i, application := range applications {
+		code := fmt.Sprintf("%02d_%03d", application.ClassParticipation, i+1)
+		application.Code = code
+
+		log.Println(application)
+
+		err := s.repository.UpdateApplication(ctx, transactionBegin, application)
+		if err != nil {
+			transactionBegin.TransactionRollback()
+			return fmt.Errorf("%s: %s", op, "failed update application")
+		}
+	}
+
+	transactionBegin.TransactionCommit()
+	return nil
 }
 
 // Создание новой заявки

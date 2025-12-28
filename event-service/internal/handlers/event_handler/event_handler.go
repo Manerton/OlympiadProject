@@ -21,6 +21,8 @@ type EventServiceInterface interface {
 	GetAllEvents(ctx context.Context, offset, limit *int) ([]event_dto.EventDTOResponse, error)
 	GetEventByID(ctx context.Context, id string) (event_dto.EventDTOResponse, error)
 
+	GetEventsByStatus(ctx context.Context, status int) ([]event_dto.EventDTOResponse, error)
+
 	GetEventByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string) (event_dto.DetailsEvent, error)
 	GetEventsByFilterAndFields(ctx context.Context, filter event_dto.EventDTO, fields *[]string, offset, limit *int, order *string) ([]event_dto.DetailsEvent, error)
 
@@ -156,6 +158,29 @@ func (h *EventHandler) GetAllEvents(w http.ResponseWriter, r *http.Request) {
 	}
 
 	eventsDTO, err := h.service.GetAllEvents(ctx, offset, limit)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.StatusOK,
+		StatusCode: http.StatusOK,
+		Data:       eventsDTO,
+	})
+}
+
+func (h *EventHandler) GetAllEventStatusRegister(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	eventsDTO, err := h.service.GetEventsByStatus(ctx, event.Register)
 	if err != nil {
 		if apiErr, ok := errs.IsApiError(err); ok {
 			render.Status(r, apiErr.HttpCode)

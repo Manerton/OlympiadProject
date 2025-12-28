@@ -114,6 +114,9 @@ func (a *App) initRoutes(router *chi.Mux,
 	router.Post("/api/events/list", eventHandler.GetEventsByListID)
 
 	router.Get("/api/events", eventHandler.GetAllEvents)
+
+	router.Get("/api/events/register", eventHandler.GetAllEventStatusRegister)
+
 	router.Get("/api/events/{id}", eventHandler.GetEventByID)
 	router.Get("/api/events/regional-stage", eventHandler.GetEventsTypeRegionalStage)
 	router.Get("/api/events/class", eventHandler.GetEventsClassType)

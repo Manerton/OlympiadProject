@@ -295,6 +295,20 @@ func (h *ApplicationHandler) CreateApplication(w http.ResponseWriter, r *http.Re
 	render.JSON(w, r, map[string]interface{}{"application_id": id})
 }
 
+func (h *ApplicationHandler) SetParticipantCode(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	eventIDStr := chi.URLParam(r, "id")
+	err := h.service.SetParticipantCode(ctx, eventIDStr)
+	if err != nil {
+		h.logger.Error("Ошибка назначения кода участника", slog.Any("error", err))
+		http.Error(w, "Не удалось назначить кода участника", http.StatusInternalServerError)
+		return
+	}
+
+	render.JSON(w, r, response.SuccessResponse("Коды выставленны успешно"))
+}
+
 // Обновление статуса заявки
 func (h *ApplicationHandler) UpdateApplicationStatus(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

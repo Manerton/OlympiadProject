@@ -176,6 +176,11 @@ HTTP_SERVERS_INFO:
       target: "http://event-service:8080/api/events/regional-stage"
       skip_auth: true
 
+    - prefix: "/events-register"
+      aggregate: false
+      target: "http://event-service:8080/api/events/register"
+      skip_auth: true
+
     # ==================== APPLICATIONS SERVICE (8082) ====================
     - prefix: "/applications/"
       aggregate: false
@@ -201,6 +206,11 @@ HTTP_SERVERS_INFO:
     - prefix: "/applications/user/"
       aggregate: false
       target: "http://application-service:8082/applications/user/"
+      skip_auth: false
+
+    - prefix: "/applications/set-code/"
+      aggregate: false
+      target: "http://application-service:8082/applications/participant-code/"
       skip_auth: false
 
     # ==================== JURY SERVICE (8090) ====================
