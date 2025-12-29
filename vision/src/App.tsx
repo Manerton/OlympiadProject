@@ -62,6 +62,7 @@ import VerifyApplicationsPage from "./components/General/Pages/VerifyApplication
 import LinkAcces from './components/Admin/Pages/LinkAccess';
 import LinkAccess from './components/Admin/Pages/LinkAccess';
 import RegisterLayout from './components/General/Layouts/RegisterLayout';
+import OlympiadsAdminTable from './components/Admin/Pages/Olympiads';
 
 function App() {
     return (
@@ -118,6 +119,7 @@ function App() {
                             }
                         >
                             <Route path="/link-access" element={<LinkAccess />}></Route>
+                            <Route path="/list-olympiads" element={<OlympiadsAdminTable />}></Route>
 
                             <Route path="/AdminPanel" element={<AdminPanel />} />
                             <Route path="/olymp-admin/user/index" element={<UserIndex />} />

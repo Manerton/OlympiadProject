@@ -49,6 +49,7 @@ export const USER = {
 
 export const APPLICATION = {
     getByUser: `${API_URL}/ApplicationEvent/`,
+    generateCode: `${API_URL}/applications/set-code/`,
     create: `${API_URL}/applications/create/`,
     update: `${API_URL}/applications/`,
     delete: `${API_URL}/applications/`,

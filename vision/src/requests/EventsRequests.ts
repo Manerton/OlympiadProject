@@ -1,6 +1,6 @@
 import axios from "axios";
 import { API_CONFIG } from "../config/api";
-import { MyEvent } from "../components/types/event";
+import { MyEvent, UpdateEventDTORequest } from "../components/types/event";
 
 
 export async function fetchRegionalStages() {
@@ -72,6 +72,15 @@ export async function fetchSimpleOlympiads(   ) {
 
 }
 
+export async function axiosGetAllOlympiads() {
+  let url = `${API_CONFIG.ALLEVENTS}`;
+  const res = await axios.get(url, {
+    withCredentials: true,
+  });
+
+  return res.data;
+}
+
 export async function fetchOlympiadAvailableClassEvents(token: string, id: string) {
   const res = await axios.get(`${API_CONFIG.AVAILABLE}/${id}`, {
     withCredentials: true,
@@ -100,10 +109,26 @@ export async function fetchOlympiadStages(id: string) {
 
 export async function axiosUpdateEvent(token: string, event: MyEvent) {
   const res = await axios.put(
-    `${API_CONFIG.EVENT}/${event.id}`,
+    `${API_CONFIG.EVENT}${event.id}`,
     event, {
     headers: {
       Authorization: `Bearer ${token}` // добавляем токен
     }
   })
+
 }
+
+export async function axiosStatusUpdate(token: string,
+    eventId: string,
+    payload: UpdateEventDTORequest
+) {
+    return axios.put(
+        `${API_CONFIG.EVENT}${eventId}`,
+        payload,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    );
+};

@@ -10,6 +10,7 @@ export interface MyEvent {
     previous_event_id?: string;
     event_type: string;
     subject?: number;
+    status: number;
     class_number?: number;
     additional_info?: string;
     events?: MyEvent[];
@@ -37,4 +38,18 @@ export interface ApplicationEvent {
     id: string
     status: number
     class_participation: number
+}
+
+export interface UpdateEventDTORequest {
+    name?: string;
+    start_date?: string;   // ISO string
+    end_date?: string;     // ISO string
+
+    dates?: string[];
+    profiles?: string[];
+
+    subject?: string;
+    class_category?: string;
+    additional_info?: string;
+    status?: number;
 }

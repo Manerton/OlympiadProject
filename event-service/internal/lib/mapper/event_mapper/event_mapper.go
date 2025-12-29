@@ -59,8 +59,8 @@ func FromUpdateToModel(updateDTO event_dto.UpdateEventDTORequest, id uuid.UUID) 
 		model.AdditionalInfo = *updateDTO.AdditionalInfo
 	}
 
-	if updateDTO.Finished != nil {
-		model.Status = *updateDTO.Finished
+	if updateDTO.Status != nil {
+		model.Status = *updateDTO.Status
 	}
 
 	return model
@@ -84,7 +84,7 @@ func ToDTO(eventModel event.Event) event_dto.EventDTOResponse {
 		AdditionalInfo:  eventModel.AdditionalInfo,
 		PreviousEventID: eventModel.PreviousEventID,
 		EventType:       eventModel.EventType,
-		Finished:        eventModel.Status,
+		Status:          eventModel.Status,
 		Events:          new([]event_dto.EventDTOResponse),
 	}
 }

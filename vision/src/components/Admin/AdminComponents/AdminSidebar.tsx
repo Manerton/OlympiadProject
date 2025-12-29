@@ -24,9 +24,8 @@ const AdminSidebar: React.FC = () => {
 
   return (
     <div
-      className={`d-flex flex-column justify-content-between bg-dark text-white border-end ${
-        collapsed ? "px-2" : "px-3"
-      }`}
+      className={`d-flex flex-column justify-content-between bg-dark text-white border-end ${collapsed ? "px-2" : "px-3"
+        }`}
       style={{
         width: collapsed ? "70px" : "250px",
         height: "100vh",
@@ -132,11 +131,20 @@ const AdminSidebar: React.FC = () => {
                 <CreditCard className="me-2" />
                 {!collapsed && "Ссылки доступа"}
               </Nav.Link>
-
+              {/* 
 
               <Nav.Link
                 as={Link}
                 to="/olymp-admin/event/index"
+                className="text-white d-flex align-items-center"
+              >
+                <CalendarCheck className="me-2" />
+                {!collapsed && "Олимпиады"}
+              </Nav.Link> */}
+
+              <Nav.Link
+                as={Link}
+                to="/list-olympiads"
                 className="text-white d-flex align-items-center"
               >
                 <CalendarCheck className="me-2" />
@@ -158,18 +166,18 @@ const AdminSidebar: React.FC = () => {
 
       {/* Нижняя часть: Тема и выход */}
       <div className="d-flex flex-column pb-3 justify-content-center align-items-center">
-          <div className="mb-4">
-            <ThemeToggleButton />
-          </div>
-
-          <Nav.Link
-            onClick={logout}
-            className="text-danger align-items-center px-2"
-          >
-            <BoxArrowLeft className="me-2" />
-            {!collapsed && "Выйти"}
-          </Nav.Link>
+        <div className="mb-4">
+          <ThemeToggleButton />
         </div>
+
+        <Nav.Link
+          onClick={logout}
+          className="text-danger align-items-center px-2"
+        >
+          <BoxArrowLeft className="me-2" />
+          {!collapsed && "Выйти"}
+        </Nav.Link>
+      </div>
     </div>
   );
 };

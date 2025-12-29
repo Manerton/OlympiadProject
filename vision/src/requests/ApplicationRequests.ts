@@ -74,7 +74,7 @@ export async function axiosRevokeApplication(token: string, applicationId: strin
 
 export async function axiosUpdateApplication(token: string, applicationId: string, status: string)
 {
-    const res = await axios.Put(
+    const res = await axios.put(
         APPLICATION.update + `${applicationId}`,
         {
             headers: {
@@ -85,4 +85,18 @@ export async function axiosUpdateApplication(token: string, applicationId: strin
         }
     )
     return res.data;
+}
+
+export async function axiosGenerateCode(token:string, eventId: string) {
+    const res = await axios.post(
+        APPLICATION.generateCode + eventId,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            withCredentials: true
+        }
+    )
+    return res.data
 }

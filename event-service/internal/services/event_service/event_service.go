@@ -632,6 +632,9 @@ func (s *EventService) updateEventDTO(ctx context.Context, updatedEvent event.Ev
 	if updatedEvent.AdditionalInfo != "" {
 		oldEvent.AdditionalInfo = updatedEvent.AdditionalInfo
 	}
+	if updatedEvent.Status != 0 {
+		oldEvent.Status = updatedEvent.Status
+	}
 
 	return oldEvent, nil
 }
@@ -654,12 +657,11 @@ func (s *EventService) UpdateEvent(ctx context.Context, id string, eventDTO even
 	if err != nil {
 		return errs.ErrInternalError.Wrap("failed get and update dto model")
 	}
-
-	err = s.checkCorrectEventDTO(ctx, &event, true)
-	if err != nil {
-		log.Error("failed check correct event", liblogger.Err(err))
-		return errs.ErrBadRequest.Wrap("incorrect event data")
-	}
+	// err = s.checkCorrectEventDTO(ctx, &event, true)
+	// if err != nil {
+	// 	log.Error("failed check correct event", liblogger.Err(err))
+	// 	return errs.ErrBadRequest.Wrap("incorrect event data")
+	// }
 
 	err = s.eventRepository.UpdateEvent(ctx, s.db, event)
 	if err != nil {
