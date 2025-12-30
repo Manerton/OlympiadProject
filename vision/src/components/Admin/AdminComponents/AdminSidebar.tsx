@@ -153,7 +153,7 @@ const AdminSidebar: React.FC = () => {
 
               <Nav.Link
                 as={Link}
-                to="/olymp-admin/application/index"
+                to="/AllApplications"
                 className="text-white d-flex align-items-center"
               >
                 <FileText className="me-2" />

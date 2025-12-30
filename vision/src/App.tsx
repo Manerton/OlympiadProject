@@ -63,6 +63,7 @@ import LinkAcces from './components/Admin/Pages/LinkAccess';
 import LinkAccess from './components/Admin/Pages/LinkAccess';
 import RegisterLayout from './components/General/Layouts/RegisterLayout';
 import OlympiadsAdminTable from './components/Admin/Pages/Olympiads';
+import ApplicationsPage from "./components/Admin/Pages/ApplicationsAll";
 
 function App() {
     return (
@@ -76,7 +77,7 @@ function App() {
                             <Route path="/" element={<MainPage />} />
                             <Route path="/PersonalAccount" element={<ParticipantDashboard />} />
                             <Route path="/verifyApplications" element={<VerifyApplicationsPage />} />
-
+                            <Route path="/AllApplications" element={<ApplicationsPage />} />
                             {/* <Route
                             path="/profile"
                             element={

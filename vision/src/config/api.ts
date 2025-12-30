@@ -44,6 +44,7 @@ export const LINKS = {
 export const USER = {
     update: `${API_URL}/users/`,
     info: `${API_URL}/users/all-info/`,
+    infoParticipant: `${API_URL}/users/participant/all-info/`,
     changePassword: `${API_URL}/users/change-password/`,
 };
 
@@ -51,6 +52,7 @@ export const APPLICATION = {
     getByUser: `${API_URL}/ApplicationEvent/`,
     generateCode: `${API_URL}/applications/set-code/`,
     create: `${API_URL}/applications/create/`,
+    getALL: `${API_URL}/applications/`,
     update: `${API_URL}/applications/`,
     delete: `${API_URL}/applications/`,
 };
