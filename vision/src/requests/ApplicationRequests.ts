@@ -87,16 +87,17 @@ export async function axiosUpdateApplication(token: string, applicationId: strin
     return res.data;
 }
 
-export async function axiosGenerateCode(token:string, eventId: string) {
-    const res = await axios.post(
-        APPLICATION.generateCode + eventId,
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            withCredentials: true
-        }
-    )
-    return res.data
+export async function axiosGenerateCode(token: string, eventId: string) {
+  const res = await axios.post(
+    APPLICATION.generateCode + eventId,
+    null, // body
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      withCredentials: true
+    }
+  )
+  return res.data
 }

@@ -211,7 +211,7 @@ HTTP_SERVERS_INFO:
     - prefix: "/applications/set-code/"
       aggregate: false
       target: "http://application-service:8082/applications/participant-code/"
-      skip_auth: true
+      skip_auth: false
 
     # ==================== JURY SERVICE (8090) ====================
     - prefix: "/jury-assignments/event/"
