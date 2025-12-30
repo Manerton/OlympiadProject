@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Table, Alert, Badge } from "react-bootstrap";
 import axios from "axios";
-import { APPLICATION, USER, SCHOOLS, API_CONFIG } from "../../../config/api";
-import {useAuth} from "../../Helpers/AuthContext";
+import { APPLICATION, USER, SCHOOLS, API_CONFIG, AUTH } from "../../../config/api";
+import { useAuth } from "../../Helpers/AuthContext";
 
 // ===== Константы отображения =====
 const CITIZENSHIP_TEXT: Record<number, string> = { 1: "Россия", 2: "Другое" };
-const DISABILITY_TEXT: Record<number, string> = { 0: "Нет", 1: "Есть" };
+const DISABILITY_TEXT: Record<number, string> = { 1: "Нет", 2: "Есть" };
 const STATUS_TEXT: Record<number, string> = { 1: "Не обработано", 2: "Одобрено", 3: "Отклонено" };
 const GENDER_TEXT: Record<number, string> = { 1: "Мужской", 2: "Женский" };
 
@@ -22,15 +22,24 @@ interface RawApplication {
     submittedAt: string;
 }
 
+interface District {
+    id: string;
+    name: string;
+    region: number;
+}
+
 interface AggregatedApplication {
     id: string;
     fio: string;
+    email: string;
+    phone: string;
     birthdate: string;
     gender: string;
     classNumber: number;
     citizenship: string;
     disability: string;
     schoolName: string;
+    districtName: string;
     olympiadName: string;
     profile?: string | null;
     category: number;
@@ -72,6 +81,27 @@ async function axiosGetEvent(token: string, id: string) {
     return res.data.data;
 }
 
+async function axiosGetAllDistricts(
+    token: string,
+    regionId: number = 30
+): Promise<Map<string, string>> {
+    try {
+        const res = await axios.get(`${AUTH.district}/${regionId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            withCredentials: true
+        });
+
+        const districts: District[] = res.data.data;
+        const districtMap = new Map<string, string>();
+
+        districts.forEach(d => districtMap.set(d.id, d.name));
+        return districtMap;
+    } catch (error) {
+        console.error("Ошибка при получении районов:", error);
+        return new Map();
+    }
+}
+
 // ===== Компонент =====
 const ApplicationsPage: React.FC = () => {
     const { accessToken } = useAuth();
@@ -80,42 +110,81 @@ const ApplicationsPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        if (accessToken) fetchData();
+    }, [accessToken]);
 
     const fetchData = async () => {
+        if (!accessToken) {
+            setError("Отсутствует токен авторизации");
+            setLoading(false);
+            return;
+        }
+
         try {
             setLoading(true);
-            const raw = await axiosGetAllApplications(accessToken!);
+            setError(null);
+
+            const districts = await axiosGetAllDistricts(accessToken);
+            const raw = await axiosGetAllApplications(accessToken);
 
             const aggregated = await Promise.all(
                 raw.map(async (app) => {
-                    const user = await axiosGetUser(accessToken!, app.userId);
-                    const school = await axiosGetSchool(accessToken!, user.school_id);
-                    const event = await axiosGetEvent(accessToken!, app.eventId);
+                    try {
+                        const user = await axiosGetUser(accessToken, app.userId);
+                        const school = await axiosGetSchool(accessToken, user.school_id);
+                        const event = await axiosGetEvent(accessToken, app.eventId);
 
-                    return {
-                        id: app.id,
-                        fio: `${user.surname} ${user.firstname} ${user.patronymic}`,
-                        birthdate: user.birthdate,
-                        gender: GENDER_TEXT[user.gender] ?? user.gender,
-                        classNumber: user.class_number,
-                        citizenship: CITIZENSHIP_TEXT[user.citizenship] ?? user.citizenship,
-                        disability: DISABILITY_TEXT[user.disability] ?? user.disability,
-                        schoolName: school.name,
-                        olympiadName: event.name,
-                        profile: event.profiles,
-                        category: app.class_participation,
-                        status: app.status,
-                        code: app.code,
-                        submittedAt: app.submittedAt
-                    } as AggregatedApplication;
+                        const districtName =
+                            school.district_id && districts.has(school.district_id)
+                                ? districts.get(school.district_id)!
+                                : "Не указан";
+
+                        return {
+                            id: app.id,
+                            fio: `${user.surname} ${user.firstname} ${user.patronymic}`,
+                            email: user.email ?? "—",
+                            phone: user.phone ?? "—",
+                            birthdate: user.birthdate,
+                            gender: GENDER_TEXT[user.gender] ?? user.gender,
+                            classNumber: user.class_number,
+                            citizenship: CITIZENSHIP_TEXT[user.citizenship] ?? user.citizenship,
+                            disability: DISABILITY_TEXT[user.disability] ?? user.disability,
+                            schoolName: school.name,
+                            districtName,
+                            olympiadName: event.name,
+                            profile: event.profiles,
+                            category: app.class_participation,
+                            status: app.status,
+                            code: app.code,
+                            submittedAt: app.submittedAt
+                        } as AggregatedApplication;
+                    } catch {
+                        return {
+                            id: app.id,
+                            fio: "Ошибка",
+                            email: "—",
+                            phone: "—",
+                            birthdate: "",
+                            gender: "Ошибка",
+                            classNumber: 0,
+                            citizenship: "Ошибка",
+                            disability: "Ошибка",
+                            schoolName: "Ошибка",
+                            districtName: "Ошибка",
+                            olympiadName: "Ошибка",
+                            profile: null,
+                            category: app.class_participation,
+                            status: app.status,
+                            code: app.code,
+                            submittedAt: app.submittedAt
+                        } as AggregatedApplication;
+                    }
                 })
             );
 
             setData(aggregated);
         } catch (e: any) {
-            setError(e.message);
+            setError(e.response?.data?.message || e.message || "Ошибка загрузки");
         } finally {
             setLoading(false);
         }
@@ -127,15 +196,19 @@ const ApplicationsPage: React.FC = () => {
     return (
         <div className="container py-4">
             <h3 className="mb-3">Все заявки</h3>
+
             <Table bordered hover responsive>
                 <thead>
                 <tr>
                     <th>№</th>
                     <th>ФИО</th>
+                    <th>Email</th>
+                    <th>Телефон</th>
                     <th>Школа</th>
+                    <th>Муниципалитет</th>
                     <th>Олимпиада</th>
                     <th>Профиль</th>
-                    <th>Класс участия</th>
+                    <th>Класс</th>
                     <th>Пол</th>
                     <th>Гражданство</th>
                     <th>ОВЗ</th>
@@ -149,14 +222,21 @@ const ApplicationsPage: React.FC = () => {
                     <tr key={a.id}>
                         <td>{i + 1}</td>
                         <td>{a.fio}</td>
+                        <td>{a.email}</td>
+                        <td>{a.phone}</td>
                         <td>{a.schoolName}</td>
+                        <td>{a.districtName}</td>
                         <td>{a.olympiadName}</td>
                         <td>{a.profile ?? "—"}</td>
-                        <td className="text-center"><Badge bg="primary">{a.category}</Badge></td>
+                        <td className="text-center">
+                            <Badge bg="primary">{a.category}</Badge>
+                        </td>
                         <td>{a.gender}</td>
                         <td>{a.citizenship}</td>
                         <td>{a.disability}</td>
-                        <td><Badge>{STATUS_TEXT[a.status]}</Badge></td>
+                        <td>
+                            <Badge>{STATUS_TEXT[a.status]}</Badge>
+                        </td>
                         <td>{a.code}</td>
                         <td>{new Date(a.submittedAt).toLocaleDateString()}</td>
                     </tr>
