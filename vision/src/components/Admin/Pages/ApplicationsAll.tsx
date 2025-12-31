@@ -16,6 +16,7 @@ interface RawApplication {
     userId: string;
     schoolId: string;
     eventId: string;
+    profile: string;
     class_participation: number;
     status: number;
     code: string;
@@ -30,7 +31,9 @@ interface District {
 
 interface AggregatedApplication {
     id: string;
-    fio: string;
+    firstname: string;
+    surname: string;
+    patronymic: string;
     email: string;
     phone: string;
     birthdate: string;
@@ -141,7 +144,9 @@ const ApplicationsPage: React.FC = () => {
 
                         return {
                             id: app.id,
-                            fio: `${user.surname} ${user.firstname} ${user.patronymic}`,
+                            surname: `${user.surname}`,
+                            firstname: `${user.firstname}`,
+                            patronymic: `${user.patronymic}`,
                             email: user.email ?? "—",
                             phone: user.phone ?? "—",
                             birthdate: user.birthdate,
@@ -152,7 +157,7 @@ const ApplicationsPage: React.FC = () => {
                             schoolName: school.name,
                             districtName,
                             olympiadName: event.name,
-                            profile: event.profiles,
+                            profile: app.profile,
                             category: app.class_participation,
                             status: app.status,
                             code: app.code,
@@ -161,7 +166,9 @@ const ApplicationsPage: React.FC = () => {
                     } catch {
                         return {
                             id: app.id,
-                            fio: "Ошибка",
+                            surname: "Ошибка",
+                            firstname: "Ошибка",
+                            patronymic: "Ошибка",
                             email: "—",
                             phone: "—",
                             birthdate: "",
@@ -201,14 +208,17 @@ const ApplicationsPage: React.FC = () => {
                 <thead>
                 <tr>
                     <th>№</th>
-                    <th>ФИО</th>
+                    <th>Фамилия</th>
+                    <th>Имя</th>
+                    <th>Отчество</th>
                     <th>Email</th>
                     <th>Телефон</th>
                     <th>Школа</th>
                     <th>Муниципалитет</th>
                     <th>Олимпиада</th>
                     <th>Профиль</th>
-                    <th>Класс</th>
+                    <th>Класс обучения</th>
+                    <th>Класс участия</th>
                     <th>Пол</th>
                     <th>Гражданство</th>
                     <th>ОВЗ</th>
@@ -221,7 +231,9 @@ const ApplicationsPage: React.FC = () => {
                 {data.map((a, i) => (
                     <tr key={a.id}>
                         <td>{i + 1}</td>
-                        <td>{a.fio}</td>
+                        <td>{a.surname}</td>
+                        <td>{a.firstname}</td>
+                        <td>{a.patronymic}</td>
                         <td>{a.email}</td>
                         <td>{a.phone}</td>
                         <td>{a.schoolName}</td>
@@ -229,7 +241,10 @@ const ApplicationsPage: React.FC = () => {
                         <td>{a.olympiadName}</td>
                         <td>{a.profile ?? "—"}</td>
                         <td className="text-center">
-                            <Badge bg="primary">{a.category}</Badge>
+                            {a.classNumber}
+                        </td>
+                        <td className="text-center">
+                           {a.category}
                         </td>
                         <td>{a.gender}</td>
                         <td>{a.citizenship}</td>
