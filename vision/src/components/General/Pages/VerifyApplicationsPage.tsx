@@ -233,6 +233,22 @@ const VerifyApplicationsPage: React.FC = () => {
         }
     };
 
+    const groupedByOlympiad = applications.reduce<Record<string, AggregatedApplication[]>>(
+        (acc, app) => {
+            if (!acc[app.olympiadName]) {
+                acc[app.olympiadName] = [];
+            }
+            acc[app.olympiadName].push(app);
+            return acc;
+        },
+        {}
+    );
+
+    const sortedOlympiads = Object.keys(groupedByOlympiad).sort();
+
+
+
+
     // ===== UI =====
     return (
         <div className="container py-4">
@@ -266,85 +282,84 @@ const VerifyApplicationsPage: React.FC = () => {
                 </Alert>
             ) : (
                 <div className="table-responsive">
-                    <Table striped bordered hover className="align-middle">
-                        <thead className="table-light">
-                        <tr>
-                            <th>№</th>
-                            <th>ФИО ученика</th>
-                            <th>Школа</th>
-                            <th>Класс обучения</th>
-                            <th>Олимпиада</th>
-                            <th>Категория (класс участия)</th>
-                            <th>Пол</th>
-                            <th>Дата рождения</th>
-                            <th>Гражданство</th>
-                            <th>ОВЗ</th>
-                            <th>Статус</th>
-                            <th>Действия</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {applications.map((app, index) => (
-                            <tr key={app.id}>
-                                <td className="fw-bold">{index + 1}</td>
-                                <td>
-                                    {app.surname} {app.firstName} {app.patronymic}
-                                </td>
-                                <td>{app.schoolName}</td>
-                                <td className="text-center">{app.classNumber}</td>
-                                <td>{app.olympiadName}</td>
-                                <td className="text-center">
-                                    <Badge bg="primary">{app.category} класс</Badge>
-                                </td>
-                                <td>{GENDER_TEXT[app.gender] || app.gender}</td>
-                                <td>{formatBirthdate(app.birthdate)}</td>
-                                <td>{CITIZENSHIP_TEXT[app.citizenship] || app.citizenship}</td>
-                                <td>{DISABILITY_TEXT[app.disability] || app.disability}</td>
-                                <td>
-                                    <Badge bg={getStatusBadgeVariant(app.status)} className="fs-7">
-                                        {STATUS_TEXT[app.status]}
+                    {sortedOlympiads.map((olympiadName) => {
+                        const apps = groupedByOlympiad[olympiadName];
+
+                        return (
+                            <div key={olympiadName} className="mb-5">
+                                {/* Заголовок предмета */}
+                                <h4 className="mb-3">
+                                    {olympiadName}
+                                    <Badge bg="secondary" className="ms-2">
+                                        {apps.length}
                                     </Badge>
-                                </td>
-                                <td>
-                                    <div className="d-flex gap-2">
-                                        <Button
-                                            variant="success"
-                                            size="sm"
-                                            onClick={() => updateStatus(app, 2)}
-                                            disabled={updatingStatus === app.id || app.status === 2}
-                                            title="Одобрить заявку"
-                                        >
-                                            {updatingStatus === app.id && app.status === 2 ? (
-                                                <>
-                                                    <span className="spinner-border spinner-border-sm me-1" />
-                                                    Одобрено
-                                                </>
-                                            ) : (
-                                                "Одобрить"
-                                            )}
-                                        </Button>
-                                        <Button
-                                            variant="danger"
-                                            size="sm"
-                                            onClick={() => updateStatus(app, 3)}
-                                            disabled={updatingStatus === app.id || app.status === 3}
-                                            title="Отклонить заявку"
-                                        >
-                                            {updatingStatus === app.id && app.status === 3 ? (
-                                                <>
-                                                    <span className="spinner-border spinner-border-sm me-1" />
-                                                    Отклонено
-                                                </>
-                                            ) : (
-                                                "Отклонить"
-                                            )}
-                                        </Button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </Table>
+                                </h4>
+
+                                <div className="table-responsive">
+                                    <Table striped bordered hover className="align-middle">
+                                        <thead className="table-light">
+                                            <tr>
+                                                <th>№</th>
+                                                <th>ФИО ученика</th>
+                                                <th>Школа</th>
+                                                <th>Класс обучения</th>
+                                                <th>Категория</th>
+                                                <th>Пол</th>
+                                                <th>Дата рождения</th>
+                                                <th>Гражданство</th>
+                                                <th>ОВЗ</th>
+                                                <th>Статус</th>
+                                                <th>Действия</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {apps.map((app, index) => (
+                                                <tr key={app.id}>
+                                                    <td className="fw-bold">{index + 1}</td>
+                                                    <td>{app.surname} {app.firstName} {app.patronymic}</td>
+                                                    <td>{app.schoolName}</td>
+                                                    <td className="text-center">{app.classNumber}</td>
+                                                    <td className="text-center">
+                                                        <Badge bg="primary">{app.category} класс</Badge>
+                                                    </td>
+                                                    <td>{GENDER_TEXT[app.gender]}</td>
+                                                    <td>{formatBirthdate(app.birthdate)}</td>
+                                                    <td>{CITIZENSHIP_TEXT[app.citizenship]}</td>
+                                                    <td>{DISABILITY_TEXT[app.disability]}</td>
+                                                    <td>
+                                                        <Badge bg={getStatusBadgeVariant(app.status)}>
+                                                            {STATUS_TEXT[app.status]}
+                                                        </Badge>
+                                                    </td>
+                                                    <td>
+                                                        <div className="d-flex gap-2">
+                                                            <Button
+                                                                variant="success"
+                                                                size="sm"
+                                                                onClick={() => updateStatus(app, 2)}
+                                                                disabled={updatingStatus === app.id || app.status === 2}
+                                                            >
+                                                                Одобрить
+                                                            </Button>
+                                                            <Button
+                                                                variant="danger"
+                                                                size="sm"
+                                                                onClick={() => updateStatus(app, 3)}
+                                                                disabled={updatingStatus === app.id || app.status === 3}
+                                                            >
+                                                                Отклонить
+                                                            </Button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </Table>
+                                </div>
+                            </div>
+                        );
+                    })}
+
 
                     <div className="mt-3 text-muted small">
                         <p><strong>Легенда статусов:</strong></p>

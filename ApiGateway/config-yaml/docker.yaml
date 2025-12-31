@@ -401,10 +401,10 @@ HTTP_SERVERS_INFO:
       aggregate: true
       targets:
         - url: "http://sso-service:8181/api/schools/district/"
-        - fields: [ "" ]
+          fields: [ "" ]
         - url: "http://application-service:8082/applications/school-list/"
           fields: [ "" ]
-        - url: "http://sso-service:8181/api/users/all-info-list/"
+        - url: "http://sso-service:8181/api/users/all-info-list"
           fields: [ "" ]
         - url: "http://event-service:8080/api/events/list"
           fields: [ "" ]
