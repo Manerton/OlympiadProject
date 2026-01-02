@@ -148,7 +148,7 @@ const ApplicationsPage: React.FC = () => {
                             firstname: `${user.firstname}`,
                             patronymic: `${user.patronymic}`,
                             email: user.email ?? "—",
-                            phone: user.phone ?? "—",
+                            phone: user.phone_number ?? "—",
                             birthdate: user.birthdate,
                             gender: GENDER_TEXT[user.gender] ?? user.gender,
                             classNumber: user.class_number,
