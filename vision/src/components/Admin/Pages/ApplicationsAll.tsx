@@ -211,6 +211,7 @@ const ApplicationsPage: React.FC = () => {
                     <th>Фамилия</th>
                     <th>Имя</th>
                     <th>Отчество</th>
+                    <th>Дата рождения</th>
                     <th>Email</th>
                     <th>Телефон</th>
                     <th>Школа</th>
@@ -234,6 +235,7 @@ const ApplicationsPage: React.FC = () => {
                         <td>{a.surname}</td>
                         <td>{a.firstname}</td>
                         <td>{a.patronymic}</td>
+                        <td>{a.birthdate}</td>
                         <td>{a.email}</td>
                         <td>{a.phone}</td>
                         <td>{a.schoolName}</td>
