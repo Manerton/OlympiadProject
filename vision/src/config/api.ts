@@ -53,6 +53,7 @@ export const APPLICATION = {
     generateCode: `${API_URL}/applications/set-code/`,
     create: `${API_URL}/applications/create/`,
     getALL: `${API_URL}/applications/`,
+    getByEvent: `${API_URL}/applications/event/`,
     update: `${API_URL}/applications/`,
     delete: `${API_URL}/applications/`,
 };
