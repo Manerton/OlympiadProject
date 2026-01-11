@@ -202,7 +202,11 @@ func (s *ApplicationService) SetParticipantCode(ctx context.Context, eventIDStr 
 		return fmt.Errorf("%s: %s", op, "failed parse id")
 	}
 
-	applications, err := s.repository.GetApprovedApplicationsByEventID(ctx, s.db, eventUId)
+	// Только одобренные
+	// applications, err := s.repository.GetApprovedApplicationsByEventID(ctx, s.db, eventUId)
+
+	// Все, временно
+	applications, err := s.repository.GetApplicationsByEventID(ctx, s.db, eventUId, nil, nil)
 	if err != nil {
 		return fmt.Errorf("%s: %s", op, "failde get applications by event id")
 	}

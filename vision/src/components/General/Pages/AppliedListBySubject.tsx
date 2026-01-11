@@ -254,9 +254,11 @@ const ApplicationsPageBySubject: React.FC = () => {
                 <thead>
                     <tr>
                         <th>№</th>
+                        <th>Код</th>
                         <th>Фамилия</th>
                         <th>Имя</th>
                         <th>Отчество</th>
+                        <th>Дата рождения</th>
                         <th>Email</th>
                         <th>Телефон</th>
                         <th>Школа</th>
@@ -269,7 +271,6 @@ const ApplicationsPageBySubject: React.FC = () => {
                         <th>Гражданство</th>
                         <th>ОВЗ</th>
                         <th>Статус</th>
-                        <th>Код</th>
                         <th>Дата подачи</th>
                     </tr>
                 </thead>
@@ -277,9 +278,11 @@ const ApplicationsPageBySubject: React.FC = () => {
                     {data.map((a, i) => (
                         <tr key={a.id}>
                             <td>{i + 1}</td>
+                            <td>{a.code}</td>
                             <td>{a.surname}</td>
                             <td>{a.firstname}</td>
                             <td>{a.patronymic}</td>
+                            <td>{a.birthdate}</td>
                             <td>{a.email}</td>
                             <td>{a.phone}</td>
                             <td>{a.schoolName}</td>
@@ -298,7 +301,7 @@ const ApplicationsPageBySubject: React.FC = () => {
                             <td>
                                 <Badge>{STATUS_TEXT[a.status]}</Badge>
                             </td>
-                            <td>{a.code}</td>
+                            
                             <td>{new Date(a.submittedAt).toLocaleDateString()}</td>
                         </tr>
                     ))}
