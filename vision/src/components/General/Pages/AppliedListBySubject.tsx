@@ -8,8 +8,8 @@ import { axiosGetAllOlympiads } from "../../../requests/EventsRequests";
 import { MyEvent } from "../../types/event";
 
 // ===== Константы отображения =====
-const CITIZENSHIP_TEXT: Record<number, string> = { 1: "Россия", 2: "Другое" };
-const DISABILITY_TEXT: Record<number, string> = { 1: "Нет", 2: "Есть" };
+const CITIZENSHIP_TEXT: Record<number, string> = { 1: "РФ", 2: "Другое" };
+const DISABILITY_TEXT: Record<number, string> = { 1: "Без ОВЗ", 2: "Есть" };
 const STATUS_TEXT: Record<number, string> = { 1: "Не обработано", 2: "Одобрено", 3: "Отклонено" };
 const GENDER_TEXT: Record<number, string> = { 1: "Мужской", 2: "Женский" };
 
@@ -258,6 +258,7 @@ const ApplicationsPageBySubject: React.FC = () => {
                         <th>Фамилия</th>
                         <th>Имя</th>
                         <th>Отчество</th>
+                        <th>Пол</th>
                         <th>Дата рождения</th>
                         <th>Email</th>
                         <th>Телефон</th>
@@ -267,7 +268,6 @@ const ApplicationsPageBySubject: React.FC = () => {
                         <th>Профиль</th>
                         <th>Класс обучения</th>
                         <th>Класс участия</th>
-                        <th>Пол</th>
                         <th>Гражданство</th>
                         <th>ОВЗ</th>
                         <th>Статус</th>
@@ -282,6 +282,7 @@ const ApplicationsPageBySubject: React.FC = () => {
                             <td>{a.surname}</td>
                             <td>{a.firstname}</td>
                             <td>{a.patronymic}</td>
+                            <td>{a.gender}</td>
                             <td>{a.birthdate}</td>
                             <td>{a.email}</td>
                             <td>{a.phone}</td>
@@ -290,12 +291,11 @@ const ApplicationsPageBySubject: React.FC = () => {
                             <td>{a.olympiadName}</td>
                             <td>{a.profile ?? "—"}</td>
                             <td className="text-center">
-                                {a.classNumber}
+                                {a.classNumber} класс
                             </td>
                             <td className="text-center">
-                                {a.category}
+                                {a.category} класс
                             </td>
-                            <td>{a.gender}</td>
                             <td>{a.citizenship}</td>
                             <td>{a.disability}</td>
                             <td>

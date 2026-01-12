@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	ApplicationDto "main/internal/dto/ApplicationDto"
-	"main/internal/lib/generator"
 	"main/internal/models"
 	"main/internal/storage/orm"
 
@@ -218,10 +217,10 @@ func (s *ApplicationService) SetParticipantCode(ctx context.Context, eventIDStr 
 		return fmt.Errorf("%s: %s", op, "failed begin transaction")
 	}
 
-	nums, err := generator.GenerateUniqueNumbers(len(applications), 3)
+	// nums, err := generator.GenerateUniqueNumbers(len(applications), 3)
 
 	for i, application := range applications {
-		code := fmt.Sprintf("%02d_%03d", application.ClassParticipation, nums[i])
+		code := fmt.Sprintf("%02d_%03d", application.ClassParticipation, i)
 		application.Code = code
 		log.Println(application)
 
