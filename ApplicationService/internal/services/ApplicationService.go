@@ -220,7 +220,7 @@ func (s *ApplicationService) SetParticipantCode(ctx context.Context, eventIDStr 
 	// nums, err := generator.GenerateUniqueNumbers(len(applications), 3)
 
 	for i, application := range applications {
-		code := fmt.Sprintf("%02d_%03d", application.ClassParticipation, i)
+		code := fmt.Sprintf("%02d_%03d", application.ClassParticipation, i+1)
 		application.Code = code
 		log.Println(application)
 

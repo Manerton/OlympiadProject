@@ -166,6 +166,14 @@ const ApplicationsPageBySubject: React.FC = () => {
                                 ? districts.get(school.district_id)!
                                 : "Не указан";
 
+                        const birthdate = user.birthdate
+                            ? new Date(user.birthdate).toLocaleDateString("ru-RU", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                            })
+                            : "—";
+
                         return {
                             id: app.id,
                             surname: user.surname,
@@ -173,7 +181,7 @@ const ApplicationsPageBySubject: React.FC = () => {
                             patronymic: user.patronymic,
                             email: user.email ?? "—",
                             phone: user.phone_number ?? "—",
-                            birthdate: user.birthdate,
+                            birthdate: birthdate,
                             gender: GENDER_TEXT[user.gender] ?? user.gender,
                             classNumber: user.class_number,
                             citizenship: CITIZENSHIP_TEXT[user.citizenship],
@@ -301,7 +309,7 @@ const ApplicationsPageBySubject: React.FC = () => {
                             <td>
                                 <Badge>{STATUS_TEXT[a.status]}</Badge>
                             </td>
-                            
+
                             <td>{new Date(a.submittedAt).toLocaleDateString()}</td>
                         </tr>
                     ))}
