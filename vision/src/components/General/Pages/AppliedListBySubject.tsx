@@ -9,9 +9,9 @@ import { MyEvent } from "../../types/event";
 
 // ===== Константы отображения =====
 const CITIZENSHIP_TEXT: Record<number, string> = { 1: "РФ", 2: "Другое" };
-const DISABILITY_TEXT: Record<number, string> = { 1: "Без ОВЗ", 2: "Есть" };
+const DISABILITY_TEXT: Record<number, string> = { 1: "Нет", 2: "Есть" };
 const STATUS_TEXT: Record<number, string> = { 1: "Не обработано", 2: "Одобрено", 3: "Отклонено" };
-const GENDER_TEXT: Record<number, string> = { 1: "Мужской", 2: "Женский" };
+const GENDER_TEXT: Record<number, string> = { 1: "М", 2: "Ж" };
 
 // ===== Типы =====
 interface RawApplication {
@@ -299,10 +299,12 @@ const ApplicationsPageBySubject: React.FC = () => {
                             <td>{a.olympiadName}</td>
                             <td>{a.profile ?? "—"}</td>
                             <td className="text-center">
-                                {a.classNumber} класс
+                                {/*класс*/}
+                                {a.classNumber}
                             </td>
                             <td className="text-center">
-                                {a.category} класс
+                                {/*класс*/}
+                                {a.category}
                             </td>
                             <td>{a.citizenship}</td>
                             <td>{a.disability}</td>
