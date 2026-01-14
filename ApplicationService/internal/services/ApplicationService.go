@@ -3,7 +3,6 @@ package ApplicationService
 import (
 	"context"
 	"fmt"
-	"log"
 	ApplicationDto "main/internal/dto/ApplicationDto"
 	"main/internal/models"
 	"main/internal/storage/orm"
@@ -210,24 +209,25 @@ func (s *ApplicationService) SetParticipantCode(ctx context.Context, eventIDStr 
 		return fmt.Errorf("%s: %s", op, "failde get applications by event id")
 	}
 
-	log.Println(applications)
-
 	transactionBegin, err := s.db.TransactionBegin()
 	if err != nil {
 		return fmt.Errorf("%s: %s", op, "failed begin transaction")
 	}
 
-	// nums, err := generator.GenerateUniqueNumbers(len(applications), 3)
+	classGroupMap := make(map[int][]models.Application)
+	for _, application := range applications {
+		classGroupMap[application.ClassParticipation] = append(classGroupMap[application.ClassParticipation], application)
+	}
 
-	for i, application := range applications {
-		code := fmt.Sprintf("%02d_%03d", application.ClassParticipation, i+1)
-		application.Code = code
-		log.Println(application)
+	for _, groupApp := range classGroupMap {
+		for i, application := range groupApp {
+			application.Code = fmt.Sprintf("%02d_%03d", application.ClassParticipation, i+1)
 
-		err := s.repository.UpdateApplication(ctx, transactionBegin, application)
-		if err != nil {
-			transactionBegin.TransactionRollback()
-			return fmt.Errorf("%s: %s", op, "failed update application")
+			err := s.repository.UpdateApplication(ctx, transactionBegin, application)
+			if err != nil {
+				transactionBegin.TransactionRollback()
+				return fmt.Errorf("%s: %s", op, "failed update application")
+			}
 		}
 	}
 
