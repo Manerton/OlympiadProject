@@ -11,6 +11,7 @@ func FromModelToDTO(school school.School) school_dto.SchoolResponseDTO {
 	return school_dto.SchoolResponseDTO{
 		ID:         school.ID.String(),
 		Name:       school.Name,
+		FullName:   school.FullName,
 		DistrictID: school.DistrictID.String(),
 	}
 }
@@ -32,6 +33,7 @@ func FromCreateDTOToModel(schoolDto school_dto.CreateSchoolRequestDTO) (school.S
 
 	return school.School{
 		Name:       schoolDto.Name,
+		FullName:   schoolDto.FullName,
 		DistrictID: districtID,
 	}, nil
 }
@@ -45,6 +47,7 @@ func FromUpdateDTOToModel(schoolDto school_dto.UpdateSchoolRequestDTO, uid uuid.
 	return school.School{
 		ID:         uid,
 		Name:       *schoolDto.Name,
+		FullName:   *schoolDto.FullName,
 		DistrictID: districtID,
 	}, nil
 }

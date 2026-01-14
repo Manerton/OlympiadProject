@@ -186,7 +186,7 @@ const ApplicationsPageBySubject: React.FC = () => {
                             classNumber: user.class_number,
                             citizenship: CITIZENSHIP_TEXT[user.citizenship],
                             disability: DISABILITY_TEXT[user.disability],
-                            schoolName: school.name,
+                            schoolName: school.full_name,
                             districtName,
                             olympiadName: event.name,
                             profile: app.profile,

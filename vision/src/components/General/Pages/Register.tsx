@@ -266,7 +266,7 @@ const Step2: React.FC<StepProps> = ({
             age--;
         }
 
-        return age >= 10 && age <= 18;
+        return age >= 10 && age <= 20;
     };
 
     const handleBirthChange = (value: string) => {
@@ -285,13 +285,13 @@ const Step2: React.FC<StepProps> = ({
     };
 
     const minDate = new Date(
-        new Date().getFullYear() - 18,
+        new Date().getFullYear() - 20,
         0,
         1
-    ); // 01.01.(текущий год - 18)
+    ); // 01.01.(текущий год - 20)
 
     const earliestAllowedDate = new Date(
-        new Date().getFullYear() - 18,
+        new Date().getFullYear() - 20,
         0,
         1
     );
