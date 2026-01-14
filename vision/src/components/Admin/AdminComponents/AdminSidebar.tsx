@@ -160,7 +160,7 @@ const AdminSidebar: React.FC = () => {
                 {!collapsed && "Заявки"}
 
               </Nav.Link>
-               <Nav.Link
+              <Nav.Link
                 as={Link}
                 to="/applied-list"
                 className="text-white d-flex align-items-center"
@@ -169,7 +169,16 @@ const AdminSidebar: React.FC = () => {
                 {!collapsed && "Заявки по предмету"}
               </Nav.Link>
 
-              
+
+              <Nav.Link
+                as={Link}
+                to="/approval-applied-list"
+                className="text-white d-flex align-items-center"
+              >
+                <FileText className="me-2" />
+                {!collapsed && "Одобрение заявок по предметам"}
+              </Nav.Link>
+
             </>
           )}
         </Nav>
