@@ -327,15 +327,33 @@ HTTP_SERVERS_INFO:
       skip_auth: true
       roles: []
 
-    - prefix: "/ApplicationEventtest/"
+    - prefix: "/ApplicationByEvent/"
       aggregate: true
       targets:
-        - url: "http://application-service:8082/applications/user/"
-          fields: ["id", "status"]
+        - url: "http://sso-service:8181/api/districts"
+          fields: [""]
+        - url: "http://application-service:8082/applications/event/"
+          fields: [""]
         - url: "http://event-service:8080/api/events/list/"
-          fields: ["id", "name", "start_date", "end_date", "previous_event_id", "subject", "class_number", "additional_info"]
+          fields: [""]
       skip_auth: false
       roles: []
+
+    - prefix: "/AllApplications/"
+      aggregate: true
+      targets:
+        - url: "http://sso-service:8181/api/districts/30" #"ВСЕ МУНИЦИПАЛИТЕТЫ"
+          fields: [ "" ]
+        - url: "http://sso-service:8181/api/schools/all" #"ВСЕ школы 1 раз"
+          fields: [ "" ]
+        - url: "http://event-service:8080/api/events" #"Все события 1 раз"
+          fields: [ "" ]
+        - url: "http://application-service:8082/applications" #"ВСЕ ЗАЯВКИ"
+          fields: [ "" ]
+        - url: "http://sso-service:8181/api/users/all-info-list" #"ВСЕ пользователи подавшие заявки берем массив userid из application и в body"
+          fields: [ "" ]
+      skip_auth: false
+      roles: [ ]
 
     - prefix: "/ApplicationEvent/"
       aggregate: true
@@ -402,12 +420,13 @@ HTTP_SERVERS_INFO:
       targets:
         - url: "http://sso-service:8181/api/schools/district/"
           fields: [ "" ]
-        - url: "http://application-service:8082/applications/school-list/"
-          fields: [ "" ]
         - url: "http://sso-service:8181/api/users/all-info-list"
           fields: [ "" ]
         - url: "http://event-service:8080/api/events/list"
           fields: [ "" ]
+        - url: "http://application-service:8082/applications/school-list/"
+          fields: [ "" ]
+
 
       skip_auth: false
       roles: [ ]

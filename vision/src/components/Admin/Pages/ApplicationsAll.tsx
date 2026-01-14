@@ -8,7 +8,7 @@ import { useAuth } from "../../Helpers/AuthContext";
 const CITIZENSHIP_TEXT: Record<number, string> = { 1: "Россия", 2: "Другое" };
 const DISABILITY_TEXT: Record<number, string> = { 1: "Нет", 2: "Есть" };
 const STATUS_TEXT: Record<number, string> = { 1: "Не обработано", 2: "Одобрено", 3: "Отклонено" };
-const GENDER_TEXT: Record<number, string> = { 1: "Мужской", 2: "Женский" };
+const GENDER_TEXT: Record<number, string> = { 1: "М", 2: "Ж" };
 
 // ===== Типы =====
 interface RawApplication {

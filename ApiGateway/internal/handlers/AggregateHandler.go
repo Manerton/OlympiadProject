@@ -36,6 +36,8 @@ func getStrategy(prefix string) strategy.AggregationStrategy {
 		return strategy.NewApplicationCreateStrategy(timeSecond)
 	case "/Verify-Applications/":
 		return strategy.NewVerifyApplicationsStrategy(timeSecond)
+	case "/AllApplications/":
+		return strategy.NewAllApplicationsAggregationStrategy(timeSecond)
 
 	default:
 		return nil
