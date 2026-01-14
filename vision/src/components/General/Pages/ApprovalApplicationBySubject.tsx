@@ -8,6 +8,7 @@ import { axiosGetAllOlympiads } from "../../../requests/EventsRequests";
 import { MyEvent } from "../../types/event";
 import { axiosUpdateApplicationStatus } from "./VerifyApplicationsPage";
 import { UpdateApplicationDTO } from "../../types/application";
+import { Button } from "react-bootstrap/lib/InputGroup";
 
 // ===== Константы отображения =====
 const CITIZENSHIP_TEXT: Record<number, string> = { 1: "РФ", 2: "Другое" };
@@ -162,7 +163,7 @@ const ApprovalApplicationsPageBySubject: React.FC = () => {
             };
 
             // Вызов API для обновления статуса
-            await axiosUpdateApplicationStatus(accessToken, app.id, updateData);
+            await axiosUpdateApplicationStatus(accessToken!, app.id, updateData);
 
             // Локально обновляем статус
             setData(prev =>
@@ -172,7 +173,7 @@ const ApprovalApplicationsPageBySubject: React.FC = () => {
             );
 
             // Показываем сообщение об успехе
-            setSuccessMessage(`Статус заявки для ${app.surname} ${app.firstName} успешно изменен на "${STATUS_TEXT[newStatus]}"`);
+            setSuccessMessage(`Статус заявки для ${app.surname} ${app.firstname} успешно изменен на "${STATUS_TEXT[newStatus]}"`);
 
             // Автоматически скрываем сообщение через 3 секунды
             setTimeout(() => {
@@ -367,16 +368,16 @@ const ApprovalApplicationsPageBySubject: React.FC = () => {
                                     <Button
                                         variant="success"
                                         size="sm"
-                                        onClick={() => updateStatus(app, 2)}
-                                        disabled={updatingStatus === app.id || app.status === 2}
+                                        onClick={() => updateStatus(a, 2)}
+                                        disabled={updatingStatus === a.id || a.status === 2}
                                     >
                                         Одобрить
                                     </Button>
                                     <Button
                                         variant="danger"
                                         size="sm"
-                                        onClick={() => updateStatus(app, 3)}
-                                        disabled={updatingStatus === app.id || app.status === 3}
+                                        onClick={() => updateStatus(a, 3)}
+                                        disabled={updatingStatus === a.id || a.status === 3}
                                     >
                                         Отклонить
                                     </Button>
