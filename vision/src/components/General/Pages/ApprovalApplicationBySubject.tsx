@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Alert, Badge } from "react-bootstrap";
+import { Table, Alert, Badge, Button } from "react-bootstrap";
 import axios from "axios";
 import { APPLICATION, USER, SCHOOLS, API_CONFIG, AUTH } from "../../../config/api";
 import { useAuth } from "../../Helpers/AuthContext";
@@ -8,7 +8,6 @@ import { axiosGetAllOlympiads } from "../../../requests/EventsRequests";
 import { MyEvent } from "../../types/event";
 import { axiosUpdateApplicationStatus } from "./VerifyApplicationsPage";
 import { UpdateApplicationDTO } from "../../types/application";
-import { Button } from "react-bootstrap/lib/InputGroup";
 
 // ===== Константы отображения =====
 const CITIZENSHIP_TEXT: Record<number, string> = { 1: "РФ", 2: "Другое" };
