@@ -16,6 +16,7 @@ export const API_CONFIG = {
     JURYBYSTAGE: `${API_URL}/jury-names/`,
     CREATEMANYJURY: `${API_URL}/jury-assignments/many`,
     DELETEMANYJURY: `${API_URL}/jury-assignments/delete/many`,
+    ALLAPPLICATIONS: `${API_URL}/AllApplications/`,
 };
 
 export const AUTH = {

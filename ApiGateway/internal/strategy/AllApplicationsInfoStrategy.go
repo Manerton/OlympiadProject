@@ -531,7 +531,7 @@ func (s *AllApplicationsAggregationStrategy) aggregateData(
 			ClassNumber:  user.ClassNumber,
 			Citizenship:  user.Citizenship,
 			Disability:   user.Disability,
-			SchoolName:   schoolWithDistrict.School.Name,
+			SchoolName:   schoolWithDistrict.School.FullName,
 			DistrictName: schoolWithDistrict.District.Name,
 			OlympiadName: event.Name,
 			Profile:      app.Profile,
