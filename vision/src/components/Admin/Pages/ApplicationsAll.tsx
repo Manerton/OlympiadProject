@@ -73,7 +73,7 @@ async function axiosGetAllAggregatedApplications(token: string): Promise<Aggrega
     console.log("Making API call to:", API_CONFIG.ALLAPPLICATIONS);
     
     try {
-        const res = await axios.get<ApiResponse<AggregatedApplicationResponse[]>>(
+        const res = await axios.get(
             API_CONFIG.ALLAPPLICATIONS,
             {
                 headers: { 
@@ -82,34 +82,57 @@ async function axiosGetAllAggregatedApplications(token: string): Promise<Aggrega
                     'Pragma': 'no-cache'
                 },
                 withCredentials: true,
-                timeout: 30000, // 30 секунд таймаут
-                validateStatus: function (status) {
-                    return status >= 200 && status < 500; // Разрешаем статусы 400-499
-                }
+                timeout: 30000,
             }
         );
         
-        console.log("API Response status:", res.status);
+        console.log("Response structure:", {
+            status: res.data.status,
+            status_code: res.data.status_code,
+            dataType: typeof res.data.data,
+            isArray: Array.isArray(res.data.data)
+        });
         
-        if (res.data.status_code && res.data.status_code !== 200) {
+        // Проверяем структуру ответа
+        if (res.data.status_code !== 200) {
             throw new Error(res.data.error || `Ошибка ${res.data.status_code} при получении данных`);
         }
         
-        if (res.status !== 200) {
-            throw new Error(`HTTP ошибка ${res.status}: ${res.statusText}`);
+        // Вариант 1: Если данные находятся в data.data (двойная вложенность)
+        if (res.data.data && typeof res.data.data === 'object' && res.data.data.data) {
+            console.log("Found nested data structure: data.data.data");
+            const nestedData = res.data.data.data;
+            
+            if (Array.isArray(nestedData)) {
+                console.log("Nested data is array, length:", nestedData.length);
+                return nestedData;
+            } else {
+                console.log("Nested data is not array:", typeof nestedData);
+                return [];
+            }
         }
         
-        return res.data.data || [];
+        // Вариант 2: Если данные находятся прямо в data
+        if (Array.isArray(res.data.data)) {
+            console.log("Data is array, length:", res.data.data.length);
+            return res.data.data;
+        }
+        
+        // Вариант 3: Если это объект с полем data
+        if (res.data.data && Array.isArray(res.data.data)) {
+            return res.data.data;
+        }
+        
+        console.warn("Unexpected response format:", res.data);
+        return [];
+        
     } catch (error: any) {
-        console.error("API Error details:", {
-            message: error.message,
-            response: error.response?.data,
-            status: error.response?.status,
-            config: {
-                url: error.config?.url,
-                method: error.config?.method
-            }
-        });
+        console.error("API Error details:", error);
+        
+        if (error.response) {
+            console.error("Response data:", error.response.data);
+            console.error("Response status:", error.response.status);
+        }
         
         if (error.code === 'ECONNABORTED') {
             throw new Error("Таймаут запроса. Сервер не отвечает.");
@@ -119,15 +142,11 @@ async function axiosGetAllAggregatedApplications(token: string): Promise<Aggrega
             throw new Error(error.response.data.error);
         }
         
-        if (error.response?.data?.message) {
-            throw new Error(error.response.data.message);
-        }
-        
         if (error.message) {
             throw new Error(error.message);
         }
         
-        throw new Error("Не удалось загрузить данные. Проверьте подключение к серверу.");
+        throw new Error("Не удалось загрузить данные.");
     }
 }
 
