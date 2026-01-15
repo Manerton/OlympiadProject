@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Table, Alert, Badge, Button } from "react-bootstrap";
 import axios from "axios";
 import { API_CONFIG } from "../../../config/api";
@@ -9,7 +9,7 @@ const CITIZENSHIP_TEXT: Record<number, string> = { 1: "Россия", 2: "Дру
 const DISABILITY_TEXT: Record<number, string> = { 1: "Нет", 2: "Есть" };
 const STATUS_TEXT: Record<number, string> = { 
   1: "Не обработано", 
-  2: "Одоброено", 
+  2: "Одобрено", 
   3: "Отклонено" 
 };
 const GENDER_TEXT: Record<number, string> = { 1: "М", 2: "Ж" };
@@ -53,46 +53,81 @@ interface DisplayApplication {
     email: string;
     phone: string;
     birthdate: string;
-    gender: string; // преобразованное
+    gender: string;
     classNumber: number;
-    citizenship: string; // преобразованное
-    disability: string; // преобразованное
+    citizenship: string;
+    disability: string;
     schoolName: string;
     districtName: string;
     olympiadName: string;
     profile?: string | null;
     category: number;
     status: number;
-    statusText: string; // преобразованное
+    statusText: string;
     code: string;
     submittedAt: string;
 }
 
 // ===== API helper =====
 async function axiosGetAllAggregatedApplications(token: string): Promise<AggregatedApplicationResponse[]> {
+    console.log("Making API call to:", API_CONFIG.ALLAPPLICATIONS);
+    
     try {
         const res = await axios.get<ApiResponse<AggregatedApplicationResponse[]>>(
             API_CONFIG.ALLAPPLICATIONS,
             {
-                headers: { Authorization: `Bearer ${token}` },
-                withCredentials: true
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
+                },
+                withCredentials: true,
+                timeout: 30000, // 30 секунд таймаут
+                validateStatus: function (status) {
+                    return status >= 200 && status < 500; // Разрешаем статусы 400-499
+                }
             }
         );
         
-        if (res.data.status_code !== 200) {
+        console.log("API Response status:", res.status);
+        
+        if (res.data.status_code && res.data.status_code !== 200) {
             throw new Error(res.data.error || `Ошибка ${res.data.status_code} при получении данных`);
+        }
+        
+        if (res.status !== 200) {
+            throw new Error(`HTTP ошибка ${res.status}: ${res.statusText}`);
         }
         
         return res.data.data || [];
     } catch (error: any) {
-        console.error("API Error:", error);
+        console.error("API Error details:", {
+            message: error.message,
+            response: error.response?.data,
+            status: error.response?.status,
+            config: {
+                url: error.config?.url,
+                method: error.config?.method
+            }
+        });
+        
+        if (error.code === 'ECONNABORTED') {
+            throw new Error("Таймаут запроса. Сервер не отвечает.");
+        }
+        
         if (error.response?.data?.error) {
             throw new Error(error.response.data.error);
         }
+        
         if (error.response?.data?.message) {
             throw new Error(error.response.data.message);
         }
-        throw new Error("Не удалось загрузить данные. Проверьте подключение к интернету.");
+        
+        if (error.message) {
+            throw new Error(error.message);
+        }
+        
+        throw new Error("Не удалось загрузить данные. Проверьте подключение к серверу.");
     }
 }
 
@@ -108,15 +143,16 @@ const formatDate = (dateString: string): string => {
 
 const getStatusBadgeVariant = (status: number): string => {
     switch(status) {
-        case 1: return "warning";    // Не обработано
-        case 2: return "success";    // Одобрено
-        case 3: return "danger";     // Отклонено
+        case 1: return "warning";
+        case 2: return "success";
+        case 3: return "danger";
         default: return "secondary";
     }
 };
 
-// Преобразование сырых данных в отображаемые
 const transformDataForDisplay = (data: AggregatedApplicationResponse[]): DisplayApplication[] => {
+    if (!data || !Array.isArray(data)) return [];
+    
     return data.map(item => ({
         ...item,
         gender: GENDER_TEXT[item.gender] || `Неизвестно (${item.gender})`,
@@ -133,41 +169,113 @@ const ApplicationsPage: React.FC = () => {
     const { accessToken } = useAuth();
     const [rawData, setRawData] = useState<AggregatedApplicationResponse[]>([]);
     const [displayData, setDisplayData] = useState<DisplayApplication[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isInitialLoad, setIsInitialLoad] = useState(true);
+    
+    // Refs для защиты от множественных вызовов
+    const isFetchingRef = useRef(false);
+    const abortControllerRef = useRef<AbortController | null>(null);
 
     useEffect(() => {
-        if (accessToken) {
-            fetchData();
-        } else {
+        // Сбрасываем состояние при изменении токена
+        if (!accessToken) {
+            setRawData([]);
+            setDisplayData([]);
             setError("Отсутствует токен авторизации");
             setLoading(false);
+            return;
+        }
+
+        // Загружаем данные только при начальной загрузке
+        if (isInitialLoad) {
+            fetchData();
         }
     }, [accessToken]);
 
     const fetchData = async () => {
-        if (!accessToken) return;
+        // Защита от множественных одновременных запросов
+        if (isFetchingRef.current) {
+            console.log("Запрос уже выполняется, пропускаем...");
+            return;
+        }
+
+        if (!accessToken) {
+            setError("Отсутствует токен авторизации");
+            return;
+        }
 
         try {
+            // Отменяем предыдущий запрос если он есть
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+
+            // Создаем новый AbortController
+            const abortController = new AbortController();
+            abortControllerRef.current = abortController;
+            
+            isFetchingRef.current = true;
             setLoading(true);
             setError(null);
+            setIsInitialLoad(false);
 
+            console.log("Starting data fetch...");
+            
             const data = await axiosGetAllAggregatedApplications(accessToken);
-            setRawData(data);
-            setDisplayData(transformDataForDisplay(data));
+            
+            // Проверяем не был ли запрос отменен
+            if (!abortController.signal.aborted) {
+                console.log("Data fetched successfully, items:", data.length);
+                setRawData(data);
+                setDisplayData(transformDataForDisplay(data));
+            }
         } catch (err: any) {
+            // Игнорируем ошибки отмены запроса
+            if (err.name === 'AbortError' || err.message.includes('aborted')) {
+                console.log("Запрос был отменен");
+                return;
+            }
+            
             console.error("Ошибка при загрузке данных:", err);
             setError(err.message || "Произошла ошибка при загрузке данных");
         } finally {
+            isFetchingRef.current = false;
             setLoading(false);
         }
     };
 
     const refreshData = () => {
-        if (accessToken) {
-            fetchData();
-        }
+        fetchData();
     };
+
+    // Очистка при размонтировании
+    useEffect(() => {
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+        };
+    }, []);
+
+    // Добавим кнопку для ручной загрузки если нужно
+    if (isInitialLoad && !loading && !error) {
+        return (
+            <div className="container py-5">
+                <div className="text-center">
+                    <h4 className="mb-4">Загрузка данных о заявках</h4>
+                    <p className="mb-4">Нажмите кнопку ниже для загрузки данных</p>
+                    <Button 
+                        onClick={fetchData}
+                        variant="primary"
+                        size="lg"
+                    >
+                        Загрузить данные
+                    </Button>
+                </div>
+            </div>
+        );
+    }
 
     if (loading) {
         return (
@@ -177,6 +285,7 @@ const ApplicationsPage: React.FC = () => {
                         <span className="visually-hidden">Загрузка...</span>
                     </div>
                     <p className="mt-3">Загрузка данных...</p>
+                    <small className="text-muted">Пожалуйста, подождите. Это может занять некоторое время.</small>
                 </div>
             </div>
         );
@@ -188,10 +297,24 @@ const ApplicationsPage: React.FC = () => {
                 <Alert variant="danger">
                     <Alert.Heading>Ошибка загрузки данных</Alert.Heading>
                     <p>{error}</p>
+                    
+                    {/* Дополнительная информация для отладки */}
+                    {error.includes("Таймаут") && (
+                        <p className="mb-0 mt-2">
+                            <small>
+                                Сервер долго не отвечает. Попробуйте обновить позже или проверьте подключение.
+                            </small>
+                        </p>
+                    )}
+                    
                     <hr />
-                    <div className="d-flex justify-content-end">
-                        <Button onClick={refreshData} variant="outline-danger">
-                            Попробовать снова
+                    <div className="d-flex justify-content-end gap-2">
+                        <Button 
+                            onClick={refreshData} 
+                            variant="outline-danger"
+                            disabled={loading}
+                        >
+                            {loading ? 'Загрузка...' : 'Попробовать снова'}
                         </Button>
                     </div>
                 </Alert>
@@ -208,8 +331,9 @@ const ApplicationsPage: React.FC = () => {
                         variant="outline-primary" 
                         onClick={refreshData}
                         size="sm"
+                        disabled={loading}
                     >
-                        Обновить
+                        {loading ? 'Загрузка...' : 'Обновить'}
                     </Button>
                     <Badge bg="light" text="dark" className="fs-6">
                         Всего: {displayData.length}
@@ -219,10 +343,33 @@ const ApplicationsPage: React.FC = () => {
 
             {displayData.length === 0 ? (
                 <Alert variant="info">
-                    Заявок не найдено
+                    <Alert.Heading>Заявок не найдено</Alert.Heading>
+                    <p>На данный момент нет заявок для отображения.</p>
+                    <Button onClick={refreshData} variant="outline-info" size="sm">
+                        Обновить
+                    </Button>
                 </Alert>
             ) : (
                 <>
+                    <Alert variant="success" className="mb-3">
+                        <div className="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Данные успешно загружены</strong>
+                                <div className="small text-muted">
+                                    Последнее обновление: {new Date().toLocaleTimeString()}
+                                </div>
+                            </div>
+                            <Button 
+                                variant="outline-success" 
+                                size="sm" 
+                                onClick={refreshData}
+                                disabled={loading}
+                            >
+                                {loading ? 'Обновление...' : 'Обновить данные'}
+                            </Button>
+                        </div>
+                    </Alert>
+                    
                     <div className="table-responsive">
                         <Table bordered hover size="sm" className="align-middle">
                             <thead className="table-light">
@@ -320,13 +467,15 @@ const ApplicationsPage: React.FC = () => {
                         <div className="text-muted small">
                             Показано заявок: <strong>{displayData.length}</strong>
                         </div>
-                        <Button 
-                            variant="link" 
-                            onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
-                            size="sm"
-                        >
-                            ↑ Наверх
-                        </Button>
+                        <div className="d-flex gap-2">
+                            <Button 
+                                variant="link" 
+                                onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
+                                size="sm"
+                            >
+                                ↑ Наверх
+                            </Button>
+                        </div>
                     </div>
                 </>
             )}
