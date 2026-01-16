@@ -221,8 +221,15 @@ func (s *ApplicationService) SetParticipantCode(ctx context.Context, eventIDStr 
 
 	for _, groupApp := range classGroupMap {
 		for i, application := range groupApp {
-			application.Code = fmt.Sprintf("%02d_%03d", application.ClassParticipation, i+1)
 
+			code := ""
+			if partCode, ok := s.sheetInformProfileCheck(application); ok {
+				code = fmt.Sprintf("%s%02d-Буква тура-%03d", partCode, application.ClassParticipation, i+1)
+			} else {
+				code = fmt.Sprintf("%02d_%03d", application.ClassParticipation, i+1)
+			}
+
+			application.Code = code
 			err := s.repository.UpdateApplication(ctx, transactionBegin, application)
 			if err != nil {
 				transactionBegin.TransactionRollback()
@@ -233,6 +240,26 @@ func (s *ApplicationService) SetParticipantCode(ctx context.Context, eventIDStr 
 
 	transactionBegin.TransactionCommit()
 	return nil
+}
+
+func (s *ApplicationService) sheetInformProfileCheck(application models.Application) (string, bool) {
+	informationSubject := "80000000-0000-1234-0000-000000000004"
+	if application.EventID.String() != informationSubject {
+		return "", false
+	}
+
+	switch application.Profile {
+	case "Программирование":
+		return "ПМ", true
+	case "Информационная безопасность":
+		return "ИБ", true
+	case "Искусственный интеллект":
+		return "ИИ", true
+	case "Робототехника":
+		return "РТ", true
+	}
+
+	return "", false
 }
 
 // Создание новой заявки
