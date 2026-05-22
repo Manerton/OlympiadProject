@@ -4,6 +4,7 @@ export const API_CONFIG = {
     REGISTEREVENTS: `${API_URL}/events-register`,
     ALLEVENTS: `${API_URL}/events/`,
     EVENT: `${API_URL}/events/`,
+    EXCELUPLOAD: `${API_URL}/upload-excel-event`,
     CHILD: `${API_URL}/events/child`,
     AVAILABLE: `${API_URL}/available-event/`,
     STAGES: `${API_URL}/events/stages`,

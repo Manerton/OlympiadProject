@@ -9,7 +9,9 @@ import (
 	"main/internal/lib/request"
 	"main/internal/lib/response"
 	"main/internal/models/event"
+	"main/internal/services/excel_service"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -42,7 +44,8 @@ type EventServiceInterface interface {
 }
 
 type EventHandler struct {
-	service EventServiceInterface
+	service      EventServiceInterface
+	excelService excel_service.EventExcelService
 }
 
 func NewEventHandler(service EventServiceInterface) *EventHandler {
@@ -737,4 +740,62 @@ func (h *EventHandler) DeleteEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	render.JSON(w, r, response.SuccessResponse("Object deleted"))
+}
+
+func (h *EventHandler) UploadExcel(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	// Парсим multipart форму
+	err := r.ParseMultipartForm(10 << 20) // 10 MB max
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(
+			errs.ErrBadRequest.Wrap("failed to parse multipart form"),
+		))
+		return
+	}
+
+	// Получаем файл
+	file, header, err := r.FormFile("file")
+	if err != nil {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(
+			errs.ErrBadRequest.Wrap("file is required"),
+		))
+		return
+	}
+	defer file.Close()
+
+	// Получаем год
+	yearStr := r.FormValue("year")
+	year, err := strconv.Atoi(yearStr)
+	if err != nil || year < 2000 || year > 2100 {
+		render.Status(r, http.StatusBadRequest)
+		render.JSON(w, r, response.ErrorApiResponse(
+			errs.ErrBadRequest.Wrap("invalid year"),
+		))
+		return
+	}
+
+	// Логируем информацию о файле
+	fmt.Printf("Uploading file: %s, size: %d bytes, year: %d\n",
+		header.Filename, header.Size, year)
+
+	// Создаем события из Excel
+	_, err = h.excelService.CreateEventsFromExcel(ctx, file, year)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(
+			errs.ErrInternalError.Wrap("failed to create events from excel"),
+		))
+		return
+	}
+
+	render.JSON(w, r, response.SuccessResponse("Objects created"))
 }

@@ -36,12 +36,14 @@ const OlympiadsSimpleTable: React.FC<Props> = ({
     const visibleOlympiads = olympiads.filter(o => !appliedEventIds.includes(o.id!));
 
     useEffect(() => {
+        if (!accessToken) return;
+
         setLoading(true);
-        fetchSimpleOlympiads()
+        fetchSimpleOlympiads(accessToken)
             .then((res) => setOlympiads(res.data))
             .catch((err) => setError((err as Error).message))
             .finally(() => setLoading(false));
-    }, [reloadFlag]);
+    }, [reloadFlag, accessToken]);
 
     const handleClassChange = (eventId: string, value: number) => {
         setSelectedClasses((prev) => ({ ...prev, [eventId]: value }));

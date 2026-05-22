@@ -10,11 +10,11 @@ const MainPage: React.FC = () => {
 
   const { user } = useAuth()
 
-  useEffect(() => {
-    if (user) {
-      navigate("/PersonalAccount");  // <-- автоматический редирект
-    }
-  }, [user, navigate])
+  // useEffect(() => {
+  //   if (user) {
+  //     navigate("/PersonalAccount");  // <-- автоматический редирект
+  //   }
+  // }, [user, navigate])
 
 
   return (

@@ -2,34 +2,34 @@
 
 services:
 
-  vision:
-    build:
-      context: ./vision
-      dockerfile: Dockerfile.prod
-    container_name: vision_prod
-    restart: unless-stopped
-    ports:
-      - "8080:80"          # Nginx на хосте будет ходить сюда
-    networks:
-      - olympic
-
   # vision:
-  #     build: ./vision
-  #     container_name: vision_app
-  #     working_dir: /app
-  #     volumes:
-  #       - ./vision:/app
-  #       - ./vision/.env:/app/.env
-  #       - /app/node_modules  # Для NPM-совместимости
-  #     ports:
-  #       - "5173:5173"
-  #     networks:
-  #       - olympic
-  #     environment:
-  #       - CHOKIDAR_USEPOLLING=true
-  #       - WATCHPACK_POLLING=true
-  #       - HOST=0.0.0.0
-  #       - VITE_API_URL=http://localhost:6611
+  #   build:
+  #     context: ./vision
+  #     dockerfile: Dockerfile.prod
+  #   container_name: vision_prod
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8080:80"          # Nginx на хосте будет ходить сюда
+  #   networks:
+  #     - olympic
+
+  vision:
+      build: ./vision
+      container_name: vision_app
+      working_dir: /app
+      volumes:
+        - ./vision:/app
+        - ./vision/.env:/app/.env
+        - /app/node_modules  # Для NPM-совместимости
+      ports:
+        - "5173:5173"
+      networks:
+        - olympic
+      environment:
+        - CHOKIDAR_USEPOLLING=true
+        - WATCHPACK_POLLING=true
+        - HOST=0.0.0.0
+        - VITE_API_URL=http://localhost:6611
 
   application-db:
     image: postgres:16
@@ -157,75 +157,75 @@ services:
       - "8989:8181"
     entrypoint: [ "/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./sso-service" ]
 
-      # jury-db:
-  #   image: postgres:16
-  #   container_name: jury-db
-  #   environment:
-  #     POSTGRES_USER: jury_user
-  #     POSTGRES_PASSWORD: jury_pass
-  #     POSTGRES_DB: JureAssignmentsServiceDB
-  #   ports:
-  #     - "5445:5432"
-  #   networks:
-  #     - olympic
-  #   volumes:
-  #     - jury-db-data:/var/lib/postgresql/data
-  #   healthcheck:
-  #     test: [ "CMD-SHELL", "pg_isready -U jury_user -d JureAssignmentsServiceDB" ]
-  #     interval: 5s
-  #     timeout: 3s
-  #     retries: 5
+  jury-db:
+    image: postgres:16
+    container_name: jury-db
+    environment:
+      POSTGRES_USER: jury_user
+      POSTGRES_PASSWORD: jury_pass
+      POSTGRES_DB: JureAssignmentsServiceDB
+    ports:
+      - "5445:5432"
+    networks:
+      - olympic
+    volumes:
+      - jury-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U jury_user -d JureAssignmentsServiceDB" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
-  # jury-service:
-  #   build:
-  #     context: ./Jure-assignments-service
-  #   container_name: jury-service
-  #   depends_on:
-  #     jury-db:
-  #       condition: service_healthy
-  #   environment:
-  #     DSN: "postgres://jury_user:jury_pass@jury-db:5432/JureAssignmentsServiceDB?sslmode=disable"
-  #     MIGRATION_PATH: "/app/migrations"
-  #     CONFIG_PATH: "/app/config-yaml/docker.yaml"
-  #   networks:
-  #     - olympic
-  #   ports:
-  #     - "8383:8090"
-  #   entrypoint: [ "/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./jury-ass-service" ]
+  jury-service:
+    build:
+      context: ./Jure-assignments-service
+    container_name: jury-service
+    depends_on:
+      jury-db:
+        condition: service_healthy
+    environment:
+      DSN: "postgres://jury_user:jury_pass@jury-db:5432/JureAssignmentsServiceDB?sslmode=disable"
+      MIGRATION_PATH: "/app/migrations"
+      CONFIG_PATH: "/app/config-yaml/docker.yaml"
+    networks:
+      - olympic
+    ports:
+      - "8383:8090"
+    entrypoint: [ "/bin/sh", "-c", "./migrator -dsn \"$DSN\" -migration-path \"$MIGRATION_PATH\" up && ./jury-ass-service" ]
 
-  # olymp-admin:
-  #   build:
-  #     context: .
-  #     dockerfile: ./docker/php/Dockerfile
-  #   container_name: olymp-admin
-  #   ports:
-  #     - "8083:8083"
-  #   command:
-  #     - /bin/sh
-  #     - -c
-  #     - |
-  #       cd /var/www/olymp-admin
-  #       if [ ! -f .env ]; then
-  #           cp .env.example .env
-  #       fi
-  #       php artisan key:generate
-  #       composer install --no-interaction --optimize-autoloader
-  #       while ! nc -z olymp-admin-db 3306; do
-  #         sleep 1
-  #       done
-  #       php artisan migrate:fresh --seed --force
-  #       php artisan serve --host=0.0.0.0 --port=8083 &
-  #       php-fpm -F -R &
-  #       exec php artisan rabbitmq-handler
-  #   volumes:
-  #     - ./olymp-admin:/var/www/olymp-admin
-  #   environment:
-  #     - DB_HOST=olymp-admin-db
-  #   depends_on:
-  #     - olymp-admin-db
-  #     - rabbitmq
-  #   networks:
-  #     - olympic
+  olymp-admin:
+    build:
+      context: .
+      dockerfile: ./docker/php/Dockerfile
+    container_name: olymp-admin
+    ports:
+      - "8083:8083"
+    command:
+      - /bin/sh
+      - -c
+      - |
+        cd /var/www/olymp-admin
+        if [ ! -f .env ]; then
+            cp .env.example .env
+        fi
+        php artisan key:generate
+        composer install --no-interaction --optimize-autoloader
+        while ! nc -z olymp-admin-db 3306; do
+          sleep 1
+        done
+        php artisan migrate:fresh --seed --force
+        php artisan serve --host=0.0.0.0 --port=8083 &
+        php-fpm -F -R &
+        exec php artisan rabbitmq-handler
+    volumes:
+      - ./olymp-admin:/var/www/olymp-admin
+    environment:
+      - DB_HOST=olymp-admin-db
+    depends_on:
+      - olymp-admin-db
+      - rabbitmq
+    networks:
+      - olympic
 
   olympic-notification:
     build:
@@ -271,37 +271,37 @@ services:
     depends_on:
       - olymp-notification-db
 
-      #  nginx:
-#    image: nginx:alpine
-#    container_name: nginx_server
-#    ports:
-#      - "80:80"
-#      - "443:443"
-#    volumes:
-#      - ./docker/nginx/default.conf:/etc/nginx/nginx.conf
-#      - ./olymp-admin/public:/var/www/olymp-admin/public
-#      - ./olymp-notification/web:/var/www/olymp-notification/web
-#    depends_on:
-#      - olymp-admin
-#      - olympic-notification
-#    networks:
-#      - olympic
+  nginx:
+    image: nginx:alpine
+    container_name: nginx_server
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/nginx.conf
+      - ./olymp-admin/public:/var/www/olymp-admin/public
+      - ./olymp-notification/web:/var/www/olymp-notification/web
+    depends_on:
+      - olymp-admin
+      - olympic-notification
+    networks:
+      - olympic
 
-  # olymp-admin-db:
-  #   image: mariadb:10.11
-  #   container_name: olymp-admin-db
-  #   restart: always
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: root
-  #     MYSQL_DATABASE: olymp_admin
-  #     MYSQL_USER: root
-  #     MYSQL_PASSWORD: root
-  #   ports:
-  #     - "3306:3306"
-  #   volumes:
-  #     - olymp-admin-db_data:/var/lib/mysql
-  #   networks:
-  #     - olympic
+  olymp-admin-db:
+    image: mariadb:10.11
+    container_name: olymp-admin-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: olymp_admin
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - olymp-admin-db_data:/var/lib/mysql
+    networks:
+      - olympic
 
 
   olymp-notification-db:
@@ -320,20 +320,20 @@ services:
     networks:
       - olympic
 
-        # phpmyadmin-admin:
-  #   image: phpmyadmin:latest
-  #   container_name: olymp_admin_phpmyadmin
-  #   restart: always
-  #   ports:
-  #     - "8081:80"
-  #   environment:
-  #     PMA_HOST: olymp-admin-db
-  #     PMA_USER: root
-  #     PMA_PASSWORD: root
-  #   depends_on:
-  #     - olymp-admin-db
-  #   networks:
-  #     - olympic
+  phpmyadmin-admin:
+    image: phpmyadmin:latest
+    container_name: olymp_admin_phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: olymp-admin-db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    depends_on:
+      - olymp-admin-db
+    networks:
+      - olympic
 
   phpmyadmin-notification:
     image: phpmyadmin:latest
@@ -458,8 +458,8 @@ volumes:
   # loki-data:
   event-db-data:
   sso-db-data:
-  # jury-db-data:
-  # olymp-admin-db_data:
+  jury-db-data:
+  olymp-admin-db_data:
   olymp-notification-db_data:
   redis_data:
   rabbitmq_data:

@@ -78,3 +78,7 @@ type UpdateEventDTORequest struct {
 	AdditionalInfo *string `json:"additional_info"`
 	Status         *int    `json:"status"`
 }
+
+type UploadExcelRequest struct {
+	Year int `json:"year" validate:"required,min=2000,max=2100"`
+}

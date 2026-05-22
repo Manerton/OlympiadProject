@@ -20,6 +20,7 @@ const OlympiadsPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [total, setTotal] = useState(0);
+  const {accessToken} = useAuth();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -27,15 +28,17 @@ const OlympiadsPage: React.FC = () => {
   useEffect(() => {
     if (!id) return;
 
+    if (!accessToken) return;
+
     setLoading(true);
-    fetchOlympiads({ id, page, limit, order, search, selectedDate})
+    fetchOlympiads(accessToken, { id, page, limit, order, search, selectedDate})
       .then((res) => {
         setOlympiads(res.data);
         setTotal(res.metadata);
       })
       .catch((err) => setError((err as Error).message))
       .finally(() => setLoading(false));
-  }, [id, page, limit, order, search, selectedDate]);
+  }, [id, page, limit, order, search, selectedDate, accessToken]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

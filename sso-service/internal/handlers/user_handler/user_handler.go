@@ -21,6 +21,8 @@ type UserService interface {
 
 	GetUserParticipantById(ctx context.Context, id string) (user_dto.UserParticipantResponseDTO, error)
 	GetUserParticipantByListId(ctx context.Context, ids []string) ([]user_dto.UserParticipantResponseDTO, error)
+
+	GetAllUserParticipantInfo(ctx context.Context) ([]user_dto.UserParticipantResponseDTO, error)
 	GetByListId(ctx context.Context, ids []string) ([]user_dto.UserResponseDTO, error)
 
 	GetUsersByRole(ctx context.Context, userRole string) ([]user_dto.UserResponseDTO, error)
@@ -241,6 +243,29 @@ func (h *UserHandler) GetUserParticipantById(w http.ResponseWriter, r *http.Requ
 	var id string = chi.URLParam(r, "id")
 
 	participantUserResponse, err := h.UserService.GetUserParticipantById(ctx, id)
+	if err != nil {
+		if apiErr, ok := errs.IsApiError(err); ok {
+			render.Status(r, apiErr.HttpCode)
+			render.JSON(w, r, response.ErrorApiResponse(apiErr))
+			return
+		}
+
+		render.Status(r, http.StatusInternalServerError)
+		render.JSON(w, r, response.ErrorApiResponse(errs.ErrInternalError))
+		return
+	}
+
+	render.JSON(w, r, response.ApiResponse{
+		Status:     response.SUCCESS,
+		StatusCode: http.StatusOK,
+		Data:       participantUserResponse,
+	})
+}
+
+func (h *UserHandler) GetAllUserParticipantInfo(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	participantUserResponse, err := h.UserService.GetAllUserParticipantInfo(ctx)
 	if err != nil {
 		if apiErr, ok := errs.IsApiError(err); ok {
 			render.Status(r, apiErr.HttpCode)

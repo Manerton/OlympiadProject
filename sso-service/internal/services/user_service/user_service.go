@@ -34,6 +34,7 @@ type UserRepository interface {
 }
 
 type ParticipantRepository interface {
+	GetAll(ctx context.Context, orm orm.ORM, offset, limit *int) ([]participant.Participant, error)
 	GetByUserId(ctx context.Context, orm orm.ORM, id uuid.UUID) (participant.Participant, error)
 	GetByUserIdListWithPreload(ctx context.Context, orm orm.ORM, ids []uuid.UUID) ([]participant.Participant, error)
 }
@@ -167,6 +168,39 @@ func (s *UserService) GetUsersByRole(ctx context.Context, userRole string) ([]us
 	}
 
 	return user_mapper.ToDTOs(usersResult), nil
+}
+
+func (s *UserService) GetAllUserParticipantInfo(ctx context.Context) ([]user_dto.UserParticipantResponseDTO, error) {
+	const op = "services.UserService.GetAllUserParticipantInfo"
+
+	log := s.log.With(slog.String("op", op))
+
+	participants, err := s.participantRepository.GetAll(ctx, s.db, nil, nil)
+	if err != nil {
+		log.Error("failed get all particiapnts", liblogger.Err(err))
+		return nil, errs.ErrInternalError.Wrap("failed get all participants")
+	}
+
+	userParticipantDTOs := make([]user_dto.UserParticipantResponseDTO, 0, len(participants))
+
+	for _, p := range participants {
+		userResult, err := s.userRepository.GetById(ctx, s.db, p.UserId)
+		if s.db.IsNotFound(err) {
+			log.Error("user not found for participant", slog.String("participant id", p.ID.String()), liblogger.Err(err))
+			continue
+		}
+
+		if err != nil {
+			log.Error("failed get user for participant", slog.String("participant id", p.ID.String()), liblogger.Err(err))
+			continue
+		}
+		userParticipantDTOs = append(userParticipantDTOs, user_dto.UserParticipantResponseDTO{
+			UserResponseDTO:        user_mapper.ToDTO(userResult),
+			ParticipantResponseDTO: paricipant_mapper.ToDTO(p),
+		})
+	}
+
+	return userParticipantDTOs, nil
 }
 
 func (s *UserService) GetUserParticipantById(ctx context.Context, id string) (user_dto.UserParticipantResponseDTO, error) {

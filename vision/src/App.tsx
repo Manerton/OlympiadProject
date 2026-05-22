@@ -80,15 +80,15 @@ function App() {
                             <Route path="/PersonalAccount" element={<ParticipantDashboard />} />
                             <Route path="/verifyApplications" element={<VerifyApplicationsPage />} />
                             <Route path="/AllApplications" element={<ApplicationsPage />} />
-                            {/* <Route
+                            <Route
                             path="/profile"
                             element={
                                 <RequireAuth>
-                                <ProfileMainPage />
+                                <ParticipantDashboard />
                                 </RequireAuth>
                             }
-                            /> */}
-                            {/* <Route path="/RegionalStages" element={<RegionalStagesPage />} />
+                            />
+                            <Route path="/RegionalStages" element={<RegionalStagesPage />} />
                             <Route path="/SchoolConfirmApplications" element={<SchoolConfirmPage />} />
                             <Route path="OlympiadsPage/:id" element={<OlympiadsPage />} />
                             <Route path="OlympiadDetails/:id" element={<OlympiadDetails />} />
@@ -104,7 +104,7 @@ function App() {
                                 <ProtectedRoute allowedRoles={[UserRole.Admin, UserRole.Organizer]}>
                                     <JuryAssignPage />
                                 </ProtectedRoute>
-                            } /> */}
+                            } />
 
                         </Route>
 

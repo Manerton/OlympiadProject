@@ -54,14 +54,17 @@ const StagesListPage: React.FC = () => {
   
   useEffect(() => {
     if (!id) return;
+
+    if (!accessToken) return;
+    
     setLoading(true);
-    fetchOlympiadStages(id)
+    fetchOlympiadStages(accessToken, id)
       .then((res) => {
         setStages(res ?? []);
       })
       .catch((err) => setError((err as Error).message))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, accessToken]);
 
   useEffect(() => {
     if (stages.length === 0) return;

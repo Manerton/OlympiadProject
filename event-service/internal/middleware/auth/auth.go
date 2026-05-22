@@ -8,13 +8,40 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type UserInfoKey struct{}
 
 type UserInfo struct {
-	id   string
+	id   uuid.UUID
 	role int
+}
+
+type TokenAccessClaims struct {
+	Email string `json:"email"`
+	Role  int    `json:"role"`
+	jwt.RegisteredClaims
+}
+
+func ParseAccessTokenWithClaims(secret string, tokenStr string) (*TokenAccessClaims, error) {
+	const op = "jwtManager.ParseAccessTokenWithClaims"
+
+	fmt.Printf("key: %s, token: %s", secret, tokenStr)
+
+	token, err := jwt.ParseWithClaims(tokenStr, &TokenAccessClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secret), nil // <- здесь преобразуем в []byte
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+
+	claims, ok := token.Claims.(*TokenAccessClaims)
+	if !ok || !token.Valid {
+		return nil, fmt.Errorf("invalid token")
+	}
+
+	return claims, nil
 }
 
 // Function to verify JWT tokens
@@ -42,69 +69,29 @@ func verifyToken(tokenString string, secretKey []byte) (*jwt.Token, error) {
 func AuthenticateMiddleware(next http.Handler, key string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			http.Error(w, "Missing Authorization header", http.StatusUnauthorized)
+		auth := r.Header.Get("Authorization")
+		if !strings.HasPrefix(auth, "Bearer ") {
+			http.Error(w, "Authorization header required", http.StatusUnauthorized)
 			return
 		}
 
-		parts := strings.SplitN(authHeader, " ", 2)
-		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			http.Error(w, "Invalid Authorization header format", http.StatusUnauthorized)
-			return
-		}
-
-		tokenString := parts[1]
-
-		// // Retrieve the token from the cookie
-		// cookie, err := r.Cookie("token")
-		// if err != nil {
-		// 	log.Println("Token missing in cookie")
-		// 	http.Error(w, "Invalid token claims", http.StatusUnauthorized)
-		// 	return
-		// }
-
-		// Verify the token
-		token, err := verifyToken(tokenString, []byte(key))
+		tokenStr := strings.TrimPrefix(auth, "Bearer ")
+		claims, err := ParseAccessTokenWithClaims(key, tokenStr)
 		if err != nil {
-			log.Printf("Token verification failed: %v\n", err)
-			http.Error(w, "Invalid token claims", http.StatusUnauthorized)
+			log.Printf("token error: %v", err)
+			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		// Print information about the verified token
-		fmt.Printf("Token verified successfully. Claims: %+v\n", token.Claims)
-
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok {
-			log.Println("Invalid token claims")
-			http.Error(w, "Invalid token claims", http.StatusUnauthorized)
+		id, err := uuid.Parse(claims.Subject)
+		if err != nil {
+			log.Printf("token error: %v", err)
+			http.Error(w, "Invalid claims", http.StatusUnauthorized)
 			return
 		}
-
-		// Get role
-		role, ok := claims["role"].(float64)
-		if !ok {
-			log.Println("Role missing in JWT")
-			http.Error(w, "Role missing in JWT", http.StatusForbidden)
-			return
-		}
-
-		// Get id
-		id, ok := claims["id"].(string)
-		if !ok {
-			log.Println("Id missing in JWT")
-			http.Error(w, "Id missing in JWT", http.StatusForbidden)
-			return
-		}
-
-		// Init struct
-		userInfo := UserInfo{id: id, role: int(role)}
-		// Add struct in context
-		r = r.WithContext(context.WithValue(r.Context(), UserInfoKey{}, userInfo))
-
-		// Continue with the next middleware or route handler
-		next.ServeHTTP(w, r)
+		role := claims.Role
+		ctx := context.WithValue(r.Context(), UserInfoKey{}, UserInfo{id: id, role: role})
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 

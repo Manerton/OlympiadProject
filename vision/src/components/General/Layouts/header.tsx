@@ -43,6 +43,9 @@ function Header() {
             <LinkContainer to="/">
               <Nav.Link>Главная</Nav.Link>
             </LinkContainer>
+            <LinkContainer to="/RegionalStages">
+              <Nav.Link>Региональные этапы</Nav.Link>
+            </LinkContainer>
 
                         {user?.role === 1 && (
                             <LinkContainer to="/AdminPanel">

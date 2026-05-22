@@ -193,3 +193,16 @@ export async function axiosSSOSchool(selectedDistrictId: string) {
     const res = await axios.get(AUTH.school + selectedDistrictId);
     return res.data;
 }
+
+export async function getParticipants(token: string) {
+  const res = await axios.get(
+    USER.infoParticipant,
+    {
+        withCredentials: true,
+        headers: {
+            Authorization: `Bearer ${token}` // добавляем токен
+        }
+    }
+  )
+  return res.data
+}

@@ -8,6 +8,7 @@ import (
 	"main/internal/handlers/event_handler"
 	"main/internal/handlers/subject_handler"
 	"main/internal/lib/liblogger"
+	"main/internal/middleware/auth"
 	"main/internal/middleware/midlogger"
 	"main/internal/models/subject"
 	"main/internal/repositories/event_repository"
@@ -18,6 +19,7 @@ import (
 	"main/rabbitmq"
 	"main/rabbitmq/consumer"
 	"main/rabbitmq/producer"
+	"main/support/userrole"
 	"net/http"
 	"time"
 
@@ -49,9 +51,9 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	router.Use(middleware.URLFormat)
 	// add Authentication with JWT token
 
-	// router.Use(func(next http.Handler) http.Handler {
-	// 	return auth.AuthenticateMiddleware(next, cfg.Key)
-	// })
+	router.Use(func(next http.Handler) http.Handler {
+		return auth.AuthenticateMiddleware(next, cfg.Key)
+	})
 
 	// init subject service and handler
 	subjectStorage := subject.NewSubjectsStorage()
@@ -100,14 +102,16 @@ func (a *App) initRoutes(router *chi.Mux,
 	router.Put("/api/events/{id}", eventHandler.UpdateEvent)
 	router.Delete("/api/events/{id}", eventHandler.DeleteEvent)
 
+	router.Post("/api/events-excel", eventHandler.UploadExcel)
+
 	router.Put("/api/events/finished/{id}", eventHandler.FinishedEvents)
 
 	// init events route
-	// router.With(auth.RoleBasedAccess(userrole.AdminRole)).Group(func(r chi.Router) {
-	// 	r.Post("/api/events", eventHandler.CreateEvent)
-	// 	r.Put("/api/events/{id}", eventHandler.UpdateEvent)
-	// 	r.Delete("/api/events/{id}", eventHandler.DeleteEvent)
-	// })
+	router.With(auth.RoleBasedAccess(userrole.AdminRole)).Group(func(r chi.Router) {
+		r.Post("/api/events", eventHandler.CreateEvent)
+		r.Put("/api/events/{id}", eventHandler.UpdateEvent)
+		r.Delete("/api/events/{id}", eventHandler.DeleteEvent)
+	})
 
 	router.Post("/api/events/details/one", eventHandler.GetEventByFilterAndFields)
 	router.Post("/api/events/details", eventHandler.GetEventsByFilterAndFields)

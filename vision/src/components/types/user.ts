@@ -67,3 +67,29 @@ export interface ForgotPasswordForm {
     code: string,
     password: string
 }
+
+export interface UserResponseDTO {
+  id: string
+  email: string
+  firstname: string
+  surname: string
+  patronymic: string
+  phone_number: string
+  birthdate: string
+  gender: number
+  role: number
+  activated: boolean
+}
+
+export interface ParticipantResponseDTO {
+  participant_id: string
+  user_id: string
+  disability: number
+  school_id: string
+  citizenship: number
+  class_number: number
+}
+
+export interface UserParticipantResponseDTO
+  extends UserResponseDTO,
+    ParticipantResponseDTO {}

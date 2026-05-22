@@ -25,7 +25,7 @@ func (h *SubjectHandler) GetAllSubjects(w http.ResponseWriter, r *http.Request) 
 		slog.String("op", op),
 	)
 
-	subjects := h.subjectStorage.GetAllSubject()
+	subjects := h.subjectStorage.GetAllSubjects()
 	// if err != nil {
 	// 	log.Error("failed to get subject", liblogger.Err(err))
 	// 	render.JSON(w, r, response.Error("failed to get subject"))

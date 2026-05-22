@@ -9,6 +9,7 @@ import { useAuth } from "../../../Helpers/AuthContext.js";
 import { UserRole } from "../../../../dictionary/role.js";
 import { axiosCreateApplication } from "../../../../requests/ApplicationRequests";
 import { subjectsMap } from "../../../../dictionary/subjectDictionary.js";
+import { Application } from "../../../types/application.js";
 
 const OlympiadDetails: React.FC = () => {
   const { id } = useParams();
@@ -23,9 +24,13 @@ const OlympiadDetails: React.FC = () => {
 
   useEffect(() => {
     if (!id) return;
+
+    if (!accessToken) 
+      return;
+
     setLoading(true);
 
-    fetchEvent(id)
+    fetchEvent(accessToken, id)
       .then((res) => setOlympiad(res))
       .catch((err) => setError((err as Error).message))
       .finally(() => setLoading(false));
@@ -33,7 +38,7 @@ const OlympiadDetails: React.FC = () => {
     fetchStagesCount(id)
       .then((count) => setStagesCount(count))
       .catch((err) => console.error("Ошибка загрузки этапов:", err));
-  }, [id]);
+  }, [id, accessToken]);
 
   // Отправка заявки через axios
   const handleApply = async () => {
@@ -45,10 +50,12 @@ const OlympiadDetails: React.FC = () => {
       return;
     }
 
+
     try {
       console.log("Отправка заявки на олимпиаду:", id);
+
       // TODO: заменить URL и userId на реальные
-      // await axiosCreateApplication(accessToken as string, user.id, id)
+      // await axiosCreateApplication(accessToken as string, )
 
       alert("Заявка успешно отправлена!");
     } catch (err) {
@@ -90,9 +97,9 @@ const OlympiadDetails: React.FC = () => {
               <Button variant="primary" className="w-100 mb-3" onClick={handleApply}>
                 Подать заявку
               </Button>
-              {/* <Button variant="secondary" className="w-100 mb-3" onClick={handleGoToStages}>
+              <Button variant="secondary" className="w-100 mb-3" onClick={handleGoToStages}>
                 Список этапов
-              </Button> */}
+              </Button>
               {user?.role === UserRole.Admin && (
                 <Button variant="secondary" className="w-100 mb-3" onClick={() => navigate(`/EditEvent/${id}`)}>
                   Редактировать

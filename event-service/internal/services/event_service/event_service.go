@@ -590,13 +590,14 @@ func (s *EventService) createEventsBySubjects(ctx context.Context, eventModel ev
 		tx.TransactionRollback()
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
-	for num, subject := range subject.NewSubjectsStorage().GetAllSubject() {
+	for num, subject := range subject.NewSubjectsStorage().GetAllSubjects() {
 		eventBySubject := event.Event{
 			Name:            fmt.Sprintf("Олимпиада по %s", subject),
 			PreviousEventID: &id,
 			StartDate:       eventModel.StartDate,
 			EndDate:         eventModel.EndDate,
 			EventType:       event.Olympiad,
+			ClassCategory:   event.Class11,
 			Subject:         num,
 		}
 		_, err := s.eventRepository.CreateEvent(ctx, tx, eventBySubject)
@@ -608,6 +609,8 @@ func (s *EventService) createEventsBySubjects(ctx context.Context, eventModel ev
 	tx.TransactionCommit()
 	return id, nil
 }
+
+// func (s *EventService) createEventsByClassCategory(ctx context.Context, )
 
 func (s *EventService) updateEventDTO(ctx context.Context, updatedEvent event.Event, id uuid.UUID) (event.Event, error) {
 	oldEvent, err := s.eventRepository.GetEventByID(ctx, s.db, id)

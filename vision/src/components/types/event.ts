@@ -40,6 +40,23 @@ export interface ApplicationEvent {
     class_participation: number
 }
 
+export interface CreateEventDTORequest {
+    name: string;
+
+    start_date: string;
+    end_date: string;
+
+    dates: string[];
+    profiles: string[];
+
+    previous_event_id?: string;
+
+    subject?: string;
+    additional_info?: string;
+    class_category?: string;
+    event_type?: string;
+}
+
 export interface UpdateEventDTORequest {
     name?: string;
     start_date?: string;   // ISO string
