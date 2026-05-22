@@ -36,11 +36,11 @@ const (
 )
 
 type Event struct {
-	ID            uuid.UUID         `gorm:"type:uuid;default:get_random_uuid();primaryKey"`
-	Name          string            `gorm:"type:varchar(128);not null"`
-	StartDate     time.Time         `gorm:"not null"`
-	EndDate       time.Time         `gorm:"not null"`
-	ClassCategory ClassCategoryType `gorm:"type:class_category"`
+	ID            uuid.UUID          `gorm:"type:uuid;default:get_random_uuid();primaryKey"`
+	Name          string             `gorm:"type:varchar(128);not null"`
+	StartDate     time.Time          `gorm:"not null"`
+	EndDate       time.Time          `gorm:"not null"`
+	ClassCategory *ClassCategoryType `gorm:"type:class_category_type"`
 	// Temp for quic start
 	Profiles pq.StringArray `gorm:"type:text[]"`
 	Dates    pq.StringArray `gorm:"type:text[]"`

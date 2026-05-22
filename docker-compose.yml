@@ -14,7 +14,9 @@ services:
   #     - olympic
 
   vision:
-      build: ./vision
+      build:
+        context: ./vision
+        dockerfile: Dockerfile.dev
       container_name: vision_app
       working_dir: /app
       volumes:

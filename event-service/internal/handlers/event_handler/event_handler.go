@@ -48,8 +48,8 @@ type EventHandler struct {
 	excelService excel_service.EventExcelService
 }
 
-func NewEventHandler(service EventServiceInterface) *EventHandler {
-	return &EventHandler{service: service}
+func NewEventHandler(service EventServiceInterface, excelService excel_service.EventExcelService) *EventHandler {
+	return &EventHandler{service: service, excelService: excelService}
 }
 
 // @Summery Search event by filter

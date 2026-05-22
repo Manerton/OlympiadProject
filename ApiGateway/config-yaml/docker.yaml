@@ -183,7 +183,7 @@ HTTP_SERVERS_INFO:
 
     - prefix: "/upload-excel-event"
       aggregate: false
-      tarege: "http://event-service:8080/api/events-excel"
+      target: "http://event-service:8080/api/events-excel"
       skip_auth: false
 
     # ==================== APPLICATIONS SERVICE (8082) ====================

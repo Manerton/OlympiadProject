@@ -597,7 +597,6 @@ func (s *EventService) createEventsBySubjects(ctx context.Context, eventModel ev
 			StartDate:       eventModel.StartDate,
 			EndDate:         eventModel.EndDate,
 			EventType:       event.Olympiad,
-			ClassCategory:   event.Class11,
 			Subject:         num,
 		}
 		_, err := s.eventRepository.CreateEvent(ctx, tx, eventBySubject)
@@ -626,7 +625,7 @@ func (s *EventService) updateEventDTO(ctx context.Context, updatedEvent event.Ev
 	if !updatedEvent.EndDate.IsZero() {
 		oldEvent.EndDate = updatedEvent.EndDate
 	}
-	if updatedEvent.ClassCategory != "" {
+	if updatedEvent.ClassCategory != nil {
 		oldEvent.ClassCategory = updatedEvent.ClassCategory
 	}
 	if updatedEvent.Subject != 0 {

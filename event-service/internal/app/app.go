@@ -14,6 +14,7 @@ import (
 	"main/internal/repositories/event_repository"
 	"main/internal/repositories/outbox_repository"
 	"main/internal/services/event_service"
+	"main/internal/services/excel_service"
 	"main/internal/storage/orm"
 	"main/internal/storage/postgresql"
 	"main/rabbitmq"
@@ -61,9 +62,11 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	// init orm
 	gormORM := orm.NewGormORM(storage)
 
+	excelService := excel_service.NewEventExcelService(&event_repository.EventRepository{}, gormORM, log)
+
 	// init events service and handler
 	eventService := event_service.NewEventService(gormORM, cfg.Services, &event_repository.EventRepository{}, &outbox_repository.OutboxRepository{}, log)
-	eventHandler := event_handler.NewEventHandler(eventService)
+	eventHandler := event_handler.NewEventHandler(eventService, *excelService)
 
 	// init connection manager for rabbit
 	connectionManager := rabbitmq.New(cfg.AddressRabbitPath, log)
